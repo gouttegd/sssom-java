@@ -1,0 +1,63 @@
+/*
+ * SSSOM-Java - SSSOM library for Java
+ * Copyright © 2023 Damien Goutte-Gattat
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the Gnu General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.incenp.obofoundry.sssom;
+
+import org.incenp.obofoundry.sssom.model.Mapping;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+
+/**
+ * Generate bridging axioms for cross-species mappings.
+ */
+public class CrossSpeciesBridgeGenerator implements IAxiomGenerator {
+
+    public static String CROSS_SPECIES_EXACT_MATCH = "https://w3id.org/semapv/vocab/crossSpeciesExactMatch";
+    public static String CROSS_SPECIES_BROAD_MATCH = "https://w3id.org/semapv/vocab/crossSpeciesBroadMatch";
+    public static String CROSS_SPECIES_NARROW_MATCH = "https://w3id.org/semapv/vocab/crossSpeciesNarrowMatch";
+    public static String CROSS_SPECIES_RELATED_MATCH = "https://w3id.org/semapv/vocab/crossSpeciesRelatedMatch";
+
+    private static final IRI partOfIRI = IRI.create("http://purl.obolibrary.org/obo/BFO_0000050");
+
+    private OWLDataFactory factory;
+    private OWLClassExpression partOfTaxon;
+
+    public CrossSpeciesBridgeGenerator(OWLDataFactory factory, IRI taxonIRI) {
+        this.factory = factory;
+
+        partOfTaxon = factory.getOWLObjectSomeValuesFrom(factory.getOWLObjectProperty(partOfIRI),
+                factory.getOWLClass(taxonIRI));
+    }
+
+    @Override
+    public OWLAxiom generateAxiom(Mapping mapping) {
+        OWLClass subject = factory.getOWLClass(IRI.create(mapping.getSubjectId()));
+        OWLClass object = factory.getOWLClass(IRI.create(mapping.getObjectId()));
+
+        if ( mapping.getPredicateId().equals(CROSS_SPECIES_EXACT_MATCH) ) {
+            OWLClassExpression oAndPartOfTaxon = factory.getOWLObjectIntersectionOf(object, partOfTaxon);
+            return factory.getOWLEquivalentClassesAxiom(subject, oAndPartOfTaxon);
+        }
+
+        // TODO: Implement other types of mapping
+        return null;
+    }
+}
