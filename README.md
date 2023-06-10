@@ -36,15 +36,40 @@ for (Mapping m : mappingSet.getMappings()) {
 }
 ```
 
+* Injecting cross-species equivalence axioms (generated from mappings
+  using the `https://w3id.org/semapv/vocab/crossSpeciesExactMatch`
+  predicate into a OWL ontology with
+  [ROBOT](https://robot.obolibrary.org/).
+
+```sh
+robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
+      sssom-inject --sssom fbbt-mappings.sssom.tsv \
+                   --cross-species NCBITaxon:7227 \
+      annotate --ontology-iri http://purl.obolibrary.org/obo/bridged.owl \
+               --output bridged.owl
+```
+
+Building
+--------
+Build by running `mvn clean package`. This will produce three distinct
+Jar files:
+
+* `sssom-java-x.y.z.jar`: a minimal Java library, containing only the
+  classes from this project proper (dependencies _not_ included).
+* `sssom-robot-plugin-x.y.z.jar`: a file usable as a ROBOT plugin, once
+  ROBOT supports such plugins.
+* `sssom-robot-standalone-x.y.z.jar`: a standalone version of ROBOT
+  (1.9.4), which includes the command(s) from the SSSOM plugin as if
+  they were built-in commands.
+
 Todo
 ----
 * Support for other serialisation formats (RDF/XML-serialised OWL
   axioms, JSON), reading and writing.
 * Helper classes and methods to manipulate the mappings; in particular,
   generating OWL “translations” of said mappings.
-* A ROBOT pluggable command to manipulate mappings as part of a ROBOT
-  pipeline (e.g. injecting OWL axioms generated from a mapping set into
-  an ontology).
+* More ROBOT pluggable commands to manipulate mappings as part of a
+  ROBOT pipeline.
 
 
 Copying
