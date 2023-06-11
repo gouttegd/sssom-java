@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -44,6 +45,24 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * A parser to read a SSSOM mapping set from the TSV serialisation format.
  */
 public class TSVReader {
+
+    private static String SSSOM_URL_PREFIX = "https://w3id/org/sssom/";
+    private static String OWL_URL_PREFIX = "http://www.w3.org/2002/07/owl#";
+    private static String RDF_URL_PREFIX = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+    private static String RDFS_URL_PREFIX = "http://www.w3.org/2000/01/rdf-schema#";
+    private static String SKOS_URL_PREFIX = "http://www.w3.org/2004/02/skos/core#";
+    private static String SEMAPV_URL_PREFIX = "https://w3id.org/semapv/vocab/";
+    private static Map<String, String> builtinCurieMap;
+
+    static {
+        builtinCurieMap = new HashMap<String, String>();
+        builtinCurieMap.put("sssom", SSSOM_URL_PREFIX);
+        builtinCurieMap.put("owl", OWL_URL_PREFIX);
+        builtinCurieMap.put("rdf", RDF_URL_PREFIX);
+        builtinCurieMap.put("rdfs", RDFS_URL_PREFIX);
+        builtinCurieMap.put("skos", SKOS_URL_PREFIX);
+        builtinCurieMap.put("semapv", SEMAPV_URL_PREFIX);
+    }
 
     private File tsvFile;
     private BufferedReader tsvReader;
@@ -251,13 +270,25 @@ public class TSVReader {
             throw new SSSOMFormatException("Error when mapping YAML metadata", e);
         }
 
+        // Check the provided curie map does not override the builtin prefixes
+        Map<String, String> curieMap = ms.getCurieMap();
+        if ( curieMap != null ) {
+            for ( String prefix : curieMap.keySet() ) {
+                if ( builtinCurieMap.containsKey(prefix) ) {
+                    if ( !curieMap.get(prefix).equals(builtinCurieMap.get(prefix)) ) {
+                        throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
+                    }
+                }
+            }
+        }
+
         return ms;
     }
 
     /*
      * Expand a CURIE from the provided prefix map.
      */
-    private String expandCurie(Map<String, String> curieMap, String curie) {
+    private String expandCurie(Map<String, String> curieMap, String curie) throws SSSOMFormatException {
         if ( curie.startsWith("http") ) {
             // The SSSOM TSV format allows using full (non-CURIEfied) IRIs, even though it's
             // discouraged.
@@ -265,16 +296,11 @@ public class TSVReader {
         }
 
         String[] parts = curie.split(":", 2);
-        if ( curieMap.containsKey(parts[0]) ) {
-            return curieMap.get(parts[0]) + parts[1];
+        String urlPrefix = curieMap.getOrDefault(parts[0], builtinCurieMap.get(parts[0]));
+        if ( urlPrefix == null ) {
+            throw new SSSOMFormatException("Undeclared prefix in the mapping set");
         }
 
-        // This should not happen as the spec says that it is "required to provide a
-        // prefix map that allows the unambiguous interpretation of CURIEs".
-        // Consequently, one could argue that a TSV file containing a CURIE whose prefix
-        // is not in the prefix map is invalid, and we could legitimately throw a
-        // SSSOMFormatException here. For now we simply let the original identifier as
-        // it is.
-        return curie;
+        return urlPrefix + parts[1];
     }
 }
