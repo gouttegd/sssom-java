@@ -18,6 +18,9 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.incenp.obofoundry.sssom.CrossSpeciesBridgeGenerator;
@@ -47,6 +50,8 @@ public class SSSOMInjectionCommand implements Command {
         options.addOption("s", "sssom", true, "load SSSOM mapping set from file");
         options.addOption(null, "sssom-metadata", true, "load mapping set metadata from specified file");
         options.addOption(null, "cross-species", true, "inject cross-species bridging axioms for specified taxon");
+        options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology.");
+        options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
     }
 
     @Override
@@ -98,6 +103,7 @@ public class SSSOMInjectionCommand implements Command {
         MappingSet mappingSet = reader.read();
 
         OWLOntology ontology = state.getOntology();
+        Set<OWLAxiom> bridgingAxioms = new HashSet<OWLAxiom>();
 
         if ( line.hasOption("cross-species") ) {
             // TODO: Check both subject and object exist in the ontology and are not
@@ -109,9 +115,18 @@ public class SSSOMInjectionCommand implements Command {
             for ( Mapping mapping : mappingSet.getMappings() ) {
                 OWLAxiom ax = gen.generateAxiom(mapping);
                 if ( ax != null ) {
-                    ontology.getOWLOntologyManager().addAxiom(ontology, ax);
+                    bridgingAxioms.add(ax);
                 }
             }
+        }
+
+        if ( !line.hasOption("no-merge") && !bridgingAxioms.isEmpty() ) {
+            ontology.getOWLOntologyManager().addAxioms(ontology, bridgingAxioms);
+        }
+
+        if ( line.hasOption("bridge-file") && !bridgingAxioms.isEmpty() ) {
+            OWLOntology bridgeOntology = ontology.getOWLOntologyManager().createOntology(bridgingAxioms);
+            ioHelper.saveOntology(bridgeOntology, line.getOptionValue("bridge-file"));
         }
 
         CommandLineHelper.maybeSaveOutput(line, state.getOntology());
