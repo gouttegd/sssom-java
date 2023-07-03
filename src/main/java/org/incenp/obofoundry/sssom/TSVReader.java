@@ -105,7 +105,7 @@ public class TSVReader {
      * @throws FileNotFoundException If any of the files cannot be found.
      */
     public TSVReader(String tsvFile, String metaFile) throws FileNotFoundException {
-        this(new File(tsvFile), new File(metaFile));
+        this(new File(tsvFile), metaFile != null ? new File(metaFile) : null);
     }
 
     /**
