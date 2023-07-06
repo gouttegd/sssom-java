@@ -29,10 +29,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityReference;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -51,30 +51,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  */
 public class TSVReader {
 
-    private static String SSSOM_URL_PREFIX = "https://w3id/org/sssom/";
-    private static String OWL_URL_PREFIX = "http://www.w3.org/2002/07/owl#";
-    private static String RDF_URL_PREFIX = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-    private static String RDFS_URL_PREFIX = "http://www.w3.org/2000/01/rdf-schema#";
-    private static String SKOS_URL_PREFIX = "http://www.w3.org/2004/02/skos/core#";
-    private static String SEMAPV_URL_PREFIX = "https://w3id.org/semapv/vocab/";
-    private static Map<String, String> builtinCurieMap;
-
-    static {
-        builtinCurieMap = new HashMap<String, String>();
-        builtinCurieMap.put("sssom", SSSOM_URL_PREFIX);
-        builtinCurieMap.put("owl", OWL_URL_PREFIX);
-        builtinCurieMap.put("rdf", RDF_URL_PREFIX);
-        builtinCurieMap.put("rdfs", RDFS_URL_PREFIX);
-        builtinCurieMap.put("skos", SKOS_URL_PREFIX);
-        builtinCurieMap.put("semapv", SEMAPV_URL_PREFIX);
-    }
-
     private File tsvFile;
     private BufferedReader tsvReader;
     private Reader metaReader;
+    private PrefixManager prefixManager = new PrefixManager();
 
     /**
-     * Create a new instance that will read data from the specified files.
+     * Creates a new instance that will read data from the specified files.
      * 
      * @param tsvFile  The main TSV file.
      * @param metaFile The accompanying metadata file. If {@code null}, the parser
@@ -91,7 +74,7 @@ public class TSVReader {
     }
 
     /**
-     * Create a new instance that will read data from a single file. That file
+     * Creates a new instance that will read data from a single file. That file
      * should either contain an embedded metadata block, or a file containing the
      * metadata should exist alongside it.
      * 
@@ -103,7 +86,7 @@ public class TSVReader {
     }
 
     /**
-     * Create a new instance that will read data from the specified files.
+     * Creates a new instance that will read data from the specified files.
      * 
      * @param tsvFile  The name of the main TSV file.
      * @param metaFile The name of the accompanying metadata file.
@@ -114,7 +97,7 @@ public class TSVReader {
     }
 
     /**
-     * Create a new instance that will read data from a single file. That file
+     * Creates a new instance that will read data from a single file. That file
      * should either contain an embedded metadata block, or a file containing the
      * metadata should exist alongside it.
      * 
@@ -126,7 +109,7 @@ public class TSVReader {
     }
 
     /**
-     * Read a mapping set from the source file(s).
+     * Reads a mapping set from the source file(s).
      * 
      * @return A complete SSSOM mapping set.
      * @throws SSSOMFormatException If encountering invalid SSSOM data. This
@@ -149,7 +132,7 @@ public class TSVReader {
     }
 
     /**
-     * Read a mapping set from the source file while reading the metadata from the
+     * Reads a mapping set from the source file while reading the metadata from the
      * specified source.
      * 
      * @param metaReader A Reader from which to get the metadata.
@@ -160,7 +143,8 @@ public class TSVReader {
      */
     public MappingSet read(Reader metaReader) throws SSSOMFormatException, IOException {
         MappingSet ms = readMetadata(metaReader);
-        expandEntityReferences(ms.getCurieMap(), ms);
+        prefixManager.add(ms.getCurieMap());
+        expandEntityReferences(ms);
 
         CsvMapper mapper = new CsvMapper();
         CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t');
@@ -173,7 +157,7 @@ public class TSVReader {
             } catch ( RuntimeJsonMappingException e ) {
                 throw new SSSOMFormatException("Error when parsing TSV table", e);
             }
-            expandEntityReferences(ms.getCurieMap(), m);
+            expandEntityReferences(m);
             mappings.add(m);
         }
         ms.setMappings(mappings);
@@ -278,10 +262,9 @@ public class TSVReader {
         Map<String, String> curieMap = ms.getCurieMap();
         if ( curieMap != null ) {
             for ( String prefix : curieMap.keySet() ) {
-                if ( builtinCurieMap.containsKey(prefix) ) {
-                    if ( !curieMap.get(prefix).equals(builtinCurieMap.get(prefix)) ) {
-                        throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
-                    }
+                BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
+                if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
+                    throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
                 }
             }
         }
@@ -290,31 +273,9 @@ public class TSVReader {
     }
 
     /*
-     * Expand a CURIE from the provided prefix map. Returns null if the CURIE needs
-     * no expansion.
-     */
-    private String expandEntityReference(Map<String, String> curieMap, String curie) throws SSSOMFormatException {
-        if ( curie.startsWith("http") ) {
-            return null;
-        }
-
-        String[] parts = curie.split(":", 2);
-        if ( parts.length == 1 ) {
-            return null;
-        }
-
-        String urlPrefix = curieMap.getOrDefault(parts[0], builtinCurieMap.get(parts[0]));
-        if ( urlPrefix == null ) {
-            throw new SSSOMFormatException("Undeclared prefix in the mapping set");
-        }
-
-        return urlPrefix + parts[1];
-    }
-
-    /*
      * Expand CURIEs in all “EntityReference” fields of the given object.
      */
-    private void expandEntityReferences(Map<String, String> curieMap, Object object) throws SSSOMFormatException {
+    private void expandEntityReferences(Object object) throws SSSOMFormatException {
         for ( Field field : object.getClass().getDeclaredFields() ) {
             if ( field.getDeclaredAnnotation(EntityReference.class) == null ) {
                 // Not an entity reference, nothing to expand
@@ -333,7 +294,7 @@ public class TSVReader {
                     continue;
                 }
 
-                String iri = expandEntityReference(curieMap, curie);
+                String iri = prefixManager.expandIdentifier(curie);
                 if ( iri != null ) {
                     setValue(object, field.getName(), iri);
                 }
@@ -342,7 +303,7 @@ public class TSVReader {
                 List<String> curies = List.class.cast(value);
                 for ( int i = 0, n = curies.size(); i < n; i++ ) {
                     String curie = curies.get(i);
-                    String iri = expandEntityReference(curieMap, curie);
+                    String iri = prefixManager.expandIdentifier(curie);
                     if ( iri != null ) {
                         curies.set(i, iri);
                     }
