@@ -1,6 +1,7 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @EqualsAndHashCode(callSuper=false)
 public class Mapping  {
     @JsonProperty("subject_id")
+    @EntityReference
     private String subjectId;
 
     @JsonProperty("subject_label")
@@ -18,15 +20,17 @@ public class Mapping  {
     private String subjectCategory;
 
     @JsonProperty("predicate_id")
+    @EntityReference
     private String predicateId;
 
     @JsonProperty("predicate_label")
     private String predicateLabel;
 
     @JsonProperty("predicate_modifier")
-    private String predicateModifier;
+    private PredicateModifier predicateModifier;
 
     @JsonProperty("object_id")
+    @EntityReference
     private String objectId;
 
     @JsonProperty("object_label")
@@ -36,21 +40,25 @@ public class Mapping  {
     private String objectCategory;
 
     @JsonProperty("mapping_justification")
+    @EntityReference
     private String mappingJustification;
 
     @JsonProperty("author_id")
+    @EntityReference
     private List<String> authorId;
 
     @JsonProperty("author_label")
     private List<String> authorLabel;
 
     @JsonProperty("reviewer_id")
+    @EntityReference
     private List<String> reviewerId;
 
     @JsonProperty("reviewer_label")
     private List<String> reviewerLabel;
 
     @JsonProperty("creator_id")
+    @EntityReference
     private List<String> creatorId;
 
     @JsonProperty("creator_label")
@@ -59,18 +67,20 @@ public class Mapping  {
     private String license;
 
     @JsonProperty("subject_type")
-    private String subjectType;
+    private EntityType subjectType;
 
     @JsonProperty("subject_source")
+    @EntityReference
     private String subjectSource;
 
     @JsonProperty("subject_source_version")
     private String subjectSourceVersion;
 
     @JsonProperty("object_type")
-    private String objectType;
+    private EntityType objectType;
 
     @JsonProperty("object_source")
+    @EntityReference
     private String objectSource;
 
     @JsonProperty("object_source_version")
@@ -80,10 +90,11 @@ public class Mapping  {
     private String mappingProvider;
 
     @JsonProperty("mapping_source")
+    @EntityReference
     private String mappingSource;
 
     @JsonProperty("mapping_cardinality")
-    private String mappingCardinality;
+    private MappingCardinality mappingCardinality;
 
     @JsonProperty("mapping_tool")
     private String mappingTool;
@@ -92,29 +103,34 @@ public class Mapping  {
     private String mappingToolVersion;
 
     @JsonProperty("mapping_date")
-    private String mappingDate;
+    private LocalDateTime mappingDate;
 
     private Double confidence;
 
     @JsonProperty("curation_rule")
+    @EntityReference
     private List<String> curationRule;
 
     @JsonProperty("curation_rule_text")
     private List<String> curationRuleText;
 
     @JsonProperty("subject_match_field")
+    @EntityReference
     private List<String> subjectMatchField;
 
     @JsonProperty("object_match_field")
+    @EntityReference
     private List<String> objectMatchField;
 
     @JsonProperty("match_string")
     private List<String> matchString;
 
     @JsonProperty("subject_preprocessing")
+    @EntityReference
     private List<String> subjectPreprocessing;
 
     @JsonProperty("object_preprocessing")
+    @EntityReference
     private List<String> objectPreprocessing;
 
     @JsonProperty("semantic_similarity_score")

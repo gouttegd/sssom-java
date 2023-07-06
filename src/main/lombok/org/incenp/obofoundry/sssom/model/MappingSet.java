@@ -2,6 +2,7 @@ package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,6 +28,7 @@ public class MappingSet  {
     private String mappingSetDescription;
 
     @JsonProperty("creator_id")
+    @EntityReference
     private List<String> creatorId;
 
     @JsonProperty("creator_label")
@@ -35,18 +37,20 @@ public class MappingSet  {
     private String license;
 
     @JsonProperty("subject_type")
-    private String subjectType;
+    private EntityType subjectType;
 
     @JsonProperty("subject_source")
+    @EntityReference
     private String subjectSource;
 
     @JsonProperty("subject_source_version")
     private String subjectSourceVersion;
 
     @JsonProperty("object_type")
-    private String objectType;
+    private EntityType objectType;
 
     @JsonProperty("object_source")
+    @EntityReference
     private String objectSource;
 
     @JsonProperty("object_source_version")
@@ -58,19 +62,26 @@ public class MappingSet  {
     @JsonProperty("mapping_tool")
     private String mappingTool;
 
+    @JsonProperty("mapping_tool_version")
+    private String mappingToolVersion;
+
     @JsonProperty("mapping_date")
-    private String mappingDate;
+    private LocalDateTime mappingDate;
 
     @JsonProperty("subject_match_field")
+    @EntityReference
     private List<String> subjectMatchField;
 
     @JsonProperty("object_match_field")
+    @EntityReference
     private List<String> objectMatchField;
 
     @JsonProperty("subject_preprocessing")
+    @EntityReference
     private List<String> subjectPreprocessing;
 
     @JsonProperty("object_preprocessing")
+    @EntityReference
     private List<String> objectPreprocessing;
 
     @JsonProperty("see_also")

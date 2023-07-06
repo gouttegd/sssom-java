@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @EqualsAndHashCode(callSuper=false)
 public class MappingRegistry  {
     @JsonProperty("mapping_registry_id")
+    @EntityReference
     private String mappingRegistryId;
 
     @JsonProperty("mapping_registry_title")
