@@ -25,10 +25,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.EntityReference;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
@@ -155,6 +160,7 @@ public class TSVReader {
      */
     public MappingSet read(Reader metaReader) throws SSSOMFormatException, IOException {
         MappingSet ms = readMetadata(metaReader);
+        expandEntityReferences(ms.getCurieMap(), ms);
 
         CsvMapper mapper = new CsvMapper();
         CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t');
@@ -167,9 +173,7 @@ public class TSVReader {
             } catch ( RuntimeJsonMappingException e ) {
                 throw new SSSOMFormatException("Error when parsing TSV table", e);
             }
-            m.setSubjectId(expandCurie(ms.getCurieMap(), m.getSubjectId()));
-            m.setPredicateId(expandCurie(ms.getCurieMap(), m.getPredicateId()));
-            m.setObjectId(expandCurie(ms.getCurieMap(), m.getObjectId()));
+            expandEntityReferences(ms.getCurieMap(), m);
             mappings.add(m);
         }
         ms.setMappings(mappings);
@@ -286,21 +290,98 @@ public class TSVReader {
     }
 
     /*
-     * Expand a CURIE from the provided prefix map.
+     * Expand a CURIE from the provided prefix map. Returns null if the CURIE needs
+     * no expansion.
      */
-    private String expandCurie(Map<String, String> curieMap, String curie) throws SSSOMFormatException {
+    private String expandEntityReference(Map<String, String> curieMap, String curie) throws SSSOMFormatException {
         if ( curie.startsWith("http") ) {
-            // The SSSOM TSV format allows using full (non-CURIEfied) IRIs, even though it's
-            // discouraged.
-            return curie;
+            return null;
         }
 
         String[] parts = curie.split(":", 2);
+        if ( parts.length == 1 ) {
+            return null;
+        }
+
         String urlPrefix = curieMap.getOrDefault(parts[0], builtinCurieMap.get(parts[0]));
         if ( urlPrefix == null ) {
             throw new SSSOMFormatException("Undeclared prefix in the mapping set");
         }
 
         return urlPrefix + parts[1];
+    }
+
+    /*
+     * Expand CURIEs in all “EntityReference” fields of the given object.
+     */
+    private void expandEntityReferences(Map<String, String> curieMap, Object object) throws SSSOMFormatException {
+        for ( Field field : object.getClass().getDeclaredFields() ) {
+            if ( field.getDeclaredAnnotation(EntityReference.class) == null ) {
+                // Not an entity reference, nothing to expand
+                continue;
+            }
+
+            Object value = getValue(object, field.getName());
+            if ( value == null ) {
+                // No value to expand
+                continue;
+            }
+
+            if ( field.getType().equals(String.class) ) { // Single-value field
+                String curie = String.class.cast(value);
+                if ( curie.length() == 0 ) {
+                    continue;
+                }
+
+                String iri = expandEntityReference(curieMap, curie);
+                if ( iri != null ) {
+                    setValue(object, field.getName(), iri);
+                }
+            } else if ( field.getType().equals(List.class) ) { // List of entity references
+                @SuppressWarnings("unchecked")
+                List<String> curies = List.class.cast(value);
+                for ( int i = 0, n = curies.size(); i < n; i++ ) {
+                    String curie = curies.get(i);
+                    String iri = expandEntityReference(curieMap, curie);
+                    if ( iri != null ) {
+                        curies.set(i, iri);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Helper method to get the value of a field on a given object through
+     * reflection.
+     */
+    private Object getValue(Object object, String fieldName) {
+        String accessorName = String.format("get%c%s", Character.toUpperCase(fieldName.charAt(0)),
+                fieldName.substring(1));
+        try {
+            Method accessor = object.getClass().getDeclaredMethod(accessorName, (Class<?>[]) null);
+            return accessor.invoke(object, (Object[]) null);
+        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e ) {
+            // Should never happen, or something went very bad
+        }
+
+        return null;
+    }
+
+    /*
+     * Helper method to set the value of a field on a given object through
+     * reflection.
+     */
+    private void setValue(Object object, String fieldName, String value) {
+        String accessorName = String.format("set%c%s", Character.toUpperCase(fieldName.charAt(0)),
+                fieldName.substring(1));
+        try {
+            Method accessor = object.getClass().getDeclaredMethod(accessorName, new Class<?>[] { String.class });
+            accessor.invoke(object, new Object[] { value });
+        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException e ) {
+            // Should never happen, or something went very bad
+        }
     }
 }
