@@ -150,9 +150,7 @@ public class TSVWriter {
             @SuppressWarnings("unchecked")
             List<String> list = List.class.cast(value);
             if ( isEntityReference ) {
-                for ( int i = 0, n = list.size(); i < n; i++ ) {
-                    list.set(i, prefixManager.shortenIdentifier(list.get(i)));
-                }
+                list = prefixManager.shortenIdentifiers(list, false);
             }
             return String.join("|", list);
         } else if ( fieldType.equals(Double.class) ) {

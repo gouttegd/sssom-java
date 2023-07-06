@@ -18,7 +18,9 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
@@ -92,22 +94,57 @@ public class PrefixManager {
     }
 
     /**
+     * Shortens all identifiers in the given list. The original list is left
+     * untouched.
+     * 
+     * @param iris The list of identifiers to shorten.
+     * @return A new list with the shortened identifiers.
+     */
+    public List<String> shortenIdentifiers(List<String> iris) {
+        return shortenIdentifiers(iris, false);
+    }
+
+    /**
+     * Shortens all identifiers in the given list.
+     * 
+     * @param iris    The list of identifiers to shorten.
+     * @param inPlace If {@code true}, the original list is modified; otherwise it
+     *                is left untouched and a new list is returned.
+     * @return A list with the shortened identifiers. If {@code inPlace} is
+     *         {@code true}, this is the original list.
+     */
+    public List<String> shortenIdentifiers(List<String> iris, boolean inPlace) {
+        List<String> shortIds = new ArrayList<String>();
+        for ( String iri : iris ) {
+            shortIds.add(shortenIdentifier(iri));
+        }
+
+        if ( inPlace ) {
+            iris.clear();
+            iris.addAll(shortIds);
+            shortIds = iris;
+        }
+
+        return shortIds;
+    }
+
+    /**
      * Expands a shortened identifier into its long, canonical form.
      * 
      * @param curie The short identifier to expand.
-     * @return The full-length identifier, or {@code null} if the provided
-     *         identifier was not a CURIE.
+     * @return The full-length identifier, or the original identifier if it was not
+     *         in CURIE form.
      * @throws SSSOMFormatException If the provided identifier is a CURIE that is
      *                              using an undeclared prefix.
      */
     public String expandIdentifier(String curie) throws SSSOMFormatException {
         if ( curie.startsWith("http") ) {
-            return null;
+            return curie;
         }
 
         String[] parts = curie.split(":", 2);
         if ( parts.length == 1 ) {
-            return null;
+            return curie;
         }
 
         String prefix = prefixMap.get(parts[0]);
@@ -116,5 +153,44 @@ public class PrefixManager {
         }
 
         return prefix + parts[1];
+    }
+
+    /**
+     * Expands all identifiers in the given list. The original list is left
+     * untouched.
+     * 
+     * @param curies The list of short identifiers to expand.
+     * @return A new list with the expanded identifiers.
+     * @throws SSSOMFormatException If an identifier in the list is a CURIE that is
+     *                              using an undeclared prefix.
+     */
+    public List<String> expandIdentifiers(List<String> curies) throws SSSOMFormatException {
+        return expandIdentifiers(curies, false);
+    }
+
+    /**
+     * Expands all identifiers in the given list.
+     * 
+     * @param curies  The list of short identifiers to expand.
+     * @param inPlace If {@code true}, the original list is modified; otherwise it
+     *                is left untouched and a new list is returned.
+     * @return A list with the expanded identifiers. If {@code inPlace} is
+     *         {@code true}, this is the original list.
+     * @throws SSSOMFormatException If an identifier in the list is a CURIE that is
+     *                              using an undeclared prefix.
+     */
+    public List<String> expandIdentifiers(List<String> curies, boolean inPlace) throws SSSOMFormatException {
+        List<String> iris = new ArrayList<String>();
+        for ( String curie : curies ) {
+            iris.add(expandIdentifier(curie));
+        }
+
+        if ( inPlace ) {
+            curies.clear();
+            curies.addAll(iris);
+            iris = curies;
+        }
+
+        return iris;
     }
 }

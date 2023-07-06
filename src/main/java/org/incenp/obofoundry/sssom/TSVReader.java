@@ -290,24 +290,11 @@ public class TSVReader {
 
             if ( field.getType().equals(String.class) ) { // Single-value field
                 String curie = String.class.cast(value);
-                if ( curie.length() == 0 ) {
-                    continue;
-                }
-
-                String iri = prefixManager.expandIdentifier(curie);
-                if ( iri != null ) {
-                    setValue(object, field.getName(), iri);
-                }
+                setValue(object, field.getName(), prefixManager.expandIdentifier(curie));
             } else if ( field.getType().equals(List.class) ) { // List of entity references
                 @SuppressWarnings("unchecked")
                 List<String> curies = List.class.cast(value);
-                for ( int i = 0, n = curies.size(); i < n; i++ ) {
-                    String curie = curies.get(i);
-                    String iri = prefixManager.expandIdentifier(curie);
-                    if ( iri != null ) {
-                        curies.set(i, iri);
-                    }
-                }
+                prefixManager.expandIdentifiers(curies, true);
             }
         }
     }
