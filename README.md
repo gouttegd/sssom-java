@@ -36,6 +36,24 @@ for (Mapping m : mappingSet.getMappings()) {
 }
 ```
 
+* Writing a SSSOM mapping set to the TSV serialisation format (only the
+  internal metadata variant is supported).
+
+```java
+import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.TSVWriter;
+
+[...]
+MappingSet mappingSet = ...;
+try {
+    TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv");
+    writer.write(mappingSet);
+    writer.close();
+} catch (IOException e) {
+    // I/O error
+}
+```
+
 * Injecting cross-species equivalence axioms (generated from mappings
   using the `https://w3id.org/semapv/vocab/crossSpeciesExactMatch`
   predicate into a OWL ontology with
