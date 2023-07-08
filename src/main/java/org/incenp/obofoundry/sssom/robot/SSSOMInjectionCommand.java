@@ -108,15 +108,12 @@ public class SSSOMInjectionCommand implements Command {
         if ( line.hasOption("cross-species") ) {
             // TODO: Check both subject and object exist in the ontology and are not
             // obsolete.
-            // TODO: Generate IAO:0000589 ("OBO unique label") annotations when needed.
-            IRI taxonIRI = ioHelper.createIRI(line.getOptionValue("cross-species"));
-            CrossSpeciesBridgeGenerator gen = new CrossSpeciesBridgeGenerator(
-                    ontology.getOWLOntologyManager().getOWLDataFactory(), taxonIRI);
+            String[] parts = line.getOptionValue("cross-species").split(",", 2);
+            IRI taxonIRI = ioHelper.createIRI(parts[0]);
+            String taxonName = parts.length > 1 ? parts[1] : null;
+            CrossSpeciesBridgeGenerator gen = new CrossSpeciesBridgeGenerator(ontology, taxonIRI, taxonName);
             for ( Mapping mapping : mappingSet.getMappings() ) {
-                OWLAxiom ax = gen.generateAxiom(mapping);
-                if ( ax != null ) {
-                    bridgingAxioms.add(ax);
-                }
+                bridgingAxioms.addAll(gen.generateAxioms(mapping));
             }
         }
 
