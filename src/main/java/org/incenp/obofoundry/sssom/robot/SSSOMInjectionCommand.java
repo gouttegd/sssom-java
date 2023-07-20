@@ -18,14 +18,15 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.incenp.obofoundry.sssom.CrossSpeciesBridgeGenerator;
+import org.incenp.obofoundry.sssom.EquivalentAxiomGenerator;
+import org.incenp.obofoundry.sssom.IMappingFilter;
+import org.incenp.obofoundry.sssom.OWLGenerator;
 import org.incenp.obofoundry.sssom.TSVReader;
-import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.UniqueLabelGenerator;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
@@ -33,6 +34,8 @@ import org.obolibrary.robot.CommandState;
 import org.obolibrary.robot.IOHelper;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 /**
@@ -52,6 +55,8 @@ public class SSSOMInjectionCommand implements Command {
         options.addOption(null, "cross-species", true, "inject cross-species bridging axioms for specified taxon");
         options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology.");
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
+        options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
+        options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
     }
 
     @Override
@@ -103,19 +108,24 @@ public class SSSOMInjectionCommand implements Command {
         MappingSet mappingSet = reader.read();
 
         OWLOntology ontology = state.getOntology();
-        Set<OWLAxiom> bridgingAxioms = new HashSet<OWLAxiom>();
+        OWLGenerator axiomGenerator = new OWLGenerator();
+
+        if ( line.hasOption("check-subject") ) {
+            axiomGenerator.setCheckSubjectExistence(ontology);
+        }
+
+        if ( line.hasOption("check-object") ) {
+            axiomGenerator.setCheckObjectExistence(ontology);
+        }
 
         if ( line.hasOption("cross-species") ) {
-            // TODO: Check both subject and object exist in the ontology and are not
-            // obsolete.
             String[] parts = line.getOptionValue("cross-species").split(",", 2);
             IRI taxonIRI = ioHelper.createIRI(parts[0]);
             String taxonName = parts.length > 1 ? parts[1] : null;
-            CrossSpeciesBridgeGenerator gen = new CrossSpeciesBridgeGenerator(ontology, taxonIRI, taxonName);
-            for ( Mapping mapping : mappingSet.getMappings() ) {
-                bridgingAxioms.addAll(gen.generateAxioms(mapping));
-            }
+            addCrossSpeciesRules(axiomGenerator, ontology, taxonIRI, taxonName);
         }
+
+        Set<OWLAxiom> bridgingAxioms = axiomGenerator.generate(mappingSet.getMappings());
 
         if ( !line.hasOption("no-merge") && !bridgingAxioms.isEmpty() ) {
             ontology.getOWLOntologyManager().addAxioms(ontology, bridgingAxioms);
@@ -130,4 +140,19 @@ public class SSSOMInjectionCommand implements Command {
         return state;
     }
 
+    private void addCrossSpeciesRules(OWLGenerator generator, OWLOntology ontology, IRI taxonIRI, String taxonName) {
+        IMappingFilter predicateFilter = (mapping) -> mapping.getPredicateId()
+                .equals("https://w3id.org/semapv/vocab/crossSpeciesExactMatch");
+        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+
+        OWLClassExpression partOfTaxon = factory.getOWLObjectSomeValuesFrom(
+                factory.getOWLObjectProperty(IRI.create("http://purl.obolibrary.org/obo/BFO_0000050")),
+                factory.getOWLClass(taxonIRI));
+
+        generator.addRule(predicateFilter, null, new EquivalentAxiomGenerator(ontology, partOfTaxon));
+        if ( taxonName != null ) {
+            generator.addRule(predicateFilter, null,
+                    new UniqueLabelGenerator(ontology, String.format("%%s (%s)", taxonName)));
+        }
+    }
 }
