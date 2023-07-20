@@ -22,33 +22,26 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 /**
- * A class to generate OWL equivalence axioms from mappings. Given a mapping
+ * A class to generate OWL subclassOf axioms from mappings. Given a mapping
  * between a subject {@code S} and an object {@code O}, this class will generate
- * an equivalence axiom between S and O.
- * <p>
- * If a filler class expression {@code F} is given to the constructor, the
- * equivalence axiom will be between {@code S} and {@code (O and F)}.
+ * an axiom stating that {@code S} is a subclass of {@code O}.
  */
-public class EquivalentAxiomGenerator implements IMappingTransformer<OWLAxiom> {
+public class SubclassAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
     private OWLDataFactory factory;
-    private OWLClassExpression filler;
     private boolean invert;
 
     /**
      * Creates a new instance.
      * 
      * @param ontology The ontology to generate axioms for.
-     * @param filler   A class expression to combine with the object of the mapping
-     *                 (may be {@code null}).
      */
-    public EquivalentAxiomGenerator(OWLOntology ontology, OWLClassExpression filler) {
-        this(ontology, filler, false);
+    public SubclassAxiomGenerator(OWLOntology ontology) {
+        this(ontology, false);
     }
 
     /**
@@ -56,15 +49,12 @@ public class EquivalentAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      * the generated axioms.
      * 
      * @param ontology The ontology to generate axioms for.
-     * @param filler   A class expression to combined with the object of the mapping
-     *                 (may be {@code null}).
-     * @param invert   If {@code true}, invert the subject and object of the mapping
-     *                 when generating the axiom; this is only really meaningful if
-     *                 a filler expression is provided.
+     * @param invert   If {@code true}, the generated axiom will state that the
+     *                 object is a subclass of the subject, instead of the other way
+     *                 round.
      */
-    public EquivalentAxiomGenerator(OWLOntology ontology, OWLClassExpression filler, boolean invert) {
+    public SubclassAxiomGenerator(OWLOntology ontology, boolean invert) {
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        this.filler = filler;
         this.invert = invert;
     }
 
@@ -73,20 +63,7 @@ public class EquivalentAxiomGenerator implements IMappingTransformer<OWLAxiom> {
         OWLClass subject = factory.getOWLClass(IRI.create(mapping.getSubjectId()));
         OWLClass object = factory.getOWLClass(IRI.create(mapping.getObjectId()));
 
-        if ( invert ) {
-            OWLClass tmp = subject;
-            subject = object;
-            object = tmp;
-        }
-
-        OWLClassExpression equivalent;
-
-        if ( filler != null ) {
-            equivalent = factory.getOWLObjectIntersectionOf(object, filler);
-        } else {
-            equivalent = object;
-        }
-
-        return factory.getOWLEquivalentClassesAxiom(subject, equivalent);
+        return invert ? factory.getOWLSubClassOfAxiom(object, subject) : factory.getOWLSubClassOfAxiom(subject, object);
     }
+
 }
