@@ -16,23 +16,21 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.transform;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
- * An interface to transform a mapping into another object.
- *
- * @param <T> The type of object to transform the mapping into.
+ * An interface to filter mappings according in a mapping set.
  */
-public interface IMappingTransformer<T> {
+public interface IMappingFilter {
 
     /**
-     * Transform a mapping into something else.
+     * Check if a mapping satisfies a given condition.
      * 
-     * @param mapping The mapping to transform.
-     * @return The object generated from the mapping.
+     * @param mapping The mapping to test.
+     * @return {@code true} if the mapping satisfies the condition, {@code false}
+     *         otherwise.
      */
-    public T transform(Mapping mapping);
-
+    public boolean filter(Mapping mapping);
 }

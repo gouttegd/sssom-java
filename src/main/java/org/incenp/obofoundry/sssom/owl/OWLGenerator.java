@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.owl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.transform.IMappingFilter;
+import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
+import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;

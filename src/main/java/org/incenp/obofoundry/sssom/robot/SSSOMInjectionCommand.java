@@ -22,12 +22,12 @@ import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.incenp.obofoundry.sssom.EquivalentAxiomGenerator;
-import org.incenp.obofoundry.sssom.IMappingFilter;
-import org.incenp.obofoundry.sssom.OWLGenerator;
 import org.incenp.obofoundry.sssom.TSVReader;
-import org.incenp.obofoundry.sssom.UniqueLabelGenerator;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
+import org.incenp.obofoundry.sssom.owl.OWLGenerator;
+import org.incenp.obofoundry.sssom.owl.UniqueLabelGenerator;
+import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
