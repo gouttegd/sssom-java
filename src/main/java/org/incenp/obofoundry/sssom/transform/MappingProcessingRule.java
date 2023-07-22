@@ -18,6 +18,9 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
@@ -39,6 +42,7 @@ public class MappingProcessingRule<T> {
     private IMappingFilter filter;
     private IMappingTransformer<Mapping> preprocessor;
     private IMappingTransformer<T> generator;
+    private HashSet<String> tags = null;
 
     /**
      * Creates a new instance.
@@ -59,6 +63,19 @@ public class MappingProcessingRule<T> {
         this.filter = filter;
         this.preprocessor = preprocessor;
         this.generator = generator;
+    }
+
+    /**
+     * Gets the tags associated with the rule.
+     * 
+     * @return The set of tags for this rule.
+     */
+    public Set<String> getTags() {
+        if ( tags == null ) {
+            tags = new HashSet<String>();
+        }
+
+        return tags;
     }
 
     /**
