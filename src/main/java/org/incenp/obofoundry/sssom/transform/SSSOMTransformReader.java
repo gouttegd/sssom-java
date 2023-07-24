@@ -29,8 +29,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
@@ -49,6 +52,7 @@ public class SSSOMTransformReader<T> {
     private SSSOMTransformLexer lexer;
     private ITransformationParser<T> transformParser;
     private List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
+    private List<SSSOMTransformError> errors = new ArrayList<SSSOMTransformError>();
     private PrefixManager prefixManager;
     private boolean hasRead = false;
 
@@ -163,38 +167,60 @@ public class SSSOMTransformReader<T> {
      * Helper method to do the actual parsing from the provided source.
      */
     private boolean doParse(SSSOMTransformLexer lexer) {
+        if ( !errors.isEmpty() ) {
+            errors.clear();
+        }
+
+        ErrorListener errorListener = new ErrorListener(errors);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         SSSOMTransformParser parser = new SSSOMTransformParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
 
         ParseTree tree = parser.ruleSet();
-        List<ParsedRule> parsedRules = new ArrayList<ParsedRule>();
-        ParseTree2RuleVisitor visitor = new ParseTree2RuleVisitor(parsedRules, prefixManager);
-        visitor.visit(tree);
+        if ( !hasErrors() ) {
+            List<ParsedRule> parsedRules = new ArrayList<ParsedRule>();
+            ParseTree2RuleVisitor visitor = new ParseTree2RuleVisitor(parsedRules, prefixManager);
+            visitor.visit(tree);
 
-        // TODO: Calling the reader without a transformation parser being set should
-        // really an error
-        if ( transformParser != null ) {
-            for ( ParsedRule parsedRule : parsedRules ) {
-                IMappingTransformer<T> t = parsedRule.command != null
-                        ? transformParser.parse(parsedRule.command)
-                        : null;
-                MappingProcessingRule<T> finalRule = new MappingProcessingRule<T>(parsedRule.filter,
-                        parsedRule.preprocessor, t);
+            // TODO: Calling the reader without a transformation parser being set should
+            // really an error
+            if ( transformParser != null ) {
+                for ( ParsedRule parsedRule : parsedRules ) {
+                    IMappingTransformer<T> t = null;
 
-                rules.add(finalRule);
+                    if ( parsedRule.command != null ) {
+                        t = transformParser.parse(parsedRule.command);
+                        if ( t == null ) {
+                            errors.add(new SSSOMTransformError(parsedRule.command));
+                            continue;
+                        }
+                    }
+
+                    MappingProcessingRule<T> finalRule = new MappingProcessingRule<T>(parsedRule.filter,
+                            parsedRule.preprocessor, t);
+
+                    rules.add(finalRule);
+                }
             }
         }
 
         hasRead = true;
 
-        // TODO: Deal with errors
-        return true;
+        return !hasErrors();
     }
 
     /**
      * Gets the SSSOM/T rules that have been parsed from the underlying source. This
      * method sould be called after calling {@link #read()} and checking that it
      * returned {@code true}, indicating that parsing was successful.
+     * <p>
+     * As a convenience, this method will call {@link #read()} automatically if
+     * needed, if an input has been set. The caller should then use
+     * {@link #hasErrors()} to check whether syntax errors were found.
      * 
      * @return The SSSOM/T processing rules. May be an empty list if nothing has
      *         been parsed or if syntax errors were found.
@@ -204,6 +230,47 @@ public class SSSOMTransformReader<T> {
             read();
         }
         return rules;
+    }
+
+    /**
+     * Indicates whether parsing errors occurred. Calling this method after
+     * {@link #read()} is another way of checking whether syntax errors were found
+     * when parsing.
+     * 
+     * @return {@code true} if at least one parsing error occured, otherwise
+     *         {@code false}.
+     */
+    public boolean hasErrors() {
+        return !errors.isEmpty();
+    }
+
+    /**
+     * Gets all syntax errors that were found when parsing, if any.
+     * <p>
+     * The parser does not throw any exception upon encountering a SSSOM/T syntax
+     * error (it only throws {@link java.io.IOException} upon I/O errors unrelated
+     * to SSSOM/T. Instead, all syntax errors are collected in the form of
+     * {@link SSSOMTransformError} objects, which may be retrieved with this method.
+     * 
+     * @return A list of objects representing the syntax errors (empty if no errors
+     *         occured).
+     */
+    public List<SSSOMTransformError> getErrors() {
+        return errors;
+    }
+
+    private class ErrorListener extends BaseErrorListener {
+        private List<SSSOMTransformError> errors;
+
+        private ErrorListener(List<SSSOMTransformError> errors) {
+            this.errors = errors;
+        }
+
+        @Override
+        public void syntaxError(Recognizer<?, ?> recognizer, Object symbol, int line, int column, String message,
+                RecognitionException e) {
+            errors.add(new SSSOMTransformError(line, column, message));
+        }
     }
 }
 
