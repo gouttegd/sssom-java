@@ -1,6 +1,6 @@
 grammar SSSOMTransform;
 
-ruleSet   : WS* (prefixDecl+ WS+)* (rule WS+)+;
+ruleSet   : WS* (prefixDecl+ WS+)* (rule WS+)+ EOF;
 
 prefixDecl: 'prefix' WS+ PREFIX WS+ IRI;
 
