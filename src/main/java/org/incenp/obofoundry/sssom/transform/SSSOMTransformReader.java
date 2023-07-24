@@ -332,6 +332,19 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
     }
 
     @Override
+    public Void visitPrefixDecl(SSSOMTransformParser.PrefixDeclContext ctx) {
+        String prefixName = ctx.PREFIX().getText();
+        prefixName = prefixName.substring(0, prefixName.length() - 1);
+
+        String prefix = ctx.IRI().getText();
+        prefix = prefix.substring(1, prefix.length() - 2);
+
+        prefixManager.add(prefixName, prefix);
+
+        return null;
+    }
+
+    @Override
     public Void visitRule(SSSOMTransformParser.RuleContext ctx) {
         // Get the filters for the rule.
         ctx.filterSet().accept(this);
