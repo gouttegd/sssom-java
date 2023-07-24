@@ -56,65 +56,83 @@ public class SSSOMTransformReader<T> {
     private PrefixManager prefixManager;
     private boolean hasRead = false;
 
+    /*
+     * Common constructor to throw exception if the parser is null.
+     */
+    private SSSOMTransformReader(ITransformationParser<T> parser, SSSOMTransformLexer lexer) {
+        if ( parser == null ) {
+            throw new IllegalArgumentException("Missing valid transformation parser");
+        }
+
+        transformParser = parser;
+        this.lexer = lexer;
+    }
+
     /**
      * Creates a new instance without an input source. Use this constructor to parse
      * SSSOM Transform from something else than a file or file-like source, coupled
      * with the {@link #read(String)} method.
+     * 
+     * @param parser The parser for application-specific {@code gen} instructions.
+     * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader() {
+    public SSSOMTransformReader(ITransformationParser<T> parser) {
+        if ( parser == null ) {
+            throw new IllegalArgumentException("Missing valid transformation parser");
+        }
+        transformParser = parser;
     }
 
     /**
      * Creates a new instance to read from a reader object.
      * 
-     * @param input The reader to parse the SSSOM/T ruleset from.
-     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
-     *                     reader object.
+     * @param parser The parser for application-specific {@code gen} instructions.
+     * @param input  The reader to parse the SSSOM/T ruleset from.
+     * @throws IOException              If any non-SSSOM/T I/O error occurs when
+     *                                  reading from the reader object.
+     * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(Reader input) throws IOException {
-        lexer = new SSSOMTransformLexer(CharStreams.fromReader(input));
+    public SSSOMTransformReader(ITransformationParser<T> parser, Reader input) throws IOException {
+        this(parser, new SSSOMTransformLexer(CharStreams.fromReader(input)));
     }
 
     /**
      * Creates a new instance to read from a stream.
      * 
-     * @param input The stream to parse the SSSOM/T ruleset from.
-     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
-     *                     stream.
+     * @param parser The parser for application-specific {@code gen} instructions.
+     * @param input  The stream to parse the SSSOM/T ruleset from.
+     * @throws IOException              If any non-SSSOM/T I/O error occurs when
+     *                                  reading from the stream.
+     * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(InputStream input) throws IOException {
-        lexer = new SSSOMTransformLexer(CharStreams.fromStream(input));
+    public SSSOMTransformReader(ITransformationParser<T> parser, InputStream input) throws IOException {
+        this(parser, new SSSOMTransformLexer(CharStreams.fromStream(input)));
     }
 
     /**
      * Creates a new instance to read from a file.
      * 
-     * @param input The file to parse the SSSOM/T ruleset from.
-     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
-     *                     file.
+     * @param parser The parser for application-specific {@code gen} instructions.
+     * @param input  The file to parse the SSSOM/T ruleset from.
+     * @throws IOException              If any non-SSSOM/T I/O error occurs when
+     *                                  reading from the file.
+     * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(File input) throws IOException {
-        lexer = new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath()));
+    public SSSOMTransformReader(ITransformationParser<T> parser, File input) throws IOException {
+        this(parser, new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath())));
     }
 
     /**
      * Creates a new instance to read from a file.
      * 
+     * @param parser   The parser for application-specific {@code gen} instructions.
      * @param filename The name of the file to read from.
-     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
-     *                     file.
+     * @throws IOException              If any non-SSSOM/T I/O error occurs when
+     *                                  reading from the file.
+     * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(String filename) throws IOException {
-        lexer = new SSSOMTransformLexer(CharStreams.fromFileName(filename));
-    }
-
-    /**
-     * Sets the parser for the application-specific {@code gen} instructions.
-     * 
-     * @param parser The instruction parser.
-     */
-    public void setTransformationParser(ITransformationParser<T> parser) {
-        this.transformParser = parser;
+    public SSSOMTransformReader(ITransformationParser<T> parser, String filename) throws IOException {
+        this(parser, new SSSOMTransformLexer(CharStreams.fromFileName(filename)));
     }
 
     /**
@@ -167,6 +185,10 @@ public class SSSOMTransformReader<T> {
      * Helper method to do the actual parsing from the provided source.
      */
     private boolean doParse(SSSOMTransformLexer lexer) {
+        if ( transformParser == null ) {
+
+        }
+
         if ( !errors.isEmpty() ) {
             errors.clear();
         }
@@ -186,25 +208,21 @@ public class SSSOMTransformReader<T> {
             ParseTree2RuleVisitor visitor = new ParseTree2RuleVisitor(parsedRules, prefixManager);
             visitor.visit(tree);
 
-            // TODO: Calling the reader without a transformation parser being set should
-            // really an error
-            if ( transformParser != null ) {
-                for ( ParsedRule parsedRule : parsedRules ) {
-                    IMappingTransformer<T> t = null;
+            for ( ParsedRule parsedRule : parsedRules ) {
+                IMappingTransformer<T> t = null;
 
-                    if ( parsedRule.command != null ) {
-                        t = transformParser.parse(parsedRule.command);
-                        if ( t == null ) {
-                            errors.add(new SSSOMTransformError(parsedRule.command));
-                            continue;
-                        }
+                if ( parsedRule.command != null ) {
+                    t = transformParser.parse(parsedRule.command);
+                    if ( t == null ) {
+                        errors.add(new SSSOMTransformError(parsedRule.command));
+                        continue;
                     }
-
-                    MappingProcessingRule<T> finalRule = new MappingProcessingRule<T>(parsedRule.filter,
-                            parsedRule.preprocessor, t);
-
-                    rules.add(finalRule);
                 }
+
+                MappingProcessingRule<T> finalRule = new MappingProcessingRule<T>(parsedRule.filter,
+                        parsedRule.preprocessor, t);
+
+                rules.add(finalRule);
             }
         }
 
