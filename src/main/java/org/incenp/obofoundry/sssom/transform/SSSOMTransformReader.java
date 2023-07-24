@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -53,7 +54,7 @@ public class SSSOMTransformReader<T> {
     private ITransformationParser<T> transformParser;
     private List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
     private List<SSSOMTransformError> errors = new ArrayList<SSSOMTransformError>();
-    private PrefixManager prefixManager;
+    private PrefixManager prefixManager = new PrefixManager();
     private boolean hasRead = false;
 
     /*
@@ -136,12 +137,23 @@ public class SSSOMTransformReader<T> {
     }
 
     /**
-     * Sets the prefix manager to use to expand short identifiers.
+     * Adds a prefix to the reader's prefix map. The prefix map is used to expand
+     * short identifiers ("CURIEs") that may be found in the SSSOM/T ruleset.
      * 
-     * @param prefixManager The prefix manager.
+     * @param prefixName The prefix name to add.
+     * @param prefix     The corresponding URL prefix.
      */
-    public void setPrefixManager(PrefixManager prefixManager) {
-        this.prefixManager = prefixManager;
+    public void addPrefix(String prefixName, String prefix) {
+        prefixManager.add(prefixName, prefix);
+    }
+
+    /**
+     * Adds prefixes to the reader's prefix map.
+     * 
+     * @param map A map between prefix names and their corresponding URL prefixes.
+     */
+    public void addPrefixMap(Map<String, String> map) {
+        prefixManager.add(map);
     }
 
     /**
