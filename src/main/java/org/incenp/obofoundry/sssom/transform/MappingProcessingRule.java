@@ -118,4 +118,32 @@ public class MappingProcessingRule<T> {
 
         return null;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if ( tags != null && !tags.isEmpty() ) {
+            sb.append("[");
+            sb.append(String.join(",", tags));
+            sb.append("] ");
+        }
+
+        if ( filter != null ) {
+            sb.append(filter.toString());
+        } else {
+            sb.append("*");
+        }
+
+        if ( preprocessor != null ) {
+            sb.append(" -> ");
+            sb.append(preprocessor.toString());
+        }
+
+        if ( generator != null ) {
+            sb.append(" -> ");
+            sb.append(generator.toString());
+        }
+
+        return sb.toString();
+    }
 }

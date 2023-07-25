@@ -392,7 +392,7 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
 
     @Override
     public Void visitStop(SSSOMTransformParser.StopContext ctx) {
-        rules.add(makeRule((mapping) -> null, null));
+        rules.add(makeRule(new NamedMappingTransformer<Mapping>("stop()", (mapping) -> null), null));
         return null;
     }
 
