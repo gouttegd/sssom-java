@@ -416,13 +416,14 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         pr.preprocessor = preprocessor;
         pr.command = command;
 
-        // Assemble the final filter for the rule by &&-combining the stacked filters.
-        for ( IMappingFilter filter : filters ) {
-            if ( pr.filter == null ) {
-                pr.filter = filter;
-            } else {
-                pr.filter = (mapping) -> pr.filter.filter(mapping) && filter.filter(mapping);
-            }
+        if ( filters.size() == 1 ) {
+            // Only one level of filters, use it directly.
+            pr.filter = filters.peekLast();
+        } else {
+            // Assemble the final filter for the rule by &&-combining the stacked filters.
+            FilterSet fs = new FilterSet();
+            filters.forEach((f) -> fs.addFilter(f, true));
+            pr.filter = fs;
         }
 
         // Assemble the final tag set by merging the tag sets from the stack.
@@ -448,7 +449,7 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
  * Visitor to convert the ANTLR parse tree into a mapping filter object.
  */
 class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> {
-    private IMappingFilter filter = null;
+    private FilterSet filterSet = new FilterSet();
     private String lastOperator = "&&";
     private PrefixManager prefixManager;
 
@@ -460,7 +461,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     public IMappingFilter visitFilterSet(SSSOMTransformParser.FilterSetContext ctx) {
         visitChildren(ctx);
 
-        return filter;
+        return filterSet;
     }
 
     /*
@@ -473,7 +474,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
         if ( value.equals("*") ) {
             // The entire value is a joker, create a dummy filter that accepts everything
-            addFilter((mapping) -> true);
+            addFilter(new NamedFilter("*", (mapping) -> true));
             return null;
         }
 
@@ -488,22 +489,25 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
         // TODO: Implement filtering on other fields
         // This is very repetitive code, but I am reluctant to use reflection here.
+        IMappingFilter filter = null;
         switch ( fieldName ) {
         case "subject":
-            addFilter(glob ? (mapping) -> mapping.getSubjectId().startsWith(pattern)
-                    : (mapping) -> mapping.getSubjectId().equals(pattern));
-            break;
-
-        case "predicate":
-            addFilter(glob ? (mapping) -> mapping.getPredicateId().startsWith(pattern)
-                    : (mapping) -> mapping.getPredicateId().equals(pattern));
+            filter = glob ? (mapping) -> mapping.getSubjectId().startsWith(pattern)
+                    : (mapping) -> mapping.getSubjectId().equals(pattern);
             break;
 
         case "object":
-            addFilter(glob ? (mapping) -> mapping.getObjectId().startsWith(pattern)
-                    : (mapping) -> mapping.getObjectId().equals(pattern));
+            filter = glob ? (mapping) -> mapping.getObjectId().startsWith(pattern)
+                    : (mapping) -> mapping.getObjectId().equals(pattern);
+            break;
+
+        case "predicate":
+            filter = glob ? (mapping) -> mapping.getPredicateId().startsWith(pattern)
+                    : (mapping) -> mapping.getPredicateId().equals(pattern);
             break;
         }
+
+        addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
 
         return null;
     }
@@ -511,7 +515,8 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     @Override
     public IMappingFilter visitGroupFilterItem(SSSOMTransformParser.GroupFilterItemContext ctx) {
         ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
-        addFilter(ctx.filterSet().accept(v));
+        IMappingFilter groupFilter = ctx.filterSet().accept(v);
+        addFilter(new NamedFilter(String.format("(%s)", groupFilter.toString()), groupFilter));
         
         return null;
     }
@@ -519,8 +524,9 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     @Override
     public IMappingFilter visitNegatedFilterItem(SSSOMTransformParser.NegatedFilterItemContext ctx) {
         ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
-        IMappingFilter f = ctx.filterSet().accept(v);
-        addFilter((mapping) -> !f.filter(mapping));
+        IMappingFilter negatedFilter = ctx.filterSet().accept(v);
+        addFilter(new NamedFilter(String.format("!%s", negatedFilter.toString()),
+                (mapping) -> !negatedFilter.filter(mapping)));
 
         return null;
     }
@@ -533,13 +539,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     }
 
     private void addFilter(IMappingFilter newFilter) {
-        if ( filter == null ) {
-            filter = newFilter;
-        } else if ( lastOperator.equals("&&") ) {
-            filter = (mapping) -> filter.filter(mapping) && newFilter.filter(mapping);
-        } else {
-            filter = (mapping) -> filter.filter(mapping) || newFilter.filter(mapping);
-        }
+        filterSet.addFilter(newFilter, lastOperator.equals("&&"));
 
         lastOperator = "&&";
     }
