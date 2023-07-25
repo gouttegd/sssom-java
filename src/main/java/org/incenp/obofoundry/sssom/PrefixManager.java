@@ -156,6 +156,30 @@ public class PrefixManager {
     }
 
     /**
+     * Expands a shortened identifier into its long, canonical form. This method is
+     * similar to {@link #expandIdentifier(String)}, but it does not throw an
+     * exception if the prefix is undeclared; it simply returns the unexpanded
+     * identifier.
+     * 
+     * @param curie The short identifier to expand.
+     * @return The full-length identifier, or the original identifier if it was not
+     *         in CURIE form or was using an unknown prefix.
+     */
+    public String maybeExpandIdentifier(String curie) {
+        if ( curie.startsWith("http") ) {
+            return curie;
+        }
+
+        String[] parts = curie.split(":", 2);
+        if ( parts.length == 1 ) {
+            return curie;
+        }
+
+        String prefix = prefixMap.get(parts[0]);
+        return prefix != null ? prefix + parts[1] : curie;
+    }
+
+    /**
      * Expands all identifiers in the given list. The original list is left
      * untouched.
      * 

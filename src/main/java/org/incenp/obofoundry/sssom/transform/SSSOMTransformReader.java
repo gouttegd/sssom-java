@@ -37,7 +37,6 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformBaseVisitor;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformLexer;
@@ -478,12 +477,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             return null;
         }
 
-        try {
-            value = prefixManager.expandIdentifier(value);
-        } catch ( SSSOMFormatException e ) {
-            // Ignore?
-        }
-
+        value = prefixManager.maybeExpandIdentifier(value);
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
 
