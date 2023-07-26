@@ -18,6 +18,8 @@
 
 package org.incenp.obofoundry.sssom.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 /**
  * A value that modifies the meaning of a mapping predicate. Currently the only
  * defined modifier is {@code NOT}, which negates the predicate.
@@ -36,6 +38,7 @@ public enum PredicateModifier {
         return repr;
     }
 
+    @JsonCreator
     public static PredicateModifier fromString(String v) {
         if ( v.equals("Not") ) {
             return PredicateModifier.NOT;

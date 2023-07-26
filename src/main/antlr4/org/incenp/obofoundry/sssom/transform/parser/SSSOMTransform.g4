@@ -13,6 +13,7 @@ tags      : '[' TAG (',' TAG)* ']';
 filterSet : filterItem (WS+ (binaryOp WS+)? filterItem)*;
 
 filterItem: field '==' value                               #singleFilterItem
+          | 'predicate_modifier==Not'                      #predicateModifierFilterItem
           | '(' WS* filterSet WS* ')'                      #groupFilterItem
           | '!' WS* filterSet                              #negatedFilterItem
           ;

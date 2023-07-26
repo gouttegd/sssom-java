@@ -38,6 +38,7 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformBaseVisitor;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformLexer;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser;
@@ -496,13 +497,24 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             break;
 
         case "predicate":
-            filter = glob ? (mapping) -> mapping.getPredicateId().startsWith(pattern)
-                    : (mapping) -> mapping.getPredicateId().equals(pattern);
+            filter = glob
+                    ? (mapping) -> mapping.getPredicateId().startsWith(pattern)
+                            && mapping.getPredicateModifier() != PredicateModifier.NOT
+                    : (mapping) -> mapping.getPredicateId().equals(pattern)
+                            && mapping.getPredicateModifier() != PredicateModifier.NOT;
             break;
         }
 
         addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
 
+        return null;
+    }
+
+    @Override
+    public IMappingFilter visitPredicateModifierFilterItem(
+            SSSOMTransformParser.PredicateModifierFilterItemContext ctx) {
+        addFilter(new NamedFilter("predicate_modifier==Not",
+                (mapping) -> mapping.getPredicateModifier() == PredicateModifier.NOT));
         return null;
     }
 
