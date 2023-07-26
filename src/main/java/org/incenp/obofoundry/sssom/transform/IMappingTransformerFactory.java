@@ -29,7 +29,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
  * 
  * @param <T> The type of object that should be produced from a mapping.
  */
-public interface ITransformationParser<T> {
+public interface IMappingTransformerFactory<T> {
 
     /**
      * Parses a {@code gen} instruction into a mapping transformer object.
@@ -39,5 +39,5 @@ public interface ITransformationParser<T> {
      *                      identifiers within the instruction to parse.
      * @return The mapping transformer.
      */
-    public IMappingTransformer<T> parse(String text, PrefixManager prefixManager);
+    public IMappingTransformer<T> create(String text, PrefixManager prefixManager);
 }

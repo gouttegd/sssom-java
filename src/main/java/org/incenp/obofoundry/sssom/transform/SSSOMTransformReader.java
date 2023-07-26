@@ -51,7 +51,7 @@ import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser;
  */
 public class SSSOMTransformReader<T> {
     private SSSOMTransformLexer lexer;
-    private ITransformationParser<T> transformParser;
+    private IMappingTransformerFactory<T> factory;
     private List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
     private List<SSSOMTransformError> errors = new ArrayList<SSSOMTransformError>();
     private PrefixManager prefixManager = new PrefixManager();
@@ -60,12 +60,12 @@ public class SSSOMTransformReader<T> {
     /*
      * Common constructor to throw exception if the parser is null.
      */
-    private SSSOMTransformReader(ITransformationParser<T> parser, SSSOMTransformLexer lexer) {
-        if ( parser == null ) {
+    private SSSOMTransformReader(IMappingTransformerFactory<T> factory, SSSOMTransformLexer lexer) {
+        if ( factory == null ) {
             throw new IllegalArgumentException("Missing valid transformation parser");
         }
 
-        transformParser = parser;
+        this.factory = factory;
         this.lexer = lexer;
     }
 
@@ -77,11 +77,11 @@ public class SSSOMTransformReader<T> {
      * @param parser The parser for application-specific {@code gen} instructions.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(ITransformationParser<T> parser) {
-        if ( parser == null ) {
+    public SSSOMTransformReader(IMappingTransformerFactory<T> factory) {
+        if ( factory == null ) {
             throw new IllegalArgumentException("Missing valid transformation parser");
         }
-        transformParser = parser;
+        this.factory = factory;
     }
 
     /**
@@ -93,8 +93,8 @@ public class SSSOMTransformReader<T> {
      *                                  reading from the reader object.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(ITransformationParser<T> parser, Reader input) throws IOException {
-        this(parser, new SSSOMTransformLexer(CharStreams.fromReader(input)));
+    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, Reader input) throws IOException {
+        this(factory, new SSSOMTransformLexer(CharStreams.fromReader(input)));
     }
 
     /**
@@ -106,8 +106,8 @@ public class SSSOMTransformReader<T> {
      *                                  reading from the stream.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(ITransformationParser<T> parser, InputStream input) throws IOException {
-        this(parser, new SSSOMTransformLexer(CharStreams.fromStream(input)));
+    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, InputStream input) throws IOException {
+        this(factory, new SSSOMTransformLexer(CharStreams.fromStream(input)));
     }
 
     /**
@@ -119,8 +119,8 @@ public class SSSOMTransformReader<T> {
      *                                  reading from the file.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(ITransformationParser<T> parser, File input) throws IOException {
-        this(parser, new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath())));
+    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, File input) throws IOException {
+        this(factory, new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath())));
     }
 
     /**
@@ -132,8 +132,8 @@ public class SSSOMTransformReader<T> {
      *                                  reading from the file.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(ITransformationParser<T> parser, String filename) throws IOException {
-        this(parser, new SSSOMTransformLexer(CharStreams.fromFileName(filename)));
+    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, String filename) throws IOException {
+        this(factory, new SSSOMTransformLexer(CharStreams.fromFileName(filename)));
     }
 
     /**
@@ -197,10 +197,6 @@ public class SSSOMTransformReader<T> {
      * Helper method to do the actual parsing from the provided source.
      */
     private boolean doParse(SSSOMTransformLexer lexer) {
-        if ( transformParser == null ) {
-
-        }
-
         if ( !errors.isEmpty() ) {
             errors.clear();
         }
@@ -224,7 +220,7 @@ public class SSSOMTransformReader<T> {
                 IMappingTransformer<T> t = null;
 
                 if ( parsedRule.command != null ) {
-                    t = transformParser.parse(parsedRule.command, prefixManager);
+                    t = factory.create(parsedRule.command, prefixManager);
                     if ( t == null ) {
                         errors.add(new SSSOMTransformError(parsedRule.command));
                         continue;
