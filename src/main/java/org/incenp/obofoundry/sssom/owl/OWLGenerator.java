@@ -64,6 +64,15 @@ public class OWLGenerator {
     }
 
     /**
+     * Adds a pre-built processing rule.
+     * 
+     * @param rule The processing rule to add.
+     */
+    public void addRule(MappingProcessingRule<OWLAxiom> rule) {
+        rules.add(rule);
+    }
+
+    /**
      * Adds a rule that stops any further processing for a given mapping.
      * 
      * @param filter The filter used to determine whether the rule applies to a
