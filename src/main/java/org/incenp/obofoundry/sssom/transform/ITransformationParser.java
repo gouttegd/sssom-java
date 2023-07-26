@@ -18,6 +18,8 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
+import org.incenp.obofoundry.sssom.PrefixManager;
+
 /**
  * Parser for the application-specific instructions of the SSSOM Transform
  * language. An implementation of that interface takes the contents of a
@@ -32,8 +34,10 @@ public interface ITransformationParser<T> {
     /**
      * Parses a {@code gen} instruction into a mapping transformer object.
      * 
-     * @param text The instruction to parse.
+     * @param text          The instruction to parse.
+     * @param prefixManager A prefix manager that may be used to expand/shorten
+     *                      identifiers within the instruction to parse.
      * @return The mapping transformer.
      */
-    public IMappingTransformer<T> parse(String text);
+    public IMappingTransformer<T> parse(String text, PrefixManager prefixManager);
 }

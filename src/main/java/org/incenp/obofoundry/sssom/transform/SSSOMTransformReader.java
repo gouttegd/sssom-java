@@ -224,7 +224,7 @@ public class SSSOMTransformReader<T> {
                 IMappingTransformer<T> t = null;
 
                 if ( parsedRule.command != null ) {
-                    t = transformParser.parse(parsedRule.command);
+                    t = transformParser.parse(parsedRule.command, prefixManager);
                     if ( t == null ) {
                         errors.add(new SSSOMTransformError(parsedRule.command));
                         continue;
