@@ -24,10 +24,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.owl.AxiomGeneratorFactory;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
 import org.incenp.obofoundry.sssom.owl.UniqueLabelGenerator;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
@@ -37,12 +39,16 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ROBOT command to translate mappings into OWL axioms and inject them into an
  * ontology.
  */
 public class SSSOMInjectionCommand implements Command {
+
+    private static final Logger logger = LoggerFactory.getLogger(SSSOMInjectionCommand.class);
 
     private Options options;
 
@@ -57,6 +63,7 @@ public class SSSOMInjectionCommand implements Command {
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
+        options.addOption(null, "ruleset", true, "inject axioms specified in ruleset file");
     }
 
     @Override
@@ -123,6 +130,19 @@ public class SSSOMInjectionCommand implements Command {
             IRI taxonIRI = ioHelper.createIRI(parts[0]);
             String taxonName = parts.length > 1 ? parts[1] : null;
             addCrossSpeciesRules(axiomGenerator, ontology, taxonIRI, taxonName);
+        }
+
+        if ( line.hasOption("ruleset") ) {
+            SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(
+                    new AxiomGeneratorFactory(ontology), line.getOptionValue("ruleset"));
+            sssomtReader.read();
+
+            if ( sssomtReader.hasErrors() ) {
+                sssomtReader.getErrors().forEach((e) -> logger.error("Error when parsing SSSOM/T ruleset: %s", e));
+            } else {
+                sssomtReader.getRules().forEach((r) -> axiomGenerator.addRule(r));
+
+            }
         }
 
         Set<OWLAxiom> bridgingAxioms = axiomGenerator.generate(mappingSet.getMappings());
