@@ -474,8 +474,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
         if ( value.equals("*") ) {
             // The entire value is a joker, create a dummy filter that accepts everything
-            addFilter(new NamedFilter("*", (mapping) -> true));
-            return null;
+            return addFilter(new NamedFilter("*", (mapping) -> true));
         }
 
         value = prefixManager.maybeExpandIdentifier(value);
@@ -505,36 +504,28 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             break;
         }
 
-        addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
-
-        return null;
+        return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
     }
 
     @Override
     public IMappingFilter visitPredicateModifierFilterItem(
             SSSOMTransformParser.PredicateModifierFilterItemContext ctx) {
-        addFilter(new NamedFilter("predicate_modifier==Not",
+        return addFilter(new NamedFilter("predicate_modifier==Not",
                 (mapping) -> mapping.getPredicateModifier() == PredicateModifier.NOT));
-        return null;
     }
 
     @Override
     public IMappingFilter visitGroupFilterItem(SSSOMTransformParser.GroupFilterItemContext ctx) {
         ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
-        IMappingFilter groupFilter = ctx.filterSet().accept(v);
-        addFilter(new NamedFilter(String.format("(%s)", groupFilter.toString()), groupFilter));
-        
-        return null;
+        return addFilter(ctx.filterSet().accept(v));
     }
 
     @Override
     public IMappingFilter visitNegatedFilterItem(SSSOMTransformParser.NegatedFilterItemContext ctx) {
         ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
-        IMappingFilter negatedFilter = ctx.filterSet().accept(v);
-        addFilter(new NamedFilter(String.format("!%s", negatedFilter.toString()),
+        IMappingFilter negatedFilter = ctx.filterItem().accept(v);
+        return addFilter(new NamedFilter(String.format("!%s", negatedFilter.toString()),
                 (mapping) -> !negatedFilter.filter(mapping)));
-
-        return null;
     }
 
     @Override
@@ -544,9 +535,11 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         return null;
     }
 
-    private void addFilter(IMappingFilter newFilter) {
+    private IMappingFilter addFilter(IMappingFilter newFilter) {
         filterSet.addFilter(newFilter, lastOperator.equals("&&"));
 
         lastOperator = "&&";
+
+        return newFilter;
     }
 }

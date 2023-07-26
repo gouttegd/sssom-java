@@ -62,6 +62,6 @@ public class FilterSet implements IMappingFilter {
 
     @Override
     public String toString() {
-        return repr;
+        return String.format("(%s)", repr);
     }
 }
