@@ -20,6 +20,8 @@ package org.incenp.obofoundry.sssom.owl;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -42,6 +44,8 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * axiom generators are built from statements in Manchester syntax.
  */
 public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxiom> {
+
+    private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
 
     private OWLOntology ontology;
     private OWLDataFactory factory;
@@ -69,15 +73,17 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     public IMappingTransformer<OWLAxiom> create(String text, PrefixManager prefixManager) throws SSSOMTransformError {
         this.prefixManager = prefixManager;
 
+        String expandedText = expandEmbeddedIdentifiers(text);
+
         // Parse the Manchester expression once, so that any syntax error is detected
         // immediately instead of waiting until we try to apply it to mappings.
         try {
-            testParse(text);
+            testParse(expandedText);
         } catch ( OWLParserException e ) {
-            throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%s\"", text));
+            throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%s\"", expandedText));
         }
 
-        return (mapping) -> this.parseForMapping(mapping, text);
+        return (mapping) -> this.parseForMapping(mapping, expandedText);
     }
 
     /**
@@ -168,6 +174,26 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
 
         source = source.replace("%subject_id", String.format("<%s>", mapping.getSubjectId()));
         source = source.replace("%object_id", String.format("<%s>", mapping.getObjectId()));
+
+        return source;
+    }
+
+    /*
+     * Expand any CURIE that may lurk inside a string.
+     */
+    private String expandEmbeddedIdentifiers(String source) {
+        Matcher curieFinder = curiePattern.matcher(source);
+        Set<String> curies = new HashSet<String>();
+        while ( curieFinder.find() ) {
+            curies.add(curieFinder.group());
+        }
+
+        for ( String curie : curies ) {
+            String iri = prefixManager.maybeExpandIdentifier(curie);
+            if ( !iri.equals(curie) ) {
+                source = source.replace(curie, String.format("<%s>", iri));
+            }
+        }
 
         return source;
     }
