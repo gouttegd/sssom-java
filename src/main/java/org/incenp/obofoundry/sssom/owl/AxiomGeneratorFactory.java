@@ -18,6 +18,9 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
@@ -83,29 +86,45 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
      * @return The generated axiom.
      */
     public OWLAxiom parseForMapping(Mapping mapping, String text) {
-        /*
-         * Make sure the classes for the subject and object exist in the helper
-         * ontology. This is needed for the parser to recognise them.
-         */
-        ensureClassExists(mapping.getSubjectId());
-        ensureClassExists(mapping.getObjectId());
+        // Make sure the classes for the subject and object exist in the helper
+        // ontology. This is needed for the parser to recognise them.
+        Set<OWLAxiom> tmpAxioms = ensureClassesExist(mapping);
 
         manParser.setDefaultOntology(ontology);
         manParser.setStringToParse(substituteMappingVariables(text, mapping));
+        OWLAxiom parsedAxiom = manParser.parseAxiom();
 
-        return manParser.parseAxiom();
+        // Remove any axiom we may have had to add
+        if ( tmpAxioms.size() > 0 ) {
+            ontology.getOWLOntologyManager().removeAxioms(ontology, tmpAxioms);
+        }
+
+        return parsedAxiom;
     }
 
     /*
-     * Check whether a given class exists in the helper ontology, and create its
+     * Checks whether a given class exists in the helper ontology, and create its
      * declaration axiom if it does not.
      */
-    private void ensureClassExists(String entity) {
+    private void ensureClassExists(String entity, Set<OWLAxiom> addedAxioms) {
         IRI entityIRI = IRI.create(entity);
         if ( !ontology.containsClassInSignature(entityIRI) ) {
             OWLDeclarationAxiom ax = factory.getOWLDeclarationAxiom(factory.getOWLClass(entityIRI));
             ontology.getOWLOntologyManager().addAxiom(ontology, ax);
+            addedAxioms.add(ax);
         }
+    }
+
+    /*
+     * Checks whether the subject and object exist in the helper ontology, and add
+     * the required declaration axioms if not. Returns the axioms that were added as
+     * a (possibly empty) set.
+     */
+    private Set<OWLAxiom> ensureClassesExist(Mapping mapping) {
+        Set<OWLAxiom> addedAxioms = new HashSet<OWLAxiom>();
+        ensureClassExists(mapping.getSubjectId(), addedAxioms);
+        ensureClassExists(mapping.getObjectId(), addedAxioms);
+        return addedAxioms;
     }
 
     /*
