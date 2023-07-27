@@ -138,7 +138,9 @@ public class SSSOMInjectionCommand implements Command {
             sssomtReader.read();
 
             if ( sssomtReader.hasErrors() ) {
-                sssomtReader.getErrors().forEach((e) -> logger.error("Error when parsing SSSOM/T ruleset: %s", e));
+                sssomtReader.getErrors()
+                        .forEach((e) -> logger
+                                .error(String.format("Error when parsing SSSOM/T ruleset: %s", e.getMessage())));
             } else {
                 sssomtReader.getRules().forEach((r) -> axiomGenerator.addRule(r));
 

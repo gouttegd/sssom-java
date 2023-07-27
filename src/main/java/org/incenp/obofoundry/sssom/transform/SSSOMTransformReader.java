@@ -220,9 +220,10 @@ public class SSSOMTransformReader<T> {
                 IMappingTransformer<T> t = null;
 
                 if ( parsedRule.command != null ) {
-                    t = factory.create(parsedRule.command, prefixManager);
-                    if ( t == null ) {
-                        errors.add(new SSSOMTransformError(parsedRule.command));
+                    try {
+                        t = factory.create(parsedRule.command, prefixManager);
+                    } catch ( SSSOMTransformError e ) {
+                        errors.add(e);
                         continue;
                     }
                 }

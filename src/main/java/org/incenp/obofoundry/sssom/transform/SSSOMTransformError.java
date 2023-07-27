@@ -21,8 +21,8 @@ package org.incenp.obofoundry.sssom.transform;
 /**
  * A syntax error encountered when parsing a SSSOM/T ruleset.
  */
-public class SSSOMTransformError {
-    private String message;
+public class SSSOMTransformError extends Exception {
+    private static final long serialVersionUID = -7704754550392932287L;
 
     /**
      * Creates a new instance with an error message from the ANTLR parser.
@@ -32,7 +32,7 @@ public class SSSOMTransformError {
      * @param message The error message from the ANTLR parser.
      */
     public SSSOMTransformError(int line, int column, String message) {
-        this.message = String.format("SSSOM/Transform syntax error, line %d, column %d: %s", line, column, message);
+        super(String.format("SSSOM/Transform syntax error, line %d, column %d: %s", line, column, message));
     }
 
     /**
@@ -42,10 +42,6 @@ public class SSSOMTransformError {
      * @param message The application-specific instruction that could not be parsed.
      */
     public SSSOMTransformError(String message) {
-        this.message = String.format("SSSOM/Transform application-specific syntax error: %s", message);
-    }
-
-    public String toString() {
-        return message;
+        super(message);
     }
 }

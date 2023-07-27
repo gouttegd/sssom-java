@@ -25,6 +25,8 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformerFactory;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
+import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -64,8 +66,16 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     }
 
     @Override
-    public IMappingTransformer<OWLAxiom> create(String text, PrefixManager prefixManager) {
+    public IMappingTransformer<OWLAxiom> create(String text, PrefixManager prefixManager) throws SSSOMTransformError {
         this.prefixManager = prefixManager;
+
+        // Parse the Manchester expression once, so that any syntax error is detected
+        // immediately instead of waiting until we try to apply it to mappings.
+        try {
+            testParse(text);
+        } catch ( OWLParserException e ) {
+            throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%s\"", text));
+        }
 
         return (mapping) -> this.parseForMapping(mapping, text);
     }
@@ -100,6 +110,18 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         }
 
         return parsedAxiom;
+    }
+
+    /*
+     * Create a mapping with dummy IDs and try parsing the expression for that
+     * mapping.
+     */
+    private void testParse(String text) {
+        Mapping dummy = new Mapping();
+        dummy.setSubjectId("http://example.org/EX_0001");
+        dummy.setObjectId("http://example.org/EX_0002");
+
+        parseForMapping(dummy, text);
     }
 
     /*

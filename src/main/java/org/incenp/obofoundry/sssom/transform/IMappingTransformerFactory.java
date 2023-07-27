@@ -38,6 +38,7 @@ public interface IMappingTransformerFactory<T> {
      * @param prefixManager A prefix manager that may be used to expand/shorten
      *                      identifiers within the instruction to parse.
      * @return The mapping transformer.
+     * @throws SSSOMTransformError If the instruction cannot be parsed.
      */
-    public IMappingTransformer<T> create(String text, PrefixManager prefixManager);
+    public IMappingTransformer<T> create(String text, PrefixManager prefixManager) throws SSSOMTransformError;
 }
