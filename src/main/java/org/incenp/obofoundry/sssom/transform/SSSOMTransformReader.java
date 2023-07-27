@@ -334,7 +334,7 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         prefixName = prefixName.substring(0, prefixName.length() - 1);
 
         String prefix = ctx.IRI().getText();
-        prefix = prefix.substring(1, prefix.length() - 2);
+        prefix = prefix.substring(1, prefix.length() - 1);
 
         prefixManager.add(prefixName, prefix);
 
