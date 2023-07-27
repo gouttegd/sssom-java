@@ -31,6 +31,7 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
@@ -46,6 +47,8 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxiom> {
 
     private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
+    private static final Pattern annotPattern = Pattern
+            .compile("(%subject|%object) Annotation (<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+) (\"[^\"]+\"|'[^']+')");
 
     private OWLOntology ontology;
     private OWLDataFactory factory;
@@ -75,15 +78,22 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
 
         String expandedText = expandEmbeddedIdentifiers(text);
 
-        // Parse the Manchester expression once, so that any syntax error is detected
-        // immediately instead of waiting until we try to apply it to mappings.
-        try {
-            testParse(expandedText);
-        } catch ( OWLParserException e ) {
-            throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%s\"", expandedText));
+        // First look if the expression is a "common" one, to avoid if possible
+        // mobilising a full Manchester syntax parser.
+        IMappingTransformer<OWLAxiom> transformer = recogniseCommonPattern(text);
+
+        if ( transformer == null ) {
+            // No luck. Parse the Manchester expression once, so that any syntax error is
+            // detected immediately instead of waiting until we try to apply it to mappings.
+            try {
+                testParse(expandedText);
+                transformer = (mapping) -> this.parseForMapping(mapping, expandedText);
+            } catch ( OWLParserException e ) {
+                throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%s\"", expandedText));
+            }
         }
 
-        return (mapping) -> this.parseForMapping(mapping, expandedText);
+        return transformer;
     }
 
     /**
@@ -196,5 +206,61 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         }
 
         return source;
+    }
+
+    /*
+     * Try some patterns on the expression to see if it can be handled by custom
+     * generators (more efficient than the default generator, which involves parsing
+     * the expression with a full-blown Manchester syntax parser for each mapping).
+     * 
+     * It also allows to deal with annotation axioms.
+     */
+    private IMappingTransformer<OWLAxiom> recogniseCommonPattern(String text) {
+        Matcher m = annotPattern.matcher(text);
+        if ( m.matches() ) {
+            String property = m.group(2);
+            if ( property.charAt(0) == '<' ) {
+                property = property.substring(1, property.length() - 1);
+            } else {
+                property = prefixManager.maybeExpandIdentifier(property);
+            }
+            OWLAnnotationProperty prop = factory.getOWLAnnotationProperty(IRI.create(property));
+
+            String value = m.group(3);
+            value = value.substring(1, value.length() - 1);
+
+            return new AnnotationAxiomGenerator(this, prop, value, m.group(1).equals("%subject"));
+        }
+
+        return null;
+    }
+
+    /*
+     * Custom generator to make annotation assertion axioms.
+     */
+    class AnnotationAxiomGenerator implements IMappingTransformer<OWLAxiom> {
+
+        AxiomGeneratorFactory axiomFactory;
+        OWLAnnotationProperty property;
+        String text;
+        boolean onSubject;
+
+        AnnotationAxiomGenerator(AxiomGeneratorFactory axiomFactory, OWLAnnotationProperty property, String text,
+                boolean onSubject) {
+            this.axiomFactory = axiomFactory;
+            this.property = property;
+            this.text = text;
+            this.onSubject = onSubject;
+        }
+
+        @Override
+        public OWLAxiom transform(Mapping mapping) {
+            String value = axiomFactory.substituteMappingVariables(text, mapping);
+            IRI target = IRI.create(onSubject ? mapping.getSubjectId() : mapping.getObjectId());
+
+            return axiomFactory.factory.getOWLAnnotationAssertionAxiom(property, target,
+                    axiomFactory.factory.getOWLLiteral(value));
+        }
+
     }
 }
