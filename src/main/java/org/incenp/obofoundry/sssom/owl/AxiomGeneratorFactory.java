@@ -33,6 +33,7 @@ import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserI
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -47,8 +48,22 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxiom> {
 
     private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
+
+    /*
+     * Common expression patterns that are handled through specialised generators.
+     * 
+     * Annotation: %subject_id Annotation PROP:1234 "value"
+     * 
+     * Equivalence: %subject_id EquivalentTo %object_id and (REL:1234 some FIL:1234)
+     * 
+     * Subclass: %subject_id SubclassOf %object_id
+     */
     private static final Pattern annotPattern = Pattern
-            .compile("(%subject|%object) Annotation (<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+) (\"[^\"]+\"|'[^']+')");
+            .compile("%(subject|object)_id Annotation (<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+) (\"[^\"]+\"|'[^']+')");
+    private static final Pattern equivPattern = Pattern.compile(
+            "%(subject|object)_id EquivalentTo %(subject|object)_id( and \\((<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+) some (<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+)\\))?");
+    private static final Pattern subclassPattern = Pattern
+            .compile("%(subject|object)_id SubclassOf %(subject|object)_id");
 
     private OWLOntology ontology;
     private OWLDataFactory factory;
@@ -218,21 +233,38 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     private IMappingTransformer<OWLAxiom> recogniseCommonPattern(String text) {
         Matcher m = annotPattern.matcher(text);
         if ( m.matches() ) {
-            String property = m.group(2);
-            if ( property.charAt(0) == '<' ) {
-                property = property.substring(1, property.length() - 1);
-            } else {
-                property = prefixManager.maybeExpandIdentifier(property);
-            }
-            OWLAnnotationProperty prop = factory.getOWLAnnotationProperty(IRI.create(property));
+            OWLAnnotationProperty prop = factory.getOWLAnnotationProperty(extractIRI(m.group(2)));
 
             String value = m.group(3);
             value = value.substring(1, value.length() - 1);
 
-            return new AnnotationAxiomGenerator(this, prop, value, m.group(1).equals("%subject"));
+            return new AnnotationAxiomGenerator(this, prop, value, m.group(1).equals("subject"));
+        }
+
+        m = subclassPattern.matcher(text);
+        if ( m.matches() ) {
+            return new SubclassAxiomGenerator(ontology, m.group(1).equals("object"));
+        }
+
+        m = equivPattern.matcher(text);
+        if ( m.matches() ) {
+            OWLClassExpression expr = null;
+            if ( m.group(3) != null ) {
+                expr = factory.getOWLObjectSomeValuesFrom(factory.getOWLObjectProperty(extractIRI(m.group(4))),
+                        factory.getOWLClass(extractIRI(m.group(5))));
+            }
+            return new EquivalentAxiomGenerator(ontology, expr, m.group(1).equals("object"));
         }
 
         return null;
+    }
+
+    private IRI extractIRI(String text) {
+        if ( text.charAt(0) == '<' ) {
+            return IRI.create(text.substring(1, text.length() - 1));
+        } else {
+            return IRI.create(prefixManager.maybeExpandIdentifier(text));
+        }
     }
 
     /*
