@@ -31,7 +31,6 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
@@ -113,14 +112,10 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
 
     /**
      * Creates an axiom from a mapping and an expression in Manchester syntax. The
-     * expression may contain the following placeholders:
-     * <ul>
-     * <li>{@code %subject_id} will be replaced with the subject’s IRI;
-     * <li>{@code %subject_curie} will be replaced by the shortened version of the
-     * subject’s IRI;
-     * <li>{@code %subject_label} will be replaced by the the subject label;
-     * <li>similar placeholders for the object.
-     * </ul>
+     * expression may contain placeholders representing the value of some fields
+     * from the mapping (see
+     * {@link #substituteMappingVariables(String, Mapping, PrefixManager)} for a
+     * list of recognised placeholders).
      * 
      * @param mapping The mapping to create an axiom from.
      * @param text    A representation of the axiom to create in Manchester syntax.
@@ -132,7 +127,7 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         Set<OWLAxiom> tmpAxioms = ensureClassesExist(mapping);
 
         manParser.setDefaultOntology(ontology);
-        manParser.setStringToParse(substituteMappingVariables(text, mapping));
+        manParser.setStringToParse(substituteMappingVariables(text, mapping, prefixManager));
         OWLAxiom parsedAxiom = manParser.parseAxiom();
 
         // Remove any axiom we may have had to add
@@ -180,10 +175,27 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         return addedAxioms;
     }
 
-    /*
-     * Replace placeholders within a string by values obtained from the mapping.
+    /**
+     * Replace placeholders in a string by values derived from a mapping.
+     * <p>
+     * The following placeholders are recognised:
+     * <ul>
+     * <li>{@code %subject_id} will be replaced with the subject’s IRI;
+     * <li>{@code %subject_curie} will be replaced by the shortened version of the
+     * subject’s IRI;
+     * <li>{@code %subject_label} will be replaced by the the subject label;
+     * <li>similar placeholders for the object.
+     * </ul>
+     * 
+     * @param source        The string in which placeholders should be replaced.
+     * @param mapping       The mapping to get the replacing values from.
+     * @param prefixManager A prefix manager. This is needed to generate the
+     *                      shortened identifiers for the {@code %subject_curie} and
+     *                      {@code object_curie} placeholders. May be {@code null},
+     *                      in which case those placeholders will not be replaced.
+     * @return A string with the placeholders replaced by the corresponding values.
      */
-    private String substituteMappingVariables(String source, Mapping mapping) {
+    public static String substituteMappingVariables(String source, Mapping mapping, PrefixManager prefixManager) {
         if ( source.contains("%subject_label") && mapping.getSubjectLabel() != null ) {
             source = source.replace("%subject_label", mapping.getSubjectLabel());
         }
@@ -233,12 +245,10 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     private IMappingTransformer<OWLAxiom> recogniseCommonPattern(String text) {
         Matcher m = annotPattern.matcher(text);
         if ( m.matches() ) {
-            OWLAnnotationProperty prop = factory.getOWLAnnotationProperty(extractIRI(m.group(2)));
-
             String value = m.group(3);
             value = value.substring(1, value.length() - 1);
-
-            return new AnnotationAxiomGenerator(this, prop, value, m.group(1).equals("subject"));
+            return new AnnotationAxiomGenerator(ontology, extractIRI(m.group(2)), value, prefixManager,
+                    m.group(1).equals("object"));
         }
 
         m = subclassPattern.matcher(text);
@@ -265,34 +275,5 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         } else {
             return IRI.create(prefixManager.maybeExpandIdentifier(text));
         }
-    }
-
-    /*
-     * Custom generator to make annotation assertion axioms.
-     */
-    class AnnotationAxiomGenerator implements IMappingTransformer<OWLAxiom> {
-
-        AxiomGeneratorFactory axiomFactory;
-        OWLAnnotationProperty property;
-        String text;
-        boolean onSubject;
-
-        AnnotationAxiomGenerator(AxiomGeneratorFactory axiomFactory, OWLAnnotationProperty property, String text,
-                boolean onSubject) {
-            this.axiomFactory = axiomFactory;
-            this.property = property;
-            this.text = text;
-            this.onSubject = onSubject;
-        }
-
-        @Override
-        public OWLAxiom transform(Mapping mapping) {
-            String value = axiomFactory.substituteMappingVariables(text, mapping);
-            IRI target = IRI.create(onSubject ? mapping.getSubjectId() : mapping.getObjectId());
-
-            return axiomFactory.factory.getOWLAnnotationAssertionAxiom(property, target,
-                    axiomFactory.factory.getOWLLiteral(value));
-        }
-
     }
 }
