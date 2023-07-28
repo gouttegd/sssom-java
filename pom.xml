@@ -3,7 +3,8 @@
   <groupId>org.incenp</groupId>
   <artifactId>sssom-java</artifactId>
   <version>0.1.0-snapshot</version>
-  <name>SSSOM for Java</name>
+  <name>SSSOM-Java</name>
+  <description>SSSOM for Java and ROBOT</description>
   <url>https://incenp.org/dvlpt/sssom-java/</url>
 
   <licenses>
