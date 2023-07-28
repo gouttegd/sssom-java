@@ -54,15 +54,29 @@ try {
 }
 ```
 
-* Injecting cross-species equivalence axioms (generated from mappings
-  using the `https://w3id.org/semapv/vocab/crossSpeciesExactMatch`
-  predicate into a OWL ontology with
-  [ROBOT](https://robot.obolibrary.org/).
+* Injecting arbitrary axioms into a OWL ontology with ROBOT, with the
+  axioms to inject being described by rules written in an ad-hoc
+  _SSSOM/Transform_ language. That language still needs to be described
+  somewhere, but as an example, here is how to use it to generate
+  bridging axioms between the _Drosophila Anatomy Ontology_ (FBbt) and
+  the taxon-neutral ontologies UBERON and CL:
+  
+```
+subject==FBbt:* (object==CL:* || object==UBERON:*) {
+    predicate==semapv:crossSpeciesExactMatch -> {
+        gen('%subject_id EquivalentTo %object_id and (BFO:0000050 some NCBITaxon:7227)');
+        gen('%subject_id Annotation IAO:00000589 "%subject_label (Drosophila)"');
+    }
+}
+```
+
+Assuming this is written in a file named `bridge.rules`, one can then
+generate a merged ontology between FBbt, UBERON, and CL as follows: 
 
 ```sh
 robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
       sssom-inject --sssom fbbt-mappings.sssom.tsv \
-                   --cross-species NCBITaxon:7227 \
+                   --ruleset bridges.rules \
       annotate --ontology-iri http://purl.obolibrary.org/obo/bridged.owl \
                --output bridged.owl
 ```
@@ -84,10 +98,10 @@ Todo
 ----
 * Support for other serialisation formats (RDF/XML-serialised OWL
   axioms, JSON), reading and writing.
-* Helper classes and methods to manipulate the mappings; in particular,
-  generating OWL “translations” of said mappings.
-* More ROBOT pluggable commands to manipulate mappings as part of a
-  ROBOT pipeline.
+* Support for mapping inversion.
+* More documentation (particulary for SSSOM/Transform).
+* Support for ”direct” translation of mappings into OWL axioms, as per
+  the SSSOM specification (without using custom rules).
 
 
 Copying
