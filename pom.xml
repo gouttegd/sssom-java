@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.incenp</groupId>
   <artifactId>sssom-java</artifactId>
-  <version>0.1.1-snapshot</version>
+  <version>0.1.0-snapshot</version>
   <name>SSSOM for Java</name>
   <url>https://incenp.org/dvlpt/sssom-java/</url>
 
