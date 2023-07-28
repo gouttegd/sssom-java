@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/651692695.svg)](https://zenodo.org/badge/latestdoi/651692695)
+
 SSSOM Java - SSSOM library for Java
 ===================================
 
