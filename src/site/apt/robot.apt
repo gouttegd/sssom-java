@@ -1,0 +1,87 @@
+ROBOT command
+
+  SSSOM-Java provides a {{{http://robot.obolibrary.org/}ROBOT}} command
+  <<<sssom-inject>>> that is intended to allow the injection of
+  SSSOM-derived axioms into an ontology as part of a ROBOT pipeline.
+  
+* Enabling the SSSOM command in ROBOT
+
+  Ultimately, the <<<sssom-inject>>> command will be provided under the
+  form of a <plugin> that could be loaded dynamically by the standard
+  distribution of ROBOT, once said distribution has support for dynamic
+  plugins.
+  
+  In the meantime, building SSSOM-Java with the standard Maven goal
+  <<<package>>> will produce, among other artifacts, a Jar file named
+  <<<sssom-robot-standalone-X.Y.Z>>>. That file will contain a full
+  distribution of the latest version of ROBOT (1.9.4) in which the
+  <<<sssom-inject>>> command will be available as a built-in command (in
+  addition to all the standard commands).
+  
+* Usage
+
+  The <<<sssom-inject>>> command takes a SSSOM mapping set file
+  specified with the <<<-s>>> (or <<<--sssom>>>) option. If the metadata
+  section of the mapping set is not embedded within the TSV file, it can
+  be specified separately with the <<<--sssom-metadata>>> option.
+  
+  The command will generate OWL axioms according to instructions
+  provided by other command line options (described in another section
+  below). The default behaviour is then to inject (merge) those axioms
+  into the ontology that is currently manipulated by the ROBOT pipeline.
+  
+  That behaviour may be modified with two options.
+  
+  The option <<<--bridge-file>>>, followed by a filename, will instruct
+  the command to write the generated axioms into a separate file.
+  
+  The option <<<--no-merge>>> will instruct the command <not> to merge
+  the generated axioms into the current ontology, which will then be
+  left unmodified.
+  
+  Using <<<--bridge-file>>> only will result in the axioms both being
+  injected into the current ontology <and> being written to a separate
+  file.
+  
+  Using both options will cause the axioms to only being written to a
+  separate file.
+  
+  Using <<<--no-merge>>> alone makes little sense as it will result in
+  the axioms being sent to nowhere.
+  
+* Checking for the existence of the subject and/or object
+
+  By default, <<<sssom-inject>>> will generate axioms regardless of
+  whether the subject and object of a mapping exist in the current
+  ontology (if they don’t exist, declaration axioms will be
+  automatically generated).
+  
+  Use the <<<--check-subject>>> option to instruct the command to check
+  for the existence and status of the subject of a mapping before
+  generating any axiom of it. If the subject does not exist or if it is
+  obsolete, the mapping will be ignored and no axiom will be generated.
+  
+  Use the <<<--check-object>>> to do the same, but for the object side
+  of a mapping.
+  
+* Specifying the axioms to generate
+
+  The main method to specify how axioms should be derived from the
+  provided mappings is to use the <<<--ruleset>>> option, which takes
+  the name of a file in the <<<SSSOM/Transform>>> language. That file
+  is expected to describe everything the command needs to know in order
+  to generate axioms: which mappings to consider and which axioms to
+  produce from them.
+  
+  The SSSOM/Transform will be described in another part of this
+  documentation.
+  
+  For the specific use-case of generating cross-species mappings between
+  taxon-specific ontologies (or between a taxon-specific ontology and a
+  taxon-neutral ontology), one may also use the <<<--cross-species>>>
+  option. That option takes as an argument the IRI (possibly shortened
+  as a CURIE) of an OWL class representing a taxon (e.g.,
+  <<<http://purl.obolibrary.org/obo/NCBITaxon_7227>>>) and will generate
+  bridging axioms for mappings that use the
+  <<<https://w3id.org/semapv/vocab/crossSpeciesExactMatch>>> predicate.
+  

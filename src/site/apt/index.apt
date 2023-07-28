@@ -1,0 +1,71 @@
+  ----------
+  SSSOM-Java
+  ----------
+  Damien Goutte-Gattat
+  --------------------
+  2023-07-28
+  ----------
+  
+  <SSSOM-Java> is an implementation of the
+  {{{https://mapping-commons.github.io/sssom/spec/}SSSOM standard}} for
+  the Java language.
+  
+  It provides a {{{./library.html}library of Java classes}} to represent
+  and manipulate SSSOM mappings and mapping sets, read and write them to
+  and from the SSSOM TSV serialisation format. It implements an ad-hoc
+  filtering and transformation language, tentatively named <SSSOM/T>
+  (SSSOM/Transform) to allow rule-based arbitrary transformation of
+  mappings into any kind of objects.
+  
+  It also provides a {{{./robot.html}ROBOT plugin}} to generate OWL
+  axioms from a SSSOM mapping set and inject them into an ontology as
+  part of a pipeline of ROBOT commands.
+
+Homepage and repository
+
+  The project is located at {{https://incenp.org/dvlpt/sssom-java/}}.
+  The source code is available in a Git repository at
+  {{https://github.com/gouttegd/sssom-java}}.
+
+Copying
+
+  SSSOM-Java is distributed under the terms of the GNU General Public
+  License, version 3 or higher.
+  
+  It includes code that is automatically derived from
+  {{{SSSOM schema}https://github.com/mapping-commons/sssom}} (all the
+  classes under the <<<org.incenp.obofoundry.sssom.model>>> package).
+  That code is distributed under the same terms as the schema itself:
+  
++-----------------------------------------------------------------------
+Copyright (c) 2022, Nico Matentzoglu
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the
+   distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived
+   from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++-----------------------------------------------------------------------

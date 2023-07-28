@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0
+                      http://maven.apache.org/xsd/decoration-1.8.0.xsd">
+  <body>
+    <menu name="SSSOM-Java">
+      <item name="About" href="index.html" />
+      <item name="Java library" href="library.html" />
+      <item name="ROBOT command" href="robot.html" />
+      <item name="API Documentation" href="apidocs/index.html" />
+    </menu>
+    <menu ref="reports" />
+    <footer><![CDATA[Copyright © 2023 Damien Goutte-Gattat]]></footer>
+  </body>
+</project>

@@ -1,0 +1,27 @@
+The Java library
+
+  The Java library is organised in several packages.
+  
+  The top-level <<<org.incenp.obofoundry.sssom>>> package is intended to
+  provide general-purpose classes to deal with the SSSOM standard. For
+  now, it provides mostly classes to read and write SSSOM mapping sets.
+  
+  The <<<org.incenp.obofoundry.sssom.model>>> package provides the
+  classes that make up the object model for SSSOM. Those classes
+  are directly derived from the LinkML schema that formally describes
+  SSSOM (apart the enumerations, which are custom-written since the
+  LinkML Java generator does not produce them).
+  
+  The <<<org.incenp.obofoundry.sssom.transform>>> provides classes to
+  implement rule-based arbitrary transformations of SSSOM mappings into
+  other kind of objects. That includes a parser to read such
+  transformation rules from a custom, ad-hoc language tentatively
+  called <SSSOM/T> or <SSSOM/Transform>.
+  
+  Finally, the <<<org.incenp.obofoundry.sssom.owl>>> package provides
+  classes to generate OWL axioms from SSSOM mappings.
+  
+  See the {{{./apidocs/index.html}API documentation}} for details.
+  
+  In the (near?) future, this page will give a more complete overview of
+  the library.

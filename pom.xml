@@ -4,6 +4,46 @@
   <artifactId>sssom-java</artifactId>
   <version>0.0.1-snapshot</version>
   <name>SSSOM for Java</name>
+  <url>https://incenp.org/dvlpt/sssom-java/</url>
+
+  <licenses>
+    <license>
+      <name>GPL-3.0-or-later</name>
+      <url>https://www.gnu.org/licenses/gpl-3.0-standalone.html</url>
+      <distribution>manual</distribution>
+      <comments>GNU General Public License v3.0 or later</comments>
+    </license>
+    <license>
+      <name>BSD-3-Clause</name>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>damien</id>
+      <name>Damien Goutte-Gattat</name>
+      <email>dgouttegattat@incenp.org</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/gouttegd/sssom-java.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/gouttegd/sssom-java.git</developerConnection>
+    <url>https://github.com/gouttegd/sssom-java</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/gouttegd/sssom-java.git</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencies>
     <dependency>
@@ -122,6 +162,16 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-site-plugin</artifactId>
+        <version>3.9.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-project-info-reports-plugin</artifactId>
+        <version>3.1.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.2.0</version>
         <executions>
@@ -138,4 +188,24 @@
       </plugin>
     </plugins>
   </build>
+
+  <reporting>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.2.0</version>
+        <reportSets>
+          <reportSet>
+            <reports>
+              <report>javadoc</report>
+            </reports>
+          </reportSet>
+        </reportSets>
+        <configuration>
+          <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser</excludePackageNames>
+        </configuration>
+      </plugin>
+    </plugins>
+  </reporting>
 </project>
