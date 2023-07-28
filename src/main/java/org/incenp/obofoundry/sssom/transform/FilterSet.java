@@ -40,10 +40,10 @@ public class FilterSet implements IMappingFilter {
     /**
      * Adds a filter to the set.
      * 
-     * @param filter   The filter to add.
-     * @param operator {@code true} to combine the new filter with the previous
-     *                 filters in the set with a logical AND operator; {@code false}
-     *                 to use a logical OR operator instead.
+     * @param filter The filter to add.
+     * @param isAnd  {@code true} to combine the new filter with the previous
+     *               filters in the set with a logical AND operator; {@code false}
+     *               to use a logical OR operator instead.
      */
     public void addFilter(IMappingFilter filter, boolean isAnd) {
         if ( combined.isEmpty() ) {

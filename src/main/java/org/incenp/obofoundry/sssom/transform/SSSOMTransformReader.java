@@ -74,7 +74,7 @@ public class SSSOMTransformReader<T> {
      * SSSOM Transform from something else than a file or file-like source, coupled
      * with the {@link #read(String)} method.
      * 
-     * @param parser The parser for application-specific {@code gen} instructions.
+     * @param factory The parser for application-specific {@code gen} instructions.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
     public SSSOMTransformReader(IMappingTransformerFactory<T> factory) {
@@ -87,8 +87,8 @@ public class SSSOMTransformReader<T> {
     /**
      * Creates a new instance to read from a reader object.
      * 
-     * @param parser The parser for application-specific {@code gen} instructions.
-     * @param input  The reader to parse the SSSOM/T ruleset from.
+     * @param factory The parser for application-specific {@code gen} instructions.
+     * @param input   The reader to parse the SSSOM/T ruleset from.
      * @throws IOException              If any non-SSSOM/T I/O error occurs when
      *                                  reading from the reader object.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
@@ -100,8 +100,8 @@ public class SSSOMTransformReader<T> {
     /**
      * Creates a new instance to read from a stream.
      * 
-     * @param parser The parser for application-specific {@code gen} instructions.
-     * @param input  The stream to parse the SSSOM/T ruleset from.
+     * @param factory The parser for application-specific {@code gen} instructions.
+     * @param input   The stream to parse the SSSOM/T ruleset from.
      * @throws IOException              If any non-SSSOM/T I/O error occurs when
      *                                  reading from the stream.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
@@ -113,8 +113,8 @@ public class SSSOMTransformReader<T> {
     /**
      * Creates a new instance to read from a file.
      * 
-     * @param parser The parser for application-specific {@code gen} instructions.
-     * @param input  The file to parse the SSSOM/T ruleset from.
+     * @param factory The parser for application-specific {@code gen} instructions.
+     * @param input   The file to parse the SSSOM/T ruleset from.
      * @throws IOException              If any non-SSSOM/T I/O error occurs when
      *                                  reading from the file.
      * @throws IllegalArgumentException If the provided parser is {@code null}.
@@ -126,7 +126,7 @@ public class SSSOMTransformReader<T> {
     /**
      * Creates a new instance to read from a file.
      * 
-     * @param parser   The parser for application-specific {@code gen} instructions.
+     * @param factory  The parser for application-specific {@code gen} instructions.
      * @param filename The name of the file to read from.
      * @throws IOException              If any non-SSSOM/T I/O error occurs when
      *                                  reading from the file.
