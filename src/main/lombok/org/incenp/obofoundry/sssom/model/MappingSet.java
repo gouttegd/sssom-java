@@ -1,12 +1,19 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
-import java.util.Map;
 import java.time.LocalDateTime;
+import java.util.Map;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder(toBuilder = true)
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class MappingSet  {
@@ -61,9 +68,6 @@ public class MappingSet  {
 
     @JsonProperty("mapping_tool")
     private String mappingTool;
-
-    @JsonProperty("mapping_tool_version")
-    private String mappingToolVersion;
 
     @JsonProperty("mapping_date")
     private LocalDateTime mappingDate;
