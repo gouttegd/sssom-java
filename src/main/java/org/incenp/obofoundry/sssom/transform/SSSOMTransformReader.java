@@ -37,6 +37,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformBaseVisitor;
@@ -400,7 +401,8 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
 
     @Override
     public Void visitInvert(SSSOMTransformParser.InvertContext ctx) {
-        // TODO: Inversion operation not implemented yet;
+        rules.add(makeRule(
+                new NamedMappingTransformer<Mapping>("invert()", (mapping) -> CommonPredicate.invert(mapping)), null));
 
         return null;
     }
