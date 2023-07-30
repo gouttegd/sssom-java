@@ -231,6 +231,7 @@ public class SSSOMTransformReader<T> {
 
                 MappingProcessingRule<T> finalRule = new MappingProcessingRule<T>(parsedRule.filter,
                         parsedRule.preprocessor, t);
+                finalRule.getTags().addAll(parsedRule.tags);
 
                 rules.add(finalRule);
             }
