@@ -226,7 +226,7 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         }
 
         for ( String curie : curies ) {
-            String iri = prefixManager.maybeExpandIdentifier(curie);
+            String iri = prefixManager.expandIdentifier(curie);
             if ( !iri.equals(curie) ) {
                 source = source.replace(curie, String.format("<%s>", iri));
             }
@@ -273,7 +273,7 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         if ( text.charAt(0) == '<' ) {
             return IRI.create(text.substring(1, text.length() - 1));
         } else {
-            return IRI.create(prefixManager.maybeExpandIdentifier(text));
+            return IRI.create(prefixManager.expandIdentifier(text));
         }
     }
 }

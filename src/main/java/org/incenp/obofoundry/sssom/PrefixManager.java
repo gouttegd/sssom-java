@@ -20,8 +20,10 @@ package org.incenp.obofoundry.sssom;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 
@@ -32,6 +34,7 @@ public class PrefixManager {
 
     private Map<String, String> prefixMap = new HashMap<String, String>();
     private Map<String, String> iri2CurieCache = new HashMap<String, String>();
+    private Set<String> unresolved = new HashSet<String>();
 
     /**
      * Creates a new instance with the builtin prefixes.
@@ -60,6 +63,16 @@ public class PrefixManager {
      */
     public void add(Map<? extends String, ? extends String> map) {
         prefixMap.putAll(map);
+    }
+
+    /**
+     * Gets the prefix names that this resolver could not expand.
+     * 
+     * @return The set of all prefixes encountered in the lifetime of this object
+     *         that could not be expanded because the prefix was unknown.
+     */
+    public Set<String> getUnresolvedPrefixNames() {
+        return unresolved;
     }
 
     /**
@@ -133,11 +146,9 @@ public class PrefixManager {
      * 
      * @param curie The short identifier to expand.
      * @return The full-length identifier, or the original identifier if it was not
-     *         in CURIE form.
-     * @throws SSSOMFormatException If the provided identifier is a CURIE that is
-     *                              using an undeclared prefix.
+     *         in CURIE form or the prefix name is unknown.
      */
-    public String expandIdentifier(String curie) throws SSSOMFormatException {
+    public String expandIdentifier(String curie) {
         if ( curie.startsWith("http") ) {
             return curie;
         }
@@ -149,34 +160,11 @@ public class PrefixManager {
 
         String prefix = prefixMap.get(parts[0]);
         if ( prefix == null ) {
-            throw new SSSOMFormatException("Undeclared prefix");
-        }
-
-        return prefix + parts[1];
-    }
-
-    /**
-     * Expands a shortened identifier into its long, canonical form. This method is
-     * similar to {@link #expandIdentifier(String)}, but it does not throw an
-     * exception if the prefix is undeclared; it simply returns the unexpanded
-     * identifier.
-     * 
-     * @param curie The short identifier to expand.
-     * @return The full-length identifier, or the original identifier if it was not
-     *         in CURIE form or was using an unknown prefix.
-     */
-    public String maybeExpandIdentifier(String curie) {
-        if ( curie.startsWith("http") ) {
+            unresolved.add(parts[0]);
             return curie;
+        } else {
+            return prefix + parts[1];
         }
-
-        String[] parts = curie.split(":", 2);
-        if ( parts.length == 1 ) {
-            return curie;
-        }
-
-        String prefix = prefixMap.get(parts[0]);
-        return prefix != null ? prefix + parts[1] : curie;
     }
 
     /**
@@ -184,11 +172,9 @@ public class PrefixManager {
      * untouched.
      * 
      * @param curies The list of short identifiers to expand.
-     * @return A new list with the expanded identifiers.
-     * @throws SSSOMFormatException If an identifier in the list is a CURIE that is
-     *                              using an undeclared prefix.
+     * @return A new list with the expanded identifiers..
      */
-    public List<String> expandIdentifiers(List<String> curies) throws SSSOMFormatException {
+    public List<String> expandIdentifiers(List<String> curies) {
         return expandIdentifiers(curies, false);
     }
 
@@ -200,10 +186,8 @@ public class PrefixManager {
      *                is left untouched and a new list is returned.
      * @return A list with the expanded identifiers. If {@code inPlace} is
      *         {@code true}, this is the original list.
-     * @throws SSSOMFormatException If an identifier in the list is a CURIE that is
-     *                              using an undeclared prefix.
      */
-    public List<String> expandIdentifiers(List<String> curies, boolean inPlace) throws SSSOMFormatException {
+    public List<String> expandIdentifiers(List<String> curies, boolean inPlace) {
         List<String> iris = new ArrayList<String>();
         for ( String curie : curies ) {
             iris.add(expandIdentifier(curie));

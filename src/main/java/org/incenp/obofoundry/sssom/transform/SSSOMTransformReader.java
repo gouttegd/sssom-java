@@ -235,6 +235,10 @@ public class SSSOMTransformReader<T> {
             }
         }
 
+        for ( String prefixName : prefixManager.getUnresolvedPrefixNames() ) {
+            errors.add(new SSSOMTransformError(String.format("Undeclared prefix: %s", prefixName)));
+        }
+
         hasRead = true;
 
         return !hasErrors();
@@ -474,7 +478,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             return addFilter(new NamedFilter("*", (mapping) -> true));
         }
 
-        value = prefixManager.maybeExpandIdentifier(value);
+        value = prefixManager.expandIdentifier(value);
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
 

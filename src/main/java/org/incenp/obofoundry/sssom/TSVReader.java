@@ -162,6 +162,11 @@ public class TSVReader {
         }
         ms.setMappings(mappings);
 
+        if ( prefixManager.getUnresolvedPrefixNames().size() > 0 ) {
+            throw new SSSOMFormatException(String.format("Some prefixes are undeclared: %s",
+                    String.join(", ", prefixManager.getUnresolvedPrefixNames())));
+        }
+
         return ms;
     }
 
@@ -275,7 +280,7 @@ public class TSVReader {
     /*
      * Expand CURIEs in all “EntityReference” fields of the given object.
      */
-    private void expandEntityReferences(Object object) throws SSSOMFormatException {
+    private void expandEntityReferences(Object object) {
         for ( Field field : object.getClass().getDeclaredFields() ) {
             if ( field.getDeclaredAnnotation(EntityReference.class) == null ) {
                 // Not an entity reference, nothing to expand
