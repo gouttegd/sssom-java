@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
@@ -142,12 +143,12 @@ public class SSSOMInjectionCommand implements Command {
                         .forEach((e) -> logger
                                 .error(String.format("Error when parsing SSSOM/T ruleset: %s", e.getMessage())));
             } else {
-                sssomtReader.getRules().forEach((r) -> axiomGenerator.addRule(r));
+                axiomGenerator.addRules(sssomtReader.getRules());
 
             }
         }
 
-        Set<OWLAxiom> bridgingAxioms = axiomGenerator.generate(mappingSet.getMappings());
+        Set<OWLAxiom> bridgingAxioms = new HashSet<OWLAxiom>(axiomGenerator.process(mappingSet.getMappings()));
 
         if ( !line.hasOption("no-merge") && !bridgingAxioms.isEmpty() ) {
             ontology.getOWLOntologyManager().addAxioms(ontology, bridgingAxioms);

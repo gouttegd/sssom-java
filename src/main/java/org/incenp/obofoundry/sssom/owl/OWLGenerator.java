@@ -18,15 +18,11 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
+import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -41,9 +37,8 @@ import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
  * {@link MappingProcessingRule} objects) that are applied sequentially to each
  * mappings in a set.
  */
-public class OWLGenerator {
+public class OWLGenerator extends MappingProcessor<OWLAxiom> {
 
-    private List<MappingProcessingRule<OWLAxiom>> rules = new ArrayList<MappingProcessingRule<OWLAxiom>>();
     private OWLLiteral falseValue = null;
 
     /**
@@ -60,26 +55,7 @@ public class OWLGenerator {
      */
     public void addRule(IMappingFilter filter, IMappingTransformer<Mapping> preprocessor,
             IMappingTransformer<OWLAxiom> generator) {
-        rules.add(new MappingProcessingRule<OWLAxiom>(filter, preprocessor, generator));
-    }
-
-    /**
-     * Adds a pre-built processing rule.
-     * 
-     * @param rule The processing rule to add.
-     */
-    public void addRule(MappingProcessingRule<OWLAxiom> rule) {
-        rules.add(rule);
-    }
-
-    /**
-     * Adds a rule that stops any further processing for a given mapping.
-     * 
-     * @param filter The filter used to determine whether the rule applies to a
-     *               given mapping.
-     */
-    public void addStopingRule(IMappingFilter filter) {
-        rules.add(new MappingProcessingRule<OWLAxiom>(filter, (mapping) -> null, null));
+        this.addRule(new MappingProcessingRule<OWLAxiom>(filter, preprocessor, generator));
     }
 
     /**
@@ -104,26 +80,6 @@ public class OWLGenerator {
      */
     public void setCheckObjectExistence(OWLOntology ontology) {
         addStopingRule((mapping) -> entityAbsentOrDeprecated(ontology, mapping.getObjectId()));
-    }
-
-    public Set<OWLAxiom> generate(List<Mapping> mappings) {
-        Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
-
-        for ( Mapping mapping : mappings ) {
-            for ( MappingProcessingRule<OWLAxiom> rule : rules ) {
-                if ( mapping != null && rule.apply(mapping) ) {
-                    mapping = rule.preprocess(mapping);
-                    if ( mapping != null ) {
-                        OWLAxiom axiom = rule.generate(mapping);
-                        if ( axiom != null ) {
-                            axioms.add(axiom);
-                        }
-                    }
-                }
-            }
-        }
-
-        return axioms;
     }
 
     /*
