@@ -19,7 +19,9 @@
 package org.incenp.obofoundry.sssom.transform;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 
@@ -33,6 +35,8 @@ public class MappingProcessor<T> {
 
     private List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
     private List<IMappingProcessorListener<T>> listeners = new ArrayList<IMappingProcessorListener<T>>();
+    private Set<String> selectedTags;
+    private boolean includeSelectedTags;
 
     /**
      * Adds a rule to be applied to mappings. The order in which rules are added is
@@ -76,6 +80,30 @@ public class MappingProcessor<T> {
     }
 
     /**
+     * Sets the processor to run only the rules that have at least one tag in the
+     * specified tag set.
+     * 
+     * @param tags The tags to select the rules to run. Any rules with no matching
+     *             tag will be excluded.
+     */
+    public void includeRules(Set<String> tags) {
+        selectedTags = tags;
+        includeSelectedTags = true;
+    }
+
+    /**
+     * Sets the processor to exclude the rules that have at least one tag in the
+     * specified tag set.
+     * 
+     * @param tags The tags to select the rules to exclude. Only the rules with no
+     *             matching tag will be run.
+     */
+    public void excludeRules(Set<String> tags) {
+        selectedTags = tags;
+        includeSelectedTags = false;
+    }
+
+    /**
      * Applies all the rules to the given mappings.
      * 
      * @param mappings The mappings the rules should be applied to.
@@ -85,8 +113,21 @@ public class MappingProcessor<T> {
     public List<T> process(List<Mapping> mappings) {
         List<T> products = new ArrayList<T>();
 
-        for ( Mapping mapping : mappings ) {
+        List<MappingProcessingRule<T>> effectiveRules;
+        if ( selectedTags != null ) {
+            effectiveRules = new ArrayList<MappingProcessingRule<T>>();
             for ( MappingProcessingRule<T> rule : rules ) {
+                boolean match = compareTags(selectedTags, rule.getTags());
+                if ( (includeSelectedTags && match) || (!includeSelectedTags && !match) ) {
+                    effectiveRules.add(rule);
+                }
+            }
+        } else {
+            effectiveRules = rules;
+        }
+
+        for ( Mapping mapping : mappings ) {
+            for ( MappingProcessingRule<T> rule : effectiveRules ) {
                 if ( mapping != null && rule.apply(mapping) ) {
                     mapping = rule.preprocess(mapping);
                     if ( mapping != null ) {
@@ -101,6 +142,12 @@ public class MappingProcessor<T> {
         }
 
         return products;
+    }
+
+    private boolean compareTags(Set<String> a, Set<String> b) {
+        Set<String> tmp = new HashSet<String>(a);
+        tmp.retainAll(b);
+        return tmp.size() > 0;
     }
 
     /**

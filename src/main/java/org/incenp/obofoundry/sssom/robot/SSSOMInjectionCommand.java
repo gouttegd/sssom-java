@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -69,6 +70,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "ruleset", true, "inject axioms specified in ruleset file");
+        options.addOption(null, "include-rule", true, "Only run rules with the specified tag");
+        options.addOption(null, "exclude-rule", true, "Do not run rules with the specified tag");
         options.addOption(null, "dispatch-table", true,
                 "write generated axioms to several output ontologies according to dispatch table");
     }
@@ -158,6 +161,12 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
                 axiomGenerator.addRules(sssomtReader.getRules());
 
             }
+        }
+
+        if ( line.hasOption("include-rule") ) {
+            axiomGenerator.includeRules(new HashSet<String>(Arrays.asList(line.getOptionValues("include-rule"))));
+        } else if ( line.hasOption("exclude-rule") ) {
+            axiomGenerator.excludeRules(new HashSet<String>(Arrays.asList(line.getOptionValues("exclude-rule"))));
         }
 
         Set<OWLAxiom> bridgingAxioms = new HashSet<OWLAxiom>(axiomGenerator.process(mappingSet.getMappings()));
