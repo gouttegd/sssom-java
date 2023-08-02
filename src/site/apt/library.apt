@@ -23,5 +23,162 @@ The Java library
   
   See the {{{./apidocs/index.html}API documentation}} for details.
   
-  In the (near?) future, this page will give a more complete overview of
-  the library.
+* Basic operations
+
+** Reading mappings
+
+  Currently, the only supported format to read mappings from is the
+  {{{https://mapping-commons.github.io/sssom/spec/#tsv}TSV format}}.
+  Both the “internal metadata” variant (where the metadata are included
+  directly within the TSV file, as a commented header) and the
+  ”external” variant (where the metadata are in a distinct file) are
+  supported.
+  
+  Use the <<<TSVReader>>> class to read a mapping set from a TSV file:
+  
++-----------------------------------------------------------------------
+import org.incenp.obofoundry.sssom.TSVReader;
+import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.model.MappingSet;
+
+try {
+    TSVReader reader = new TSVReader("my-mappings.sssom.tsv");
+    MappingSet ms = reader.read();
+} catch (IOException ioe) {
+    // A non-SSSOM I/O error occured
+} catch (SSSOMFormatException sfe) {
+    // Invalid SSSOM data
+}
++-----------------------------------------------------------------------
+
+  If a metadata header is not found in the specified file, the reader
+  will automatically look for a file with the same name as the TSV file
+  but with a <<<yml>>> extension, and read the metadata from that file.
+  If no such file exists, the reader will throw a
+  <<<SSSOMFormatException>>>.
+  
+  Use the two-arguments variant of the constructor to explicitly specify
+  the name of an external metadata file:
+  
++-----------------------------------------------------------------------
+TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
++-----------------------------------------------------------------------
+
+  When reading, all short identifiers (aka ”CURIEs”) in the file,
+  whether in the metadata or in the mappings themselves, are
+  systematically expanded into their corresponding full form according
+  to the “CURIE map” found in the metadata (and the built-in prefixes
+  defined in the SSSOM specification). That is, the client code has
+  <only> access to the expanded, full-length identifiers. The fact that
+  the identifiers may have been stored in the file under a shortened
+  form is considered a serialisation detail that the client code needs
+  not know about.
+  
+** Writing mappings
+
+  Again, only the TSV format is supported. Contrary to reading, only the
+  <<internal>> metadata variant is supported, it is not currently
+  possible to write the metadata to a separate file.
+  
+  Use the <<<TSVWriter>>> class to write a mapping set to a file:
+  
++-----------------------------------------------------------------------
+import org.incenp.obofoundry.sssom.TSVWriter;
+import org.incenp.obofoundry.sssom.model.MappingSet;
+
+MappingSet ms = new MappingSet();
+// Fill the mapping set...
+try {
+    TSVWriter writer = new TSVWriter("my-new-mappings.sssom.tsv");
+    writer.write(ms);
+    writer.close();
+} catch (IOException ioe) {
+    // A non-SSSOM I/O error occured
+}
++-----------------------------------------------------------------------
+
+  When writing, the CURIE map of the mapping set will be used to try
+  shortening all identifiers. If a given identifier cannot be shortened,
+  it will be written under its full-length form. The built-in prefixes
+  defined in the SSSOM specification are always used even if they are
+  not explicitly listed in the CURIE map.
+  
+** Manipulating the mapping set and the mappings
+
+  As hinted in the examples above, a mapping set is represented by the
+  <<<MappingSet>>> class in the <<<org.incenp.obofoundry.sssom.model>>>
+  package. That class has read/write accessors for all metadata slots
+  defined in the SSSOM schema. When obtaining a mapping set from a TSV
+  file, any slot not explicitly set in the file will be set to
+  <<<null>>>.
+  
+  Contrary to the SSSOM specification, where the CURIE map is not
+  officially part of the model (as it is only needed when deserialising
+  a mapping set from a TSV file), in this implementation the CURIE map
+  is a <bona fide> field of the <<<MappingSet>>> object, which can be
+  accessed with the <<<getCurieMap()>>> and <<<setCurieMap()>>> methods.
+  
+  Get the individual mappings of a mapping set with
+  <<<MappingSet.getMappings()>>>. An individual mapping is represented
+  by the <<<Mapping>>> class. Again, that class has read/write accessors
+  for all mapping-level metadata slot defined in the SSSOM schema.
+  
+  Of note, propagation of metadata from the mapping set down to the
+  individual mappings is currently <<not>> implemented, since the
+  details of which metadata slots should be propagated and how that
+  propagation should happen have not been ironed out yet by the authors
+  of the SSSOM specification. For now, this propagation, when it is
+  desired, should be done by the client code. In the future, it will be
+  done automatically by the <<<TSVReader>>> class.
+  
+  To create a new mapping from scratch, either call the default
+  constructor of the <<<Mapping>>> class and then set the various slots
+  by calling the appropriate “setter” methods:
+  
++-----------------------------------------------------------------------
+Mapping mapping = new Mapping();
+mapping.setSubjectId("http://example.org/EX_0001");
+mapping.setPredicateId("http://www.w3.org/2004/02/skos/core#exactMatch");
+mapping.setObjectId("http://example.org/EX_9999");
+mapping.setMappingJustification("https://w3id.org/semapv/vocab/LexicalMatching");
++-----------------------------------------------------------------------
+
+  or use the static <<<builder()>>> method as follows:
+  
++-----------------------------------------------------------------------
+Mapping mapping = Mapping.builder()
+                         .subjectId("http://example.org/EX_0001")
+                         .predicateId("http://www.w3.org/2004/02/skos/core#exactMatch")
+                         .objectId("http://example.org/EX_9999")
+                         .mappingJustification("https://w3id.org/semapv/vocab/LexicalMatching")
+                         .build();
++-----------------------------------------------------------------------
+
+  To create a new mapping from a pre-existing mapping, you can use the
+  <<<toBuilder()>>> method to obtain a builder object initialised with
+  all the current metadata of a given mapping. You can then use the
+  builder methods to change the desired slots before building the new
+  mapping. For example, to create a new mapping from the one above but
+  with a different mapping predicate:
+  
++-----------------------------------------------------------------------
+Mapping mapping2 = mapping.toBuilder()
+                          .predicateId("http://www.w3.org/2004/02/skos/core#narrowMatch")
+                          .build();
++-----------------------------------------------------------------------
+
+  To <invert> a mapping (switching the subject and the object), use the
+  <<<CommonPredicate.invert()>>> method:
+  
++-----------------------------------------------------------------------
+import org.incenp.obofoundry.sssom.model.CommonPredicate;
+
+Mapping inverted = CommonPredicate.invert(mapping);
++-----------------------------------------------------------------------
+
+  The method will return a new mapping with inverted values, or
+  <<<null>>> if the mapping cannot be inverted (a mapping can only be
+  inverted if its predicate is invertible or if it has an associated
+  reverse predicate). Note that for now at least, the list of
+  invertible predicates is built-in and not modifiable, client code
+  cannot add its own predicates. This may change in the future.
