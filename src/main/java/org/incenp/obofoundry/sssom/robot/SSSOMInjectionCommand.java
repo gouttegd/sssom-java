@@ -28,6 +28,7 @@ import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.AxiomGeneratorFactory;
+import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
 import org.incenp.obofoundry.sssom.owl.UniqueLabelGenerator;
@@ -65,6 +66,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption("s", "sssom", true, "load SSSOM mapping set from file");
         options.addOption(null, "sssom-metadata", true, "load mapping set metadata from specified file");
         options.addOption(null, "cross-species", true, "inject cross-species bridging axioms for specified taxon");
+        options.addOption(null, "direct", false,
+                "inject axioms produced by direct, standard-specified translation of the mappings");
         options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology");
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
@@ -140,6 +143,10 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             IRI taxonIRI = ioHelper.createIRI(parts[0]);
             String taxonName = parts.length > 1 ? parts[1] : null;
             addCrossSpeciesRules(axiomGenerator, ontology, taxonIRI, taxonName);
+        }
+
+        if ( line.hasOption("direct") ) {
+            axiomGenerator.addRule(null, null, new DirectAxiomGenerator(ontology));
         }
 
         if ( line.hasOption("dispatch-table") ) {

@@ -90,6 +90,11 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     public IMappingTransformer<OWLAxiom> create(String text, PrefixManager prefixManager) throws SSSOMTransformError {
         this.prefixManager = prefixManager;
 
+        // Direct mode?
+        if ( text.equalsIgnoreCase("direct") ) {
+            return new DirectAxiomGenerator(ontology);
+        }
+
         String expandedText = expandEmbeddedIdentifiers(text);
 
         // First look if the expression is a "common" one, to avoid if possible
