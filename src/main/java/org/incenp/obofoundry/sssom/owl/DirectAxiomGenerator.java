@@ -6,6 +6,8 @@ import java.util.Set;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -24,6 +26,7 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
     private final static Set<String> ANNOTATION_PREDICATES = new HashSet<String>();
     private final static String OWL_EQUIVALENT_CLASS = "http://www.w3.org/2002/07/owl#equivalentClass";
     private final static String RDFS_SUBCLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
+    private final static String SSSOM_BASE = "https://w3id.org/sssom/";
 
     static {
         ANNOTATION_PREDICATES.add("http://www.geneontology.org/formats/oboInOwl#hasDbXref");
@@ -77,7 +80,32 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
             }
         }
 
-        // TODO: Add mapping metadata as annotations on the generated axiom.
+        // Add mapping metadata as annotations on the generated axiom.
+        // TODO: Add missing metadata (ALL of them? or a custom selection?)
+        Set<OWLAnnotation> annots = new HashSet<OWLAnnotation>();
+
+        if ( mapping.getMappingJustification() != null ) {
+            annots.add(factory.getOWLAnnotation(
+                    factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + "mapping_justification")),
+                    IRI.create(mapping.getMappingJustification())));
+        }
+
+        if ( mapping.getAuthorId() != null ) {
+            OWLAnnotationProperty p = factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + "author_id"));
+            for ( String author_id : mapping.getAuthorId() ) {
+                annots.add(factory.getOWLAnnotation(p, IRI.create(author_id)));
+            }
+        }
+
+        if ( mapping.getObjectLabel() != null ) {
+            annots.add(
+                    factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + "object_label")),
+                            factory.getOWLLiteral(mapping.getObjectLabel())));
+        }
+
+        if ( !annots.isEmpty() ) {
+            axiom = axiom.getAnnotatedAxiom(annots);
+        }
 
         return axiom;
     }
