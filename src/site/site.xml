@@ -6,7 +6,10 @@
   <body>
     <menu name="SSSOM-Java">
       <item name="About" href="index.html" />
-      <item name="Java library" href="library.html" />
+      <item name="Java library" href="library.html">
+        <item name="Basic operations" href="basic-operations.html" />
+        <item name="Transformations" href="transformations.html" />
+      </item>
       <item name="ROBOT command" href="robot.html" />
       <item name="API Documentation" href="apidocs/index.html" />
     </menu>

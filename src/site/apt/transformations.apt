@@ -1,0 +1,186 @@
+Mapping transformations
+
+  The <<<org.incenp.obofoundry.sssom.transform>>> package provides
+  classes and interfaces intended to allow transforming SSSOM mappings
+  into other objects (including other SSSOM mappings).
+  
+* Building blocks
+
+  A <mapping filter>, represented by the <<<IMappingFilter>>> interface,
+  allows to select mappings. The interface defines a single method
+  <<<filter()>>> which takes a mapping and returns a boolean value.
+  Implementations of that interface can test any of the mapping
+  metadata slot to decide whether to “accept” the mapping (by
+  returning <<<true>>>) or “reject” it (by returning <<<false>>>).
+  
+  For example, here is a lambda implementation that filters out any
+  mapping that is not using a <skos:exactMatch> predicate:
+  
++-----------------------------------------------------------------------
+IMappingFilter filter = (mapping) -> mapping.getPredicateId().equals("http://www.w3.org/2004/02/skos/core#exactMatch");
++-----------------------------------------------------------------------
+
+  A <mapping transformer>, represented by the <<<IMappingTransformer>>>
+  interface, transforms a mapping into something else. The interface is
+  generic, where the generic parameter represents the type of objects
+  the transformer generates from a mapping. It defines a single method
+  <<<transform()>>>, which takes a mapping and should return an object
+  of the generic parameter type.
+  
+  The parameter type can itself be a mapping, leading to a particular
+  case of transformer that takes a mapping and returns another mapping.
+  For example, here is an implementation that takes a mapping and
+  returns an inverted copy of it:
+  
++-----------------------------------------------------------------------
+IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapping);
++-----------------------------------------------------------------------
+
+* Processing rule
+
+  Mapping filters and transformers can be used on their own. However,
+  they are also intended to be used as building blocks to create
+  <processing rules>, which can themselves be used to apply arbitrarily
+  complex treatmemts to a set of mappings.
+  
+  A processing rule, represented by the <<<MappingProcessingRule>>>
+  class, is made of three elements:
+  
+  * a <filter> (a <<<IMappingFilter>>> object) that decides whether the
+    rule applies to a given mapping;
+    
+  * a <preprocessor> (a <<<IMappingTransformer>> object with parameter
+    type <<<Mapping>>>) that can be used to apply a pre-treatment on the
+    mapping before the rest of the rule is applied;
+    
+  * a <generator> (a <<<IMappingTransformer>>> object with the same
+    parameter type as the <<<MappingProcessingRule>>> itself) that will
+    take the filtered, preprocessed mapping and return an object
+    derived from the mapping.
+    
+  All three elements are optional. If no filter is set, a rule will
+  apply to all mappings; if no preprocessor is set, the generator will
+  be applied to the original, unmodified mapping; if no generator is
+  set, the rule will not produce anything. Obviously a rule with no
+  preprocessor <and> no generator does not make any sense. A rule with a
+  preprocessor only does make sense, though, because even if there is
+  generator in that particular rule, the result of the preprocessing
+  will be visible to any following rules.
+  
+  A rule can also have <tags>, which are simply <<<String>>> objects.
+  Tags have no effect on the behaviour of the rule, but they may be used
+  in the context of the mapping processor (see below) for two purposes:
+  
+  * selectively enable or disable some rules;
+  
+  * identify which rule generated a given object.
+  
+* The mapping processor
+
+  Now that we have rules, we need to apply them to mappings. That is the
+  job of the <mapping processor> (<<<MappingProcessor>>> class). Given a
+  list of rules, the processor will apply them to a list of mappings as
+  follows:
+  
+  [[1]] For each mapping in the list:
+  
+        [[1]] For each rule in the list:
+        
+              [[1]] Apply the <filter> to the mapping. If there is no
+                    filter, this is equivalent to a filter that accepts
+                    any mapping.
+              
+              [[2]] If the filter rejects the mapping, skip to the next
+                    rule, otherwise continue.
+                    
+              [[3]] Apply the <preprocessor> to the mapping. If there is
+                    no preprocessor, this is equivalent to a
+                    preprocessor that returns the original mapping
+                    unmodified.
+                    
+              [[4]] If the preprocessor returns <<<null>>>, skip to the
+                    next mapping (that is, skip all the remaining rules
+                    for the current mapping); otherwise, set the current
+                    mapping to the one returned by the preprocessor and
+                    continue.
+                    
+              [[5]] If there is a <generator>, apply it to the mapping;
+                    if it returns a non-<<<null>>> value (hereafter
+                    called a <product>), collect it.
+                    
+  Once all mappings have been processed, the processor will return a
+  a list of the products collected at step 1.1.5.
+  
+  The following example (somewhat contrived) shows a processor that
+  generates text representations of mappings (as <<<String>>> objects).
+  
++-----------------------------------------------------------------------
+MappingProcessor<String> processor = new MappingProcessor<T>();
+
+// Adds a rule that excludes any mapping with a predicate other than
+// skos:exactMatch.
+processor.addRule(new MappingProcessingRule<String>(
+    // filter: select mappings with a predicate other than skos:exactMatch
+    (mapping) -> !mapping.getPredicateId().equals("http://www.w3.org/2004/02/skos/core#exactMatch"),
+    // preprocessor: return null for all selected mappings
+    (mapping) -> null,
+    // no generator
+    null));
+    
+// All following rules will only be applied to mappings with a
+// predicate of skos:exactMatch, so there's no more need to filter
+// on the predicate.
+
+// Adds a rule that will generate a String to highlight high-confidence
+// mappings.
+processor.addRule(new MappingProcessingRule<String>(
+    // filter: select mappings with a high confidence value
+    (mapping) -> mapping.getConfidence() >= 0.95,
+    // no preprocessor
+    null,
+    // generator
+    (mapping) -> String.format("I am very confident the mapping between %s and %s is correct.", mapping.getSubjectId(), mapping.getObjectId())));
+    
+// Adds a rule that simply produces a text representation of a mapping.
+processor.addRule(new MappingProcessingRule<String>(
+	// no filter (we could also explicitly use: (mapping) -> true)
+	null,
+	// no preprocessor
+	null,
+	// generator
+	(mapping) -> String.format("%s is the same thing as %s.", mapping.getSubjectId(), mapping.getObjectId())));
+	
+// Run the processor
+List<String> mappingTexts = processor.process(mappings);
++-----------------------------------------------------------------------
+
+  To tag a rule, create the rule first (without adding it immediately to
+  a processor) and access the tags set:
+  
++-----------------------------------------------------------------------
+MappingProcessingRule<String> exactMatchOnly = new MappingProcessingRule<String>(
+    (mapping) -> !mapping.getPredicateId().equals("http://www.w3.org/2004/02/skos/core#exactMatch"),
+    (mapping) -> null,
+    null);
+exactMatchOnly.getTags().add("exact-match-only");
++-----------------------------------------------------------------------
+
+  When rules are tagged, use the processor’s <<<includeRules()>>> method
+  to instruct the processor to use <only> some rules for the next call
+  to <<<process()>>>. More precisly, only the rules that have at least
+  one of the specified tags will be run, all other rules will be
+  ignored.
+  
+  Conversely, use the <<<excludeRules()>>> method to force the processor
+  to ignore any rule that has at least one of the specified tag.
+  
+  The processor can emit a “generated” event every time a rule generates
+  a product. Client code can react to such events by registering a
+  <<<IMappingProcessorListener>>> object. That interface defines a
+  single method that accepts three parameters:
+  
+  * the rule that generated the product;
+  
+  * the mapping the rule was being applied to;
+  
+  * the product that was generated from that mapping.
