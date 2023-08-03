@@ -29,6 +29,10 @@ negatedFilterItem           : '!' WS* filterItem;
 idField   : 'subject'
           | 'predicate'
           | 'object'
+          | 'mapping_justification'
+          | 'subject_source'
+          | 'object_source'
+          | 'mapping_source'
           ;
 
 idValue   : CURIE

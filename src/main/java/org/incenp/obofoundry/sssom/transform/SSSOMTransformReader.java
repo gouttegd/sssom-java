@@ -485,7 +485,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
 
-        // TODO: Implement filtering on other fields
+        // TODO: Implement filtering on multi-valued ID fields (e.g. creator_id)
         // This is very repetitive code, but I am reluctant to use reflection here.
         IMappingFilter filter = null;
         switch ( fieldName ) {
@@ -505,6 +505,29 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
                             && mapping.getPredicateModifier() != PredicateModifier.NOT
                     : (mapping) -> mapping.getPredicateId().equals(pattern)
                             && mapping.getPredicateModifier() != PredicateModifier.NOT;
+            break;
+
+        case "mapping_justification":
+            filter = glob ? (mapping) -> mapping.getMappingJustification().startsWith(pattern)
+                    : (mapping) -> mapping.getMappingJustification().equals(pattern);
+            break;
+
+        case "subject_source":
+            filter = glob
+                    ? (mapping) -> mapping.getSubjectSource() != null && mapping.getSubjectSource().startsWith(pattern)
+                    : (mapping) -> mapping.getSubjectSource() != null && mapping.getSubjectSource().equals(pattern);
+            break;
+
+        case "object_source":
+            filter = glob
+                    ? (mapping) -> mapping.getObjectSource() != null && mapping.getObjectSource().startsWith(pattern)
+                    : (mapping) -> mapping.getObjectSource() != null && mapping.getObjectSource().equals(pattern);
+            break;
+
+        case "mapping_source":
+            filter = glob
+                    ? (mapping) -> mapping.getMappingSource() != null && mapping.getMappingSource().startsWith(pattern)
+                    : (mapping) -> mapping.getMappingSource() != null && mapping.getMappingSource().equals(pattern);
             break;
         }
 
