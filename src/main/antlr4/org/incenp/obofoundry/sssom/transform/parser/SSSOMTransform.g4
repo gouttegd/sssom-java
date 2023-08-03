@@ -90,7 +90,7 @@ DQ_STRING : '"' (DQ_ESCAPE|.)*? '"';
 
 TAG       : [a-zA-Z0-9-]+;
 
-CURIE     : PREFIX [a-zA-Z0-9_*]+;
+CURIE     : PREFIX [a-zA-Z0-9_*-]+;
 
 PREFIX    : [a-zA-Z0-9_]+ ':';
 
