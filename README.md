@@ -9,8 +9,12 @@ Ontology Mappings
 for the Java language – just a hobby, won’t be big and professional like
 `sssom-py`.
 
-What is supported?
-------------------
+The project provides both a Java library that can be used to support
+the SSSOM standard in a Java application, and a pluggable command for
+the [ROBOT](http://robot.obolibrary.org/) ontology manipulation tool.
+
+Features
+--------
 * Reading a SSSOM mapping set from the TSV serialisation format (both
   internal and external metadata variants are supported).
 
@@ -78,7 +82,7 @@ generate a merged ontology between FBbt, UBERON, and CL as follows:
 ```sh
 robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
       sssom-inject --sssom fbbt-mappings.sssom.tsv \
-                   --ruleset bridges.rules \
+                   --ruleset bridge.rules \
       annotate --ontology-iri http://purl.obolibrary.org/obo/bridged.owl \
                --output bridged.owl
 ```
@@ -96,14 +100,11 @@ Jar files:
   (1.9.4), which includes the command(s) from the SSSOM plugin as if
   they were built-in commands.
 
-Todo
-----
-* Support for other serialisation formats (RDF/XML-serialised OWL
-  axioms, JSON), reading and writing.
-* Support for mapping inversion.
-* More documentation (particulary for SSSOM/Transform).
-* Support for ”direct” translation of mappings into OWL axioms, as per
-  the SSSOM specification (without using custom rules).
+Homepage and repository
+-----------------------
+The project is located at <https://incenp.org/dvlpt/sssom-java/>, where
+some documentation is also hosted. The source code is available in a Git
+repository at <https://github.com/gouttegd/sssom-java>.
 
 
 Copying
