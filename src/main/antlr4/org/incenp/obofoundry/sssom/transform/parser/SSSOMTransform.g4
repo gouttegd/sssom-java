@@ -13,12 +13,15 @@ tags      : '[' TAG (',' TAG)* ']';
 filterSet : filterItem (WS+ (binaryOp WS+)? filterItem)*;
 
 filterItem: idFilterItem
+          | numFilterItem
           | predicateModifierFilterItem
           | groupFilterItem
           | negatedFilterItem
           ;
 
 idFilterItem                : idField '==' idValue;
+
+numFilterItem               : numField numOp DOUBLE;
 
 predicateModifierFilterItem : 'predicate_modifier==Not';
 
@@ -38,6 +41,12 @@ idField   : 'subject'
 idValue   : CURIE
           | '*'
           ;
+
+numField  : 'confidence'
+          | 'semantic_similarity_score'
+          ;
+
+numOp     : '==' | '>' | '<' | '>=' | '<=';
 
 binaryOp  : '&&'
           | '||'
@@ -73,6 +82,8 @@ CURIE     : PREFIX [a-zA-Z0-9_*]+;
 PREFIX    : [a-zA-Z0-9_]+ ':';
 
 IRI       : '<' [a-zA-Z0-9_/:#=.-]+ '>';
+
+DOUBLE    : [0-9]+ '.' [0-9]+;
 
 COMMENT   : '#' .*? NL -> skip;
 

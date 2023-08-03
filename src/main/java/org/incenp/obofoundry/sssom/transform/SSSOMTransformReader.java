@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -532,6 +533,50 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         }
 
         return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
+    }
+
+    @Override
+    public IMappingFilter visitNumFilterItem(SSSOMTransformParser.NumFilterItemContext ctx) {
+        String fieldName = ctx.numField().getText();
+        String operator = ctx.numOp().getText();
+        Double value = Double.valueOf(ctx.DOUBLE().getText());
+
+        Function<Double, Boolean> testValue = null;
+        switch ( operator ) {
+        case "==":
+            testValue = (v) -> v != null && v == value;
+            break;
+
+        case ">":
+            testValue = (v) -> v != null && v > value;
+            break;
+
+        case ">=":
+            testValue = (v) -> v != null && v >= value;
+            break;
+
+        case "<":
+            testValue = (v) -> v != null && v < value;
+            break;
+
+        case "<=":
+            testValue = (v) -> v != null && v <= value;
+            break;
+        }
+        Function<Double, Boolean> finalTestValue = testValue;
+
+        IMappingFilter filter = null;
+        switch ( fieldName ) {
+        case "confidence":
+            filter = (mapping) -> finalTestValue.apply(mapping.getConfidence());
+            break;
+
+        case "semantic_similarity_score":
+            filter = (mapping) -> finalTestValue.apply(mapping.getSemanticSimilarityScore());
+            break;
+        }
+
+        return addFilter(new NamedFilter(String.format("%s%s%.2f", fieldName, operator, value), filter));
     }
 
     @Override
