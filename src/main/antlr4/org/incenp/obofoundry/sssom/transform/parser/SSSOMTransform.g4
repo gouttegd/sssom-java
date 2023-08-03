@@ -13,6 +13,7 @@ tags      : '[' TAG (',' TAG)* ']';
 filterSet : filterItem (WS+ (binaryOp WS+)? filterItem)*;
 
 filterItem: idFilterItem
+          | multiIdFilterItem
           | numFilterItem
           | predicateModifierFilterItem
           | groupFilterItem
@@ -20,6 +21,8 @@ filterItem: idFilterItem
           ;
 
 idFilterItem                : idField '==' idValue;
+
+multiIdFilterItem           : mulIdField '==' idValue;
 
 numFilterItem               : numField numOp DOUBLE;
 
@@ -36,6 +39,16 @@ idField   : 'subject'
           | 'subject_source'
           | 'object_source'
           | 'mapping_source'
+          ;
+
+mulIdField: 'creator'
+          | 'author'
+          | 'reviewer'
+          | 'curation_rule'
+          | 'subject_match_field'
+          | 'object_match_field'
+          | 'subject_preprocessing'
+          | 'object_preprocessing'
           ;
 
 idValue   : CURIE

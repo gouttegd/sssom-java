@@ -489,7 +489,6 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         Function<String, Boolean> testValue = glob ? (v) -> v != null && v.startsWith(pattern)
                 : (v) -> v != null && v.equals(pattern);
 
-        // TODO: Implement filtering on multi-valued ID fields (e.g. creator_id)
         IMappingFilter filter = null;
         switch ( fieldName ) {
         case "subject":
@@ -523,6 +522,69 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         }
 
         return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
+    }
+
+    @Override
+    public IMappingFilter visitMultiIdFilterItem(SSSOMTransformParser.MultiIdFilterItemContext ctx) {
+        String fieldName = ctx.mulIdField().getText();
+        String value = ctx.idValue().getText();
+
+        if ( value.equals("*") ) {
+            return addFilter(new NamedFilter("*", (mapping) -> true));
+        }
+
+        value = prefixManager.expandIdentifier(value);
+        boolean glob = value.endsWith("*");
+        String pattern = glob ? value.substring(0, value.length() - 1) : value;
+
+        Function<List<String>, Boolean> testValue = glob ? (v) -> v != null && globListValue(v, pattern)
+                : (v) -> v != null && v.contains(pattern);
+
+        IMappingFilter filter = null;
+        switch ( fieldName ) {
+        case "creator":
+            filter = (mapping) -> testValue.apply(mapping.getCreatorId());
+            break;
+
+        case "author":
+            filter = (mapping) -> testValue.apply(mapping.getAuthorId());
+            break;
+
+        case "reviewer":
+            filter = (mapping) -> testValue.apply(mapping.getReviewerId());
+            break;
+
+        case "curation_rule":
+            filter = (mapping) -> testValue.apply(mapping.getCurationRule());
+            break;
+
+        case "subject_match_field":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectMatchField());
+            break;
+
+        case "object_match_field":
+            filter = (mapping) -> testValue.apply(mapping.getObjectMatchField());
+            break;
+
+        case "subject_preprocessing":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectPreprocessing());
+            break;
+
+        case "object_preprocessing":
+            filter = (mapping) -> testValue.apply(mapping.getObjectPreprocessing());
+            break;
+        }
+
+        return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
+    }
+
+    public static boolean globListValue(List<String> values, String pattern) {
+        for ( String value : values ) {
+            if ( value.startsWith(pattern) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
