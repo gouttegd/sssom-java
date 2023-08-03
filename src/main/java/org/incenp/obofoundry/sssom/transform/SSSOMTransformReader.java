@@ -486,49 +486,39 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
 
+        Function<String, Boolean> testValue = glob ? (v) -> v != null && v.startsWith(pattern)
+                : (v) -> v != null && v.equals(pattern);
+
         // TODO: Implement filtering on multi-valued ID fields (e.g. creator_id)
-        // This is very repetitive code, but I am reluctant to use reflection here.
         IMappingFilter filter = null;
         switch ( fieldName ) {
         case "subject":
-            filter = glob ? (mapping) -> mapping.getSubjectId().startsWith(pattern)
-                    : (mapping) -> mapping.getSubjectId().equals(pattern);
+            filter = (mapping) -> testValue.apply(mapping.getSubjectId());
             break;
 
         case "object":
-            filter = glob ? (mapping) -> mapping.getObjectId().startsWith(pattern)
-                    : (mapping) -> mapping.getObjectId().equals(pattern);
+            filter = (mapping) -> testValue.apply(mapping.getObjectId());
             break;
 
         case "predicate":
-            filter = glob
-                    ? (mapping) -> mapping.getPredicateId().startsWith(pattern)
-                            && mapping.getPredicateModifier() != PredicateModifier.NOT
-                    : (mapping) -> mapping.getPredicateId().equals(pattern)
-                            && mapping.getPredicateModifier() != PredicateModifier.NOT;
+            filter = (mapping) -> testValue.apply(mapping.getPredicateId())
+                    && mapping.getPredicateModifier() != PredicateModifier.NOT;
             break;
 
         case "mapping_justification":
-            filter = glob ? (mapping) -> mapping.getMappingJustification().startsWith(pattern)
-                    : (mapping) -> mapping.getMappingJustification().equals(pattern);
+            filter = (mapping) -> testValue.apply(mapping.getMappingJustification());
             break;
 
         case "subject_source":
-            filter = glob
-                    ? (mapping) -> mapping.getSubjectSource() != null && mapping.getSubjectSource().startsWith(pattern)
-                    : (mapping) -> mapping.getSubjectSource() != null && mapping.getSubjectSource().equals(pattern);
+            filter = (mapping) -> testValue.apply(mapping.getSubjectSource());
             break;
 
         case "object_source":
-            filter = glob
-                    ? (mapping) -> mapping.getObjectSource() != null && mapping.getObjectSource().startsWith(pattern)
-                    : (mapping) -> mapping.getObjectSource() != null && mapping.getObjectSource().equals(pattern);
+            filter = (mapping) -> testValue.apply(mapping.getObjectSource());
             break;
 
         case "mapping_source":
-            filter = glob
-                    ? (mapping) -> mapping.getMappingSource() != null && mapping.getMappingSource().startsWith(pattern)
-                    : (mapping) -> mapping.getMappingSource() != null && mapping.getMappingSource().equals(pattern);
+            filter = (mapping) -> testValue.apply(mapping.getMappingSource());
             break;
         }
 
