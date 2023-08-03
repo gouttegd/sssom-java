@@ -12,18 +12,26 @@ tags      : '[' TAG (',' TAG)* ']';
 
 filterSet : filterItem (WS+ (binaryOp WS+)? filterItem)*;
 
-filterItem: field '==' value                               #singleFilterItem
-          | 'predicate_modifier==Not'                      #predicateModifierFilterItem
-          | '(' WS* filterSet WS* ')'                      #groupFilterItem
-          | '!' WS* filterItem                             #negatedFilterItem
+filterItem: idFilterItem
+          | predicateModifierFilterItem
+          | groupFilterItem
+          | negatedFilterItem
           ;
 
-field     : 'subject'
+idFilterItem                : idField '==' idValue;
+
+predicateModifierFilterItem : 'predicate_modifier==Not';
+
+groupFilterItem             : '(' WS* filterSet WS* ')';
+
+negatedFilterItem           : '!' WS* filterItem;
+
+idField   : 'subject'
           | 'predicate'
           | 'object'
           ;
 
-value     : CURIE
+idValue   : CURIE
           | '*'
           ;
 

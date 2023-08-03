@@ -469,12 +469,12 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     }
 
     /*
-     * Create a filter object to filter mappings on the value of a single field.
+     * Create a filter object to filter mappings on the value of a single ID field.
      */
     @Override
-    public IMappingFilter visitSingleFilterItem(SSSOMTransformParser.SingleFilterItemContext ctx) {
-        String fieldName = ctx.field().getText();
-        String value = ctx.value().getText();
+    public IMappingFilter visitIdFilterItem(SSSOMTransformParser.IdFilterItemContext ctx) {
+        String fieldName = ctx.idField().getText();
+        String value = ctx.idValue().getText();
 
         if ( value.equals("*") ) {
             // The entire value is a joker, create a dummy filter that accepts everything
