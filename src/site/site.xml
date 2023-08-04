@@ -10,6 +10,7 @@
         <item name="Basic operations" href="basic-operations.html" />
         <item name="Transformations" href="transformations.html" />
       </item>
+      <item name="SSSOM/Transform" href="sssom-transform.html" />
       <item name="ROBOT command" href="robot.html" />
       <item name="API Documentation" href="apidocs/index.html" />
     </menu>

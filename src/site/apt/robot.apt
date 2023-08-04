@@ -73,8 +73,8 @@ ROBOT command
   to generate axioms: which mappings to consider and which axioms to
   produce from them.
   
-  The SSSOM/Transform will be described in another part of this
-  documentation.
+  See the {{{./sssom-transform.html}SSSOM/Transform}} section of this
+  documentation for a description of the SSSOM/Transform language.
   
   For the specific use-case of generating cross-species mappings between
   taxon-specific ontologies (or between a taxon-specific ontology and a

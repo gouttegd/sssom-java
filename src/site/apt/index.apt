@@ -13,9 +13,10 @@
   It provides a {{{./library.html}library of Java classes}} to represent
   and manipulate SSSOM mappings and mapping sets, read and write them to
   and from the SSSOM TSV serialisation format. It implements an ad-hoc
-  filtering and transformation language, tentatively named <SSSOM/T>
-  (SSSOM/Transform) to allow rule-based arbitrary transformation of
-  mappings into any kind of objects.
+  filtering and transformation language, tentatively named
+  {{{./sssom-transform.html}SSSOM/Transform}} or SSSOM/T, to allow
+  rule-based arbitrary transformation of mappings into any kind of
+  objects.
   
   It also provides a {{{./robot.html}ROBOT plugin}} to generate OWL
   axioms from a SSSOM mapping set and inject them into an ontology as

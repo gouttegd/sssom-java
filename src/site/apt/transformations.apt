@@ -1,13 +1,15 @@
 Mapping transformations
 
-  The <<<org.incenp.obofoundry.sssom.transform>>> package provides
+  The {{{./apidocs/org/incenp/obofoundry/sssom/transform/package-summary.html}
+  org.incenp.obofoundry.sssom.transform}} package provides
   classes and interfaces intended to allow transforming SSSOM mappings
   into other objects (including other SSSOM mappings).
   
 * Building blocks
 
-  A <mapping filter>, represented by the <<<IMappingFilter>>> interface,
-  allows to select mappings. The interface defines a single method
+  A <mapping filter>, represented by the
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/IMappingFilter.html}IMappingFilter}}
+  interface, allows to select mappings. The interface defines a single method
   <<<filter()>>> which takes a mapping and returns a boolean value.
   Implementations of that interface can test any of the mapping
   metadata slot to decide whether to “accept” the mapping (by
@@ -20,12 +22,13 @@ Mapping transformations
 IMappingFilter filter = (mapping) -> mapping.getPredicateId().equals("http://www.w3.org/2004/02/skos/core#exactMatch");
 +-----------------------------------------------------------------------
 
-  A <mapping transformer>, represented by the <<<IMappingTransformer>>>
+  A <mapping transformer>, represented by the
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/IMappingTransformer.html}IMappingTransformer\<T\>}}
   interface, transforms a mapping into something else. The interface is
   generic, where the generic parameter represents the type of objects
   the transformer generates from a mapping. It defines a single method
   <<<transform()>>>, which takes a mapping and should return an object
-  of the generic parameter type.
+  of the generic parameter type <T>.
   
   The parameter type can itself be a mapping, leading to a particular
   case of transformer that takes a mapping and returns another mapping.
@@ -41,29 +44,33 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   Mapping filters and transformers can be used on their own. However,
   they are also intended to be used as building blocks to create
   <processing rules>, which can themselves be used to apply arbitrarily
-  complex treatmemts to a set of mappings.
+  complex treatments to a set of mappings.
   
-  A processing rule, represented by the <<<MappingProcessingRule>>>
+  A processing rule, represented by the
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/MappingProcessingRule.html}MappingProcessingRule\<T\>}}
   class, is made of three elements:
   
   * a <filter> (a <<<IMappingFilter>>> object) that decides whether the
     rule applies to a given mapping;
     
-  * a <preprocessor> (a <<<IMappingTransformer>> object with parameter
-    type <<<Mapping>>>) that can be used to apply a pre-treatment on the
-    mapping before the rest of the rule is applied;
+  * a <preprocessor> (a <<<IMappingTransformer<Mapping>​>>>, that is a
+    transformer that produces mappings from mappings) that can be used
+    to apply a pre-treatment on the mapping before the rest of the rule
+    is applied;
     
-  * a <generator> (a <<<IMappingTransformer>>> object with the same
+  * a <generator> (a <<<IMappingTransformer<T>​>>> object, with the same
     parameter type as the <<<MappingProcessingRule>>> itself) that will
     take the filtered, preprocessed mapping and return an object
     derived from the mapping.
     
+  []
+  
   All three elements are optional. If no filter is set, a rule will
   apply to all mappings; if no preprocessor is set, the generator will
   be applied to the original, unmodified mapping; if no generator is
   set, the rule will not produce anything. Obviously a rule with no
   preprocessor <and> no generator does not make any sense. A rule with a
-  preprocessor only does make sense, though, because even if there is
+  preprocessor only does make sense, though, because even if there is no
   generator in that particular rule, the result of the preprocessing
   will be visible to any following rules.
   
@@ -78,9 +85,10 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
 * The mapping processor
 
   Now that we have rules, we need to apply them to mappings. That is the
-  job of the <mapping processor> (<<<MappingProcessor>>> class). Given a
-  list of rules, the processor will apply them to a list of mappings as
-  follows:
+  job of the <mapping processor>
+  ({{{./apidocs/org/incenp/obofoundry/sssom/transform/MappingProcessor.html}MappingProcessor\<T\>}}
+  class). Given a list of rules, the processor will apply them to a list
+  of mappings as follows:
   
   [[1]] For each mapping in the list:
   
@@ -108,14 +116,16 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
                     if it returns a non-<<<null>>> value (hereafter
                     called a <product>), collect it.
                     
+  []
+  
   Once all mappings have been processed, the processor will return a
-  a list of the products collected at step 1.1.5.
+  list of the products collected at step 1.1.5.
   
   The following example (somewhat contrived) shows a processor that
   generates text representations of mappings (as <<<String>>> objects).
   
 +-----------------------------------------------------------------------
-MappingProcessor<String> processor = new MappingProcessor<T>();
+MappingProcessor<String> processor = new MappingProcessor<String>();
 
 // Adds a rule that excludes any mapping with a predicate other than
 // skos:exactMatch.
@@ -143,12 +153,12 @@ processor.addRule(new MappingProcessingRule<String>(
     
 // Adds a rule that simply produces a text representation of a mapping.
 processor.addRule(new MappingProcessingRule<String>(
-	// no filter (we could also explicitly use: (mapping) -> true)
-	null,
-	// no preprocessor
-	null,
-	// generator
-	(mapping) -> String.format("%s is the same thing as %s.", mapping.getSubjectId(), mapping.getObjectId())));
+    // no filter (we could also explicitly use: (mapping) -> true)
+    null,
+    // no preprocessor
+    null,
+    // generator
+    (mapping) -> String.format("%s is the same thing as %s.", mapping.getSubjectId(), mapping.getObjectId())));
 	
 // Run the processor
 List<String> mappingTexts = processor.process(mappings);
@@ -184,3 +194,93 @@ exactMatchOnly.getTags().add("exact-match-only");
   * the mapping the rule was being applied to;
   
   * the product that was generated from that mapping.
+  
+* Reading rules from a file in SSSOM/Transform
+
+  While processing rules can be created “manually” by calling the
+  <<<MapppingProcessingRule>>> constructor as in the example above, they
+  can also be parsed from a file in the
+  {{{./sssom-transform.html}SSSOM/Transform language}}, a small
+  domain-specific language specifically intended to express them. The
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformReader.html}SSSOMTransformReader}}
+  class provides a parser for the SSSOM/Transform language.
+  
+  The parser is intended to be independent of the type of objects one
+  wishes to derive from mappings. To that effect, before using the
+  parser you must first create an implementation of the
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/IMappingTransformerFactory.html}IMappingTransformerFactory\<T\>}}
+  interface. The role of that factory is to interpret the contents of
+  the <<<gen>>> instructions found in a SSSOM/Transform file and to
+  return a  <<<IMappingTransformer<T>​>>> implementation that will in
+  turn, when applied to mappings, produce the desired <T> objects.
+  
+  To illustrate, consider the {{{./robot.html}sssom-inject}} ROBOT
+  command provided by the SSSOM-Java project. It allows to use the
+  SSSOM/Transform language to create OWL axioms from mappings, using
+  <<<gen>>> instructions in Manchester syntax. For example, the
+  following rule:
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch -> gen("%subject_id EquivalentTo %object_id");
++-----------------------------------------------------------------------
+  
+  tells <<<sssom-inject>>> to generate equivalence axioms between the
+  subject and object of all mappings that have a <<<skos:exactMatch>>>
+  predicate.
+  
+  Because the SSSOM/Transform parser is application-agnostic (it doesn’t
+  know what the rules it is parsing will be used for – in this instance,
+  it doesn’t know they will be used to produce OWL axioms), we must
+  provide it with a <<<IMappingTransformerFactory<OWLAxiom>​>>> that
+  will be able to parse the expressions in Manchester syntax found
+  inside the <<<gen>>> instructions, and to turn them into appropriate
+  <<<IMappingTransformer<OWLAxiom>​>>> implementations – in the example,
+  the factory must return a transformer that can take a mapping and
+  return an equivalence axiom.
+  
+  Leaving this example aside and coming back to the general case: if we
+  want to transform mappings in objects of type <Foo> and we want to
+  obtain the required processing rules from a SSSOM/Transform file, we
+  first need to create an implementation of
+  <<<IMappingTransformerFactory<Foo>​>>>:
+  
++-----------------------------------------------------------------------
+public class MyTransformerFactory implements IMappingTransformerFactory<Foo> {
+
+    @Override
+    public IMappingTransformer<Foo> create(String text, PrefixManager manager) {
+        // "text" is the contents of a gen() instruction in SSSOM/Transform
+        // manager is a helper object that can be used to expand CURIEs inside the text, if needed
+
+        // Interpret the text according to the application needs and
+        // make a transformer out of it (here with a lambda, but it
+        // could be an instance of a "real" class implementing the
+        // IMappingTransformer interface instead):
+        IMappingTransformer<Foo> transformer = (mapping) -> [application-specific code that will create a Foo from a mapping];
+
+        return transformer;
+    }
+}
++-----------------------------------------------------------------------
+
+  Then we can create a <<<SSSOMTransformReader>>> object, passing it the
+  transformer factory:
+  
++-----------------------------------------------------------------------
+try {
+    MyTransformerFactory factory = new MyTransformerFactory();
+    SSSOMTransformReader<Foo> reader = new SSSOMTransformReader<Foo>(factory, "my-sssom-transform-file.sssomt");
+    if ( reader.read() ) {
+        // parsing completed without errors, get the rules
+        List<MappingProcessingRule<Foo>> rules = reader.getRules();
+    } else {
+        // Some parsing errors occurred
+        List<SSSOMTransformError> errors = reader.getErrors();
+    }
+} catch (IOException ioe) {
+    // Some I/O error (not specific to SSSOM/Transform) occurred
+}
++-----------------------------------------------------------------------
+
+  The rules thus obtained (assuming no parsing error) can then be given
+  to a <<<MappingProcessor<Foo>​>>> object.
