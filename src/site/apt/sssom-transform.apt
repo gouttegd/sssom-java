@@ -1,3 +1,495 @@
 The SSSOM/Transform language
 
-  SSSOM/Transform...
+  <SSSOM/Transform> (or <SSSOM/T>) is a small domain-specific language
+  for filtering and transforming SSSOM mappings into other objects.
+  
+* The basics
+
+  The core element of the SSSOM/Transform language is the <rule>. In
+  fact, a SSSOM/Transform file is called a <ruleset>. In its simplest
+  form, a rule looks like the following:
+  
++-----------------------------------------------------------------------
+FILTER -> ACTION;
++-----------------------------------------------------------------------
+
+  where <FILTER> is an expression that will determine to which mappings
+  the rule is applied, and <ACTION> describes what will happen when the
+  rule is applied to those mappings.
+  
+  A <ruleset> is a succession of rules, to be applied in the order in
+  which they appear in the file.
+  
+  In most places whitespace is insignificant, except when explicitly
+  specified otherwise in this document. Comments start with a <<<#>>>
+  character and runs until the end of the line.
+  
+* Filters
+
+** Atomic filters
+
+  The <FILTER> part of a rule can be quite complex but the core
+  component of it is an <atomic filter>, which is of the form:
+  
++-----------------------------------------------------------------------
+FIELD_NAME==PATTERN
++-----------------------------------------------------------------------
+
+  where <FIELD_NAME> identifies a SSSOM metadata slot and <PATTERN> is
+  the value to which the slot will be compared. For example, the
+  following filter:
+  
++-----------------------------------------------------------------------
+mapping_justification==semapv:ManualMappingCuration
++-----------------------------------------------------------------------
+
+  will match any mapping that has a <mapping_justification> metadata
+  slot set to <semapv:ManualMappingCuration>.
+  
+  There should be no whitespace characters between the <FIELD_NAME> and
+  the operator and between the operator and the <PATTERN> – this is one
+  of the few cases where whitespace is significant.
+  
+  The <PATTERN> part of an atomic filter may end with an asterisk (<*>),
+  in which case the filter will match if the corresponding slot <begins>
+  with the specified value. For example:
+  
++-----------------------------------------------------------------------
+predicate==semapv:crossSpecies*
++-----------------------------------------------------------------------
+
+  will match any mapping that has a predicate whose ID starts with
+  <<<https://w3id.org/semapv/vocab/crossSpecies>>> (after expansion of
+  the built-in <<<semapv>>> prefix). So it will match a mapping with a
+  predicate <<<semapv:crossSpeciesExactMatch>>> for example, but not a
+  mapping with a predicate <<<skos:exactMatch>>>.
+  
+  The <FIELD_NAME> usually corresponds exactly to the name of the
+  metadata slot against which the filter operates (as is the case for
+  <<<mapping_justification>>> above), except that for the slots whose
+  name ends with <<<_id>>> (e.g. <<<subject_id>>>, <<<predicate_id>>>,
+  <<<creator_id>>>, etc.), the <_id> suffix is dropped (that’s why the
+  previous example is <<<predicate==…>>> instead of
+  <<<predicate_id==…>>>).
+  
+  Not all slots can be filtered against. Currently, it is possible to
+  filter on the following slots:
+  
+  *  <<<subject_id>>>,
+  
+  * <<<object_id>>>,
+  
+  * <<<predicate_id>>>,
+  
+  * <<<predicate_modifier>>>,
+  
+  * <<<mapping_justification>>>,
+  
+  * <<<subject_source>>>,
+  
+  * <<<object_source>>>,
+  
+  * <<<mapping_source>>>,
+  
+  * <<<creator_id>>>,
+  
+  * <<<author_id>>>,
+  
+  * <<<reviewer_id>>>,
+  
+  * <<<curation_rule>>>,
+  
+  * <<<subject_match_field>>>,
+  
+  * <<<object_match_field>>>,
+  
+  * <<<subject_preprocessing>>>,
+  
+  * <<<object_preprocessing>>>,
+  
+  * <<<confidence>>>,
+  
+  * <<<semantic_similarity_score>>>.
+  
+*** Filters on multi-valued slots
+
+  For the filters that act on multi-valued slots (e.g. <<<creator_id>>>,
+  <<<author_id>>>, etc.), a mapping is considered to match if at least
+  <one> of the values matches the specified pattern. For example
+  
++-----------------------------------------------------------------------
+creator==ORCID:*
++-----------------------------------------------------------------------
+
+  will match a mapping if the list of its creators’ identifiers contains
+  at least one ORCID identifier (assuming the <ORCID> prefix has been
+  declared, see further below for how to declare a prefix). A mapping
+  with no creator IDs or with only creator IDs of another type will not
+  match.
+  
+*** Filters on numeric slots
+
+  For the two filters that act on numeric slots (<<<confidence>>> and
+  <<<semantic_similarity_score>>>, in addition to the equality operator
+  (<<<==>>>), it is possible to use one of the following inequality
+  operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and <<<\<=>>>. They have the
+  traditional meaning you could expect. For example
+  
++-----------------------------------------------------------------------
+confidence>=0.8
++-----------------------------------------------------------------------
+
+  will match any mapping with a confidence value higher than or equal to
+  0.8.
+  
+*** Filtering on mapping predicate
+
+  The filter on mapping predicate (<<<predicate==…>>>) is a bit special
+  in that it takes into account the <predicate modifier> of a mapping,
+  if present, to determine whether the mapping is a match or not. If the
+  predicate modifier <<<Not>>> is present, then the mapping will not be
+  a match for the filter even if its predicate does correspond to the
+  pattern that the filter is looking for.
+  
+** Combining filters
+
+  As you may have guessed already, if there are <atomic filters>, then
+  there must be some kind of <non-atomic> filters. Indeed, atomic
+  filters can be combined using the binary operators <<<&&>>> (boolean
+  “and”) and <<<||>>> (boolean “or”). If <A> and <B> are two atomic
+  filters as described above, then <<<A && B>>> will match any mapping
+  that is matched by both <A> and <B>, while <<<A || B>>> will match any
+  mapping that is matched by either <A> or <B> (including both).
+  
+  Of note, currently, there is no boolean ”xor” operator. Such an
+  operator may be added in the future.
+  
+  The <<<&&>>> operator may be omitted: two consecutive atomic filters
+  are implicitly considered to be combined with a boolean “and”
+  operator. So
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch confidence>=0.8
++-----------------------------------------------------------------------
+
+  is the same filter expression as
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch && confidence>=0.8
++-----------------------------------------------------------------------
+
+  Parentheses can be used to group atomic filters together. The entire
+  group may then be assimilated to an atomic filter itself that can be
+  combined with other atomic filters. For example:
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCuration || confidence>=0.95)
++-----------------------------------------------------------------------
+
+  will match mappings that have a <<<skos:exactMatch>>> predicate and
+  that either are the result of a manual mapping process or have a high
+  degree of confidence.
+  
+  Note that without the parentheses, the filter would instead match
+  mappings that either
+  
+  * are <<<skos:exactMatch>>> and are the result of a manual curation
+    process, or
+    
+  * have a high degree of confidence.
+  
+  []
+  
+  As a general rule, as soon as you are combining more than two filters,
+  and unless you are combining them all with the same operator, it is
+  strongly recommended to always use parentheses instead of relying on
+  the operators’ precedence rules.
+  
+** Negating filters
+
+  Any filter, be it atomic or combined, can be <negated> by prepending a
+  <<<!>>> sign. If <A> is a filter, <<<!A>>> will match any mapping that
+  would <not> be matched by <A>. For example:
+  
++-----------------------------------------------------------------------
+!predicate==skos:exactMatch
++-----------------------------------------------------------------------
+
+  will match any mapping with a predicate other than
+  <<<skos:exactMatch>>>.
+  
+  Note that because of the particular behaviour of the <<<predicate>>>
+  filter ({{{Filtering on mapping predicate}see above}}), in this
+  example, the filter <would> match a mapping that has a
+  <<<skos:exactMatch>>> predicate coupled to the predicate modifier
+  <Not>: the <<<predicate==skos:exactMatch>>> would initially reject
+  such a mapping (because of the <Not> modifier), but then the negation
+  operator would invert the result and ultimately accept the mapping.
+  This behaviour is deemed (by me at least) semantically correct: a
+  mapping with a “not skos:exactMatch” predicate is, well, <not> a
+  mapping with a ”skos:exactMatch” predicate, so accepting it when we’re
+  looking for mappings with another predicate than “skos:exactMatch” is
+  the correct thing to do.
+  
+  If you want to select only the mappings that really have a different
+  predicate, without including the mappings that may have this predicate
+  but in a negated form, you must explicitly filter out the predicate
+  modifier as well:
+  
++-----------------------------------------------------------------------
+!predicate==skos:exactMatch && !predicate_modifier==Not
++-----------------------------------------------------------------------
+
+* Actions
+
+  Once the <FILTER> part of a rule has accepted a mapping, the <ACTION>
+  part (after the <<<-\>>>> sign) specifies what to do with it. There
+  two types of actions:
+  
+  * built-in actions, which are independent of the application that is
+    using the SSSOM/Transform language;
+    
+  * application-specific actions.
+  
+  []
+  
+** Built-in actions
+
+  Currently, there are two supported built-in actions:
+  
+  * The <<<stop()>>> action indicates that the mapping to which the
+    action is applied should be excluded from any remaining rules.
+    Basically, once this action has been applied to a mapping, it’s as
+    if the mapping was removed from the mapping set for the rest of the
+    ruleset.
+    
+  * The <<<invert()>>> action <inverts> the current mapping, so that the
+    subject becomes the object and vice-versa. Note that not all
+    mappings can be inverted (the predicate needs to be invertible); if
+    a given mapping cannot be inverted, it will be excluded from any
+    further processing (as if it had been the target of a <<<stop()>>>
+    action).
+    
+    See the {{{https://mapping-commons.github.io/sssom/chaining_rules/#inverse-rules}SSSOM documentation}}
+    about mapping inversion.
+    
+  []
+  
+  Example:
+  
++-----------------------------------------------------------------------
+!mapping_justification==semapv:ManualMappingCuration -> stop();
+subject==CL:* -> invert();
++-----------------------------------------------------------------------
+
+  The first rule will drop all mappings that do not come from a manual
+  curation process. The second rule (which, consequently, will only ever
+  apply to manually curated mappings) inverts all mappings that have a
+  subject in the CL namespace. After these two rules, the mapping set
+  only contains manually curated mappings, and no mapping can have a CL
+  subject (since the mappings that did were either inverted, or dropped
+  if they couldn’t be inverted).
+  
+  Note that, on their own, these two rules are equivalent to this single
+  one:
+  
++-----------------------------------------------------------------------
+mapping_justification==semapv:ManualMappingCuration && subject==CL:* -> invert()
++-----------------------------------------------------------------------
+
+  which inverts all manually curated mappings that have a CL subject.
+  The difference lies in what may happen next: in the second case,
+  mappings that are not manually curated are still present in the set
+  – they have been excluded from the <<<invert()>>> rule, but not
+  removed, so they will be seen by any rule that may follow.
+  
+** Application-specific actions
+
+  Application-specific actions are specified using the <<<gen()>>>
+  (short for “generate”) function, which takes an arbitrary string,
+  called a <generation instruction>, enclosed in either single
+  (<<<' '>>>) or double (<<<" ">>>) quotes:
+  
++-----------------------------------------------------------------------
+subject==CL:* -> gen("generation instruction");
++-----------------------------------------------------------------------
+
+  Internal quote characters inside the generation instruction must be
+  escaped with <<<\\>>>:
+  
++-----------------------------------------------------------------------
+subject==CL:* -> gen("generation instruction with \"internal\" quotes");
++-----------------------------------------------------------------------
+
+  What a <generation instruction> is will depend on the application that
+  is using the SSSOM/Transform language, and on what that application is
+  supposed to generate from mappings. This is entirely out of scope for
+  SSSOM/Transform and left at the discretion of applications.
+  
+  For example, the {{{./robot.html}sssom-inject}} ROBOT command uses the
+  SSSOM/Transform language to generate OWL axioms from mappings. To that
+  effect, it expects that the generation instructions should be
+  statements in the {{{https://www.w3.org/TR/owl2-manchester-syntax/}OWL Manchester Syntax}},
+  like this one:
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch -> gen("%subject_id EquivalentTo %object_id");
++-----------------------------------------------------------------------
+
+  For <<<sssom-inject>>>, this rule means that mappings with a
+  <<<skos:exactMatch>>> predicate should yield OWL equivalence axioms
+  between the subject and the object. In that context, <<<%subject_id>>>
+  and <<<%object_id>>> are placeholders that are replaced by the
+  identifiers of the subject and the object of the mapping respectively.
+  
+  Other applications can devise whatever syntax is appropriate for their
+  generation instructions. For example, if application used
+  SSSOM/Transform-based rules to load SSSOM data into a database, one
+  could imagine generation instructions that should be SQL statements:
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch -> gen("INSERT INTO exact_matches VALUES(%subject_id, %object_id)");
++-----------------------------------------------------------------------
+
+* Grouping rules
+
+  If several actions need to be performed on the same selection on the
+  same mappings, they can be grouped into a bracket-enclosed group as
+  follows:
+  
++-----------------------------------------------------------------------
+subject==CL:* -> {
+    invert();
+    gen("application-specific instruction 1");
+    gen("application-specific instruction 2");
+}
++-----------------------------------------------------------------------
+
+  This is strictly equivalent to:
+  
++-----------------------------------------------------------------------
+subject==CL:* -> invert();
+subject==CL:* -> gen("application-specific instruction 1");
+subject==CL:* -> gen("application-specific instruction 2");
++-----------------------------------------------------------------------
+
+  Likewise, filter expressions can be grouped too:
+  
++-----------------------------------------------------------------------
+subject==CL:* {
+    predicate==skos:exactMatch -> gen("instruction for CL exact matches");
+    predicate==skos:broadMatch -> gen("instruction for CL broad matches");
+}
++-----------------------------------------------------------------------
+
+  This is strictly equivalent to:
+  
++-----------------------------------------------------------------------
+subject==CL:* && predicate==skos:exactMatch -> gen("instruction for CL exact matches");
+subject==CL:* && predicate==skos:broadMatch -> gen("instruction for CL broad matches");
++-----------------------------------------------------------------------
+
+  Filter expressions can be nested to any depth, and can be combined
+  with action groups:
+  
++-----------------------------------------------------------------------
+subject==CL:* {
+    predicate==skos:exactMatch {
+        confidence>=0.8 -> {
+        	gen("instruction for high-confidence CL exact matches");
+        	gen("another instruction for high-confidence CL exact matches");
+        }
+        
+        mapping_justification=semapv:ManualMappingCuration -> gen("single instruction for manually curated CL exact matches");
+    }
+    
+    !predicate==skos:exactMatch -> gen("instruction for any CL mapping that is not an exact match");
+}
++-----------------------------------------------------------------------
+
+  The following is not allowed, however:
+  
++-----------------------------------------------------------------------
+subject==CL:* {
+    predicate==skos:exactMatch -> gen("instruction for CL exact matches");
+    -> gen("instruction for all CL matches, regardless of the predicate");
+}
++-----------------------------------------------------------------------
+
+  This is because the <<<-\>>>> sign <must> be preceded by a filter
+  expression. What you could do in that case is to create a “dummy”
+  filter that accepts anything:
+  
++-----------------------------------------------------------------------
+subject==CL:* {
+    predicate==skos:exactMatch -> gen("instruction for CL exact matches");
+    predicate==* -> gen("instruction for all CL matches, regardless of the predicate");
+}
++-----------------------------------------------------------------------
+
+* Tagging rules
+
+  Rules in a SSSOM/Transform ruleset can be tagged. Tags are placed
+  ahead of the filter expression, enclosed in square brackets and
+  separated by commas. For example, this rule has two tags <<<tag1>>>
+  and <<<tag2>>>.
+  
++-----------------------------------------------------------------------
+[tag1,tag2] subject==CL:* -> gen("instruction for CL matches");
++-----------------------------------------------------------------------
+
+  Tags have no effect on the rule, but they can be used to:
+  
+  * selectively enable or disable rules based on their tags (enabling
+    only the rules that have a given tag, or conversely disabling any
+    rule that has a given tag);
+    
+  * keeping track of objects that have been generated by a given rule.
+  
+  []
+  
+  Tags can also be specified inside a nested filter expression:
+  
++-----------------------------------------------------------------------
+[tag1,tag2] subject==CL:* {
+    [tag3] predicate==skos:exactMatch -> gen("instruction for CL exact matches");
+           predicate==skos:broadMatch -> gen("instruction for CL broad matches");
+}
++-----------------------------------------------------------------------
+
+  In this example, the resulting rule that applies to exact matches ends
+  up being tagged with the three tags <<<tag1>>>, <<<tag2>>>, and
+  <<<tag3>>>. The rule that applies to broad matches is only tagged with
+  <<<tag1>>> and <<<tag2>>>.
+  
+* Declaring prefixes
+
+  As illustrated many times in the example above, SSSOM/Transform rules
+  can use shortened identifiers, commonly known as <CURIEs>, to avoid
+  having to always write full-length identifiers. For example,
+  <<<predicate==skos:exactMatch>>> is actually a shortcut for
+  <<<http://www.w3.org/2004/02/skos/core#exactMatch>>>. But apart from a
+  handful of built-in prefixes (including <<<skos>>>), all prefixes must
+  be declared before they can be used in a SSSOM/Transform rule.
+  
+  Prefix declarations must appear at the beginning of a SSSOM/Transform
+  file, before any rule. They are of the form:
+  
++-----------------------------------------------------------------------
+prefix PFX: <PREFIX_URL>
++-----------------------------------------------------------------------
+
+  where <PFX> is the prefix name, as it appears in shortened
+  identifiers, and <PREFIX_URL> is the corresponding URL prefix to which
+  the prefix name should be expanded.
+  
+  The following prefixes are built-in and need not be declared:
+  
++-----------------------------------------------------------------------
+prefix sssom:  <https://w3id.org/sssom/>
+prefix owl:    <http://www.w3.org/2002/07/owl#>
+prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+prefix skos:   <http://www.w3.org/2004/02/skos/core#>
+prefix semapv: <https://w3id.org/semapv/vocab/>
++-----------------------------------------------------------------------
