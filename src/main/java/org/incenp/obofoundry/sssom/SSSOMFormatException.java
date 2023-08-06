@@ -26,10 +26,21 @@ public class SSSOMFormatException extends Exception {
 
     private static final long serialVersionUID = 2425679493957555557L;
 
+    /**
+     * Creates a new instance with the specified error message.
+     * 
+     * @param msg A message describing the error.
+     */
     public SSSOMFormatException(String msg) {
         super(msg);
     }
 
+    /**
+     * Creates a new instance with the specifier error message and cause.
+     * 
+     * @param msg   A message describing the cause.
+     * @param inner The underlying cause of the error.
+     */
     public SSSOMFormatException(String msg, Throwable inner) {
         super(msg, inner);
     }

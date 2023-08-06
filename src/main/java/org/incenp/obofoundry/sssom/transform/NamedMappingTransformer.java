@@ -25,6 +25,15 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * wraps an existing transformer. It is mostly intended for debugging, so that
  * transformers created using lambda functions can still be displayed in a
  * readable form.
+ * <p>
+ * Example, for a transformer that produces basic string representations of
+ * mappings:
+ * 
+ * <pre>
+ * IMappingTransformer&lt;String&gt; myTransformer = new NamedMappingTransformer&lt;String&gt;("mapping-to-string",
+ *         (mapping) -&gt; String.format("%s -[%s]-> %s", mapping.getSubjectId(), mapping.getPredicateId(),
+ *                 mapping.getObjectId()));
+ * </pre>
  *
  * @param <T> The type of object to transform the mapping into.
  */

@@ -27,6 +27,13 @@ import org.incenp.obofoundry.sssom.PrefixManager;
  * {@link IMappingTransformer} object to transform mappings into the desired
  * object type.
  * 
+ * @see <a href=
+ *      "https://incenp.org/dvlpt/sssom-java/transformations.html#Reading_rules_from_a_file_in_SSSOM.2FTransform">Reading
+ *      rules from a file in SSSOM/Transform</a>
+ * @see <a href=
+ *      "https://incenp.org/dvlpt/sssom-java/sssom-transform.html#Application-specific_actions">Action-specific
+ *      actions in SSSOM/Transform</a>
+ * 
  * @param <T> The type of object that should be produced from a mapping.
  */
 public interface IMappingTransformerFactory<T> {

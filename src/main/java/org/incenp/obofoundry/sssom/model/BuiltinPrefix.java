@@ -52,14 +52,27 @@ public enum BuiltinPrefix {
         this.prefix = prefix;
     }
 
+    /**
+     * @return The URL prefix.
+     */
     public String getPrefix() {
         return prefix;
     }
 
+    /**
+     * @return The standard prefix name for this prefix.
+     */
     public String getPrefixName() {
         return name().toLowerCase();
     }
 
+    /**
+     * Parses a prefix name into one of the built-in prefix.
+     * 
+     * @param v The prefix name to parse.
+     * @return The corresponding prefix, or {@code null} if the specified name is
+     *         not a built-in prefix name.
+     */
     public static BuiltinPrefix fromString(String v) {
         return MAP.getOrDefault(v, null);
     }

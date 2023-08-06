@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public enum CommonPredicate {
     // @formatter:off
-    //                                   Predicate IRI                                              Exact?  Reverse predicate IRI
+    //                                   Predicate IRI                                              Exact?  Inverse predicate IRI
     SKOS_EXACT_MATCH                    ("http://www.w3.org/2004/02/skos/core#exactMatch",          true                                                            ),
     SKOS_NARROW_MATCH                   ("http://www.w3.org/2004/02/skos/core#narrowMatch",                 "http://www.w3.org/2004/02/skos/core#broadMatch"        ),
     SKOS_BROAD_MATCH                    ("http://www.w3.org/2004/02/skos/core#broadMatch",                  "http://www.w3.org/2004/02/skos/core#narrowMatch"       ),
@@ -51,36 +51,56 @@ public enum CommonPredicate {
 
     private final String iri;
     private final boolean exact;
-    private final String reverse;
+    private final String inverse;
 
     CommonPredicate(String iri) {
         this.iri = iri;
         this.exact = false;
-        this.reverse = null;
+        this.inverse = null;
     }
 
     CommonPredicate(String iri, boolean exact) {
         this.iri = iri;
         this.exact = exact;
-        this.reverse = null;
+        this.inverse = null;
     }
 
     CommonPredicate(String iri, String reverse) {
         this.iri = iri;
         this.exact = reverse == null;
-        this.reverse = reverse;
+        this.inverse = reverse;
     }
 
+    /**
+     * Indicates whether the predicate is “exact”. A mapping with an exact predicate
+     * can be inverted without changing the predicate.
+     * 
+     * @return {@code true} if the predicate is exact, {@code false} otherwise.
+     */
     public boolean isExact() {
         return exact;
     }
 
-    public String getReverse() {
-        return exact ? iri : reverse;
+    /**
+     * Gets the inverse predicate for this predicate. When a predicate has a known
+     * inverse predicate, the inverse predicate should be used when inverting a
+     * mapping.
+     * 
+     * @return The inverse predicate, if known; otherwise {@code null}.
+     */
+    public String getInverse() {
+        return exact ? iri : inverse;
     }
 
-    public boolean isReversible() {
-        return exact || reverse != null;
+    /**
+     * Indicates whether a predicate can be inverted. A predicate can be inverted if
+     * it is an exact predicate or if it has a known inverse predicate.
+     * 
+     * @return {@code true} if the predicate can be inverted, otherwise
+     *         {@code false}.
+     */
+    public boolean isInvertible() {
+        return exact || inverse != null;
     }
 
     @Override
@@ -88,6 +108,13 @@ public enum CommonPredicate {
         return iri;
     }
 
+    /**
+     * Parses a string into a common predicate.
+     * 
+     * @param v The string to parse.
+     * @return The corresponding predicate, or {@code null} if the provided string
+     *         does not match any of the common predicates.
+     */
     public static CommonPredicate fromString(String v) {
         return MAP.getOrDefault(v, null);
     }
@@ -101,13 +128,13 @@ public enum CommonPredicate {
      */
     public static Mapping invert(Mapping mapping) {
         CommonPredicate predicate = CommonPredicate.fromString(mapping.getPredicateId());
-        if ( predicate == null || !predicate.isReversible() ) {
+        if ( predicate == null || !predicate.isInvertible() ) {
             return null;
         }
 
         // @formatter:off
         Mapping inverted = mapping.toBuilder()
-                .predicateId(predicate.getReverse())
+                .predicateId(predicate.getInverse())
                 .subjectCategory(mapping.getObjectCategory())
                 .subjectId(mapping.getObjectId())
                 .subjectLabel(mapping.getObjectLabel())

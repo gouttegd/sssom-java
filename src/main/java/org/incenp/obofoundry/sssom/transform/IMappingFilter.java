@@ -21,7 +21,15 @@ package org.incenp.obofoundry.sssom.transform;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
- * An interface to filter mappings according in a mapping set.
+ * An interface to filter mappings according in a mapping set. This is the
+ * fundamental building block for all filtering operations on mappings.
+ * <p>
+ * Simple filters can easily be implemented using lambda functions. For example,
+ * to filter in mappings that have a “mapping source”:
+ * 
+ * <pre>
+ * IMappingFilter myFilter = (mapping) -&gt; mapping.getMappingSource() != null;
+ * </pre>
  */
 public interface IMappingFilter {
 

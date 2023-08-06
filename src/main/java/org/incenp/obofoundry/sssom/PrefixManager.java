@@ -29,6 +29,10 @@ import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 
 /**
  * Helper class to shorten/expand identifiers based on a prefix map.
+ * <p>
+ * This class is used internally by the {@link TSVReader} and {@link TSVWriter}
+ * classes. It automatically handles the prefixes that the SSSOM specification
+ * considers “built-in”.
  */
 public class PrefixManager {
 
@@ -37,7 +41,7 @@ public class PrefixManager {
     private Set<String> unresolved = new HashSet<String>();
 
     /**
-     * Creates a new instance with the builtin prefixes.
+     * Creates a new instance.
      */
     public PrefixManager() {
         for ( BuiltinPrefix builtinPrefix : BuiltinPrefix.values() ) {
@@ -49,7 +53,7 @@ public class PrefixManager {
      * Adds a new prefix.
      * 
      * @param prefixName The short name of the prefix, as it would appear in a
-     *                   CURIE.
+     *                   CURIE. It should <em>not</em> include the colon.
      * @param prefix     The expanded URL prefix;
      */
     public void add(String prefixName, String prefix) {

@@ -47,7 +47,23 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 /**
- * A parser to read a SSSOM mapping set from the TSV serialisation format.
+ * A parser to read a SSSOM mapping set from the TSV serialisation format. It
+ * can read both files that have an embedded metadata block or files with
+ * external metadata. Use one of the two-arguments constructors to explicitly
+ * specify the name of the external metadata file.
+ * <p>
+ * Usage:
+ * 
+ * <pre>
+ * try {
+ *     TSVReader reader = new TSVReader("my-mappings.sssom.tsv");
+ *     MappingSet mappingSet = reader.read();
+ * } catch ( IOException ioe ) {
+ *     // Generic, non-SSSOM-related I/O error (e.g. file not found)
+ * } catch ( SSSOMFormatException sfe ) {
+ *     // Invalid SSSOM data
+ * }
+ * </pre>
  */
 public class TSVReader {
 

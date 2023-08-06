@@ -38,6 +38,13 @@ public enum PredicateModifier {
         return repr;
     }
 
+    /**
+     * Parses a string into a predicate modifier.
+     * 
+     * @param v The string to parse.
+     * @return The corresponding predicate modifier, of {@code null} if the provided
+     *         string does not match any predicate modifier.
+     */
     @JsonCreator
     public static PredicateModifier fromString(String v) {
         if ( v.equals("Not") ) {

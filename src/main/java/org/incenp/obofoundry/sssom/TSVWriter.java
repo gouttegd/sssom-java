@@ -44,6 +44,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * A writer to serialise a SSSOM mapping set into the TSV format. For now, only
  * the “embedded metadata” variant is supported.
+ * <p>
+ * If the mapping set has a CURIE map ({@link MappingSet#getCurieMap()}), it is
+ * automatically used to shorten identifiers when they are written to the file.
+ * <p>
+ * Usage:
+ * 
+ * <pre>
+ * MappingSet mappingSet = ...;
+ * try {
+ *     TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv");
+ *     writer.write(mappingSet);
+ *     writer.close();
+ * } catch ( IOException ioe ) {
+ *     // Generic I/O error
+ * }
+ * </pre>
  */
 public class TSVWriter {
 

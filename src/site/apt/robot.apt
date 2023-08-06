@@ -48,7 +48,9 @@ ROBOT command
   separate file.
   
   Using <<<--no-merge>>> alone makes little sense as it will result in
-  the axioms being sent to nowhere.
+  the axioms being sent to nowhere (unless a
+  {{{Write generated axiom to different files}dispatch table}} is also
+  used, when generating axioms from a ruleset).
   
 * Checking for the existence of the subject and/or object
 
@@ -184,7 +186,8 @@ subject==FBbt:* -> gen('%object_id Annotation: oio:hasDbXref "%subject_curie"');
 * Exploiting tags in a ruleset
 
   When using a SSSOM/Transform ruleset (with the <<<--ruleset>>>
-  option), if the ruleset contains <tags>, two more features are
+  option), if the ruleset contains
+  {{{./sssom-transform.html#Tagging_rules}tags}}, two more features are
   available to <<<sssom-inject>>>.
   
 ** Selectively enable or disabled tagged rules

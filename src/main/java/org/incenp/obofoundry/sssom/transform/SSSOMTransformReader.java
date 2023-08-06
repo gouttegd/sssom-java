@@ -47,6 +47,36 @@ import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser;
 
 /**
  * A parser to read mapping processing rules in the SSSOM Transform language.
+ * <p>
+ * The parser is kept independent of the type of objects the SSSOM/Transform
+ * language is used to transform mappings into. Consequently, it must be
+ * provided with a {@link IMappingTransformerFactory} that must take care of
+ * parsing the contents of the {@code gen("...")} instructions and producing the
+ * appropriate mapping transformer objects.
+ * <p>
+ * Example, assuming we want to transform mappings into strings:
+ * 
+ * <pre>
+ * // MyStringTranformerFactory parses gen(...) instructions and produces
+ * // IMappingTransformer&lt;String&gt; objects.
+ * IMappingTransformerFactory&lt;String&gt; factory = new MyStringTranformerFactory();
+ * try {
+ *     SSSOMTransformReader&lt;String&gt; reader = new SSSOMTransformReader&lt;String&gt;(factory, "my-sssom-transform-file");
+ *     if ( reader.read() ) {
+ *         List&lt;MappingProcessingRule&lt;String&gt;&gt; rules = reader.getRules();
+ *         // Rules can now be fed to a MappingProcessor&lt;String&gt; object
+ *     } else {
+ *         for ( SSSOMTransformError error : reader.getErrors() ) {
+ *             System.err.printf("SSSOM/Transform parsing error: %s\n", e.getMessage());
+ *         }
+ *     }
+ * } catch ( IOException ioe ) {
+ *     // Generic I/O error
+ * }
+ * </pre>
+ * 
+ * @see <a href="https://incenp.org/dvlpt/sssom-java/sssom-transform.html">The
+ *      SSSOM/Transform language</a>
  *
  * @param <T> The type of object that should be produced by the processing rules
  *            for each mapping.

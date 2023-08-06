@@ -59,6 +59,13 @@ public enum MappingCardinality {
         return repr;
     }
 
+    /**
+     * Parses a string into a mapping cardinality enum value.
+     * 
+     * @param v The string to parse.
+     * @return The corresponding enumeration value, of {@code null} if the provided
+     *         string does not match any mapping cardinality.
+     */
     @JsonCreator
     public static MappingCardinality fromString(String v) {
         return MAP.get(v);

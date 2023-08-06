@@ -56,6 +56,13 @@ public enum EntityType {
         return name().toLowerCase().replace('_', ' ');
     }
 
+    /**
+     * Parses a string into a entity type enum value.
+     * 
+     * @param v The string to parse.
+     * @return The corresponding enumeration value, of {@code null} if the provided
+     *         string does not match any entity type.
+     */
     @JsonCreator
     public static EntityType fromString(String v) {
         return MAP.get(v);

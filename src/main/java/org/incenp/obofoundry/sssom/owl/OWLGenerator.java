@@ -31,11 +31,11 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 /**
- * Generates OWL axioms from mappings.
- * <p>
- * This object works with a list of rules (represented by
- * {@link MappingProcessingRule} objects) that are applied sequentially to each
- * mappings in a set.
+ * Generates OWL axioms from mappings. This class extends the
+ * {@link MappingProcessor} class (type-specialised to produce {@link OWLAxiom})
+ * to add the possibility of checking whether the subject and or the object of a
+ * mapping exists in a given ontology before generating an axiom for the
+ * mapping.
  */
 public class OWLGenerator extends MappingProcessor<OWLAxiom> {
 

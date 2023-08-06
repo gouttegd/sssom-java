@@ -432,7 +432,7 @@ subject==CL:* {
   Rules in a SSSOM/Transform ruleset can be tagged. Tags are placed
   ahead of the filter expression, enclosed in square brackets and
   separated by commas. For example, this rule has two tags <<<tag1>>>
-  and <<<tag2>>>.
+  and <<<tag2>>>:
   
 +-----------------------------------------------------------------------
 [tag1,tag2] subject==CL:* -> gen("instruction for CL matches");

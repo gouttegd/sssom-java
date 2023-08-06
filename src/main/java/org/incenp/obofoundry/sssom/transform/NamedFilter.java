@@ -24,6 +24,12 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * A filter that has a string representation. This class merely wraps an
  * existing filter. It is mostly intended for debugging, so that filters created
  * using lambda functions can still be displayed in an readable form.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ * IMappingFilter myFilter = new NamedFilter("has mapping source", (mapping) -&gt; mapping.getMappingSource() != null);
+ * </pre>
  */
 public class NamedFilter implements IMappingFilter {
 
