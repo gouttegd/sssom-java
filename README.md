@@ -62,10 +62,10 @@ try {
 
 * Injecting arbitrary axioms into a OWL ontology with ROBOT, with the
   axioms to inject being described by rules written in an ad-hoc
-  _SSSOM/Transform_ language. That language still needs to be described
-  somewhere, but as an example, here is how to use it to generate
-  bridging axioms between the _Drosophila Anatomy Ontology_ (FBbt) and
-  the taxon-neutral ontologies UBERON and CL:
+  [SSSOM/Transform language](https://incenp.org/dvlpt/sssom-java/sssom-transform.html).
+  As an example, here is how to use it to generate bridging axioms
+  between the _Drosophila Anatomy Ontology_ (FBbt) and the taxon-neutral
+  ontologies UBERON and CL:
   
 ```
 subject==FBbt:* (object==CL:* || object==UBERON:*) {

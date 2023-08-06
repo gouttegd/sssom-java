@@ -182,7 +182,7 @@
               <goal>jar</goal>
             </goals>
             <configuration>
-              <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser</excludePackageNames>
+              <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser,org.incenp.obofoundry.sssom.tests</excludePackageNames>
             </configuration>
           </execution>
         </executions>
@@ -247,7 +247,7 @@
           </reportSet>
         </reportSets>
         <configuration>
-          <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser</excludePackageNames>
+          <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser,,org.incenp.obofoundry.sssom.tests</excludePackageNames>
         </configuration>
       </plugin>
     </plugins>

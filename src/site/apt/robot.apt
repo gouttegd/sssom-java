@@ -26,9 +26,10 @@ ROBOT command
   be specified separately with the <<<--sssom-metadata>>> option.
   
   The command will generate OWL axioms according to instructions
-  provided by other command line options (described in another section
-  below). The default behaviour is then to inject (merge) those axioms
-  into the ontology that is currently manipulated by the ROBOT pipeline.
+  provided by other command line options (see
+  {{Specifying the axioms to generate}} below). The default behaviour is
+  then to inject (merge) those axioms into the ontology that is
+  currently manipulated by the ROBOT pipeline.
   
   That behaviour may be modified with two options.
   
@@ -66,22 +67,232 @@ ROBOT command
   
 * Specifying the axioms to generate
 
-  The main method to specify how axioms should be derived from the
-  provided mappings is to use the <<<--ruleset>>> option, which takes
-  the name of a file in the <<<SSSOM/Transform>>> language. That file
-  is expected to describe everything the command needs to know in order
-  to generate axioms: which mappings to consider and which axioms to
-  produce from them.
+  There are two ways of instructing the command of the axioms it is
+  supposed to generate from the mappings: with ad-hoc options or with a
+  <ruleset> written in the {{{./sssom-transform.html}SSSOM/Transform}}
+  language. They are not mutually exclusive: a single invocation of the
+  command can make use of both an ad-hoc option <and> a ruleset.
   
-  See the {{{./sssom-transform.html}SSSOM/Transform}} section of this
-  documentation for a description of the SSSOM/Transform language.
+** Ad-hoc options
+
+  These options are typically tailored for one particular use case and
+  do not offer a lot of control on what is happening. There are
+  currently two such options.
   
-  For the specific use-case of generating cross-species mappings between
-  taxon-specific ontologies (or between a taxon-specific ontology and a
-  taxon-neutral ontology), one may also use the <<<--cross-species>>>
-  option. That option takes as an argument the IRI (possibly shortened
-  as a CURIE) of an OWL class representing a taxon (e.g.,
+  The <<<--direct>>> option transforms the mappings into their OWL
+  serialisation as described in the
+  {{{https://mapping-commons.github.io/sssom/spec/#rdfxml-serialised-re-ified-owl-axioms}SSSOM specification}}.
+  
+  For example, per the SSSOM specification:
+  
+  * mappings with a <<<owl:equivalentClass>>> predicate will be
+    transformed into OWL equivalence axioms;
+    
+  * mappings with a predicate that is an object property will be
+    transformed into existential restriction axioms;
+    
+  * mappings with a predicate that is an annotation property will be
+    tranformed into annotation assertion axioms.
+    
+  []
+  
+  The <<<--cross-species>>> option is tailored for the specific use case
+  of generating a bridge ontology between taxon-specific ontologies (or
+  between a taxon-specific ontology and a taxon-neutral ontology). That
+  option takes as an argument the IRI (possibly shortened as a CURIE) of
+  an OWL class representing a taxon (e.g.,
   <<<http://purl.obolibrary.org/obo/NCBITaxon_7227>>>) and will generate
   bridging axioms for mappings that use the
   <<<https://w3id.org/semapv/vocab/crossSpeciesExactMatch>>> predicate.
   
+** Using a SSSOM/Transform ruleset
+  
+  Use the <<<--ruleset>>> option to specify the name of a
+  SSSOM/Transform file describing precisely which axioms to generate
+  from which mappings.
+  
+  Refer to the {{{./sssom-transform.html}description}} of the
+  SSSOM/Transform language for details about the syntax of rules and
+  filter expressions. This section describes the syntax of the
+  <generation instructions> expected by <<<sssom-inject>>>.
+  
+  Basically, each generation instruction should be a statement in
+  {{{https://www.w3.org/TR/owl2-manchester-syntax/}OWL Manchester Syntax}}
+  yielding one axiom. To generate more than one axiom per mapping, use
+  as many <<<gen()>>> commands as needed.
+  
+  In a statement, the following placeholders are recognised:
+  
+  [%subject_id] replaced by the identifier of the mapping’s subject;
+  
+  [%subject_label] replaced by the label of the mapping’s subject, if
+  				   such a label is specified (otherwise the placeholder
+  				   is left as it is);
+  
+  [%subject_curie] a shortened version of the identifier of the
+                   mapping’s subject (this requires that a suitable
+                   prefix be declared in the SSSOM/Transform file).
+  
+  []
+  
+  Corresponding placeholders are also available for the object side
+  (<<<%object_id>>>, etc.).
+  
+  Below are some example of axiom-producing SSSOM/Transform rules (the
+  prefix declarations are omitted for brevity).
+  
+  This generates a simple <SubClassOf> axiom, where the mapping’s
+  subject becomes a subclass of its object:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* -> gen('%subject_id SubClassOf: %object_id');
++-----------------------------------------------------------------------
+
+  This generates an equivalence axiom between the subject on one side,
+  and an intersection with the object and an existential restriction on
+  the other side:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* -> gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
++-----------------------------------------------------------------------
+
+  This generates an annotation assertion axiom on the subject (of note,
+  this is a slight deviation from the OWL Manchester syntax), with the
+  subject’s label being injected inside the annotation value:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* -> gen('%subject_id Annotation: IAO:0000589 "%subject_label (Drosophila)"');
++-----------------------------------------------------------------------
+
+  This generates an annotation assertion axiom on the object, with the
+  value being the shortened identifier of the subject:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* -> gen('%object_id Annotation: oio:hasDbXref "%subject_curie"');
++-----------------------------------------------------------------------
+
+  In addition to the use of Manchester syntax to specify the axioms to
+  generate, it is also possible to use the keyword <<<direct>>>, which
+  must then be used on its own (that is, the entire instruction must
+  consist of this single keyword: <<<gen('direct')>>>. This will
+  produce axioms that are the ”direct” serialisation of the mappings.
+  This has the same effect as the <<<--direct>>> option explained in a
+  previous section, except that here only the mappings selected by the
+  rule this instruction belongs to will be serialised, instead of all
+  the mappings in the set when the <<<--direct>>> option is used.
+
+* Exploiting tags in a ruleset
+
+  When using a SSSOM/Transform ruleset (with the <<<--ruleset>>>
+  option), if the ruleset contains <tags>, two more features are
+  available to <<<sssom-inject>>>.
+  
+** Selectively enable or disabled tagged rules
+
+  By default, all SSSOM/Transform rules found within a ruleset will be
+  used when processing the mapping.
+  
+  Use the <<<--include-rule>>> option, followed by a tag, to use only
+  the rules marked with that tag; all the other rules will be ignored.
+  This may be useful if you have a complex ruleset where not all rules
+  may always be needed. It may also allow you to put all your rules in
+  the same file (where it may be easier to maintain them), knowing that
+  you can use only the subset you need for a given task.
+  
+  The option may be used several times to select more than one tag. In
+  that case, the rules marked with <either> of the specified tags will
+  be selected to run.
+  
+  The <<<--exclude-rule>>> option does the opposite: it excludes any
+  rule marked with the specified tag. As for its inclusive counterpart,
+  it may be used as many times as needed to exclude more than one tag.
+  
+** Write generated axiom to different files
+
+  For some applications, having all the axioms generated from the
+  mappings in a single output file (the file specified with the
+  <<<--bridge-file>>> option, as mentioned above) may not be practical.
+  
+  The <<<--dispatch-table>>> options allows to specify a file (hereafter
+  called the <dispatch table>) describing where axioms should be written
+  depending on the tags carried by the SSSOM/Transform rules that
+  generated them.
+  
+  A minimal entry in the dispatch table looks like the following:
+  
++-----------------------------------------------------------------------
+[tag]
+file: output-file-for-tag.owl
++-----------------------------------------------------------------------
+
+  where <tag> is a tag used in the SSSOM/Transform ruleset. Any axiom
+  produced by a rule marked with that tag will be written to the
+  indicated output file (in addition to being written to the main
+  output file specified by the <<<--bridge-file>>> option, if used).
+  
+  Beyond the <<<file>>> field, the entry may also contain the following
+  fields, which will be used to annotate the output file:
+  
+  * <<<ontology-iri>>>,
+  
+  * <<<ontology-version>>>,
+  
+  * <<<dc-title>>>,
+  
+  * <<<dc-description>>>,
+  
+  * <<<dc-creator>>>,
+  
+  * <<<dc-contributor>>>.
+  
+  []
+  
+  In the case of the <<<ontology-version>>> field, its value may contain
+  a <<<%date>>> placeholder, which will be replaced by the current date
+  in the YYYY-MM-DD format.
+  
+  Given the following ruleset (again, prefix declarations omitted):
+  
++-----------------------------------------------------------------------
+[fbbt] subject==FBbt:* {
+    [unique-label] predicate==* -> gen('%subject_id Annotation: IAO:0000589 "%subject_label (Drosophila)"');
+    predicate==skos:speciesExactMatch -> gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
+}
+
+[wbbt] subject=WBbt:* {
+    [unique-label] predicate==* -> gen('%subject_id Annotation: IAO:0000589 "%subject_label (worm)"');
+    predicate==skos:speciesExactMatch -> gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:6237)');
+}
+
+[xrefs] predicate==* -> gen('%subject_id Annotation: oio:hasDbXref "%object_curie"');
++-----------------------------------------------------------------------
+
+  and the following dispatch table:
+  
++-----------------------------------------------------------------------
+[fbbt]
+file: fbbt-bridge.owl
+ontology-iri: http://example.org/my-ontology/bridges/fbbt-bridge.owl
+ontology-version: http://example.org/my-ontology/%date/bridges/fbbt-bridge.owl
+dc-title: FBbt bridge
+
+[wbbt]
+file: wbbt-bridge.owl
+ontology-iri: http://example.org/my-ontology/bridges/wbbt-bridge.owl
+ontology-version: http://example.org/my-ontology/%date/bridges/wbbt-bridge.owl
+dc-title: WBbt bridge
+
+[xrefs]
+file: mappings-as-xrefs.owl
++-----------------------------------------------------------------------
+
+  all the axioms produced by the first two rules (both marked with the
+  <<<fbbt>>> tag) would be sent to the <<<fbbt-bridge.owl>>> file, all
+  axioms generated by the next two rules (marked with the <<<wbbt>>>
+  tag) would be sent to the <<<wbbt-bridge.owl>>> file, and all axioms
+  generated by the last rule would be sent to the
+  <<<mappings-as-xrefs.owl>>> file.
+  
+  If the table also contained an entry for the <<<unique-label>>> tag,
+  the axioms generated by the first and third rule would <also> be sent
+  to the file specified in that entry.
