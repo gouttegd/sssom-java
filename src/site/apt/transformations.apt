@@ -221,7 +221,7 @@ exactMatchOnly.getTags().add("exact-match-only");
   following rule:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> gen("%subject_id EquivalentTo %object_id");
+predicate==skos:exactMatch -> gen("%subject_id EquivalentTo: %object_id");
 +-----------------------------------------------------------------------
   
   tells <<<sssom-inject>>> to generate equivalence axioms between the

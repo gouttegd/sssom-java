@@ -333,7 +333,7 @@ subject==CL:* -> gen("generation instruction with \"internal\" quotes");
   like this one:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> gen("%subject_id EquivalentTo %object_id");
+predicate==skos:exactMatch -> gen("%subject_id EquivalentTo: %object_id");
 +-----------------------------------------------------------------------
 
   For <<<sssom-inject>>>, this rule means that mappings with a
