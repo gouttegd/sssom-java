@@ -1,0 +1,12 @@
+Changes in sssom-java 0.2.0
+---------------------------
+
+    * Report all undeclared prefixes once parsing is over, instead of
+      erroring out on the first undeclared prefix.
+    * Support inversion of mappings.
+    * Support filtering on many more fields.
+    * New options for the sssom-inject ROBOT command:
+      * --dispatch-table, to write generated axioms to different files;
+      * --include-rule, to selectively enable only some rules;
+      * --exclude-rule, to selectively disable some rules;
+      * --direct, to generate direct OWL serialisation of mappings.
