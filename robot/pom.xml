@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.incenp</groupId>
+    <artifactId>sssom-java</artifactId>
+    <version>0.2.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>sssom-robot</artifactId>
+
+  <name>SSSOM-ROBOT</name>
+  <description>SSSOM plugin for ROBOT</description>
+  <url>https://incenp.org/dvlpt/sssom-java/robot.html</url>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.incenp</groupId>
+      <artifactId>sssom-core</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.obolibrary.robot</groupId>
+      <artifactId>robot-command</artifactId>
+      <version>1.9.4</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.2.4</version>
+        <executions>
+          <execution>
+            <id>robot-standalone</id>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <finalName>sssom-robot-standalone-${project.parent.version}</finalName>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.MF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.SF</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>org.incenp.obofoundry.sssom.robot.StandaloneRobotCommand</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+          <execution>
+            <id>robot-plugin</id>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <finalName>sssom-robot-plugin-${project.version}</finalName>
+              <artifactSet>
+                <includes>
+                  <include>org.incenp:sssom-core</include>
+                  <include>org.projectlombok:lombok</include>
+                  <include>com.fasterxml.jackson.dataformat:jackson-dataformat-csv</include>
+                  <include>org.antlr4:antlr4-runtime</include>
+                </includes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

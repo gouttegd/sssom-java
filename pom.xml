@@ -3,6 +3,8 @@
   <groupId>org.incenp</groupId>
   <artifactId>sssom-java</artifactId>
   <version>0.2.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
   <name>SSSOM-Java</name>
   <description>SSSOM for Java and ROBOT</description>
   <url>https://incenp.org/dvlpt/sssom-java/</url>
@@ -46,32 +48,14 @@
     </snapshotRepository>
   </distributionManagement>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <version>1.18.26</version>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.dataformat</groupId>
-      <artifactId>jackson-dataformat-csv</artifactId>
-      <version>2.12.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.obolibrary.robot</groupId>
-      <artifactId>robot-command</artifactId>
-      <version>1.9.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>antlr4-runtime</artifactId>
-      <version>4.13.0</version>
-    </dependency>
-  </dependencies>
-  
   <properties>
     <lombok.encoding>UTF-8</lombok.encoding>
   </properties>
+
+  <modules>
+    <module>core</module>
+    <module>robot</module>
+  </modules>
 
   <build>
     <plugins>
@@ -82,89 +66,6 @@
         <configuration>
           <release>8</release>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok-maven-plugin</artifactId>
-        <version>1.18.20.0</version>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>delombok</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-maven-plugin</artifactId>
-        <version>4.13.0</version>
-        <configuration>
-          <visitor>true</visitor>
-        </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>antlr4</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.2.4</version>
-        <executions>
-          <execution>
-            <id>robot-standalone</id>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <finalName>sssom-robot-standalone-${project.version}</finalName>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.MF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.SF</exclude>
-                  </excludes>
-                </filter>
-              </filters>
-              <transformers>
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.incenp.obofoundry.sssom.robot.StandaloneRobotCommand</mainClass>
-                </transformer>
-              </transformers>
-            </configuration>
-          </execution>
-          <execution>
-            <id>robot-plugin</id>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <finalName>sssom-robot-plugin-${project.version}</finalName>
-              <artifactSet>
-                <includes>
-                  <include>org.projectlombok:lombok</include>
-                  <include>com.fasterxml.jackson.dataformat:jackson-dataformat-csv</include>
-                  <include>org.antlr4:antlr4-runtime</include>
-                </includes>
-              </artifactSet>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.9.1</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -247,7 +148,7 @@
           </reportSet>
         </reportSets>
         <configuration>
-          <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser,,org.incenp.obofoundry.sssom.tests</excludePackageNames>
+          <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser,org.incenp.obofoundry.sssom.tests</excludePackageNames>
         </configuration>
       </plugin>
     </plugins>

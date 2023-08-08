@@ -1,8 +1,8 @@
-/target/
-/.classpath
-/.project
-/.settings/
+target/
+.classpath
+.project
+.settings/
 
 dependency-reduced-pom.xml
 
-src/main/java/org/incenp/obofoundry/sssom/tests
+core/src/main/java/org/incenp/obofoundry/sssom/tests
