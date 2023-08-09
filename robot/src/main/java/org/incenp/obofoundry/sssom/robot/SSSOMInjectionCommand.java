@@ -20,13 +20,16 @@ package org.incenp.obofoundry.sssom.robot;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.AxiomGeneratorFactory;
 import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
@@ -69,6 +72,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "cross-species", true, "inject cross-species bridging axioms for specified taxon");
         options.addOption(null, "direct", false,
                 "inject axioms produced by direct, standard-specified translation of the mappings");
+        options.addOption(null, "hasdbxref", false, "inject oboInOwl:hasDbXref annotations from the mappings");
         options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology");
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
         options.addOption(null, "create", false, "create a new ontology with the mappings-derived axioms");
@@ -154,6 +158,16 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         if ( line.hasOption("direct") ) {
             axiomGenerator.addRule(null, null, new DirectAxiomGenerator(ontology));
+        }
+
+        if (line.hasOption("hasdbxref")) {
+            PrefixManager pm = new PrefixManager();
+            Map<String, String> clMap = CommandLineHelper.getAddPrefixes(line);
+            for ( String prefixName : clMap.keySet() ) {
+                pm.add(prefixName, clMap.get(prefixName));
+            }
+            axiomGenerator.addRule(null, null, new AnnotationAxiomGenerator(ontology,
+                    IRI.create("http://www.geneontology.org/formats/oboInOwl#hasDbXref"), "%object_curie", pm));
         }
 
         if ( line.hasOption("dispatch-table") ) {

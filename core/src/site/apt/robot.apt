@@ -83,7 +83,7 @@ ROBOT command
 
   These options are typically tailored for one particular use case and
   do not offer a lot of control on what is happening. There are
-  currently two such options.
+  currently three such options.
   
   The <<<--direct>>> option transforms the mappings into their OWL
   serialisation as described in the
@@ -110,6 +110,10 @@ ROBOT command
   <<<http://purl.obolibrary.org/obo/NCBITaxon_7227>>>) and will generate
   bridging axioms for mappings that use the
   <<<https://w3id.org/semapv/vocab/crossSpeciesExactMatch>>> predicate.
+  
+  The <<<--hasdbxref>>> option generates OBO-style cross-reference
+  annotations (<<<oboInOwl:hasDbXref>>>) on the subject with the
+  shortened identifier of the object as value.
   
 ** Using a SSSOM/Transform ruleset
   
