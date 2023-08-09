@@ -34,7 +34,6 @@ import org.incenp.obofoundry.sssom.owl.AxiomGeneratorFactory;
 import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
-import org.incenp.obofoundry.sssom.owl.UniqueLabelGenerator;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingProcessorListener;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
@@ -230,7 +229,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         generator.addRule(predicateFilter, null, new EquivalentAxiomGenerator(ontology, partOfTaxon));
         if ( taxonName != null ) {
             generator.addRule(predicateFilter, null,
-                    new UniqueLabelGenerator(ontology, String.format("%%s (%s)", taxonName)));
+                    new AnnotationAxiomGenerator(ontology, IRI.create("http://purl.obolibrary.org/obo/IAO_0000589"),
+                            (mapping) -> String.format("%s (%s)", mapping.getSubjectLabel(), taxonName)));
         }
     }
 
