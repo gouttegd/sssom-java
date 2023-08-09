@@ -40,6 +40,7 @@ import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
 import org.obolibrary.robot.IOHelper;
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -70,6 +71,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
                 "inject axioms produced by direct, standard-specified translation of the mappings");
         options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology");
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
+        options.addOption(null, "create", false, "create a new ontology with the mappings-derived axioms");
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "ruleset", true, "inject axioms specified in ruleset file");
@@ -119,7 +121,12 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             state = new CommandState();
         }
         IOHelper ioHelper = CommandLineHelper.getIOHelper(line);
-        state = CommandLineHelper.updateInputOntology(ioHelper, state, line);
+        if ( ! line.hasOption("create") ) {
+            state = CommandLineHelper.updateInputOntology(ioHelper, state, line);
+        } else {
+            OWLOntology ontology = OWLManager.createOWLOntologyManager().createOntology();
+            state.setOntology(ontology);
+        }
 
         if ( !line.hasOption("sssom") ) {
             throw new IllegalArgumentException("Missing SSSOM mapping set");

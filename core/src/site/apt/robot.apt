@@ -52,6 +52,10 @@ ROBOT command
   {{{Write generated axiom to different files}dispatch table}} is also
   used, when generating axioms from a ruleset).
   
+  The option <<<--create>>> instructs the command to create a <new>
+  ontology with the generated axioms. The newly created ontology becomes
+  ROBOT’s current ontology, and will passed down the command pipeline.
+  
 * Checking for the existence of the subject and/or object
 
   By default, <<<sssom-inject>>> will generate axioms regardless of
