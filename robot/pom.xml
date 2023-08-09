@@ -71,6 +71,7 @@
                   <include>org.incenp:sssom-core</include>
                   <include>org.projectlombok:lombok</include>
                   <include>com.fasterxml.jackson.dataformat:jackson-dataformat-csv</include>
+                  <include>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</include>
                   <include>org.antlr4:antlr4-runtime</include>
                 </includes>
               </artifactSet>

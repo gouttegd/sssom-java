@@ -45,6 +45,7 @@ import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * A parser to read a SSSOM mapping set from the TSV serialisation format. It
@@ -162,7 +163,7 @@ public class TSVReader {
         prefixManager.add(ms.getCurieMap());
         expandEntityReferences(ms);
 
-        CsvMapper mapper = new CsvMapper();
+        ObjectMapper mapper = new CsvMapper().registerModule(new JavaTimeModule());
         CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t');
         MappingIterator<Mapping> it = mapper.readerFor(Mapping.class).with(schema).readValues(tsvReader);
         ArrayList<Mapping> mappings = new ArrayList<Mapping>();
@@ -269,7 +270,7 @@ public class TSVReader {
      * Parse a metadata YAML block into a MappingSet object.
      */
     private MappingSet readMetadata(Reader reader) throws SSSOMFormatException, IOException {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory()).registerModule(new JavaTimeModule());
         MappingSet ms;
         try {
             ms = mapper.readValue(reader, MappingSet.class);
