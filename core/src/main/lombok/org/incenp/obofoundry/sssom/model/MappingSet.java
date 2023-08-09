@@ -1,7 +1,7 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -69,8 +69,11 @@ public class MappingSet  {
     @JsonProperty("mapping_tool")
     private String mappingTool;
 
+    @JsonProperty("mapping_tool_version")
+    private String mappingToolVersion;
+
     @JsonProperty("mapping_date")
-    private LocalDateTime mappingDate;
+    private LocalDate mappingDate;
 
     @JsonProperty("subject_match_field")
     @EntityReference

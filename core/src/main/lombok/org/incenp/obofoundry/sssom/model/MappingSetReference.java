@@ -1,7 +1,7 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,7 +29,7 @@ public class MappingSetReference  {
     private String mappingSetGroup;
 
     @JsonProperty("last_updated")
-    private LocalDateTime lastUpdated;
+    private LocalDate lastUpdated;
 
     @JsonProperty("local_name")
     private String localName;
