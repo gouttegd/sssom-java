@@ -27,6 +27,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformerFactory;
+import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
@@ -68,6 +69,7 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     private OWLDataFactory factory;
     private ManchesterOWLSyntaxParser manParser;
     private PrefixManager prefixManager;
+    private MappingFormatter formatter;
 
     /**
      * Creates a new instance.
@@ -118,9 +120,16 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
     /**
      * Creates an axiom from a mapping and an expression in Manchester syntax. The
      * expression may contain placeholders representing the value of some fields
-     * from the mapping (see
-     * {@link #substituteMappingVariables(String, Mapping, PrefixManager)} for a
-     * list of recognised placeholders).
+     * from the mapping.
+     * <p>
+     * The following placeholders are recognised:
+     * <ul>
+     * <li>{@code %subject_id} will be replaced with the subject’s IRI;
+     * <li>{@code %subject_curie} will be replaced by the shortened version of the
+     * subject’s IRI;
+     * <li>{@code %subject_label} will be replaced by the subject label'
+     * <li>similar placeholders for the object side ({@code %object_id}, etc.).
+     * </ul>
      * 
      * @param mapping The mapping to create an axiom from.
      * @param text    A representation of the axiom to create in Manchester syntax.
@@ -132,7 +141,7 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         Set<OWLAxiom> tmpAxioms = ensureClassesExist(mapping);
 
         manParser.setDefaultOntology(ontology);
-        manParser.setStringToParse(substituteMappingVariables(text, mapping, prefixManager));
+        manParser.setStringToParse(getFormatter().format(text, mapping));
         OWLAxiom parsedAxiom = manParser.parseAxiom();
 
         // Remove any axiom we may have had to add
@@ -180,44 +189,23 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         return addedAxioms;
     }
 
-    /**
-     * Replace placeholders in a string by values derived from a mapping.
-     * <p>
-     * The following placeholders are recognised:
-     * <ul>
-     * <li>{@code %subject_id} will be replaced with the subject’s IRI;
-     * <li>{@code %subject_curie} will be replaced by the shortened version of the
-     * subject’s IRI;
-     * <li>{@code %subject_label} will be replaced by the the subject label;
-     * <li>similar placeholders for the object.
-     * </ul>
-     * 
-     * @param source        The string in which placeholders should be replaced.
-     * @param mapping       The mapping to get the replacing values from.
-     * @param prefixManager A prefix manager. This is needed to generate the
-     *                      shortened identifiers for the {@code %subject_curie} and
-     *                      {@code object_curie} placeholders. May be {@code null},
-     *                      in which case those placeholders will not be replaced.
-     * @return A string with the placeholders replaced by the corresponding values.
+    /*
+     * Initialise the formatter object to substitute %-prefixed placeholders within
+     * a string with values from a mapping.
      */
-    public static String substituteMappingVariables(String source, Mapping mapping, PrefixManager prefixManager) {
-        if ( source.contains("%subject_label") && mapping.getSubjectLabel() != null ) {
-            source = source.replace("%subject_label", mapping.getSubjectLabel());
+    private MappingFormatter getFormatter() {
+        if ( formatter == null ) {
+            formatter = new MappingFormatter();
+            formatter.addSubstitution("%subject_label", (mapping) -> mapping.getSubjectLabel());
+            formatter.addSubstitution("%object_label", (mapping) -> mapping.getObjectLabel());
+            formatter.addSubstitution("%subject_curie",
+                    (mapping) -> prefixManager.shortenIdentifier(mapping.getSubjectId()));
+            formatter.addSubstitution("%object_curie",
+                    (mapping) -> prefixManager.shortenIdentifier(mapping.getObjectId()));
+            formatter.addSubstitution("%subject_id", (mapping) -> String.format("<%s>", mapping.getSubjectId()));
+            formatter.addSubstitution("%object_id", (mapping) -> String.format("<%s>", mapping.getObjectId()));
         }
-        if ( source.contains("%object_label") && mapping.getObjectLabel() != null ) {
-            source = source.replace("%object_label", mapping.getObjectLabel());
-        }
-        if ( source.contains("%subject_curie") && prefixManager != null ) {
-            source = source.replace("%subject_curie", prefixManager.shortenIdentifier(mapping.getSubjectId()));
-        }
-        if ( source.contains("%object_curie") && prefixManager != null ) {
-            source = source.replace("%object_curie", prefixManager.shortenIdentifier(mapping.getObjectId()));
-        }
-
-        source = source.replace("%subject_id", String.format("<%s>", mapping.getSubjectId()));
-        source = source.replace("%object_id", String.format("<%s>", mapping.getObjectId()));
-
-        return source;
+        return formatter;
     }
 
     /*
@@ -252,7 +240,7 @@ public class AxiomGeneratorFactory implements IMappingTransformerFactory<OWLAxio
         if ( m.matches() ) {
             String value = m.group(3);
             value = value.substring(1, value.length() - 1);
-            return new AnnotationAxiomGenerator(ontology, extractIRI(m.group(2)), value, prefixManager,
+            return new AnnotationAxiomGenerator(ontology, extractIRI(m.group(2)), getFormatter().getTransformer(value),
                     m.group(1).equals("object"));
         }
 

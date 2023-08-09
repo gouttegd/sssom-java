@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
-import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.semanticweb.owlapi.model.IRI;
@@ -32,10 +31,9 @@ import org.semanticweb.owlapi.model.OWLOntology;
  */
 public class AnnotationAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
-    private PrefixManager prefixManager;
     private OWLDataFactory factory;
     private OWLAnnotationProperty property;
-    String text;
+    private IMappingTransformer<String> texter;
     boolean invert;
 
     /**
@@ -46,64 +44,52 @@ public class AnnotationAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      * @param property The property to create an annotation with.
      * @param text     The value of the annotation.
      */
-    public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, String text) {
-        this(ontology, property, text, null, false);
+
+    /**
+     * Creates a new instance. This generator will create an annotation assertion
+     * axiom for the subject of the mapping.
+     * 
+     * @param ontology The ontology to generate axioms for.
+     * @param property The property to create an annotation with.
+     * @param texter   A transformer that will format a mapping into the annotation
+     *                 value. For example, to create an annotation with mapping's
+     *                 subject label as value:
+     * 
+     *                 <pre>
+     *                 AnnotationAxiomGenerator g = new AnnotationAxiomGenerator(ontology, property,
+     *                         (mapping) -> mapping.getSubjectLabel());
+     *                 </pre>
+     */
+    public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, IMappingTransformer<String> texter) {
+        this(ontology, property, texter, false);
     }
 
     /**
-     * Creates a new instance to annotate the object of the mapping rather than the
+     * Creates a new instance to annotate the object of a mapping rather than the
      * subject.
      * 
      * @param ontology The ontology to generate axioms for.
      * @param property The property to create an annotation with.
-     * @param text     The value of the annotation.
+     * @param texter   A transformer that will format a mapping into the annotation
+     *                 value.
      * @param invert   If {@code true}, the object of the mapping will be annotated,
      *                 rather than the subject.
      */
-    public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, String text, boolean invert) {
-        this(ontology, property, text, null, invert);
-    }
-
-    /**
-     * Creates a new instance to annotate the subject of the mapping, with a prefix
-     * manager to allow using the {@code %subject_curie} and {@code %object_curie}
-     * placeholders in the annotation value.
-     * 
-     * @param ontology      The ontology to generate axioms for.
-     * @param property      The property to create an annotation with.
-     * @param text          The value of the annotation.
-     * @param prefixManager The prefix manager to use for shortening identifiers.
-     */
-    public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, String text, PrefixManager prefixManager) {
-        this(ontology, property, text, prefixManager, false);
-    }
-
-    /**
-     * Creates a new instance to annotate the object of the mapping rather than the
-     * subject, and with a prefix manager to allow using the {@code %subject_curie}
-     * and {@code %object_curie} placeholders in the annotation value.
-     * 
-     * @param ontology      The ontology to generate axioms for.
-     * @param property      The property to create an annotation with.
-     * @param text          The value of the annotation.
-     * @param prefixManager The prefix manager to use for shortening identifiers.
-     * @param invert        If {@code true}, the object of the mapping will be
-     *                      annotated, rather than the subject.
-     */
-    public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, String text, PrefixManager prefixManager,
+    public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, IMappingTransformer<String> texter,
             boolean invert) {
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
         this.property = factory.getOWLAnnotationProperty(property);
-        this.text = text;
-        this.prefixManager = prefixManager;
+        this.texter = texter;
         this.invert = invert;
     }
 
     @Override
     public OWLAxiom transform(Mapping mapping) {
-        String value = AxiomGeneratorFactory.substituteMappingVariables(text, mapping, prefixManager);
+        String value = texter.transform(mapping);
+        if ( value == null ) {
+            return null;
+        }
         IRI target = IRI.create(invert ? mapping.getObjectId() : mapping.getSubjectId());
-
         return factory.getOWLAnnotationAssertionAxiom(property, target, factory.getOWLLiteral(value));
     }
 

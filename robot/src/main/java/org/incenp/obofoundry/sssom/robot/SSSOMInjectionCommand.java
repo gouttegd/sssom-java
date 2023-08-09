@@ -37,6 +37,7 @@ import org.incenp.obofoundry.sssom.owl.OWLGenerator;
 import org.incenp.obofoundry.sssom.owl.UniqueLabelGenerator;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingProcessorListener;
+import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.obolibrary.robot.Command;
@@ -166,8 +167,9 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             for ( String prefixName : clMap.keySet() ) {
                 pm.add(prefixName, clMap.get(prefixName));
             }
+            IMappingTransformer<String> texter = (mapping) -> pm.shortenIdentifier(mapping.getObjectId());
             axiomGenerator.addRule(null, null, new AnnotationAxiomGenerator(ontology,
-                    IRI.create("http://www.geneontology.org/formats/oboInOwl#hasDbXref"), "%object_curie", pm));
+                    IRI.create("http://www.geneontology.org/formats/oboInOwl#hasDbXref"), texter, false));
         }
 
         if ( line.hasOption("dispatch-table") ) {
