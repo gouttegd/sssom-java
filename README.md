@@ -70,8 +70,8 @@ try {
 ```
 subject==FBbt:* (object==CL:* || object==UBERON:*) {
     predicate==semapv:crossSpeciesExactMatch -> {
-        gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
-        gen('%subject_id Annotation: IAO:00000589 "%subject_label (Drosophila)"');
+        create_axiom("%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)");
+        annotate_subject(IAO:00000589, "%subject_label (Drosophila)");
     }
 }
 ```

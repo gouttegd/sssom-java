@@ -205,57 +205,66 @@ exactMatchOnly.getTags().add("exact-match-only");
   {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformReader.html}SSSOMTransformReader}}
   class provides a parser for the SSSOM/Transform language.
   
-  The parser is intended to be independent of the type of objects one
-  wishes to derive from mappings. To that effect, before using the
-  parser you must first create an implementation of the
-  {{{./apidocs/org/incenp/obofoundry/sssom/transform/IMappingTransformerFactory.html}IMappingTransformerFactory\<T\>}}
-  interface. The role of that factory is to interpret the contents of
-  the <<<gen>>> instructions found in a SSSOM/Transform file and to
-  return a  <<<IMappingTransformer<T>​>>> implementation that will in
-  turn, when applied to mappings, produce the desired <T> objects.
+  The parser is independent of the type of objects one wishes to derive
+  from mappings, and knows nothing of the instructions that can be used
+  in rules. Therefore, in order to use the parser, you must first extend
+  the <<<SSSOMTransformReader>>> abstract class and provide at least a
+  concrete implementation of the <<<parseGeneratingAction>>> method.
+  That method takes the name of the instruction as the parser found it
+  in the file, and the list of arguments (if any) passed to the
+  instruction; it must return a <<<IMappingTransformer<T>​>>>
+  implementation that will in turn, when applied to mappings, produce
+  the desired <T> objects.
   
   To illustrate, consider the {{{./robot.html}sssom-inject}} ROBOT
   command provided by the SSSOM-Java project. It allows to use the
   SSSOM/Transform language to create OWL axioms from mappings, using
-  <<<gen>>> instructions in Manchester syntax. For example, the
+  <<<create_axiom>>> instructions in Manchester syntax. For example, the
   following rule:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> gen("%subject_id EquivalentTo: %object_id");
+predicate==skos:exactMatch -> create_axiom("%subject_id EquivalentTo: %object_id");
 +-----------------------------------------------------------------------
   
   tells <<<sssom-inject>>> to generate equivalence axioms between the
   subject and object of all mappings that have a <<<skos:exactMatch>>>
   predicate.
   
-  Because the SSSOM/Transform parser is application-agnostic (it doesn’t
-  know what the rules it is parsing will be used for – in this instance,
-  it doesn’t know they will be used to produce OWL axioms), we must
-  provide it with a <<<IMappingTransformerFactory<OWLAxiom>​>>> that
-  will be able to parse the expressions in Manchester syntax found
-  inside the <<<gen>>> instructions, and to turn them into appropriate
-  <<<IMappingTransformer<OWLAxiom>​>>> implementations – in the example,
-  the factory must return a transformer that can take a mapping and
+  To parse such a rule, we must create a class derived from the abstract
+  parser, with a <<<parseGeneratingAction>>> method that must be capable
+  of: (1) recognising the <<<create_axiom>>> instruction, (2) parse the
+  expression in Manchester syntax used as argument, and (3) return an
+  appropriate <<<IMappingTransformer<OWLAxiom>​>>> implementation – in
+  this example, it must return a transformer that can take a mapping and
   return an equivalence axiom.
   
   Leaving this example aside and coming back to the general case: if we
   want to transform mappings in objects of type <Foo> and we want to
   obtain the required processing rules from a SSSOM/Transform file, we
-  first need to create an implementation of
-  <<<IMappingTransformerFactory<Foo>​>>>:
+  first need to create a subclass of
+  <<<SSSOMTransformReader<Foo>​>>>:
   
 +-----------------------------------------------------------------------
-public class MyTransformerFactory implements IMappingTransformerFactory<Foo> {
+public class SSSOMTFooReader extends SSSOMTransformReader<Foo> {
 
     @Override
-    public IMappingTransformer<Foo> create(String text, PrefixManager manager) {
-        // "text" is the contents of a gen() instruction in SSSOM/Transform
-        // manager is a helper object that can be used to expand CURIEs inside the text, if needed
-
-        // Interpret the text according to the application needs and
-        // make a transformer out of it (here with a lambda, but it
-        // could be an instance of a "real" class implementing the
-        // IMappingTransformer interface instead):
+    public IMappingTransformer<Foo> parseGeneratingAction(String name, List<String> arguments) {
+        // Check that the name is an allowed instruction name
+        // (in this example, "create_foo" is the only allowed instruction)
+        if ( ! name.equals("create_foo") ) {
+            throw new SSSOMTransformError("Invalid instruction name");
+        }
+        
+        // Check the arguments
+        // (here, we'll suppose we need two arguments to create a Foo)
+        if ( arguments.size() != 2 ) {
+            throw new SSSOMTransformError("Invalid call to create_foo()");
+        }
+        
+        // Finally, create a transformer according to the application's
+        // logic (here with a lamda, but it could be an instance of a
+        // "real" class implementing the IMappingTransformer interface
+        // instead):
         IMappingTransformer<Foo> transformer = (mapping) -> [application-specific code that will create a Foo from a mapping];
 
         return transformer;
@@ -263,13 +272,11 @@ public class MyTransformerFactory implements IMappingTransformerFactory<Foo> {
 }
 +-----------------------------------------------------------------------
 
-  Then we can create a <<<SSSOMTransformReader>>> object, passing it the
-  transformer factory:
+  Then we can use our new application-specific parser:
   
 +-----------------------------------------------------------------------
 try {
-    MyTransformerFactory factory = new MyTransformerFactory();
-    SSSOMTransformReader<Foo> reader = new SSSOMTransformReader<Foo>(factory, "my-sssom-transform-file.sssomt");
+    SSSOMTFooReader reader = new SSSOMTFooReader("my-sssom-transform-file.sssomt");
     if ( reader.read() ) {
         // parsing completed without errors, get the rules
         List<MappingProcessingRule<Foo>> rules = reader.getRules();

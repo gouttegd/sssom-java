@@ -124,14 +124,37 @@ ROBOT command
   Refer to the {{{./sssom-transform.html}description}} of the
   SSSOM/Transform language for details about the syntax of rules and
   filter expressions. This section describes the syntax of the
-  <generation instructions> expected by <<<sssom-inject>>>.
+  application-specific actions expected by <<<sssom-inject>>>.
   
-  Basically, each generation instruction should be a statement in
-  {{{https://www.w3.org/TR/owl2-manchester-syntax/}OWL Manchester Syntax}}
-  yielding one axiom. To generate more than one axiom per mapping, use
-  as many <<<gen()>>> commands as needed.
+  Each action will generate one OWL axiom. The following actions are
+  allowed:
   
-  In a statement, the following placeholders are recognised:
+  [direct()] Will generate an axiom that is the “direct” serialisation
+             of the mapping. This has the same effect as the
+             <<<--direct>>> option explained in a previous section,
+             except that here only the mappings selected by the rule
+             this instruction belongs to will be serialised, instead of
+             all the mappings in the set when the <<<--direct>>> option
+             is used.
+  
+  [annotate_subject()] Will generate an annotation assertion axiom on
+                       mapping’s subject; this instruction expects two
+                       argument: the annotation property to use and the
+                       value of the annotation.
+  
+  [annotate_object()] Similar to the previous one, but will annotate the
+                      mapping’s object.
+  
+  [create_axiom()] Will generate an arbitrary axiom; this instruction
+                   expects one argument, which must be an expression in
+                   {{{https://www.w3.org/TR/owl2-manchester-syntax/}OWL Manchester Syntax}}
+                   representing the axiom to create.
+  
+  []
+  
+  The argument to <<<create_axiom>>> and the second argumentto both
+  <<<annotate_subject>>> and <<<annotate_object>>> can contain the
+  following placeholders:
   
   [%subject_id] replaced by the identifier of the mapping’s subject;
   
@@ -155,7 +178,7 @@ ROBOT command
   subject becomes a subclass of its object:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> gen('%subject_id SubClassOf: %object_id');
+subject==FBbt:* -> create_axiom('%subject_id SubClassOf: %object_id');
 +-----------------------------------------------------------------------
 
   This generates an equivalence axiom between the subject on one side,
@@ -163,33 +186,22 @@ subject==FBbt:* -> gen('%subject_id SubClassOf: %object_id');
   the other side:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
+subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
 +-----------------------------------------------------------------------
 
-  This generates an annotation assertion axiom on the subject (of note,
-  this is a slight deviation from the OWL Manchester syntax), with the
+  This generates an annotation assertion axiom on the subject, with the
   subject’s label being injected inside the annotation value:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> gen('%subject_id Annotation: IAO:0000589 "%subject_label (Drosophila)"');
+subject==FBbt:* -> annotate_subject(IAO:0000589,  "%subject_label (Drosophila)");
 +-----------------------------------------------------------------------
 
   This generates an annotation assertion axiom on the object, with the
   value being the shortened identifier of the subject:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> gen('%object_id Annotation: oio:hasDbXref "%subject_curie"');
+subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
 +-----------------------------------------------------------------------
-
-  In addition to the use of Manchester syntax to specify the axioms to
-  generate, it is also possible to use the keyword <<<direct>>>, which
-  must then be used on its own (that is, the entire instruction must
-  consist of this single keyword: <<<gen('direct')>>>. This will
-  produce axioms that are the ”direct” serialisation of the mappings.
-  This has the same effect as the <<<--direct>>> option explained in a
-  previous section, except that here only the mappings selected by the
-  rule this instruction belongs to will be serialised, instead of all
-  the mappings in the set when the <<<--direct>>> option is used.
 
 * Exploiting tags in a ruleset
 
@@ -266,16 +278,16 @@ file: output-file-for-tag.owl
   
 +-----------------------------------------------------------------------
 [fbbt] subject==FBbt:* {
-    [unique-label] predicate==* -> gen('%subject_id Annotation: IAO:0000589 "%subject_label (Drosophila)"');
-    predicate==skos:speciesExactMatch -> gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
+    [unique-label] predicate==* -> annotate_subject(IAO:0000589, "%subject_label (Drosophila)");
+    predicate==skos:speciesExactMatch -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
 }
 
 [wbbt] subject=WBbt:* {
-    [unique-label] predicate==* -> gen('%subject_id Annotation: IAO:0000589 "%subject_label (worm)"');
-    predicate==skos:speciesExactMatch -> gen('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:6237)');
+    [unique-label] predicate==* -> annotate_subject(IAO:0000589, "%subject_label (worm)");
+    predicate==skos:speciesExactMatch -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:6237)');
 }
 
-[xrefs] predicate==* -> gen('%subject_id Annotation: oio:hasDbXref "%object_curie"');
+[xrefs] predicate==* -> annotate_subject(oio:hasDbXref, "%object_curie");
 +-----------------------------------------------------------------------
 
   and the following dispatch table:

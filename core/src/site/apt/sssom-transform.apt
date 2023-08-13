@@ -243,30 +243,41 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
 * Actions
 
   Once the <FILTER> part of a rule has accepted a mapping, the <ACTION>
-  part (after the <<<-\>>>> sign) specifies what to do with it. There
-  two types of actions:
+  part (after the <<<-\>>>> sign) specifies what to do with it. Each
+  action is made of an <instruction> followed by a list of <arguments>
+  (which may be empty):
   
-  * built-in actions, which are independent of the application that is
-    using the SSSOM/Transform language;
-    
-  * application-specific actions.
-  
-  []
-  
-** Built-in actions
++-----------------------------------------------------------------------
+my_instruction(arg1, arg2, arg3);
++-----------------------------------------------------------------------
 
-  Currently, there are two supported built-in actions:
+  Arguments can be either:
   
-  * The <<<stop()>>> action indicates that the mapping to which the
+  * single- or double-quoted strings, such as <<<"my argument">>>
+    (if the string has to contain a quote character of the same type as
+    used to delimit the string itself, it must be escaped, as in
+    <<<"my \"great\" argument">>>);
+    
+  * an IRI enclosed in angled brackets, such as
+    <<<​<https://w3id.org/semapv/vocab/crossSpecies>​>>>;
+    
+  * a shortened identifier (aka a “CURIE”), such as <<<BFO:0000050>>>.
+  
+** Built-in instructions
+
+  The default parser provided with SSSOM-Java recognises two built-in
+  instructions:
+  
+  * The <<<stop()>>> instruction indicates that the mapping to which the
     action is applied should be excluded from any remaining rules.
     Basically, once this action has been applied to a mapping, it’s as
     if the mapping was removed from the mapping set for the rest of the
     ruleset.
     
-  * The <<<invert()>>> action <inverts> the current mapping, so that the
-    subject becomes the object and vice-versa. Note that not all
-    mappings can be inverted (the predicate needs to be invertible); if
-    a given mapping cannot be inverted, it will be excluded from any
+  * The <<<invert()>>> instruction <inverts> the current mapping, so
+    that the subject becomes the object and vice-versa. Note that not
+    all mappings can be inverted (the predicate needs to be invertible);
+    if a given mapping cannot be inverted, it will be excluded from any
     further processing (as if it had been the target of a <<<stop()>>>
     action).
     
@@ -303,53 +314,41 @@ mapping_justification==semapv:ManualMappingCuration && subject==CL:* -> invert()
   – they have been excluded from the <<<invert()>>> rule, but not
   removed, so they will be seen by any rule that may follow.
   
-** Application-specific actions
+** Application-specific instructions
 
-  Application-specific actions are specified using the <<<gen()>>>
-  (short for “generate”) function, which takes an arbitrary string,
-  called a <generation instruction>, enclosed in either single
-  (<<<' '>>>) or double (<<<" ">>>) quotes:
-  
-+-----------------------------------------------------------------------
-subject==CL:* -> gen("generation instruction");
-+-----------------------------------------------------------------------
-
-  Internal quote characters inside the generation instruction must be
-  escaped with <<<\\>>>:
-  
-+-----------------------------------------------------------------------
-subject==CL:* -> gen("generation instruction with \"internal\" quotes");
-+-----------------------------------------------------------------------
-
-  What a <generation instruction> is will depend on the application that
-  is using the SSSOM/Transform language, and on what that application is
-  supposed to generate from mappings. This is entirely out of scope for
-  SSSOM/Transform and left at the discretion of applications.
+  Application-specific instructions are entirely left at the
+  discretion of applications, which must provide their own parser
+  (built on top of the default parser provided by SSSOM-Java) to
+  define and implement them.
   
   For example, the {{{./robot.html}sssom-inject}} ROBOT command uses the
   SSSOM/Transform language to generate OWL axioms from mappings. To that
-  effect, it expects that the generation instructions should be
-  statements in the {{{https://www.w3.org/TR/owl2-manchester-syntax/}OWL Manchester Syntax}},
-  like this one:
+  effect, it defines several application-specific instructions, such as
+  <<<annotate_subject>>, which may be used as follows:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> gen("%subject_id EquivalentTo: %object_id");
+predicate==skos:exactMatch -> annotate_subject(oboInOwl:hasDbXref, "%subject_curie");
 +-----------------------------------------------------------------------
 
   For <<<sssom-inject>>>, this rule means that mappings with a
-  <<<skos:exactMatch>>> predicate should yield OWL equivalence axioms
-  between the subject and the object. In that context, <<<%subject_id>>>
-  and <<<%object_id>>> are placeholders that are replaced by the
-  identifiers of the subject and the object of the mapping respectively.
+  <<<skos:exactMatch>>> predicate should yield an annotation assertion
+  axiom using the property identified by <<<oboInOwl:hasDbXref>>> and
+  the value <<<%subject_curie>>> – that value is a placeholder that will
+  be replaced by the shortened form of the identifier of the mapping’s
+  subject.
   
   Other applications can devise whatever syntax is appropriate for their
-  generation instructions. For example, if application used
+  specific instructions. For example, if application used
   SSSOM/Transform-based rules to load SSSOM data into a database, one
-  could imagine generation instructions that should be SQL statements:
+  could imagine an hypothetical <<<insert>>> instruction such as:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> gen("INSERT INTO exact_matches VALUES(%subject_id, %object_id)");
+predicate==skos:exactMatch -> insert("exact_matches", "%subject_id", "%object_id"");
 +-----------------------------------------------------------------------
+
+  that the program could understand as an order to insert the
+  identifiers for the mapping subject and object into a table named
+  <<<exact_matches>>>.
 
 * Grouping rules
 
@@ -360,8 +359,8 @@ predicate==skos:exactMatch -> gen("INSERT INTO exact_matches VALUES(%subject_id,
 +-----------------------------------------------------------------------
 subject==CL:* -> {
     invert();
-    gen("application-specific instruction 1");
-    gen("application-specific instruction 2");
+    application_specific_instruction1(arg);
+    application_specific_instruction2();
 }
 +-----------------------------------------------------------------------
 
@@ -369,24 +368,24 @@ subject==CL:* -> {
   
 +-----------------------------------------------------------------------
 subject==CL:* -> invert();
-subject==CL:* -> gen("application-specific instruction 1");
-subject==CL:* -> gen("application-specific instruction 2");
+subject==CL:* -> application_specific_instruction1(arg);
+subject==CL:* -> application_specific_instruction2();
 +-----------------------------------------------------------------------
 
   Likewise, filter expressions can be grouped too:
   
 +-----------------------------------------------------------------------
 subject==CL:* {
-    predicate==skos:exactMatch -> gen("instruction for CL exact matches");
-    predicate==skos:broadMatch -> gen("instruction for CL broad matches");
+    predicate==skos:exactMatch -> my_instruction("instruction for CL exact matches");
+    predicate==skos:broadMatch -> my_instruction("instruction for CL broad matches");
 }
 +-----------------------------------------------------------------------
 
   This is strictly equivalent to:
   
 +-----------------------------------------------------------------------
-subject==CL:* && predicate==skos:exactMatch -> gen("instruction for CL exact matches");
-subject==CL:* && predicate==skos:broadMatch -> gen("instruction for CL broad matches");
+subject==CL:* && predicate==skos:exactMatch -> my_instruction("instruction for CL exact matches");
+subject==CL:* && predicate==skos:broadMatch -> my_instruction("instruction for CL broad matches");
 +-----------------------------------------------------------------------
 
   Filter expressions can be nested to any depth, and can be combined
@@ -396,14 +395,14 @@ subject==CL:* && predicate==skos:broadMatch -> gen("instruction for CL broad mat
 subject==CL:* {
     predicate==skos:exactMatch {
         confidence>=0.8 -> {
-        	gen("instruction for high-confidence CL exact matches");
-        	gen("another instruction for high-confidence CL exact matches");
+            my_instruction("instruction for high-confidence CL exact matches");
+            my_instruction("another instruction for high-confidence CL exact matches");
         }
         
-        mapping_justification=semapv:ManualMappingCuration -> gen("single instruction for manually curated CL exact matches");
+        mapping_justification=semapv:ManualMappingCuration -> my_instruction("single instruction for manually curated CL exact matches");
     }
     
-    !predicate==skos:exactMatch -> gen("instruction for any CL mapping that is not an exact match");
+    !predicate==skos:exactMatch -> my_instruction("instruction for any CL mapping that is not an exact match");
 }
 +-----------------------------------------------------------------------
 
@@ -411,8 +410,8 @@ subject==CL:* {
   
 +-----------------------------------------------------------------------
 subject==CL:* {
-    predicate==skos:exactMatch -> gen("instruction for CL exact matches");
-    -> gen("instruction for all CL matches, regardless of the predicate");
+    predicate==skos:exactMatch -> my_instruction("instruction for CL exact matches");
+    -> my_instruction("instruction for all CL matches, regardless of the predicate");
 }
 +-----------------------------------------------------------------------
 
@@ -422,8 +421,8 @@ subject==CL:* {
   
 +-----------------------------------------------------------------------
 subject==CL:* {
-    predicate==skos:exactMatch -> gen("instruction for CL exact matches");
-    predicate==* -> gen("instruction for all CL matches, regardless of the predicate");
+    predicate==skos:exactMatch -> my_instruction("instruction for CL exact matches");
+    predicate==* -> my_instruction("instruction for all CL matches, regardless of the predicate");
 }
 +-----------------------------------------------------------------------
 
@@ -435,7 +434,7 @@ subject==CL:* {
   and <<<tag2>>>:
   
 +-----------------------------------------------------------------------
-[tag1,tag2] subject==CL:* -> gen("instruction for CL matches");
+[tag1,tag2] subject==CL:* -> my_instruction("instruction for CL matches");
 +-----------------------------------------------------------------------
 
   Tags have no effect on the rule, but they can be used to:
@@ -452,8 +451,8 @@ subject==CL:* {
   
 +-----------------------------------------------------------------------
 [tag1,tag2] subject==CL:* {
-    [tag3] predicate==skos:exactMatch -> gen("instruction for CL exact matches");
-           predicate==skos:broadMatch -> gen("instruction for CL broad matches");
+    [tag3] predicate==skos:exactMatch -> my_instruction("instruction for CL exact matches");
+           predicate==skos:broadMatch -> my_instruction("instruction for CL broad matches");
 }
 +-----------------------------------------------------------------------
 
