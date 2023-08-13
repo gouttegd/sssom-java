@@ -92,13 +92,19 @@ Building
 Build by running `mvn clean package`. This will produce three distinct
 Jar files:
 
-* `sssom-java-x.y.z.jar`: a minimal Java library, containing only the
-  classes from this project proper (dependencies _not_ included).
-* `sssom-robot-plugin-x.y.z.jar`: a file usable as a ROBOT plugin, once
-  ROBOT supports such plugins.
-* `sssom-robot-standalone-x.y.z.jar`: a standalone version of ROBOT
-  (1.9.4), which includes the command(s) from the SSSOM plugin as if
-  they were built-in commands.
+* `sssom-core-x.y.z.jar` (in `core/target`): a minimal Java library,
+  containing only the classes from this project proper (dependencies
+  _not_ included).
+* `sssom-robot-plugin-x.y.z.jar` (in `robot/target`): a file usable as a
+  ROBOT plugin, once ROBOT supports such plugins.
+* `sssom-robot-standalone-x.y.z.jar` (in `robot/target`): a standalone
+  version of ROBOT (1.9.4), which includes the command(s) from the SSSOM
+  plugin as if they were built-in commands.
+
+To use the library in a Java project, use the following identifiers:
+
+* _group ID_: `org.incenp`;
+* _artifact ID_: `sssom-core`.
 
 Homepage and repository
 -----------------------

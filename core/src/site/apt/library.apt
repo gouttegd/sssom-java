@@ -29,3 +29,6 @@ The Java library
   Finally, the {{{./apidocs/org/incenp/obofoundry/sssom/owl/package-summary.html}
   org.incenp.obofoundry.sssom.owl}} package provides classes to generate
   OWL axioms from SSSOM mappings.
+  
+  The library has for <group ID> <<<org.incenp>>> and for <artifact ID>
+  <<<sssom-core>>>.
