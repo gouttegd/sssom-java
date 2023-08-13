@@ -69,20 +69,20 @@ actionSet : action
           | '{' ( WS* action WS* )+ '}'
           ;
 
-action    : stop
-          | invert
-          | generate
+action    : FUNCTION WS* arglist? WS* ')' WS* ';';
+
+arglist   : argument (WS* ',' WS* argument)*;
+
+argument  : string
+          | CURIE
+          | IRI
           ;
-
-stop      : 'stop();';
-
-invert    : 'invert();';
-
-generate  : 'gen(' string ');';
 
 string    : SQ_STRING
           | DQ_STRING
           ;
+
+FUNCTION  : [a-zA_Z_] [a-zA-Z0-9_]+ '(';
 
 SQ_STRING : '\'' (SQ_ESCAPE|.)*? '\'';
 

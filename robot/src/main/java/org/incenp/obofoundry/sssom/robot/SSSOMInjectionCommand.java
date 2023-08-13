@@ -30,15 +30,14 @@ import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
-import org.incenp.obofoundry.sssom.owl.AxiomGeneratorFactory;
 import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
+import org.incenp.obofoundry.sssom.owl.SSSOMTOwlReader;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingProcessorListener;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
-import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
@@ -178,8 +177,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("ruleset") ) {
-            SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(
-                    new AxiomGeneratorFactory(ontology), line.getOptionValue("ruleset"));
+            SSSOMTOwlReader sssomtReader = new SSSOMTOwlReader(line.getOptionValue("ruleset"), ontology);
             sssomtReader.read();
 
             if ( sssomtReader.hasErrors() ) {

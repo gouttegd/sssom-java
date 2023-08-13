@@ -44,36 +44,15 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformBaseVisitor;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformLexer;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser;
+import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser.ArgumentContext;
 
 /**
  * A parser to read mapping processing rules in the SSSOM Transform language.
  * <p>
- * The parser is kept independent of the type of objects the SSSOM/Transform
- * language is used to transform mappings into. Consequently, it must be
- * provided with a {@link IMappingTransformerFactory} that must take care of
- * parsing the contents of the {@code gen("...")} instructions and producing the
- * appropriate mapping transformer objects.
- * <p>
- * Example, assuming we want to transform mappings into strings:
- * 
- * <pre>
- * // MyStringTranformerFactory parses gen(...) instructions and produces
- * // IMappingTransformer&lt;String&gt; objects.
- * IMappingTransformerFactory&lt;String&gt; factory = new MyStringTranformerFactory();
- * try {
- *     SSSOMTransformReader&lt;String&gt; reader = new SSSOMTransformReader&lt;String&gt;(factory, "my-sssom-transform-file");
- *     if ( reader.read() ) {
- *         List&lt;MappingProcessingRule&lt;String&gt;&gt; rules = reader.getRules();
- *         // Rules can now be fed to a MappingProcessor&lt;String&gt; object
- *     } else {
- *         for ( SSSOMTransformError error : reader.getErrors() ) {
- *             System.err.printf("SSSOM/Transform parsing error: %s\n", e.getMessage());
- *         }
- *     }
- * } catch ( IOException ioe ) {
- *     // Generic I/O error
- * }
- * </pre>
+ * This parser knows nothing of the functions that are allowed to be used in
+ * SSSOM/T rules and what they are supposed. Client code must extend this class
+ * and provide at a minimum an implementation of the
+ * {@link #parseGeneratingAction(String, List)} method to recognise functions.
  * 
  * @see <a href="https://incenp.org/dvlpt/sssom-java/sssom-transform.html">The
  *      SSSOM/Transform language</a>
@@ -81,91 +60,63 @@ import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser;
  * @param <T> The type of object that should be produced by the processing rules
  *            for each mapping.
  */
-public class SSSOMTransformReader<T> {
+public abstract class SSSOMTransformReader<T> {
     private SSSOMTransformLexer lexer;
-    private IMappingTransformerFactory<T> factory;
-    private List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
-    private List<SSSOMTransformError> errors = new ArrayList<SSSOMTransformError>();
-    private PrefixManager prefixManager = new PrefixManager();
+    protected List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
+    protected List<SSSOMTransformError> errors = new ArrayList<SSSOMTransformError>();
+    protected PrefixManager prefixManager = new PrefixManager();
     private boolean hasRead = false;
-
-    /*
-     * Common constructor to throw exception if the parser is null.
-     */
-    private SSSOMTransformReader(IMappingTransformerFactory<T> factory, SSSOMTransformLexer lexer) {
-        if ( factory == null ) {
-            throw new IllegalArgumentException("Missing valid transformation parser");
-        }
-
-        this.factory = factory;
-        this.lexer = lexer;
-    }
 
     /**
      * Creates a new instance without an input source. Use this constructor to parse
      * SSSOM Transform from something else than a file or file-like source, coupled
      * with the {@link #read(String)} method.
-     * 
-     * @param factory The parser for application-specific {@code gen} instructions.
-     * @throws IllegalArgumentException If the provided parser is {@code null}.
      */
-    public SSSOMTransformReader(IMappingTransformerFactory<T> factory) {
-        if ( factory == null ) {
-            throw new IllegalArgumentException("Missing valid transformation parser");
-        }
-        this.factory = factory;
+    protected SSSOMTransformReader() {
     }
 
     /**
      * Creates a new instance to read from a reader object.
      * 
-     * @param factory The parser for application-specific {@code gen} instructions.
-     * @param input   The reader to parse the SSSOM/T ruleset from.
-     * @throws IOException              If any non-SSSOM/T I/O error occurs when
-     *                                  reading from the reader object.
-     * @throws IllegalArgumentException If the provided parser is {@code null}.
+     * @param input The reader to parse the SSSOM/T ruleset from.
+     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
+     *                     reader object.
      */
-    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, Reader input) throws IOException {
-        this(factory, new SSSOMTransformLexer(CharStreams.fromReader(input)));
+    protected SSSOMTransformReader(Reader input) throws IOException {
+        lexer = new SSSOMTransformLexer(CharStreams.fromReader(input));
     }
 
     /**
      * Creates a new instance to read from a stream.
      * 
-     * @param factory The parser for application-specific {@code gen} instructions.
-     * @param input   The stream to parse the SSSOM/T ruleset from.
-     * @throws IOException              If any non-SSSOM/T I/O error occurs when
-     *                                  reading from the stream.
-     * @throws IllegalArgumentException If the provided parser is {@code null}.
+     * @param input The stream to parse the SSSOM/T ruleset from.
+     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
+     *                     stream.
      */
-    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, InputStream input) throws IOException {
-        this(factory, new SSSOMTransformLexer(CharStreams.fromStream(input)));
+    protected SSSOMTransformReader(InputStream input) throws IOException {
+        lexer = new SSSOMTransformLexer(CharStreams.fromStream(input));
     }
 
     /**
      * Creates a new instance to read from a file.
      * 
-     * @param factory The parser for application-specific {@code gen} instructions.
-     * @param input   The file to parse the SSSOM/T ruleset from.
-     * @throws IOException              If any non-SSSOM/T I/O error occurs when
-     *                                  reading from the file.
-     * @throws IllegalArgumentException If the provided parser is {@code null}.
+     * @param input The file to parse the SSSOM/T ruleset from.
+     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
+     *                     file.
      */
-    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, File input) throws IOException {
-        this(factory, new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath())));
+    protected SSSOMTransformReader(File input) throws IOException {
+        lexer = new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath()));
     }
 
     /**
      * Creates a new instance to read from a file.
      * 
-     * @param factory  The parser for application-specific {@code gen} instructions.
      * @param filename The name of the file to read from.
-     * @throws IOException              If any non-SSSOM/T I/O error occurs when
-     *                                  reading from the file.
-     * @throws IllegalArgumentException If the provided parser is {@code null}.
+     * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
+     *                     file.
      */
-    public SSSOMTransformReader(IMappingTransformerFactory<T> factory, String filename) throws IOException {
-        this(factory, new SSSOMTransformLexer(CharStreams.fromFileName(filename)));
+    protected SSSOMTransformReader(String filename) throws IOException {
+        lexer = new SSSOMTransformLexer(CharStreams.fromFileName(filename));
     }
 
     /**
@@ -244,27 +195,27 @@ public class SSSOMTransformReader<T> {
 
         ParseTree tree = parser.ruleSet();
         if ( !hasErrors() ) {
-            List<ParsedRule> parsedRules = new ArrayList<ParsedRule>();
+            List<SSSOMTransformRule> parsedRules = new ArrayList<SSSOMTransformRule>();
             ParseTree2RuleVisitor visitor = new ParseTree2RuleVisitor(parsedRules, prefixManager);
             visitor.visit(tree);
 
-            for ( ParsedRule parsedRule : parsedRules ) {
-                IMappingTransformer<T> t = null;
+            for ( SSSOMTransformRule parsedRule : parsedRules ) {
+                try {
+                    IMappingFilter filter = parsedRule.getFilter();
+                    IMappingTransformer<Mapping> preprocessor = null;
+                    IMappingTransformer<T> generator = null;
 
-                if ( parsedRule.command != null ) {
-                    try {
-                        t = factory.create(parsedRule.command, prefixManager);
-                    } catch ( SSSOMTransformError e ) {
-                        errors.add(e);
-                        continue;
+                    preprocessor = parsePreprocessingAction(parsedRule.getActionName(), parsedRule.getArguments());
+                    if ( preprocessor == null ) {
+                        generator = parseGeneratingAction(parsedRule.getActionName(), parsedRule.getArguments());
                     }
+
+                    MappingProcessingRule<T> rule = new MappingProcessingRule<T>(filter, preprocessor, generator);
+                    rule.getTags().addAll(parsedRule.getTags());
+                    rules.add(rule);
+                } catch ( SSSOMTransformError e ) {
+                    errors.add(e);
                 }
-
-                MappingProcessingRule<T> finalRule = new MappingProcessingRule<T>(parsedRule.filter,
-                        parsedRule.preprocessor, t);
-                finalRule.getTags().addAll(parsedRule.tags);
-
-                rules.add(finalRule);
             }
         }
 
@@ -323,6 +274,53 @@ public class SSSOMTransformReader<T> {
         return errors;
     }
 
+    /**
+     * Parses a SSSOM/Transform action into a preprocessor.
+     * <p>
+     * This parser recognises two preprocessing instructions: {@code stop()} to
+     * create a preprocessor that will stop any further treatment for the current
+     * mapping, and {@code invert()} to create a preprocessor that will invert the
+     * current mapping.
+     * <p>
+     * Override this method to extend and/or replace the list of supported
+     * preprocessing instructions. Note that this method should not throw an
+     * exception if the function name is not recognised: it should return
+     * {@code null} instead, so that the parser may then try to recognise it as a
+     * generating instruction.
+     * 
+     * @param name      The name of the function, as it appears in the SSSOM/T file.
+     * @param arguments The arguments passed to the function.
+     * @return The preprocessor to add to the rule that is being parsed, or
+     *         {@code null} if the name does not match any allowed preprocessing
+     *         instruction name.
+     * @throws SSSOMTransformError If the name does match an allowed preprocessing
+     *                             instruction name, but there is a problem with the
+     *                             list of arguments (e.g. not enough arguments).
+     */
+    protected IMappingTransformer<Mapping> parsePreprocessingAction(String name, List<String> arguments)
+            throws SSSOMTransformError {
+        if ( name.equals("stop") ) {
+            return new NamedMappingTransformer<Mapping>("stop()", (mapping) -> null);
+        } else if ( name.equals("invert") ) {
+            return new NamedMappingTransformer<Mapping>("invert()", (mapping) -> CommonPredicate.invert(mapping));
+        }
+
+        return null;
+    }
+
+    /**
+     * Parses a SSSOM/Transform action a generator.
+     * 
+     * @param name      The name of the function, as it appears in the SSSOM/T file.
+     * @param arguments The arguments passed to the function.
+     * @return The generator to add to the rule that is being parsed.
+     * @throws SSSOMTransformError If the name does not match any allowed generating
+     *                             instruction name, or if there is a problem with
+     *                             the list of arguments.
+     */
+    protected abstract IMappingTransformer<T> parseGeneratingAction(String name, List<String> arguments)
+            throws SSSOMTransformError;
+
     private class ErrorListener extends BaseErrorListener {
         private List<SSSOMTransformError> errors;
 
@@ -339,28 +337,16 @@ public class SSSOMTransformReader<T> {
 }
 
 /*
- * Represents a processing rule after it has been parsed from the SSSOM/T
- * source, but before the application-specific instruction has been parsed into
- * an actual IMappingTransformer object.
- */
-class ParsedRule {
-    IMappingFilter filter;
-    IMappingTransformer<Mapping> preprocessor;
-    String command;
-    Set<String> tags = new HashSet<String>();
-}
-
-/*
  * Visitor to convert the ANTLR parse tree for SSSOM/T into a list of ParsedRule
  * objects.
  */
 class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
-    List<ParsedRule> rules;
+    List<SSSOMTransformRule> rules;
     Deque<IMappingFilter> filters = new ArrayDeque<IMappingFilter>();
     Deque<Set<String>> tags = new ArrayDeque<Set<String>>();
     PrefixManager prefixManager;
 
-    ParseTree2RuleVisitor(List<ParsedRule> rules, PrefixManager prefixManager) {
+    ParseTree2RuleVisitor(List<SSSOMTransformRule> rules, PrefixManager prefixManager) {
         this.rules = rules;
         this.prefixManager = prefixManager;
     }
@@ -426,45 +412,45 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitStop(SSSOMTransformParser.StopContext ctx) {
-        rules.add(makeRule(new NamedMappingTransformer<Mapping>("stop()", (mapping) -> null), null));
-        return null;
-    }
-
-    @Override
-    public Void visitInvert(SSSOMTransformParser.InvertContext ctx) {
-        rules.add(makeRule(
-                new NamedMappingTransformer<Mapping>("invert()", (mapping) -> CommonPredicate.invert(mapping)), null));
-
-        return null;
-    }
-
-    @Override
-    public Void visitGenerate(SSSOMTransformParser.GenerateContext ctx) {
-        rules.add(makeRule(null, unquote(ctx.string().getText())));
-
-        return null;
-    }
-
-    private ParsedRule makeRule(IMappingTransformer<Mapping> preprocessor, String command) {
-        ParsedRule pr = new ParsedRule();
-        pr.preprocessor = preprocessor;
-        pr.command = command;
-
+    public Void visitAction(SSSOMTransformParser.ActionContext ctx) {
+        // Assemble the final filter
+        IMappingFilter filter;
         if ( filters.size() == 1 ) {
-            // Only one level of filters, use it directly.
-            pr.filter = filters.peekLast();
+            filter = filters.peekLast();
         } else {
-            // Assemble the final filter for the rule by &&-combining the stacked filters.
             FilterSet fs = new FilterSet();
             filters.forEach((f) -> fs.addFilter(f, true));
-            pr.filter = fs;
+            filter = fs;
         }
 
-        // Assemble the final tag set by merging the tag sets from the stack.
-        tags.forEach((levelTags) -> pr.tags.addAll(levelTags));
+        // Get action name
+        String name = ctx.FUNCTION().getText();
+        int nameLen = name.length();
+        name = name.substring(0, nameLen - 1);
 
-        return pr;
+        SSSOMTransformRule rule = new SSSOMTransformRule(filter, name);
+
+        // Assemble the final tag set
+        tags.forEach((levelTags) -> rule.getTags().addAll(levelTags));
+
+        // Assemble the arguments list
+        if ( ctx.arglist() != null ) {
+            for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
+                if ( argCtx.string() != null ) {
+                    rule.getArguments().add(unquote(argCtx.string().getText()));
+                } else if ( argCtx.IRI() != null ) {
+                    String iri = argCtx.IRI().getText();
+                    int iriLen = iri.length();
+                    rule.getArguments().add(iri.substring(1, iriLen - 1));
+                } else if ( argCtx.CURIE() != null ) {
+                    rule.getArguments().add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
+                }
+            }
+        }
+
+        rules.add(rule);
+
+        return null;
     }
 
     private String unquote(String s) {
