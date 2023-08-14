@@ -201,17 +201,17 @@ public abstract class SSSOMTransformReaderBase<T> {
 
             for ( SSSOMTransformRule parsedRule : parsedRules ) {
                 try {
-                    IMappingFilter filter = parsedRule.getFilter();
+                    IMappingFilter filter = parsedRule.filter;
                     IMappingTransformer<Mapping> preprocessor = null;
                     IMappingTransformer<T> generator = null;
 
-                    preprocessor = parsePreprocessingAction(parsedRule.getActionName(), parsedRule.getArguments());
+                    preprocessor = parsePreprocessingAction(parsedRule.instruction, parsedRule.arguments);
                     if ( preprocessor == null ) {
-                        generator = parseGeneratingAction(parsedRule.getActionName(), parsedRule.getArguments());
+                        generator = parseGeneratingAction(parsedRule.instruction, parsedRule.arguments);
                     }
 
                     MappingProcessingRule<T> rule = new MappingProcessingRule<T>(filter, preprocessor, generator);
-                    rule.getTags().addAll(parsedRule.getTags());
+                    rule.getTags().addAll(parsedRule.tags);
                     rules.add(rule);
                 } catch ( SSSOMTransformError e ) {
                     errors.add(e);
@@ -431,19 +431,19 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         SSSOMTransformRule rule = new SSSOMTransformRule(filter, name);
 
         // Assemble the final tag set
-        tags.forEach((levelTags) -> rule.getTags().addAll(levelTags));
+        tags.forEach((levelTags) -> rule.tags.addAll(levelTags));
 
         // Assemble the arguments list
         if ( ctx.arglist() != null ) {
             for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
                 if ( argCtx.string() != null ) {
-                    rule.getArguments().add(unquote(argCtx.string().getText()));
+                    rule.arguments.add(unquote(argCtx.string().getText()));
                 } else if ( argCtx.IRI() != null ) {
                     String iri = argCtx.IRI().getText();
                     int iriLen = iri.length();
-                    rule.getArguments().add(iri.substring(1, iriLen - 1));
+                    rule.arguments.add(iri.substring(1, iriLen - 1));
                 } else if ( argCtx.CURIE() != null ) {
-                    rule.getArguments().add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
+                    rule.arguments.add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
                 }
             }
         }
@@ -463,6 +463,23 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         }
 
         return sb.toString();
+    }
+}
+
+/*
+ * Represents a processing rule after it has been parsed from the SSSOM/T
+ * source, but before the application-specific action part has been parsed into
+ * an actual preprocessor or generator object.
+ */
+class SSSOMTransformRule {
+    IMappingFilter filter;
+    String instruction;
+    List<String> arguments = new ArrayList<String>();
+    Set<String> tags = new HashSet<String>();
+
+    SSSOMTransformRule(IMappingFilter filter, String instruction) {
+        this.filter = filter;
+        this.instruction = instruction;
     }
 }
 
