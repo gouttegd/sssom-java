@@ -177,6 +177,15 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
         throw new SSSOMTransformError(String.format("Unrecognized function: %s", name));
     }
 
+    @Override
+    protected void parseHeaderAction(String name, List<String> arguments) {
+        if ( name.equals("declare_class") ) {
+            arguments.forEach((c) -> entityChecker.classNames.add(c));
+        } else if ( name.equals("declare_object_property") ) {
+            arguments.forEach((c) -> entityChecker.objectPropertyNames.add(c));
+        }
+    }
+
     /*
      * Initialise the formatter object to substitute %-prefixed placeholders within
      * a string with values from a mapping.

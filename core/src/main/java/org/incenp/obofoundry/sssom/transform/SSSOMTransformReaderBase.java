@@ -201,6 +201,11 @@ public abstract class SSSOMTransformReaderBase<T> {
 
             for ( SSSOMTransformRule parsedRule : parsedRules ) {
                 try {
+                    if ( parsedRule.isHeader ) {
+                        parseHeaderAction(parsedRule.instruction, parsedRule.arguments);
+                        continue;
+                    }
+
                     IMappingFilter filter = parsedRule.filter;
                     IMappingTransformer<Mapping> preprocessor = null;
                     IMappingTransformer<T> generator = null;
@@ -321,6 +326,19 @@ public abstract class SSSOMTransformReaderBase<T> {
     protected abstract IMappingTransformer<T> parseGeneratingAction(String name, List<String> arguments)
             throws SSSOMTransformError;
 
+    /**
+     * Parses a SSSOM/Transform header action.
+     * 
+     * @param name      The name of the function, as it appears in the SSSOM/T file.
+     * @param arguments The arguments passed to the function.
+     * @throws SSSOMTransformError If the name does not match any allowed header
+     *                             instruction name, or if there is a problem with
+     *                             the list of arguments.
+     */
+    protected void parseHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+
+    }
+
     private class ErrorListener extends BaseErrorListener {
         private List<SSSOMTransformError> errors;
 
@@ -360,6 +378,34 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         prefix = prefix.substring(1, prefix.length() - 1);
 
         prefixManager.add(prefixName, prefix);
+
+        return null;
+    }
+
+    @Override
+    public Void visitHeaderDecl(SSSOMTransformParser.HeaderDeclContext ctx) {
+        String name = ctx.action().FUNCTION().getText();
+        int nameLen = name.length();
+        name = name.substring(0, nameLen - 1);
+
+        SSSOMTransformRule rule = new SSSOMTransformRule(null, name);
+        rule.isHeader = true;
+
+        if ( ctx.action().arglist() != null ) {
+            for ( ArgumentContext argCtx : ctx.action().arglist().argument() ) {
+                if ( argCtx.string() != null ) {
+                    rule.arguments.add(unquote(argCtx.string().getText()));
+                } else if ( argCtx.IRI() != null ) {
+                    String iri = argCtx.IRI().getText();
+                    int iriLen = iri.length();
+                    rule.arguments.add(iri.substring(1, iriLen - 1));
+                } else if ( argCtx.CURIE() != null ) {
+                    rule.arguments.add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
+                }
+            }
+        }
+
+        rules.add(rule);
 
         return null;
     }
@@ -476,6 +522,7 @@ class SSSOMTransformRule {
     String instruction;
     List<String> arguments = new ArrayList<String>();
     Set<String> tags = new HashSet<String>();
+    boolean isHeader = false;
 
     SSSOMTransformRule(IMappingFilter filter, String instruction) {
         this.filter = filter;

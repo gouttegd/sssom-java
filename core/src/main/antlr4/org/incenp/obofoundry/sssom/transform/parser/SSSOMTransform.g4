@@ -1,8 +1,10 @@
 grammar SSSOMTransform;
 
-ruleSet   : WS* (prefixDecl+ WS+)* (rule WS+)+ EOF;
+ruleSet   : WS* (prefixDecl+ WS+)* (headerDecl+ WS+)* (rule WS+)+ EOF;
 
 prefixDecl: 'prefix' WS+ PREFIX WS+ IRI;
+
+headerDecl: action;
 
 rule      : (tags WS+)? filterSet WS+ '->' WS+ actionSet
           | (tags WS+)? filterSet WS+ '{' (WS+ rule WS+)+ '}'
