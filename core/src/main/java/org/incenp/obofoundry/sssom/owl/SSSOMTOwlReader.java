@@ -30,15 +30,25 @@ import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReaderBase;
+import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
+import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
+import org.semanticweb.owlapi.model.OWLEntityVisitor;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 /**
@@ -91,6 +101,7 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
     private OWLDataFactory factory;
     private ManchesterOWLSyntaxParser manParser;
     private MappingFormatter formatter;
+    CustomEntityChecker entityChecker;
 
     /**
      * Creates a new instance.
@@ -106,11 +117,14 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
      */
     public SSSOMTOwlReader(String filename, OWLOntology ontology) throws IOException {
         super(filename);
+
         this.ontology = ontology;
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        entityChecker = new CustomEntityChecker(ontology);
 
         OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
         manParser = new ManchesterOWLSyntaxParserImpl(() -> config, factory);
+        manParser.setOWLEntityChecker(entityChecker);
     }
 
     @Override
@@ -251,41 +265,112 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
      * Creates an axiom from a mapping and an expression in Manchester syntax.
      */
     private OWLAxiom parseForMapping(Mapping mapping, String text) {
-        Set<OWLAxiom> tmpAxioms = ensureClassesExist(mapping);
 
-        manParser.setDefaultOntology(ontology);
+        // Ensure the parser will recognise the mapping's subject and object
+        // (this is assuming mappings are between classes only).
+        entityChecker.classNames.add(String.format("<%s>", mapping.getSubjectId()));
+        entityChecker.classNames.add(String.format("<%s>", mapping.getObjectId()));
+
         manParser.setStringToParse(getFormatter().format(text, mapping));
-        OWLAxiom parsedAxiom = manParser.parseAxiom();
-
-        if ( tmpAxioms.size() > 0 ) {
-            ontology.getOWLOntologyManager().removeAxioms(ontology, tmpAxioms);
-        }
-
-        return parsedAxiom;
+        return manParser.parseAxiom();
     }
 
     /*
-     * Checks whether a given class exists in the helper ontology, and create its
-     * declaration axiom if it does not.
+     * Custom entity checker to ensure the Manchester parser will recognise any
+     * entity defined in the helper ontology.
      */
-    private void ensureClassExists(String entity, Set<OWLAxiom> addedAxioms) {
-        IRI entityIRI = IRI.create(entity);
-        if ( !ontology.containsClassInSignature(entityIRI) ) {
-            OWLDeclarationAxiom ax = factory.getOWLDeclarationAxiom(factory.getOWLClass(entityIRI));
-            ontology.getOWLOntologyManager().addAxiom(ontology, ax);
-            addedAxioms.add(ax);
-        }
-    }
+    class CustomEntityChecker implements OWLEntityChecker, OWLEntityVisitor {
 
-    /*
-     * Checks whether the subject and object exist in the helper ontology, and add
-     * the required declaration axioms if not. Returns the axioms that were added as
-     * a (possibly empty) set.
-     */
-    private Set<OWLAxiom> ensureClassesExist(Mapping mapping) {
-        Set<OWLAxiom> addedAxioms = new HashSet<OWLAxiom>();
-        ensureClassExists(mapping.getSubjectId(), addedAxioms);
-        ensureClassExists(mapping.getObjectId(), addedAxioms);
-        return addedAxioms;
+        private Set<String> classNames = new HashSet<String>();
+        private Set<String> objectPropertyNames = new HashSet<String>();
+        private Set<String> dataPropertyNames = new HashSet<String>();
+        private Set<String> individualNames = new HashSet<String>();
+        private Set<String> datatypeNames = new HashSet<String>();
+        private Set<String> annotationPropertyNames = new HashSet<String>();
+
+        CustomEntityChecker(OWLOntology ontology) {
+            for ( OWLDeclarationAxiom d : ontology.getAxioms(AxiomType.DECLARATION, Imports.INCLUDED) ) {
+                d.getEntity().accept(this);
+            }
+        }
+
+        @Override
+        public OWLClass getOWLClass(String name) {
+            if ( classNames.contains(name) ) {
+                return factory.getOWLClass(IRI.create(name));
+            }
+            return null;
+        }
+
+        @Override
+        public OWLObjectProperty getOWLObjectProperty(String name) {
+            if ( objectPropertyNames.contains(name) ) {
+                return factory.getOWLObjectProperty(IRI.create(name));
+            }
+            return null;
+        }
+
+        @Override
+        public OWLDataProperty getOWLDataProperty(String name) {
+            if ( dataPropertyNames.contains(name) ) {
+                return factory.getOWLDataProperty(IRI.create(name));
+            }
+            return null;
+        }
+
+        @Override
+        public OWLNamedIndividual getOWLIndividual(String name) {
+            if ( individualNames.contains(name) ) {
+                return factory.getOWLNamedIndividual(IRI.create(name));
+            }
+            return null;
+        }
+
+        @Override
+        public OWLDatatype getOWLDatatype(String name) {
+            if ( datatypeNames.contains(name) ) {
+                return factory.getOWLDatatype(IRI.create(name));
+            }
+            return null;
+        }
+
+        @Override
+        public OWLAnnotationProperty getOWLAnnotationProperty(String name) {
+            if ( annotationPropertyNames.contains(name) ) {
+                return factory.getOWLAnnotationProperty(IRI.create(name));
+            }
+            return null;
+        }
+
+        @Override
+        public void visit(OWLClass cls) {
+            classNames.add(cls.getIRI().toQuotedString());
+
+        }
+
+        @Override
+        public void visit(OWLObjectProperty property) {
+            objectPropertyNames.add(property.getIRI().toQuotedString());
+        }
+
+        @Override
+        public void visit(OWLDataProperty property) {
+            dataPropertyNames.add(property.getIRI().toQuotedString());
+        }
+
+        @Override
+        public void visit(OWLNamedIndividual individual) {
+            individualNames.add(individual.getIRI().toQuotedString());
+        }
+
+        @Override
+        public void visit(OWLDatatype datatype) {
+            datatypeNames.add(datatype.getIRI().toQuotedString());
+        }
+
+        @Override
+        public void visit(OWLAnnotationProperty property) {
+            annotationPropertyNames.add(property.getIRI().toQuotedString());
+        }
     }
 }
