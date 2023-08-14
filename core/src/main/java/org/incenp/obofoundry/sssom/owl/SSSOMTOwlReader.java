@@ -29,7 +29,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
-import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformReaderBase;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.IRI;
@@ -71,7 +71,7 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * <li>similar placeholders for the object side ({@code %object_id}, etc.).
  * </ul>
  */
-public class SSSOMTOwlReader extends SSSOMTransformReader<OWLAxiom> {
+public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
     private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
 

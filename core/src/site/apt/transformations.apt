@@ -202,7 +202,7 @@ exactMatchOnly.getTags().add("exact-match-only");
   can also be parsed from a file in the
   {{{./sssom-transform.html}SSSOM/Transform language}}, a small
   domain-specific language specifically intended to express them. The
-  {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformReader.html}SSSOMTransformReader}}
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformReaderBase.html}SSSOMTransformReaderBase}}
   class provides a parser for the SSSOM/Transform language.
   
   The parser is independent of the type of objects one wishes to derive
@@ -245,7 +245,7 @@ predicate==skos:exactMatch -> create_axiom("%subject_id EquivalentTo: %object_id
   <<<SSSOMTransformReader<Foo>​>>>:
   
 +-----------------------------------------------------------------------
-public class SSSOMTFooReader extends SSSOMTransformReader<Foo> {
+public class SSSOMTFooReader extends SSSOMTransformReaderBase<Foo> {
 
     @Override
     public IMappingTransformer<Foo> parseGeneratingAction(String name, List<String> arguments) {

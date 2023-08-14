@@ -60,7 +60,7 @@ import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformParser.Argumen
  * @param <T> The type of object that should be produced by the processing rules
  *            for each mapping.
  */
-public abstract class SSSOMTransformReader<T> {
+public abstract class SSSOMTransformReaderBase<T> {
     private SSSOMTransformLexer lexer;
     protected List<MappingProcessingRule<T>> rules = new ArrayList<MappingProcessingRule<T>>();
     protected List<SSSOMTransformError> errors = new ArrayList<SSSOMTransformError>();
@@ -72,7 +72,7 @@ public abstract class SSSOMTransformReader<T> {
      * SSSOM Transform from something else than a file or file-like source, coupled
      * with the {@link #read(String)} method.
      */
-    protected SSSOMTransformReader() {
+    protected SSSOMTransformReaderBase() {
     }
 
     /**
@@ -82,7 +82,7 @@ public abstract class SSSOMTransformReader<T> {
      * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
      *                     reader object.
      */
-    protected SSSOMTransformReader(Reader input) throws IOException {
+    protected SSSOMTransformReaderBase(Reader input) throws IOException {
         lexer = new SSSOMTransformLexer(CharStreams.fromReader(input));
     }
 
@@ -93,7 +93,7 @@ public abstract class SSSOMTransformReader<T> {
      * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
      *                     stream.
      */
-    protected SSSOMTransformReader(InputStream input) throws IOException {
+    protected SSSOMTransformReaderBase(InputStream input) throws IOException {
         lexer = new SSSOMTransformLexer(CharStreams.fromStream(input));
     }
 
@@ -104,7 +104,7 @@ public abstract class SSSOMTransformReader<T> {
      * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
      *                     file.
      */
-    protected SSSOMTransformReader(File input) throws IOException {
+    protected SSSOMTransformReaderBase(File input) throws IOException {
         lexer = new SSSOMTransformLexer(CharStreams.fromFileName(input.getPath()));
     }
 
@@ -115,7 +115,7 @@ public abstract class SSSOMTransformReader<T> {
      * @throws IOException If any non-SSSOM/T I/O error occurs when reading from the
      *                     file.
      */
-    protected SSSOMTransformReader(String filename) throws IOException {
+    protected SSSOMTransformReaderBase(String filename) throws IOException {
         lexer = new SSSOMTransformLexer(CharStreams.fromFileName(filename));
     }
 
