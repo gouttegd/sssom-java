@@ -268,8 +268,8 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         // Ensure the parser will recognise the mapping's subject and object
         // (this is assuming mappings are between classes only).
-        entityChecker.classNames.add(String.format("<%s>", mapping.getSubjectId()));
-        entityChecker.classNames.add(String.format("<%s>", mapping.getObjectId()));
+        entityChecker.classNames.add(mapping.getSubjectId());
+        entityChecker.classNames.add(mapping.getObjectId());
 
         manParser.setStringToParse(getFormatter().format(text, mapping));
         return manParser.parseAxiom();
@@ -294,8 +294,17 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
             }
         }
 
+        private String getUnquotedIRI(String name) {
+            int len = name.length();
+            if ( len > 0 && name.charAt(0) == '<' ) {
+                return name.substring(1, len - 1);
+            }
+            return name;
+        }
+
         @Override
         public OWLClass getOWLClass(String name) {
+            name = getUnquotedIRI(name);
             if ( classNames.contains(name) ) {
                 return factory.getOWLClass(IRI.create(name));
             }
@@ -304,6 +313,7 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         @Override
         public OWLObjectProperty getOWLObjectProperty(String name) {
+            name = getUnquotedIRI(name);
             if ( objectPropertyNames.contains(name) ) {
                 return factory.getOWLObjectProperty(IRI.create(name));
             }
@@ -312,6 +322,7 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         @Override
         public OWLDataProperty getOWLDataProperty(String name) {
+            name = getUnquotedIRI(name);
             if ( dataPropertyNames.contains(name) ) {
                 return factory.getOWLDataProperty(IRI.create(name));
             }
@@ -320,6 +331,7 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         @Override
         public OWLNamedIndividual getOWLIndividual(String name) {
+            name = getUnquotedIRI(name);
             if ( individualNames.contains(name) ) {
                 return factory.getOWLNamedIndividual(IRI.create(name));
             }
@@ -328,6 +340,7 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         @Override
         public OWLDatatype getOWLDatatype(String name) {
+            name = getUnquotedIRI(name);
             if ( datatypeNames.contains(name) ) {
                 return factory.getOWLDatatype(IRI.create(name));
             }
@@ -336,6 +349,7 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         @Override
         public OWLAnnotationProperty getOWLAnnotationProperty(String name) {
+            name = getUnquotedIRI(name);
             if ( annotationPropertyNames.contains(name) ) {
                 return factory.getOWLAnnotationProperty(IRI.create(name));
             }
@@ -344,33 +358,33 @@ public class SSSOMTOwlReader extends SSSOMTransformReaderBase<OWLAxiom> {
 
         @Override
         public void visit(OWLClass cls) {
-            classNames.add(cls.getIRI().toQuotedString());
+            classNames.add(cls.getIRI().toString());
 
         }
 
         @Override
         public void visit(OWLObjectProperty property) {
-            objectPropertyNames.add(property.getIRI().toQuotedString());
+            objectPropertyNames.add(property.getIRI().toString());
         }
 
         @Override
         public void visit(OWLDataProperty property) {
-            dataPropertyNames.add(property.getIRI().toQuotedString());
+            dataPropertyNames.add(property.getIRI().toString());
         }
 
         @Override
         public void visit(OWLNamedIndividual individual) {
-            individualNames.add(individual.getIRI().toQuotedString());
+            individualNames.add(individual.getIRI().toString());
         }
 
         @Override
         public void visit(OWLDatatype datatype) {
-            datatypeNames.add(datatype.getIRI().toQuotedString());
+            datatypeNames.add(datatype.getIRI().toString());
         }
 
         @Override
         public void visit(OWLAnnotationProperty property) {
-            annotationPropertyNames.add(property.getIRI().toQuotedString());
+            annotationPropertyNames.add(property.getIRI().toString());
         }
     }
 }
