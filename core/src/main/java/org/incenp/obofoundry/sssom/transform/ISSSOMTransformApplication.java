@@ -50,8 +50,8 @@ public interface ISSSOMTransformApplication<T> {
      * action cannot produce mapping processing rules but may otherwise influence
      * the behaviour of the application.
      * 
-     * @param name      The name of the instruction.
-     * @param arguments The list of arguments passed to the instruction.
+     * @param name      The name of the function.
+     * @param arguments The list of arguments passed to the function.
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g. the name is not recognised or the arguments
      *                             are invalid).
@@ -61,14 +61,14 @@ public interface ISSSOMTransformApplication<T> {
     /**
      * Processes a preprocessing action. This method is called when the parser finds
      * a normal action (any action associated with a filter). It the application
-     * recognises the instruction, it must return a mapping preprocessor; otherwise,
-     * it must return {@code null}.
+     * recognises the function, it must return a mapping preprocessor; otherwise, it
+     * must return {@code null}.
      * 
-     * @param name      The name of the instruction.
-     * @param arguments The list of arguments passed to the instruction.
+     * @param name      The name of the function.
+     * @param arguments The list of arguments passed to the function.
      * @return A mapping preprocessor implementing the action according to the
      *         application’s needs, or {@code null} if the name is not a valid
-     *         preprocessing instruction name for this application.
+     *         preprocessing function name for this application.
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g., the arguments are invalid).
      */
@@ -79,11 +79,11 @@ public interface ISSSOMTransformApplication<T> {
      * Processes a generating action. This method is called when the parser finds a
      * normal action that is not recognised as a preprocessing action (i.e.
      * {@link #onPreprocessingAction(String, List)} returned {@code null}). If the
-     * application recognises the instruction, it must return a mapping transformer
+     * application recognises the function, it must return a mapping transformer
      * that produces the kind of objects desired by the application.
      * 
-     * @param name      The name of the instruction.
-     * @param arguments The list of arguments passed to the instruction.
+     * @param name      The name of the function.
+     * @param arguments The list of arguments passed to the function.
      * @return A mapping transformer implementing the action according to the
      *         application’s needs.
      * @throws SSSOMTransformError If the application cannot process the action

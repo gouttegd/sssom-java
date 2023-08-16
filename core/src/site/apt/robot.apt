@@ -124,9 +124,12 @@ ROBOT command
   Refer to the {{{./sssom-transform.html}description}} of the
   SSSOM/Transform language for details about the syntax of rules and
   filter expressions. This section describes the syntax of the
-  application-specific actions expected by <<<sssom-inject>>>.
+  application-specific functions expected by <<<sssom-inject>>>.
   
-  Each action will generate one OWL axiom. The following actions are
+*** Axiom-generating functions
+
+  Those are the functions that may be used in a SSSOM/Transform rule.
+  Each function will generate one OWL axiom. The following functions are
   allowed:
   
   [direct()] Will generate an axiom that is the “direct” serialisation
@@ -201,6 +204,48 @@ subject==FBbt:* -> annotate_subject(IAO:0000589,  "%subject_label (Drosophila)")
   
 +-----------------------------------------------------------------------
 subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
++-----------------------------------------------------------------------
+
+*** Header functions
+
+  Those are the functions that may be used at the top of the
+  SSSOM/Transform file, before any rule. They are used to declare
+  classes and object properties, to ensure that they will be correctly
+  recognised when they are used in <<<create_axiom>>> functions.
+  
+  [declare_class()] Declares one or several OWL classes.
+  
+  [declare_object_property()] Declare one or several OWL object
+                              properties.
+  
+  []
+  
+  Most of the time, those functions should not be needed. This is
+  because the <<<sssom-inject>>> command is already aware of all the
+  classes and object properties defined in the ontology that is
+  currently being manipulated by the ROBOT pipeline.
+  
+  For example, considering the following rule:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
++-----------------------------------------------------------------------
+
+  For the expression in Manchester syntax to be successfully parsed, the
+  parser must know what <<<BFO:0000050>>> and <<<NCBITaxon:7227>>> refer
+  to. If we want to inject such an axiom into an ontology, it is likely
+  that the ontology already contains the declaration axioms for both the
+  <<<BFO:000050>>> property and the <<<NCBITaxon:7227>>> class, so we
+  don’t have anything to do.
+  
+  But if if the ontology does not actually contain these declaration
+  axioms, then the <<<sssom-inject>>> command will fail because it will
+  not be able to parse the expression. To avoid that, we must declare
+  any entity we may want to use in a <<<create_axiom>>> function:
+  
++-----------------------------------------------------------------------
+declare_class(NCBITaxon:7227);
+declare_object_property(BFO:0000050);
 +-----------------------------------------------------------------------
 
 * Exploiting tags in a ruleset

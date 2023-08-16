@@ -55,7 +55,7 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * A specialised application of the SSSOM/Transform language to read mapping
  * processing rules that produce OWL axioms for injection into an ontology.
  * <p>
- * This application recognises the following instructions:
+ * This application recognises the following actions:
  * <ul>
  * <li>{@code stop()} to stop any further processing for the current mapping;
  * <li>{@code invert()} to invert the current mapping;

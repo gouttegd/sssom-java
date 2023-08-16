@@ -225,7 +225,7 @@ public class SSSOMTransformReader<T> {
             for ( SSSOMTransformRule parsedRule : parsedRules ) {
                 try {
                     if ( parsedRule.isHeader ) {
-                        app.onHeaderAction(parsedRule.instruction, parsedRule.arguments);
+                        app.onHeaderAction(parsedRule.function, parsedRule.arguments);
                         continue;
                     }
 
@@ -233,9 +233,9 @@ public class SSSOMTransformReader<T> {
                     IMappingTransformer<Mapping> preprocessor = null;
                     IMappingTransformer<T> generator = null;
 
-                    preprocessor = app.onPreprocessingAction(parsedRule.instruction, parsedRule.arguments);
+                    preprocessor = app.onPreprocessingAction(parsedRule.function, parsedRule.arguments);
                     if ( preprocessor == null ) {
-                        generator = app.onGeneratingAction(parsedRule.instruction, parsedRule.arguments);
+                        generator = app.onGeneratingAction(parsedRule.function, parsedRule.arguments);
                     }
 
                     MappingProcessingRule<T> rule = new MappingProcessingRule<T>(filter, preprocessor, generator);
@@ -437,7 +437,7 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
             filter = fs;
         }
 
-        // Get action name
+        // Get function name
         String name = ctx.FUNCTION().getText();
         int nameLen = name.length();
         name = name.substring(0, nameLen - 1);
@@ -503,14 +503,14 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
  */
 class SSSOMTransformRule {
     IMappingFilter filter;
-    String instruction;
+    String function;
     List<String> arguments = new ArrayList<String>();
     Set<String> tags = new HashSet<String>();
     boolean isHeader = false;
 
-    SSSOMTransformRule(IMappingFilter filter, String instruction) {
+    SSSOMTransformRule(IMappingFilter filter, String function) {
         this.filter = filter;
-        this.instruction = instruction;
+        this.function = function;
     }
 }
 
