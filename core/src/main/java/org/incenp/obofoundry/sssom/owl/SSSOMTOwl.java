@@ -25,12 +25,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
-import org.incenp.obofoundry.sssom.transform.ISSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
-import org.incenp.obofoundry.sssom.transform.NamedMappingTransformer;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.io.OWLParserException;
@@ -82,7 +80,7 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * <li>similar placeholders for the object side ({@code %object_id}, etc.).
  * </ul>
  */
-public class SSSOMTOwl implements ISSSOMTransformApplication<OWLAxiom> {
+public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
     /*
      * Common expression patterns that are handled through specialised generators.
@@ -129,57 +127,55 @@ public class SSSOMTOwl implements ISSSOMTransformApplication<OWLAxiom> {
     }
 
     @Override
-    public void onInit(PrefixManager prefixManager) {
-        formatter.addSubstitution("%subject_curie",
-                (mapping) -> prefixManager.shortenIdentifier(mapping.getSubjectId()));
-        formatter.addSubstitution("%object_curie", (mapping) -> prefixManager.shortenIdentifier(mapping.getObjectId()));
+    public void onInit(PrefixManager pm) {
+        formatter.addSubstitution("%subject_curie", (mapping) -> pm.shortenIdentifier(mapping.getSubjectId()));
+        formatter.addSubstitution("%object_curie", (mapping) -> pm.shortenIdentifier(mapping.getObjectId()));
 
     }
 
     @Override
-    public void onHeaderAction(String name, List<String> arguments) {
-        if ( name.equals("declare_class") ) {
+    public void onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+        switch ( name ) {
+        case "declare_class":
             arguments.forEach((c) -> entityChecker.classNames.add(c));
-        } else if ( name.equals("declare_object_property") ) {
-            arguments.forEach((c) -> entityChecker.objectPropertyNames.add(c));
-        }
-    }
+            return;
 
-    @Override
-    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments) {
-        if ( name.equals("stop") ) {
-            return new NamedMappingTransformer<Mapping>("stop()", (mapping) -> null);
-        } else if ( name.equals("invert") ) {
-            return new NamedMappingTransformer<Mapping>("invert()", (mapping) -> CommonPredicate.invert(mapping));
+        case "declare_object_property":
+            arguments.forEach((c) -> entityChecker.objectPropertyNames.add(c));
+            return;
         }
-        return null;
+
+        super.onHeaderAction(name, arguments);
     }
 
     @Override
     public IMappingTransformer<OWLAxiom> onGeneratingAction(String name, List<String> arguments)
             throws SSSOMTransformError {
-        if ( name.equals("direct") ) {
-            return new DirectAxiomGenerator(ontology);
-        } else if ( name.equals("annotate_subject") ) {
-            checkArguments("annotate_subject", 2, arguments);
-            return new AnnotationAxiomGenerator(ontology, IRI.create(arguments.get(0)),
-                    formatter.getTransformer(arguments.get(1)));
-        } else if ( name.equals("annotate_object") ) {
-            checkArguments("annotate_object", 2, arguments);
-            return new AnnotationAxiomGenerator(ontology, IRI.create(arguments.get(0)),
-                    formatter.getTransformer(arguments.get(1)), true);
-        } else if ( name.equals("create_axiom") ) {
-            checkArguments("create_axiom", 1, arguments);
+        IMappingTransformer<OWLAxiom> transformer = null;
 
+        switch ( name ) {
+        case "direct":
+            checkArguments(name, 0, arguments);
+            transformer = new DirectAxiomGenerator(ontology);
+            break;
+
+        case "annotate_subject":
+        case "annotate_object":
+            checkArguments(name, 2, arguments);
+            transformer = new AnnotationAxiomGenerator(ontology, IRI.create(arguments.get(0)),
+                    formatter.getTransformer(arguments.get(1)), name.endsWith("_object"));
+            break;
+
+        case "create_axiom":
+            checkArguments(name, 1, arguments);
             String text = arguments.get(0);
 
             // First look if the expression is a "common" one, to avoid if possible
             // mobilising a full Manchester syntax parser.
-            IMappingTransformer<OWLAxiom> transformer = recogniseCommonPattern(text);
+            transformer = recogniseCommonPattern(text);
             if ( transformer == null ) {
                 // No luck. Parse the Manchester expression once on a dummy mapping, so that any
-                // syntax error is at least detected immediately instead of waiting until we try
-                // to apply it to actual mappings.
+                // syntax error is at least detected immediately.
                 try {
                     testParse(text);
                     transformer = (mapping) -> this.parseForMapping(mapping, text);
@@ -187,11 +183,10 @@ public class SSSOMTOwl implements ISSSOMTransformApplication<OWLAxiom> {
                     throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%\"", text));
                 }
             }
-
-            return transformer;
+            break;
         }
 
-        throw new SSSOMTransformError(String.format("Unrecognized function: %s", name));
+        return transformer != null ? transformer : super.onGeneratingAction(name, arguments);
     }
 
     @Override
@@ -255,18 +250,6 @@ public class SSSOMTOwl implements ISSSOMTransformApplication<OWLAxiom> {
 
         manParser.setStringToParse(formatter.format(text, mapping));
         return manParser.parseAxiom();
-    }
-
-    /*
-     * Helper method to throw an exception if we don't get the correct number of
-     * arguments for a function.
-     */
-    private void checkArguments(String name, int expected, List<String> arguments) throws SSSOMTransformError {
-        if ( arguments.size() != expected ) {
-            throw new SSSOMTransformError(
-                    String.format("Invalid number of arguments for function %s (expected %d, found %d)", name, expected,
-                            arguments.size()));
-        }
     }
 
     /*
