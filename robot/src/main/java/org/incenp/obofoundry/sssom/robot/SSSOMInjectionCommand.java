@@ -162,7 +162,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         if (line.hasOption("hasdbxref")) {
             PrefixManager pm = new PrefixManager();
-            Map<String, String> clMap = CommandLineHelper.getAddPrefixes(line);
+            Map<String, String> clMap = ioHelper.getPrefixes();
             for ( String prefixName : clMap.keySet() ) {
                 pm.add(prefixName, clMap.get(prefixName));
             }
