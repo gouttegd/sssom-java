@@ -1,3 +1,15 @@
+Changes in sssom-java 0.3.0
+---------------------------
+
+    * Project artifacts now split between sssom-core and sssom-robot.
+    * Fix parsing of date fields.
+    * Support for arbitrary functions in SSSOM/Transform.
+    * New interface to specialise the SSSOM/Transform parser.
+    * New options for the sssom-inject ROBOT command:
+      * --create, to create a new ontology from mappings;
+      * --hasdbxref, to create OBO-style cross-references.
+
+
 Changes in sssom-java 0.2.0
 ---------------------------
 
