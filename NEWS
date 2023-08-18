@@ -1,3 +1,9 @@
+Changes in sssom-java 0.3.1
+---------------------------
+
+    * Fix missing dependency in ROBOT plugin artifact.
+
+
 Changes in sssom-java 0.3.0
 ---------------------------
 

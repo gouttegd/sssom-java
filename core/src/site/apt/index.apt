@@ -8,7 +8,8 @@
   
   <SSSOM-Java> is an implementation of the
   {{{https://mapping-commons.github.io/sssom/spec/}SSSOM standard}} for
-  the Java language.
+  the Java language – just a hobby, won’t be big and professional like
+  <<<sssom-py>>>.
   
   It provides a {{{./library.html}library of Java classes}} to represent
   and manipulate SSSOM mappings and mapping sets, read and write them to
