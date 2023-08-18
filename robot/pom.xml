@@ -11,6 +11,9 @@
   <name>SSSOM-ROBOT</name>
   <description>SSSOM plugin for ROBOT</description>
   <url>https://incenp.org/dvlpt/sssom-java/robot.html</url>
+  <scm>
+    <url>https://github.com/gouttegd/sssom-java</url>
+  </scm>
 
   <dependencies>
     <dependency>

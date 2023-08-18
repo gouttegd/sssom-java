@@ -11,6 +11,9 @@
   <name>SSSOM-Core</name>
   <description>SSSOM Java library</description>
   <url>https://incenp.org/dvlpt/sssom-java/library.html</url>
+  <scm>
+    <url>https://github.com/gouttegd/sssom-java</url>
+  </scm>
 
   <dependencies>
     <dependency>
