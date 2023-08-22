@@ -38,6 +38,7 @@ public class PrefixManager {
 
     private Map<String, String> prefixMap = new HashMap<String, String>();
     private Map<String, String> iri2CurieCache = new HashMap<String, String>();
+    private Map<String, String> iri2PrefixCache = new HashMap<String, String>();
     private Set<String> unresolved = new HashSet<String>();
 
     /**
@@ -77,6 +78,47 @@ public class PrefixManager {
      */
     public Set<String> getUnresolvedPrefixNames() {
         return unresolved;
+    }
+
+    /**
+     * Gets the prefix associated with the given prefix name.
+     * 
+     * @param prefixName The name of the prefix to retrieve.
+     * @return The corresponding prefix, or {@code null} if the name is not the name
+     *         of a registered prefix.
+     */
+    public String getPrefix(String prefixName) {
+        return prefixMap.get(prefixName);
+    }
+
+    /**
+     * Gets the name of the best (longest) prefix for a given identifier.
+     * 
+     * @param iri The identifier for which to search the longest prefix.
+     * @return The name of the best prefix, or {@code null} if no registered prefix
+     *         is suitable for the given identifier.
+     */
+    public String getPrefixName(String iri) {
+        String bestPrefix = iri2PrefixCache.getOrDefault(iri, null);
+
+        if ( bestPrefix == null ) {
+            int bestLength = 0;
+
+            for ( String prefixName : prefixMap.keySet() ) {
+                String prefix = prefixMap.get(prefixName);
+                if ( iri.startsWith(prefix) && prefix.length() > bestLength ) {
+                    bestPrefix = prefixName;
+                    bestLength = prefix.length();
+                }
+            }
+
+            if ( bestPrefix != null ) {
+                iri2PrefixCache.put(iri, bestPrefix);
+            }
+
+        }
+
+        return bestPrefix;
     }
 
     /**
