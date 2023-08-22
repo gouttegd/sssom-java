@@ -83,6 +83,7 @@ public class StandaloneRobotCommand {
         m.addCommand("validate-profile", new ValidateProfileCommand());
         m.addCommand("verify", new VerifyCommand());
         m.addCommand("sssom-inject", new SSSOMInjectionCommand());
+        m.addCommand("xref-extract", new XrefExtractCommand());
 
         m.main(args);
     }
