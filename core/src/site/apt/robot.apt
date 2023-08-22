@@ -25,6 +25,12 @@ ROBOT command
   section of the mapping set is not embedded within the TSV file, it can
   be specified separately with the <<<--sssom-metadata>>> option.
   
+  You can use the <<<--sssom>>> option repeatedly to load more than one
+  mapping set; mappings from all mapping sets will be combined into a
+  single set. Note that when using <<<--sssom>>> multiple times, you can
+  only specify <one> external metadata file, which will be used for all
+  TSV files.
+  
   The command will generate OWL axioms according to instructions
   provided by other command line options (see
   {{Specifying the axioms to generate}} below). The default behaviour is

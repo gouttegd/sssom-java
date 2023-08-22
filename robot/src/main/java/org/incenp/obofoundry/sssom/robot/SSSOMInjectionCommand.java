@@ -135,8 +135,15 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         if ( !line.hasOption("sssom") ) {
             throw new IllegalArgumentException("Missing SSSOM mapping set");
         }
-        TSVReader reader = new TSVReader(line.getOptionValue("sssom"), line.getOptionValue("sssom-metadata"));
-        MappingSet mappingSet = reader.read();
+        MappingSet mappingSet = null;
+        for (String sssomFile : line.getOptionValues("sssom")) {
+            TSVReader reader = new TSVReader(sssomFile, line.getOptionValue("sssom-metadata"));
+            if ( mappingSet == null ) {
+                mappingSet = reader.read();
+            } else {
+                mappingSet.getMappings().addAll(reader.read().getMappings());
+            }
+        }
 
         OWLOntology ontology = state.getOntology();
         OWLGenerator axiomGenerator = new OWLGenerator();
