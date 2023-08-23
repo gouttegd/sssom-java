@@ -33,7 +33,6 @@ import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
 /**
  * Extract mappings from cross-references (oboInOwl:hasDbXref annotations) in a
@@ -47,7 +46,11 @@ public class XrefExtractor {
 
     private static final String XREF_AS_EQUIVALENT = OBO_IN_OWL + "treat-xrefs-as-equivalent";
 
+    private static final String XREF_AS_IS_A = OBO_IN_OWL + "treat-xrefs-as-is_a";
+
     private static final String XREF_AS_HAS_SUBCLASS = OBO_IN_OWL + "treat-xrefs-as-has-subclass";
+
+    private static final String XREF_AS_GENUS_DIFFERENTIA = OBO_IN_OWL + "treat-xrefs-as-genus-differentia";
 
     private static final String XREF_AS_REVERSE_GENUS_DIFFERENTIA = OBO_IN_OWL
             + "treat-xrefs-as-reverse-genus-differentia";
@@ -131,13 +134,18 @@ public class XrefExtractor {
 
             switch ( annot.getProperty().getIRI().toString() ) {
             case XREF_AS_EQUIVALENT:
-                prefixToPredicateMap.put(v, OWLRDFVocabulary.OWL_EQUIVALENT_CLASS.toString());
+                prefixToPredicateMap.put(v, CommonPredicate.SKOS_EXACT_MATCH.toString());
+                break;
+
+            case XREF_AS_IS_A:
+                prefixToPredicateMap.put(v, CommonPredicate.SKOS_BROAD_MATCH.toString());
                 break;
 
             case XREF_AS_HAS_SUBCLASS:
-                prefixToPredicateMap.put(v, OWLRDFVocabulary.RDFS_SUBCLASS_OF.toString());
+                prefixToPredicateMap.put(v, CommonPredicate.SKOS_NARROW_MATCH.toString());
                 break;
 
+            case XREF_AS_GENUS_DIFFERENTIA:
             case XREF_AS_REVERSE_GENUS_DIFFERENTIA:
                 // The value should be of the form "PREFIX part_of NCBITaxon:XXXX"
                 String[] parts = v.split(" ");
