@@ -35,6 +35,7 @@ import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.AxiomType;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
@@ -120,8 +121,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         manParser.setOWLEntityChecker(entityChecker);
 
         formatter = new MappingFormatter();
-        formatter.addSubstitution("%subject_label", (mapping) -> mapping.getSubjectLabel());
-        formatter.addSubstitution("%object_label", (mapping) -> mapping.getObjectLabel());
+        formatter.addSubstitution("%subject_label", (mapping) -> getSubjectLabel(mapping));
+        formatter.addSubstitution("%object_label", (mapping) -> getObjectLabel(mapping));
         formatter.addSubstitution("%subject_id", (mapping) -> String.format("<%s>", mapping.getSubjectId()));
         formatter.addSubstitution("%object_id", (mapping) -> String.format("<%s>", mapping.getObjectId()));
     }
@@ -250,6 +251,37 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         manParser.setStringToParse(formatter.format(text, mapping));
         return manParser.parseAxiom();
+    }
+
+    private String getSubjectLabel(Mapping mapping) {
+        String label = mapping.getSubjectLabel();
+        if ( label == null ) {
+            label = getLabelFromOntology(mapping.getSubjectId());
+        }
+        if ( label == null ) {
+            label = "Unknown subject";
+        }
+        return label;
+    }
+
+    private String getObjectLabel(Mapping mapping) {
+        String label = mapping.getObjectLabel();
+        if ( label == null ) {
+            label = getLabelFromOntology(mapping.getObjectId());
+        }
+        if ( label == null ) {
+            label = "Unknown object";
+        }
+        return label;
+    }
+
+    private String getLabelFromOntology(String iri) {
+        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(IRI.create(iri)) ) {
+            if ( ax.getProperty().isLabel() && ax.getValue().isLiteral() ) {
+                return ax.getValue().asLiteral().get().getLiteral();
+            }
+        }
+        return null;
     }
 
     /*
