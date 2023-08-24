@@ -18,20 +18,20 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
  * A helper class to track <em>variables</em> that can have a different value
- * depending on whether the subject (or the object) of a mapping belongs to a
- * given set.
+ * depending on the mapping that is currently being processed.
  */
 public class VariableManager {
 
-    private Map<String, Variable> variables = new HashMap<String, Variable>();
+    private Map<String, List<MappingVariable>> vars = new HashMap<String, List<MappingVariable>>();
 
     /**
      * Defines a new variable to track.
@@ -40,42 +40,30 @@ public class VariableManager {
      * @param value The variable's default value.
      */
     public void addVariable(String name, String value) {
-        variables.put(name, new Variable(value));
+        addVariable(name, value, null);
     }
 
     /**
-     * Sets the value of a variable when a mapping has a subject ID in a given set.
+     * Defines a new variable to track for certain mappings.
      * 
-     * @param name     The name of the variable to set.
-     * @param value    The value to assign to the variable.
-     * @param subjects The set of IDs to compare a mapping's subject ID to.
+     * @param name   The name of the variable; if no variable with that name has
+     *               been declared yet, it is created as needed,
+     * @param value  The value of the variable.
+     * @param filter The filter determining for which mappings the variable has the
+     *               specified value.
      */
-    public void setVariableValueForSubjects(String name, String value, Set<String> subjects) {
-        Variable v = variables.get(name);
-        if ( v == null ) {
-            throw new IllegalArgumentException(String.format("Undefined variable: %s", name));
+    public void addVariable(String name, String value, IMappingFilter filter) {
+        if ( !vars.containsKey(name) ) {
+            vars.put(name, new ArrayList<MappingVariable>());
         }
-
-        for ( String subject : subjects ) {
-            v.setValueForSubject(value, subject);
-        }
-    }
-
-    /**
-     * Sets the value of a variable when a mapping has an object ID in a given set.
-     * 
-     * @param name    The name of the variable to set.
-     * @param value   The value to assign to the variable.
-     * @param objects The set of IDs to compare a mapping's object ID to.
-     */
-    public void setVariableValueForObjects(String name, String value, Set<String> objects) {
-        Variable v = variables.get(name);
-        if ( v == null ) {
-            throw new IllegalArgumentException(String.format("Undefined variable: %s", name));
-        }
-
-        for ( String object : objects ) {
-            v.setValueForObject(value, object);
+        if ( filter == null ) {
+            filter = (mapping) -> true;
+            // This is the default value, append it to the end
+            vars.get(name).add(new MappingVariable(value, filter));
+        } else {
+            // Insert at the beginning of the list so that it takes precedence over any
+            // previously set filter/value
+            vars.get(name).add(0, new MappingVariable(value, filter));
         }
     }
 
@@ -84,46 +72,30 @@ public class VariableManager {
      * 
      * @param name    The name of the variable to lookup.
      * @param mapping The mapping for which to get the variable's value.
-     * @return The value of the variable, which may be the value dependent on the
-     *         mapping's subject, the value dependent on the mapping's object, or
-     *         the default value.
+     * @return The value of the variable, according to the filter/values registered
+     *         for that variable.
      */
     public String expandVariable(String name, Mapping mapping) {
-        Variable v = variables.get(name);
-        if ( v == null ) {
+        List<MappingVariable> values = vars.get(name);
+        if ( values == null ) {
             throw new IllegalArgumentException(String.format("Undefined variable: %s", name));
         }
-        return v.getValueForMapping(mapping);
+
+        for ( MappingVariable mv : values ) {
+            if ( mv.filter.filter(mapping) ) {
+                return mv.value;
+            }
+        }
+        return "";
     }
 
-    private class Variable {
-        String defValue;
-        Map<String, String> subjectSpecificValues = new HashMap<String, String>();
-        Map<String, String> objectSpecificValues = new HashMap<String, String>();
+    private class MappingVariable {
+        IMappingFilter filter;
+        String value;
 
-        Variable(String defaultValue) {
-            defValue = defaultValue;
-        }
-
-        void setValueForSubject(String value, String subject) {
-            subjectSpecificValues.put(subject, value);
-        }
-
-        void setValueForObject(String value, String object) {
-            objectSpecificValues.put(object, value);
-        }
-
-        String getValueForMapping(Mapping mapping) {
-            String value = subjectSpecificValues.get(mapping.getSubjectId());
-            if ( value == null ) {
-                value = objectSpecificValues.get(mapping.getObjectId());
-            }
-            if ( value == null ) {
-                value = defValue;
-            }
-
-            return value;
+        MappingVariable(String value, IMappingFilter filter) {
+            this.value = value;
+            this.filter = filter;
         }
     }
-
 }

@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
@@ -156,30 +157,32 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             return;
 
         case "set_var":
-            checkArguments(name, 2, arguments);
+            if ( arguments.size() < 2 || arguments.size() > 3 ) {
+                throw new SSSOMTransformError(
+                        String.format("Invalid number of arguments for function set_var: expected 2 or 3, found %d",
+                                arguments.size()));
+            }
             String varName = arguments.get(0);
-            varManager.addVariable(varName, arguments.get(1));
+            String varValue = arguments.get(1);
+            IMappingFilter filter = null;
+            if ( arguments.size() == 3 ) {
+                // Condition is of the form "(%subject_id|%object_id) is_a <ID>"
+                String condition = arguments.get(2);
+                String[] parts = condition.split(" ", 3);
+                if ( parts.length != 3 || !parts[1].equals("is_a")
+                        || (!parts[0].equals("%subject_id") && !parts[0].equals("%object_id")) ) {
+                    throw new SSSOMTransformError(String.format("Invalid condition for set_var: %s", condition));
+                }
+
+                Set<String> targetIds = getSubclassesOf(extractIRI(parts[2]));
+                if ( parts[0].equals("%subject_id") ) {
+                    filter = (mapping) -> targetIds.contains(mapping.getSubjectId());
+                } else if ( parts[0].equals("%object_id") ) {
+                    filter = (mapping) -> targetIds.contains(mapping.getObjectId());
+                }
+            }
+            varManager.addVariable(varName, varValue, filter);
             formatter.addSubstitution("%" + varName, (mapping) -> varManager.expandVariable(varName, mapping));
-            return;
-
-        case "set_var_if_subject_subclass_of":
-            checkArguments(name, 3, arguments);
-            try {
-                varManager.setVariableValueForSubjects(arguments.get(0), arguments.get(1),
-                        getSubclassesOf(arguments.get(2)));
-            } catch ( IllegalArgumentException iae ) {
-                throw new SSSOMTransformError(iae.getMessage());
-            }
-            return;
-
-        case "set_var_if_object_subclass_of":
-            checkArguments(name, 3, arguments);
-            try {
-                varManager.setVariableValueForObjects(arguments.get(0), arguments.get(1),
-                        getSubclassesOf(arguments.get(2)));
-            } catch ( IllegalArgumentException iae ) {
-                throw new SSSOMTransformError(iae.getMessage());
-            }
             return;
         }
 
@@ -323,15 +326,15 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         return null;
     }
 
-    private Set<String> getSubclassesOf(String root) {
+    private Set<String> getSubclassesOf(IRI root) {
         Set<String> classes = new HashSet<String>();
-        classes.add(root);
+        classes.add(root.toString());
 
         if ( reasoner == null ) {
             reasoner = reasonerFactory.createReasoner(ontology);
         }
 
-        for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(IRI.create(root)), false).getFlattened() ) {
+        for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(root), false).getFlattened() ) {
             if ( !c.isBottomEntity() ) {
                 classes.add(c.getIRI().toString());
             }
