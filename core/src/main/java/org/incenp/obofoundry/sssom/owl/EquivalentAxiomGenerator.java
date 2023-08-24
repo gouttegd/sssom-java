@@ -38,18 +38,19 @@ import org.semanticweb.owlapi.model.OWLOntology;
 public class EquivalentAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
     private OWLDataFactory factory;
-    private OWLClassExpression filler;
+    private OWLClassExpression expr;
+    private IMappingTransformer<OWLClassExpression> exprGenerator;
     private boolean invert;
 
     /**
      * Creates a new instance.
      * 
      * @param ontology The ontology to generate axioms for.
-     * @param filler   A class expression to combine with the object of the mapping
+     * @param expr     A class expression to combine with the object of the mapping
      *                 (may be {@code null}).
      */
-    public EquivalentAxiomGenerator(OWLOntology ontology, OWLClassExpression filler) {
-        this(ontology, filler, false);
+    public EquivalentAxiomGenerator(OWLOntology ontology, OWLClassExpression expr) {
+        this(ontology, expr, false);
     }
 
     /**
@@ -57,15 +58,34 @@ public class EquivalentAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      * the generated axioms.
      * 
      * @param ontology The ontology to generate axioms for.
-     * @param filler   A class expression to combined with the object of the mapping
+     * @param expr     A class expression to combined with the object of the mapping
      *                 (may be {@code null}).
      * @param invert   If {@code true}, invert the subject and object of the mapping
      *                 when generating the axiom; this is only really meaningful if
-     *                 a filler expression is provided.
+     *                 a class expression is provided.
      */
-    public EquivalentAxiomGenerator(OWLOntology ontology, OWLClassExpression filler, boolean invert) {
+    public EquivalentAxiomGenerator(OWLOntology ontology, OWLClassExpression expr, boolean invert) {
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        this.filler = filler;
+        this.expr = expr;
+        this.invert = invert;
+    }
+
+    /**
+     * Creates a new instance with a class expression that is derived from the
+     * mapping at application time.
+     * 
+     * @param ontology The ontology to generate axioms for.
+     * @param expr     A mapping transformer that will yield the class expression to
+     *                 combined with the object of the mapping (may be
+     *                 {@code null}).
+     * @param invert   If {@code true}, invert the subject and object of the mapping
+     *                 when generating the axiom; this is only really meaningfull if
+     *                 an expression generator is provided.
+     */
+    public EquivalentAxiomGenerator(OWLOntology ontology, IMappingTransformer<OWLClassExpression> expr,
+            boolean invert) {
+        factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        this.exprGenerator = expr;
         this.invert = invert;
     }
 
@@ -82,8 +102,10 @@ public class EquivalentAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
         OWLClassExpression equivalent;
 
-        if ( filler != null ) {
-            equivalent = factory.getOWLObjectIntersectionOf(object, filler);
+        if ( expr != null ) {
+            equivalent = factory.getOWLObjectIntersectionOf(object, expr);
+        } else if ( exprGenerator != null ) {
+            equivalent = factory.getOWLObjectIntersectionOf(object, exprGenerator.transform(mapping));
         } else {
             equivalent = object;
         }

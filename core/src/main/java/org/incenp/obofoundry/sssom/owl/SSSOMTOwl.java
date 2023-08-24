@@ -174,7 +174,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                     throw new SSSOMTransformError(String.format("Invalid condition for set_var: %s", condition));
                 }
 
-                Set<String> targetIds = getSubclassesOf(extractIRI(parts[2]));
+                Set<String> targetIds = getSubclassesOf(getUnquotedIRI(parts[2]));
                 if ( parts[0].equals("%subject_id") ) {
                     filter = (mapping) -> targetIds.contains(mapping.getSubjectId());
                 } else if ( parts[0].equals("%object_id") ) {
@@ -213,7 +213,12 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
             // First look if the expression is a "common" one, to avoid if possible
             // mobilising a full Manchester syntax parser.
-            transformer = recogniseCommonPattern(text);
+            try {
+                transformer = recogniseCommonPattern(text);
+            } catch ( IllegalArgumentException e ) {
+                throw new SSSOMTransformError(e.getMessage());
+            }
+
             if ( transformer == null ) {
                 // No luck. Parse the Manchester expression once on a dummy mapping, so that any
                 // syntax error is at least detected immediately.
@@ -251,27 +256,51 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         m = equivPattern.matcher(text);
         if ( m.matches() ) {
-            OWLClassExpression expr = null;
-            if ( m.group(3) != null ) {
-                expr = factory.getOWLObjectSomeValuesFrom(factory.getOWLObjectProperty(extractIRI(m.group(4))),
-                        factory.getOWLClass(extractIRI(m.group(5))));
+            boolean invert = m.group(1).equals("object");
+            if ( m.group(3) == null ) {
+                return new EquivalentAxiomGenerator(ontology, (OWLClassExpression) null, invert);
             }
-            return new EquivalentAxiomGenerator(ontology, expr, m.group(1).equals("object"));
+            String relation = getUnquotedIRI(m.group(4));
+            String filler = getUnquotedIRI(m.group(5));
+            if ( relation.charAt(0) == '%' || filler.charAt(0) == '%' ) {
+                IMappingTransformer<String> relGenerator = getVariableGenerator(relation);
+                IMappingTransformer<String> fillerGenerator = getVariableGenerator(filler);
+                IMappingTransformer<OWLClassExpression> exprGenerator = (mapping) -> factory.getOWLObjectSomeValuesFrom(
+                        factory.getOWLObjectProperty(IRI.create(relGenerator.transform(mapping))),
+                        factory.getOWLClass(IRI.create(fillerGenerator.transform(mapping))));
+                return new EquivalentAxiomGenerator(ontology, exprGenerator, invert);
+            } else {
+                OWLClassExpression expr = factory.getOWLObjectSomeValuesFrom(
+                        factory.getOWLObjectProperty(IRI.create(relation)), factory.getOWLClass(IRI.create(filler)));
+                return new EquivalentAxiomGenerator(ontology, expr, invert);
+            }
         }
 
         return null;
     }
 
-    private IRI extractIRI(String text) {
-        if ( text.charAt(0) == '<' ) {
-            return IRI.create(text.substring(1, text.length() - 1));
+    /*
+     * If name is a registered variable, gets a transformer to expand the variable
+     * value at runtime.
+     */
+    private IMappingTransformer<String> getVariableGenerator(String name) {
+        if ( name.charAt(0) == '%' ) {
+            return varManager.getTransformer(name.substring(1));
         } else {
-            return IRI.create(text);
+            return (mapping) -> name;
         }
     }
 
+    private String getUnquotedIRI(String name) {
+        int len = name.length();
+        if ( len > 0 && name.charAt(0) == '<' ) {
+            return name.substring(1, len - 1);
+        }
+        return name;
+    }
+
     /*
-     * Create a mapping with dummy IDs and try parsing the expression for that
+     * Creates a mapping with dummy IDs and try parsing the expression for that
      * mapping.
      */
     private void testParse(String text) {
@@ -295,6 +324,10 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         return manParser.parseAxiom();
     }
 
+    /*
+     * Gets the label of the mapping subject; try to obtain it from the helper
+     * ontology if the mapping itself has no subject label.
+     */
     private String getSubjectLabel(Mapping mapping) {
         String label = mapping.getSubjectLabel();
         if ( label == null ) {
@@ -306,6 +339,9 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         return label;
     }
 
+    /*
+     * Same but for the object.
+     */
     private String getObjectLabel(Mapping mapping) {
         String label = mapping.getObjectLabel();
         if ( label == null ) {
@@ -317,6 +353,9 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         return label;
     }
 
+    /*
+     * Extract a label from the helper ontology.
+     */
     private String getLabelFromOntology(String iri) {
         for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(IRI.create(iri)) ) {
             if ( ax.getProperty().isLabel() && ax.getValue().isLiteral() ) {
@@ -326,7 +365,10 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         return null;
     }
 
-    private Set<String> getSubclassesOf(IRI root) {
+    /*
+     * Gets a list of all subclasses of the provided root class.
+     */
+    private Set<String> getSubclassesOf(String root) {
         Set<String> classes = new HashSet<String>();
         classes.add(root.toString());
 
@@ -334,7 +376,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             reasoner = reasonerFactory.createReasoner(ontology);
         }
 
-        for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(root), false).getFlattened() ) {
+        for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(IRI.create(root)), false).getFlattened() ) {
             if ( !c.isBottomEntity() ) {
                 classes.add(c.getIRI().toString());
             }
@@ -360,14 +402,6 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             for ( OWLDeclarationAxiom d : ontology.getAxioms(AxiomType.DECLARATION, Imports.INCLUDED) ) {
                 d.getEntity().accept(this);
             }
-        }
-
-        private String getUnquotedIRI(String name) {
-            int len = name.length();
-            if ( len > 0 && name.charAt(0) == '<' ) {
-                return name.substring(1, len - 1);
-            }
-            return name;
         }
 
         @Override

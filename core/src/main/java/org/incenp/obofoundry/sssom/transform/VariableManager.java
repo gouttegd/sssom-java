@@ -89,6 +89,32 @@ public class VariableManager {
         return "";
     }
 
+    /**
+     * Gets a mapping transformer that will return the value of the variable for the
+     * mapping it is applied to.
+     * 
+     * @param name The variable to look up.
+     * @return A mapping transformer that, when applied to a mapping, will yield the
+     *         value the variable should have for this mapping.
+     */
+    public IMappingTransformer<String> getTransformer(String name) {
+        List<MappingVariable> values = vars.get(name);
+        if ( values == null ) {
+            throw new IllegalArgumentException(String.format("Undefined variable: %s", name));
+        }
+
+        IMappingTransformer<String> transformer = (mapping) -> {
+            for ( MappingVariable mv : values ) {
+                if ( mv.filter.filter(mapping) ) {
+                    return mv.value;
+                }
+            }
+            return "";
+        };
+
+        return transformer;
+    }
+
     private class MappingVariable {
         IMappingFilter filter;
         String value;
