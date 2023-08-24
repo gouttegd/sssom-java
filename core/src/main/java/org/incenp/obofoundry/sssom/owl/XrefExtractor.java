@@ -58,7 +58,6 @@ public class XrefExtractor {
     private static final String SEMAPV = "https://w3id.org/semapv/vocab/";
 
     private HashMap<String, String> prefixToPredicateMap = new HashMap<>();
-
     private PrefixManager prefixManager = new PrefixManager();
 
     public void setPrefixMap(Map<String, String> map) {
@@ -66,6 +65,10 @@ public class XrefExtractor {
     }
 
     public MappingSet extract(OWLOntology ontology) {
+        return this.extract(ontology, false);
+    }
+
+    public MappingSet extract(OWLOntology ontology, boolean permissive) {
         fillPrefixToPredicateMap(ontology);
 
         Set<String> usedPrefixNames = new HashSet<String>();
@@ -92,6 +95,8 @@ public class XrefExtractor {
                     String objectId = prefixManager.expandIdentifier(value);
                     if ( !objectId.equals(value) ) {
                         usedPrefixNames.add(parts[0]);
+                    } else if ( !permissive ) {
+                        continue;
                     }
 
                     String predicateId = prefixToPredicateMap.get(parts[0]);
@@ -111,6 +116,10 @@ public class XrefExtractor {
         }
 
         return ms;
+    }
+
+    public Set<String> getUnknownPrefixNames() {
+        return prefixManager.getUnresolvedPrefixNames();
     }
 
     private String getLabel(OWLOntology ontology, OWLClass c) {

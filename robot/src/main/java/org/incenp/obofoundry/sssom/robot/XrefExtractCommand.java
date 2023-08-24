@@ -27,6 +27,8 @@ import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
 import org.obolibrary.robot.IOHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A ROBOT command to infer mappings from cross-references in a ontology and
@@ -34,12 +36,15 @@ import org.obolibrary.robot.IOHelper;
  */
 public class XrefExtractCommand implements Command {
 
+    private static final Logger logger = LoggerFactory.getLogger(XrefExtractCommand.class);
+
     private Options options;
 
     public XrefExtractCommand() {
         options = CommandLineHelper.getCommonOptions();
         options.addOption("i", "input", true, "load ontology from file");
         options.addOption(null, "mapping-file", true, "write extracted mappings to file");
+        options.addOption(null, "permissive", false, "include cross-references with unknown prefixes");
     }
 
     @Override
@@ -83,7 +88,12 @@ public class XrefExtractCommand implements Command {
 
         XrefExtractor extractor = new XrefExtractor();
         extractor.setPrefixMap(ioHelper.getPrefixes());
-        MappingSet ms = extractor.extract(state.getOntology());
+        MappingSet ms = extractor.extract(state.getOntology(), line.hasOption("permissive"));
+
+        if ( !extractor.getUnknownPrefixNames().isEmpty() ) {
+            logger.warn("Unknown prefix names found in cross-references: "
+                    + String.join(" ", extractor.getUnknownPrefixNames()));
+        }
 
         if ( line.hasOption("mapping-file") ) {
             TSVWriter writer = new TSVWriter(line.getOptionValue("mapping-file"));
