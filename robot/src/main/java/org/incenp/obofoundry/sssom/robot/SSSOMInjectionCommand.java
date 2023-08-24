@@ -83,6 +83,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "exclude-rule", true, "Do not run rules with the specified tag");
         options.addOption(null, "dispatch-table", true,
                 "write generated axioms to several output ontologies according to dispatch table");
+        options.addOption("r", "reasoner", true, "reasoner to use");
     }
 
     @Override
@@ -185,7 +186,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("ruleset") ) {
-            SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(new SSSOMTOwl(ontology),
+            SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(
+                    new SSSOMTOwl(ontology, CommandLineHelper.getReasonerFactory(line)),
                     line.getOptionValue("ruleset"));
             sssomtReader.read();
 

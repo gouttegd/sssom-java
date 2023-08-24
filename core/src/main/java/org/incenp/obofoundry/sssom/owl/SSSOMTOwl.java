@@ -30,6 +30,7 @@ import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
+import org.incenp.obofoundry.sssom.transform.VariableManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
@@ -50,6 +51,8 @@ import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.parameters.Imports;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 /**
@@ -97,9 +100,13 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
     private OWLOntology ontology;
     private OWLDataFactory factory;
+    private OWLReasonerFactory reasonerFactory;
+    private OWLReasoner reasoner;
     private ManchesterOWLSyntaxParser manParser;
     private MappingFormatter formatter;
     CustomEntityChecker entityChecker;
+
+    private VariableManager varManager;
 
     /**
      * Creates a new instance.
@@ -110,10 +117,11 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
      *                 properties that may be used in {@code create_axiom}
      *                 instructions.
      */
-    public SSSOMTOwl(OWLOntology ontology) {
+    public SSSOMTOwl(OWLOntology ontology, OWLReasonerFactory reasonerFactory) {
 
         this.ontology = ontology;
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        this.reasonerFactory = reasonerFactory;
         entityChecker = new CustomEntityChecker(ontology);
 
         OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
@@ -125,6 +133,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         formatter.addSubstitution("%object_label", (mapping) -> getObjectLabel(mapping));
         formatter.addSubstitution("%subject_id", (mapping) -> String.format("<%s>", mapping.getSubjectId()));
         formatter.addSubstitution("%object_id", (mapping) -> String.format("<%s>", mapping.getObjectId()));
+
+        varManager = new VariableManager();
     }
 
     @Override
@@ -143,6 +153,33 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         case "declare_object_property":
             arguments.forEach((c) -> entityChecker.objectPropertyNames.add(c));
+            return;
+
+        case "set_var":
+            checkArguments(name, 2, arguments);
+            String varName = arguments.get(0);
+            varManager.addVariable(varName, arguments.get(1));
+            formatter.addSubstitution("%" + varName, (mapping) -> varManager.expandVariable(varName, mapping));
+            return;
+
+        case "set_var_if_subject_subclass_of":
+            checkArguments(name, 3, arguments);
+            try {
+                varManager.setVariableValueForSubjects(arguments.get(0), arguments.get(1),
+                        getSubclassesOf(arguments.get(2)));
+            } catch ( IllegalArgumentException iae ) {
+                throw new SSSOMTransformError(iae.getMessage());
+            }
+            return;
+
+        case "set_var_if_object_subclass_of":
+            checkArguments(name, 3, arguments);
+            try {
+                varManager.setVariableValueForObjects(arguments.get(0), arguments.get(1),
+                        getSubclassesOf(arguments.get(2)));
+            } catch ( IllegalArgumentException iae ) {
+                throw new SSSOMTransformError(iae.getMessage());
+            }
             return;
         }
 
@@ -182,6 +219,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                     transformer = (mapping) -> this.parseForMapping(mapping, text);
                 } catch ( OWLParserException e ) {
                     throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%\"", text));
+                } catch ( IllegalArgumentException e ) {
+                    throw new SSSOMTransformError(e.getMessage());
                 }
             }
             break;
@@ -282,6 +321,23 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             }
         }
         return null;
+    }
+
+    private Set<String> getSubclassesOf(String root) {
+        Set<String> classes = new HashSet<String>();
+        classes.add(root);
+
+        if ( reasoner == null ) {
+            reasoner = reasonerFactory.createReasoner(ontology);
+        }
+
+        for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(IRI.create(root)), false).getFlattened() ) {
+            if ( !c.isBottomEntity() ) {
+                classes.add(c.getIRI().toString());
+            }
+        }
+
+        return classes;
     }
 
     /*
