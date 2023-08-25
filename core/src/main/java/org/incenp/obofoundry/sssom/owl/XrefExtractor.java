@@ -60,14 +60,50 @@ public class XrefExtractor {
     private HashMap<String, String> prefixToPredicateMap = new HashMap<>();
     private PrefixManager prefixManager = new PrefixManager();
 
+    /**
+     * Sets the prefix map to be used when processing cross-reference annotations.
+     * By default, only cross-references using a known prefix name will be derived
+     * into mappings.
+     * 
+     * @param map A map of prefix names to URL prefixes.
+     */
     public void setPrefixMap(Map<String, String> map) {
         prefixManager.add(map);
     }
 
+    /**
+     * Maps a prefix name to a predicate. By default, mappings derived from
+     * cross-references have a {@code oboInOwl:hasDbXref} predicate. Use this method
+     * to force the use of another predicate for cross-references that use a
+     * specific prefix name.
+     * 
+     * @param prefixName The prefix name, as used in cross-references.
+     * @param predicate  The mapping predicate to use.
+     */
     public void addPrefixToPredicateMapping(String prefixName, String predicate) {
         prefixToPredicateMap.put(prefixName, predicate);
     }
 
+    /**
+     * Gets the mappings between prefix names and predicates from annotations in the
+     * given ontology.
+     * <p>
+     * This method recognises the following annotations:
+     * <ul>
+     * <li>{@code oboInOwl#treat-xrefs-as-equivalent}: map a prefix name to the
+     * {@code skos:exactMatch} predicate;
+     * <li>{@code oboInOwl#treat-xrefs-as-is_a}: map a prefix name to the
+     * {@code skos:broadMatch} predicate;
+     * <li>{@code oboInOwl#treat-xrefs-as-has-subclass}: map a prefix name to the
+     * {@code skos:narrowMatch} predicate;
+     * <li>{@code oboInOwl#treat-xrefs-as-genus-differentia}: map a prefix name to
+     * the {@code semapv:crossSpeciesExactMatch} predicate;
+     * <li>{@code oboInOwl#treat-xrefs-as-reverse-genus-differentia}: likewise.
+     * </ul>
+     * 
+     * @param ontology The ontology to extract the prefix-to-predicate mappings
+     *                 from.
+     */
     public void fillPrefixToPredicateMap(OWLOntology ontology) {
         for ( OWLAnnotation annot : ontology.getAnnotations() ) {
             OWLAnnotationValue value = annot.getValue();
@@ -102,10 +138,32 @@ public class XrefExtractor {
         }
     }
 
+    /**
+     * Extract mappings from cross-references in the specified ontology. Only
+     * cross-references with prefixes that are (1) known, and (2) associated with a
+     * predicate (through either
+     * {@link #addPrefixToPredicateMapping(String, String)} or
+     * {@link #fillPrefixToPredicateMap(OWLOntology)}) are taken into account.
+     * 
+     * @param ontology The ontology to extract mappings from.
+     * @return The set of mappings extracted from the ontology.
+     */
     public MappingSet extract(OWLOntology ontology) {
         return this.extract(ontology, false, false);
     }
 
+    /**
+     * Extract mappings from cross-references in the specified ontology.
+     * 
+     * @param ontology       The ontology to extract mappings from.
+     * @param permissive     If {@code true}, cross-references using an
+     *                       non-resolvable prefix name will not be ignored.
+     * @param includeGeneric If {@code true}, cross-references using a prefix name
+     *                       that has not been associated to a mapping predicate
+     *                       will not be ignored, and will yield mappings with the
+     *                       {@code oboInOwl:hasDbXref} predicate.
+     * @return The set of mappings extracted from the ontology.
+     */
     public MappingSet extract(OWLOntology ontology, boolean permissive, boolean includeGeneric) {
         Set<String> usedPrefixNames = new HashSet<String>();
         MappingSet ms = MappingSet.builder().curieMap(new HashMap<String, String>()).mappings(new ArrayList<Mapping>())
@@ -163,6 +221,12 @@ public class XrefExtractor {
         return ms;
     }
 
+    /**
+     * Gets any prefix names encountered in cross-references that could not be
+     * resolved.
+     * 
+     * @return The list of unknown prefix names.
+     */
     public Set<String> getUnknownPrefixNames() {
         return prefixManager.getUnresolvedPrefixNames();
     }

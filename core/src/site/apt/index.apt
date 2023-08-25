@@ -19,9 +19,8 @@
   rule-based arbitrary transformation of mappings into any kind of
   objects.
   
-  It also provides a {{{./robot.html}ROBOT plugin}} to generate OWL
-  axioms from a SSSOM mapping set and inject them into an ontology as
-  part of a pipeline of ROBOT commands.
+  It also provides a {{{./robot.html}ROBOT plugin}} to use or generate
+  SSSOM mapping sets as part of a pipeline of ROBOT commands.
 
 Homepage and repository
 

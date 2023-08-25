@@ -60,6 +60,15 @@ try {
 }
 ```
 
+* Extracting SSSOM mappings from a OWL ontology with ROBOT:
+
+```sh
+robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
+```
+
+By default, this honours the `oboInOwl:treat-xrefs-as-...` annotations
+found in the ontology (contrary to `sssom parse` or `runoak mappings`).
+
 * Injecting arbitrary axioms into a OWL ontology with ROBOT, with the
   axioms to inject being described by rules written in an ad-hoc
   [SSSOM/Transform language](https://incenp.org/dvlpt/sssom-java/sssom-transform.html).

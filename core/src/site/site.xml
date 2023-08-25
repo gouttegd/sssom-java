@@ -15,7 +15,10 @@
         <item name="Transformations" href="transformations.html" />
       </item>
       <item name="SSSOM/Transform" href="sssom-transform.html" />
-      <item name="ROBOT command" href="robot.html" />
+      <item name="ROBOT commands" href="robot.html">
+        <item name="xref-extract" href="robot-xref-extract.html" />
+        <item name="sssom-inject" href="robot-sssom-inject.html" />
+      </item>
       <item name="API Documentation" href="apidocs/index.html" />
     </menu>
     <menu ref="reports" />

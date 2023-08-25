@@ -28,6 +28,21 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 /**
  * A helper class to track <em>variables</em> that can have a different value
  * depending on the mapping that is currently being processed.
+ * <p>
+ * Example:
+ * 
+ * <pre>
+ * VariableManager vm = new VariableManager();
+ * vm.addVariable("myvar", "my default value");
+ * vm.addVariable("myvar", "my value", (mapping) -&gt; mapping.getObjectId().startsWith("ABC");
+ * ...
+ * Mapping m = ...
+ * String value = vm.expandVariable("myvar", m);
+ * ...
+ * IMappingTransformer&lt;String&gt; myVarTransformer = vm.getTransformer("myvar");
+ * Mapping m = ...
+ * String value = myVarTransformer.transform(m);
+ * </pre>
  */
 public class VariableManager {
 

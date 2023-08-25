@@ -1,0 +1,82 @@
+ROBOT xref-extract command
+
+  The <<<xref-extract>>> command is intended to extract mappings from
+  the cross-reference annotations found in an ontology.
+
+* Usage
+
+  In its simplest form, the command just needs (in addition to an input
+  ontology, which may be specified with the <<<-i>>> option or be taken
+  from any previous command in the ROBOT pipeline) the
+  <<<--mapping-file>>> option, which indicates where the SSSOM mapping
+  set derived from the annotations should be written:
+  
++-----------------------------------------------------------------------
+robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
++-----------------------------------------------------------------------
+
+  The default behaviour is to honour the <<<oboInOwl:treat-xrefs-as->>>
+  ontology annotations found in the ontology. Those annotations are used
+  to:
+  
+  * decide which cross-references should be turned into mappings: only
+    the cross-references that use a prefix declared in a
+    <<<oboInOwl:treat-xref-as-...>>> annotation are considered, all
+    other cross-references are ignored;
+    
+  * decide which predicate to use for the mappings.
+  
+  []
+  
+  The following table indicate which predicate is used depending on the
+  annotation in which the prefix is declared:
+  
+  [treat-xrefs-as-equivalent] skos:exactMatch
+  
+  [treat-xrefs-as-is_a] skos:broadMatch
+  
+  [treat-xrefs-as-has-subclass] skos:narrowMatch
+  
+  [treat-xrefs-as-genus-differentia] semapv:crossSpeciesExactMatch
+  
+  [treat-xrefs-as-reverse-genus-differentia] semapv:crossSpeciesExactMatch
+  
+  []
+  
+* Options
+
+  The behaviour above may be altered using the options described in this
+  section.
+  
+  Use the <<<--map-prefix-to-predicate>>> option to force the use of a
+  given predicate for cross-references with a specific prefix. For
+  example:
+  
++-----------------------------------------------------------------------
+robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
+  --map-prefix-to-predicate "FBbt http://w3id.org/semapv/vocab/crossSpeciesCloseMatch"
++-----------------------------------------------------------------------
+
+  will turn any cross-reference to a FBbt term to a
+  <<<skos:crossSpeciesCloseMatch>>> mapping. This overrides any
+  <<<oboInOwl:treat-xrefs-as-...>>> annotation found in the ontology.
+  
+  To completely ignore the <<<oboInOwl:treat-xrefs-as-...>>>
+  annotations, and only use explicitly specified prefix-to-predicate
+  mappings, use the <<<--ignore-treat-xrefs>>> option.
+  
+  By default, only cross-references with a prefix for which there is a
+  prefix-to-predicate mapping are used (whether the prefix-to-predicate
+  mapping comes from <<<oboInOwl:treat-xref-as-...>>> annotations or
+  from a <<<--map-prefix-to-predicate>>> option). To generate mappings
+  from <all> cross-references, use the <<<--all-xrefs>>> option.
+  Cross-references with a prefix for which there is no associated
+  predicate will be turned into mappings with a <<<oboInOwl:hasDbXref>>>
+  predicate.
+  
+  Lastly, cross-references with a prefix that cannot be resolved are
+  completely ignored, regardless of any other options. To force those
+  cross-references to be turned into mappings, use the
+  <<<--permissive>>> option. Be aware that using this option may result
+  in an invalid SSSOM file if the ontology does contain cross-references
+  with non-resolvable prefix names.
