@@ -179,14 +179,9 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
                     IRI.create("http://www.geneontology.org/formats/oboInOwl#hasDbXref"), texter, false));
         }
 
-        if ( line.hasOption("dispatch-table") ) {
-            dispatchTable = AxiomDispatchTable.readFromFile(line.getOptionValue("dispatch-table"), ontology, ioHelper);
-            axiomGenerator.addGeneratedListener(this);
-        }
-
         if ( line.hasOption("ruleset") ) {
-            SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(
-                    new SSSOMTOwl(ontology, CommandLineHelper.getReasonerFactory(line)),
+            SSSOMTOwl sssomApplication = new SSSOMTOwl(ontology, CommandLineHelper.getReasonerFactory(line));
+            SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(sssomApplication,
                     line.getOptionValue("ruleset"));
             sssomtReader.read();
 
@@ -196,7 +191,12 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
                                 .error(String.format("Error when parsing SSSOM/T ruleset: %s", e.getMessage())));
             } else {
                 axiomGenerator.addRules(sssomtReader.getRules());
+            }
 
+            if ( line.hasOption("dispatch-table") ) {
+                dispatchTable = AxiomDispatchTable.readFromFile(line.getOptionValue("dispatch-table"),
+                        ontology.getOWLOntologyManager(), ioHelper, sssomApplication.getEntityChecker());
+                axiomGenerator.addGeneratedListener(this);
             }
         }
 

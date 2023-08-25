@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 
 import org.obolibrary.robot.IOHelper;
 import org.obolibrary.robot.OntologyHelper;
+import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.AddOntologyAnnotation;
 import org.semanticweb.owlapi.model.IRI;
@@ -196,23 +197,30 @@ public class AxiomDispatchTable {
      * {@code dc-description}, {@code dc-creator}, and {@code dc-contributor}. They
      * will become ontology annotations.
      * 
-     * @param filename The name of the file to read the table from.
-     * @param ontology The ontology for which to create axioms.
+     * @param filename      The name of the file to read the table from.
+     * @param manager       An OWL ontology manager to create the target ontologies.
+     * @param ioHelper      A I/O helper that will be used to expand CURIEs in
+     *                      {@code add-axiom:} expressions.
+     * @param entityChecker An entity checker that will be used to resolve
+     *                      identifiers in {@code add-axiom:} expressions.
      * @return A dispatch table built according to the sections found in the file.
      * @throws IOException If any I/O error occurs when reading from the file.
      */
-    public static AxiomDispatchTable readFromFile(String filename, OWLOntology ontology, IOHelper ioHelper)
-            throws IOException {
+    public static AxiomDispatchTable readFromFile(String filename, OWLOntologyManager manager, IOHelper ioHelper,
+            OWLEntityChecker entityChecker) throws IOException {
 
-        AxiomDispatchTable table = new AxiomDispatchTable(ontology.getOWLOntologyManager());
-        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        AxiomDispatchTable table = new AxiomDispatchTable(manager);
+        OWLDataFactory factory = manager.getOWLDataFactory();
 
         LocalDateTime today = LocalDateTime.now();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
-        ManchesterOWLSyntaxParser manParser = new ManchesterOWLSyntaxParserImpl(() -> config, factory);
-        manParser.setDefaultOntology(ontology);
+        ManchesterOWLSyntaxParser manParser = null;
+        if ( entityChecker != null ) {
+            OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
+            manParser = new ManchesterOWLSyntaxParserImpl(() -> config, factory);
+            manParser.setOWLEntityChecker(entityChecker);
+        }
 
         BufferedReader r = new BufferedReader(new FileReader(filename));
         String line;
@@ -245,7 +253,7 @@ public class AxiomDispatchTable {
                     entry.ontologyID = parts[1];
                 } else if ( parts[0].equals("ontology-version") ) {
                     entry.ontologyVersion = parts[1].replace("%date", dateFormatter.format(today));
-                } else if ( parts[0].equals("add-axiom") ) {
+                } else if ( parts[0].equals("add-axiom") && manParser != null ) {
                     manParser.setStringToParse(expandIdentifiers(parts[1], ioHelper));
                     entry.axioms.add(manParser.parseAxiom());
                 }

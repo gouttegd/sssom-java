@@ -138,6 +138,19 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         varManager = new VariableManager();
     }
 
+    /**
+     * Gets the entity checker from this application. This is mostly intended so
+     * that downstream code can know about any class or object property that has
+     * been declared using the {@code declare_class} and
+     * {@code declare_object_property} header functions in a SSSOM/T file.
+     * 
+     * @return The entity checker used by this application when parsing Manchester
+     *         syntax expressions.
+     */
+    public OWLEntityChecker getEntityChecker() {
+        return entityChecker;
+    }
+
     @Override
     public void onInit(PrefixManager pm) {
         formatter.addSubstitution("%subject_curie", (mapping) -> pm.shortenIdentifier(mapping.getSubjectId()));
