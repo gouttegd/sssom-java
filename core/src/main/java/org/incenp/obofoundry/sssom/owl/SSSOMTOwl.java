@@ -105,8 +105,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     private OWLReasoner reasoner;
     private ManchesterOWLSyntaxParser manParser;
     private MappingFormatter formatter;
-    CustomEntityChecker entityChecker;
-
+    private CustomEntityChecker entityChecker;
     private VariableManager varManager;
 
     /**
@@ -123,11 +122,9 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         this.ontology = ontology;
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
         this.reasonerFactory = reasonerFactory;
-        entityChecker = new CustomEntityChecker(ontology);
 
         OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
         manParser = new ManchesterOWLSyntaxParserImpl(() -> config, factory);
-        manParser.setOWLEntityChecker(entityChecker);
 
         formatter = new MappingFormatter();
         formatter.addSubstitution("%subject_label", (mapping) -> getSubjectLabel(mapping));
@@ -156,6 +153,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         formatter.addSubstitution("%subject_curie", (mapping) -> pm.shortenIdentifier(mapping.getSubjectId()));
         formatter.addSubstitution("%object_curie", (mapping) -> pm.shortenIdentifier(mapping.getObjectId()));
 
+        entityChecker = new CustomEntityChecker(ontology, pm);
+        manParser.setOWLEntityChecker(entityChecker);
     }
 
     @Override
@@ -187,7 +186,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                     throw new SSSOMTransformError(String.format("Invalid condition for set_var: %s", condition));
                 }
 
-                Set<String> targetIds = getSubclassesOf(getUnquotedIRI(parts[2]));
+                Set<String> targetIds = getSubclassesOf(entityChecker.getUnquotedIRI(parts[2]));
                 if ( parts[0].equals("%subject_id") ) {
                     filter = (mapping) -> targetIds.contains(mapping.getSubjectId());
                 } else if ( parts[0].equals("%object_id") ) {
@@ -250,11 +249,6 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         return transformer != null ? transformer : super.onGeneratingAction(name, arguments);
     }
 
-    @Override
-    public String getCurieExpansionFormat() {
-        return "<%s>";
-    }
-
     /*
      * Try some patterns on the expression provided as argument to create_axiom to
      * see whether it can be handled by custom generators (more efficient than the
@@ -273,8 +267,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             if ( m.group(3) == null ) {
                 return new EquivalentAxiomGenerator(ontology, (OWLClassExpression) null, invert);
             }
-            String relation = getUnquotedIRI(m.group(4));
-            String filler = getUnquotedIRI(m.group(5));
+            String relation = entityChecker.getUnquotedIRI(m.group(4));
+            String filler = entityChecker.getUnquotedIRI(m.group(5));
             if ( relation.charAt(0) == '%' || filler.charAt(0) == '%' ) {
                 IMappingTransformer<String> relGenerator = getVariableGenerator(relation);
                 IMappingTransformer<String> fillerGenerator = getVariableGenerator(filler);
@@ -284,7 +278,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                 return new EquivalentAxiomGenerator(ontology, exprGenerator, invert);
             } else {
                 OWLClassExpression expr = factory.getOWLObjectSomeValuesFrom(
-                        factory.getOWLObjectProperty(IRI.create(relation)), factory.getOWLClass(IRI.create(filler)));
+                        entityChecker.getOWLObjectProperty(relation), entityChecker.getOWLClass(filler));
                 return new EquivalentAxiomGenerator(ontology, expr, invert);
             }
         }
@@ -302,14 +296,6 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         } else {
             return (mapping) -> name;
         }
-    }
-
-    private String getUnquotedIRI(String name) {
-        int len = name.length();
-        if ( len > 0 && name.charAt(0) == '<' ) {
-            return name.substring(1, len - 1);
-        }
-        return name;
     }
 
     /*
@@ -410,8 +396,12 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         private Set<String> individualNames = new HashSet<String>();
         private Set<String> datatypeNames = new HashSet<String>();
         private Set<String> annotationPropertyNames = new HashSet<String>();
+        private OWLDataFactory factory;
+        private PrefixManager prefixManager;
 
-        CustomEntityChecker(OWLOntology ontology) {
+        CustomEntityChecker(OWLOntology ontology, PrefixManager prefixManager) {
+            this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+            this.prefixManager = prefixManager;
             for ( OWLDeclarationAxiom d : ontology.getAxioms(AxiomType.DECLARATION, Imports.INCLUDED) ) {
                 d.getEntity().accept(this);
             }
@@ -500,6 +490,17 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         @Override
         public void visit(OWLAnnotationProperty property) {
             annotationPropertyNames.add(property.getIRI().toString());
+        }
+
+        private String getUnquotedIRI(String name) {
+            int len = name.length();
+            if ( len > 1 && name.charAt(0) == '<' ) {
+                name = name.substring(1, len - 1);
+            } else {
+                name = prefixManager.expandIdentifier(name);
+            }
+
+            return name;
         }
     }
 }

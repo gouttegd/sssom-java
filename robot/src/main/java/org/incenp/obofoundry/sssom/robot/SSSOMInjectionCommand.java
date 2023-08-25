@@ -209,7 +209,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
             if ( line.hasOption("dispatch-table") ) {
                 dispatchTable = AxiomDispatchTable.readFromFile(line.getOptionValue("dispatch-table"),
-                        ontology.getOWLOntologyManager(), ioHelper, sssomApplication.getEntityChecker());
+                        ontology.getOWLOntologyManager(), sssomApplication.getEntityChecker());
                 axiomGenerator.addGeneratedListener(this);
             }
         }

@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.obolibrary.robot.IOHelper;
 import org.obolibrary.robot.OntologyHelper;
@@ -199,14 +197,12 @@ public class AxiomDispatchTable {
      * 
      * @param filename      The name of the file to read the table from.
      * @param manager       An OWL ontology manager to create the target ontologies.
-     * @param ioHelper      A I/O helper that will be used to expand CURIEs in
-     *                      {@code add-axiom:} expressions.
      * @param entityChecker An entity checker that will be used to resolve
      *                      identifiers in {@code add-axiom:} expressions.
      * @return A dispatch table built according to the sections found in the file.
      * @throws IOException If any I/O error occurs when reading from the file.
      */
-    public static AxiomDispatchTable readFromFile(String filename, OWLOntologyManager manager, IOHelper ioHelper,
+    public static AxiomDispatchTable readFromFile(String filename, OWLOntologyManager manager,
             OWLEntityChecker entityChecker) throws IOException {
 
         AxiomDispatchTable table = new AxiomDispatchTable(manager);
@@ -254,7 +250,7 @@ public class AxiomDispatchTable {
                 } else if ( parts[0].equals("ontology-version") ) {
                     entry.ontologyVersion = parts[1].replace("%date", dateFormatter.format(today));
                 } else if ( parts[0].equals("add-axiom") && manParser != null ) {
-                    manParser.setStringToParse(expandIdentifiers(parts[1], ioHelper));
+                    manParser.setStringToParse(parts[1]);
                     entry.axioms.add(manParser.parseAxiom());
                 }
             }
@@ -267,25 +263,6 @@ public class AxiomDispatchTable {
         r.close();
 
         return table;
-    }
-
-    private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
-
-    private static String expandIdentifiers(String s, IOHelper ioHelper) {
-        Matcher curieFinder = curiePattern.matcher(s);
-        Set<String> curies = new HashSet<String>();
-        while ( curieFinder.find() ) {
-            curies.add(curieFinder.group());
-        }
-
-        for ( String curie : curies ) {
-            String iri = ioHelper.createIRI(curie).toString();
-            if ( iri != null ) {
-                s = s.replace(curie, String.format("<%s>", iri));
-            }
-        }
-
-        return s;
     }
 
     /*
