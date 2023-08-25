@@ -34,6 +34,7 @@ import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
 import org.incenp.obofoundry.sssom.owl.SSSOMTOwl;
+import org.incenp.obofoundry.sssom.owl.XrefExtractor;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingProcessorListener;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
@@ -69,6 +70,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption("o", "output", true, "save ontology to file");
         options.addOption("s", "sssom", true, "load SSSOM mapping set from file");
         options.addOption(null, "sssom-metadata", true, "load mapping set metadata from specified file");
+        options.addOption(null, "extract", false, "extract SSSOM mapping set from cross-references");
         options.addOption(null, "cross-species", true, "inject cross-species bridging axioms for specified taxon");
         options.addOption(null, "direct", false,
                 "inject axioms produced by direct, standard-specified translation of the mappings");
@@ -133,21 +135,33 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             state.setOntology(ontology);
         }
 
-        if ( !line.hasOption("sssom") ) {
-            throw new IllegalArgumentException("Missing SSSOM mapping set");
-        }
-        MappingSet mappingSet = null;
-        for (String sssomFile : line.getOptionValues("sssom")) {
-            TSVReader reader = new TSVReader(sssomFile, line.getOptionValue("sssom-metadata"));
-            if ( mappingSet == null ) {
-                mappingSet = reader.read();
-            } else {
-                mappingSet.getMappings().addAll(reader.read().getMappings());
-            }
-        }
-
         OWLOntology ontology = state.getOntology();
         OWLGenerator axiomGenerator = new OWLGenerator();
+
+        MappingSet mappingSet = null;
+        if ( line.hasOption("sssom") ) {
+            for ( String sssomFile : line.getOptionValues("sssom") ) {
+                TSVReader reader = new TSVReader(sssomFile, line.getOptionValue("sssom-metadata"));
+                if ( mappingSet == null ) {
+                    mappingSet = reader.read();
+                } else {
+                    mappingSet.getMappings().addAll(reader.read().getMappings());
+                }
+            }
+        }
+        if ( line.hasOption("extract") ) {
+            XrefExtractor extractor = new XrefExtractor();
+            extractor.setPrefixMap(ioHelper.getPrefixes());
+            extractor.fillPrefixToPredicateMap(ontology);
+            if ( mappingSet == null ) {
+                mappingSet = extractor.extract(ontology);
+            } else {
+                mappingSet.getMappings().addAll(extractor.extract(ontology).getMappings());
+            }
+        }
+        if ( mappingSet == null ) {
+            throw new IllegalArgumentException("Missing SSSOM mapping set");
+        }
 
         if ( line.hasOption("check-subject") ) {
             axiomGenerator.setCheckSubjectExistence(ontology);
