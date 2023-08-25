@@ -180,8 +180,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("dispatch-table") ) {
-            dispatchTable = AxiomDispatchTable.readFromFile(line.getOptionValue("dispatch-table"),
-                    ontology.getOWLOntologyManager());
+            dispatchTable = AxiomDispatchTable.readFromFile(line.getOptionValue("dispatch-table"), ontology, ioHelper);
             axiomGenerator.addGeneratedListener(this);
         }
 

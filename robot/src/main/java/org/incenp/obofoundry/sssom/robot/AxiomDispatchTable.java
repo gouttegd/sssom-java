@@ -27,9 +27,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.obolibrary.robot.IOHelper;
 import org.obolibrary.robot.OntologyHelper;
+import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.AddOntologyAnnotation;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -37,7 +40,9 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 import org.semanticweb.owlapi.vocab.DublinCoreVocabulary;
 
 /**
@@ -181,6 +186,10 @@ public class AxiomDispatchTable {
      * <li>{@code ontology-version}: The version IRI for the ontology; within the
      * value, the string {@code %date} will be replaced by the current date in the
      * YYYY-MM-DD format.
+     * <li>{@code add-axiom:} An arbitrary axiom to add to the ontology, in
+     * Manchester syntax. Be careful that any entity referenced in such an axiom
+     * MUST have been properly declared in the ontology given as argument to this
+     * function.
      * </ul>
      * <p>
      * In addition, the entry may also contain fields named {@code dc-title},
@@ -188,17 +197,22 @@ public class AxiomDispatchTable {
      * will become ontology annotations.
      * 
      * @param filename The name of the file to read the table from.
-     * @param manager  An OWL ontology manager.
+     * @param ontology The ontology for which to create axioms.
      * @return A dispatch table built according to the sections found in the file.
      * @throws IOException If any I/O error occurs when reading from the file.
      */
-    public static AxiomDispatchTable readFromFile(String filename, OWLOntologyManager manager) throws IOException {
+    public static AxiomDispatchTable readFromFile(String filename, OWLOntology ontology, IOHelper ioHelper)
+            throws IOException {
 
-        AxiomDispatchTable table = new AxiomDispatchTable(manager);
-        OWLDataFactory factory = manager.getOWLDataFactory();
+        AxiomDispatchTable table = new AxiomDispatchTable(ontology.getOWLOntologyManager());
+        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 
         LocalDateTime today = LocalDateTime.now();
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
+        ManchesterOWLSyntaxParser manParser = new ManchesterOWLSyntaxParserImpl(() -> config, factory);
+        manParser.setDefaultOntology(ontology);
 
         BufferedReader r = new BufferedReader(new FileReader(filename));
         String line;
@@ -231,6 +245,9 @@ public class AxiomDispatchTable {
                     entry.ontologyID = parts[1];
                 } else if ( parts[0].equals("ontology-version") ) {
                     entry.ontologyVersion = parts[1].replace("%date", dateFormatter.format(today));
+                } else if ( parts[0].equals("add-axiom") ) {
+                    manParser.setStringToParse(expandIdentifiers(parts[1], ioHelper));
+                    entry.axioms.add(manParser.parseAxiom());
                 }
             }
         }
@@ -242,6 +259,25 @@ public class AxiomDispatchTable {
         r.close();
 
         return table;
+    }
+
+    private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
+
+    private static String expandIdentifiers(String s, IOHelper ioHelper) {
+        Matcher curieFinder = curiePattern.matcher(s);
+        Set<String> curies = new HashSet<String>();
+        while ( curieFinder.find() ) {
+            curies.add(curieFinder.group());
+        }
+
+        for ( String curie : curies ) {
+            String iri = ioHelper.createIRI(curie).toString();
+            if ( iri != null ) {
+                s = s.replace(curie, String.format("<%s>", iri));
+            }
+        }
+
+        return s;
     }
 
     /*
