@@ -64,75 +64,11 @@ public class XrefExtractor {
         prefixManager.add(map);
     }
 
-    public MappingSet extract(OWLOntology ontology) {
-        return this.extract(ontology, false);
+    public void addPrefixToPredicateMapping(String prefixName, String predicate) {
+        prefixToPredicateMap.put(prefixName, predicate);
     }
 
-    public MappingSet extract(OWLOntology ontology, boolean permissive) {
-        fillPrefixToPredicateMap(ontology);
-
-        Set<String> usedPrefixNames = new HashSet<String>();
-        MappingSet ms = MappingSet.builder().curieMap(new HashMap<String, String>()).mappings(new ArrayList<Mapping>())
-                .build();
-
-        for ( OWLClass c : ontology.getClassesInSignature() ) {
-            String label = null;
-            for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
-                if ( ax.getProperty().getIRI().toString().equals(HAS_DB_XREF) ) {
-                    if ( !ax.getValue().isLiteral() ) {
-                        continue;
-                    }
-
-                    String value = ax.getValue().asLiteral().get().getLiteral();
-                    String[] parts = value.split(":", 2);
-                    if ( parts.length != 2 || !prefixToPredicateMap.containsKey(parts[0]) ) {
-                        continue;
-                    }
-
-                    String subjectId = c.getIRI().toString();
-                    usedPrefixNames.add(prefixManager.getPrefixName(subjectId));
-
-                    String objectId = prefixManager.expandIdentifier(value);
-                    if ( !objectId.equals(value) ) {
-                        usedPrefixNames.add(parts[0]);
-                    } else if ( !permissive ) {
-                        continue;
-                    }
-
-                    String predicateId = prefixToPredicateMap.get(parts[0]);
-                    if ( label == null ) {
-                        label = getLabel(ontology, c);
-                    }
-
-                    Mapping m = Mapping.builder().subjectId(subjectId).subjectLabel(label).objectId(objectId)
-                            .predicateId(predicateId).mappingJustification(SEMAPV + "UnspecifiedMatching").build();
-                    ms.getMappings().add(m);
-                }
-            }
-        }
-
-        for ( String usedPrefixName : usedPrefixNames ) {
-            ms.getCurieMap().put(usedPrefixName, prefixManager.getPrefix(usedPrefixName));
-        }
-
-        return ms;
-    }
-
-    public Set<String> getUnknownPrefixNames() {
-        return prefixManager.getUnresolvedPrefixNames();
-    }
-
-    private String getLabel(OWLOntology ontology, OWLClass c) {
-        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
-            if ( ax.getProperty().isLabel() ) {
-                return ax.getValue().asLiteral().get().getLiteral();
-            }
-        }
-
-        return null;
-    }
-
-    private void fillPrefixToPredicateMap(OWLOntology ontology) {
+    public void fillPrefixToPredicateMap(OWLOntology ontology) {
         for ( OWLAnnotation annot : ontology.getAnnotations() ) {
             OWLAnnotationValue value = annot.getValue();
             if ( !value.isLiteral() ) {
@@ -164,5 +100,80 @@ public class XrefExtractor {
                 break;
             }
         }
+    }
+
+    public MappingSet extract(OWLOntology ontology) {
+        return this.extract(ontology, false, false);
+    }
+
+    public MappingSet extract(OWLOntology ontology, boolean permissive, boolean includeGeneric) {
+        Set<String> usedPrefixNames = new HashSet<String>();
+        MappingSet ms = MappingSet.builder().curieMap(new HashMap<String, String>()).mappings(new ArrayList<Mapping>())
+                .build();
+
+        if ( includeGeneric ) {
+            prefixManager.add("oboInOwl", OBO_IN_OWL);
+            usedPrefixNames.add("oboInOwl");
+        }
+
+        for ( OWLClass c : ontology.getClassesInSignature() ) {
+            String label = null;
+            for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
+                if ( ax.getProperty().getIRI().toString().equals(HAS_DB_XREF) ) {
+                    if ( !ax.getValue().isLiteral() ) {
+                        continue;
+                    }
+
+                    String value = ax.getValue().asLiteral().get().getLiteral();
+                    String[] parts = value.split(":", 2);
+                    if ( parts.length != 2 ) {
+                        continue;
+                    }
+
+                    if ( !prefixToPredicateMap.containsKey(parts[0]) && !includeGeneric ) {
+                        continue;
+                    }
+
+                    String subjectId = c.getIRI().toString();
+                    usedPrefixNames.add(prefixManager.getPrefixName(subjectId));
+
+                    String objectId = prefixManager.expandIdentifier(value);
+                    if ( !objectId.equals(value) ) {
+                        usedPrefixNames.add(parts[0]);
+                    } else if ( !permissive ) {
+                        continue;
+                    }
+
+                    String predicateId = prefixToPredicateMap.getOrDefault(parts[0], HAS_DB_XREF);
+                    if ( label == null ) {
+                        label = getLabel(ontology, c);
+                    }
+
+                    Mapping m = Mapping.builder().subjectId(subjectId).subjectLabel(label).objectId(objectId)
+                            .predicateId(predicateId).mappingJustification(SEMAPV + "UnspecifiedMatching").build();
+                    ms.getMappings().add(m);
+                }
+            }
+        }
+
+        for ( String usedPrefixName : usedPrefixNames ) {
+            ms.getCurieMap().put(usedPrefixName, prefixManager.getPrefix(usedPrefixName));
+        }
+
+        return ms;
+    }
+
+    public Set<String> getUnknownPrefixNames() {
+        return prefixManager.getUnresolvedPrefixNames();
+    }
+
+    private String getLabel(OWLOntology ontology, OWLClass c) {
+        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
+            if ( ax.getProperty().isLabel() ) {
+                return ax.getValue().asLiteral().get().getLiteral();
+            }
+        }
+
+        return null;
     }
 }

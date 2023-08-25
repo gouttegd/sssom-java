@@ -45,6 +45,10 @@ public class XrefExtractCommand implements Command {
         options.addOption("i", "input", true, "load ontology from file");
         options.addOption(null, "mapping-file", true, "write extracted mappings to file");
         options.addOption(null, "permissive", false, "include cross-references with unknown prefixes");
+        options.addOption(null, "all-xrefs", false, "create mappings from all cross-references");
+        options.addOption(null, "ignore-treat-xrefs", false, "Ignore treat-xrefs-as-... annotations in the ontology");
+        options.addOption(null, "map-prefix-to-predicate", true,
+                "Use specified predicate for cross-references with specified prefix");
     }
 
     @Override
@@ -88,7 +92,21 @@ public class XrefExtractCommand implements Command {
 
         XrefExtractor extractor = new XrefExtractor();
         extractor.setPrefixMap(ioHelper.getPrefixes());
-        MappingSet ms = extractor.extract(state.getOntology(), line.hasOption("permissive"));
+        if ( !line.hasOption("ignore-treat-xrefs") ) {
+            extractor.fillPrefixToPredicateMap(state.getOntology());
+        }
+        if ( line.hasOption("map-prefix-to-predicate") ) {
+            for ( String ppMapping : line.getOptionValues("map-prefix-to-predicate") ) {
+                String[] parts = ppMapping.split(" ", 2);
+                if ( parts.length != 2 ) {
+                    throw new IllegalArgumentException("Invalid argument for --map-prefix-to-predicate: " + ppMapping);
+                }
+                extractor.addPrefixToPredicateMapping(parts[0], parts[1]);
+            }
+        }
+
+        MappingSet ms = extractor.extract(state.getOntology(), line.hasOption("permissive"),
+                line.hasOption("all-xrefs"));
 
         if ( !extractor.getUnknownPrefixNames().isEmpty() ) {
             logger.warn("Unknown prefix names found in cross-references: "
