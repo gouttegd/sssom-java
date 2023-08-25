@@ -47,6 +47,7 @@ import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLDeclarationAxiom;
 import org.semanticweb.owlapi.model.OWLEntityVisitor;
+import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -107,6 +108,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     private MappingFormatter formatter;
     private CustomEntityChecker entityChecker;
     private VariableManager varManager;
+    private OWLLiteral falseValue = null;
 
     /**
      * Creates a new instance.
@@ -199,6 +201,19 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         }
 
         super.onHeaderAction(name, arguments);
+    }
+
+    @Override
+    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
+            throws SSSOMTransformError {
+        switch ( name ) {
+        case "check_subject_existence":
+            return (mapping) -> checkExistence(mapping.getSubjectId()) ? mapping : null;
+
+        case "check_object_existence":
+            return (mapping) -> checkExistence(mapping.getObjectId()) ? mapping : null;
+        }
+        return super.onPreprocessingAction(name, arguments);
     }
 
     @Override
@@ -382,6 +397,28 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         }
 
         return classes;
+    }
+
+    /*
+     * Check that a given class exists and is not obsolete.
+     */
+    private boolean checkExistence(String cls) {
+        if ( falseValue == null ) {
+            falseValue = factory.getOWLLiteral(false);
+        }
+
+        IRI clsIRI = IRI.create(cls);
+        if ( ontology.containsClassInSignature(clsIRI) ) {
+            for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(clsIRI) ) {
+                if ( ax.getProperty().isDeprecated() ) {
+                    if ( ax.getValue().asLiteral().or(falseValue).parseBoolean() ) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /*

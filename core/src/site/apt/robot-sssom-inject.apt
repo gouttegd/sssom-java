@@ -197,6 +197,21 @@ subject==FBbt:* -> annotate_subject(IAO:0000589,  "%subject_label (Drosophila)")
 subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
 +-----------------------------------------------------------------------
 
+*** Preprocessing functions
+
+  Those functions will not yield any axiom, but will influence how the
+  mappings they are applied to will be further processed.
+  
+  [check_subject_existence()] Check whether the subject of the mapping
+                              exists in the ontology and is not
+                              obsolete. If not, the mapping is dropped
+                              from the set and will not be subject to
+                              any further processing. This is similar to
+                              the  <<<--check-subject>>> option, but
+                              applied only to selected mappings.
+
+  [check_object_existence()] Likewise, but for the object side.
+
 *** Header functions
 
   Those are the functions that may be used at the top of the
