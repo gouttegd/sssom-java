@@ -1,3 +1,16 @@
+Changes in sssom-java 0.4.0
+---------------------------
+
+    * SSSOM/T-OWL:
+      * New preprocessing functions check_(subject|object)_existence.
+      * New function set_var to declare mapping-dependent variables.
+    * New ROBOT command xref-extract to get mappings from xrefs.
+    * sssom-inject:
+      * Allow loading multiple mapping sets by repeating --sssom option.
+      * New option --extract to get a mapping set from ontology xrefs.
+      * New add-axiom key in dispatch table entries.
+
+
 Changes in sssom-java 0.3.1
 ---------------------------
 
