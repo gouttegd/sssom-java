@@ -96,9 +96,9 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
      * Subclass: %subject_id SubclassOf %object_id
      */
     private static final Pattern equivPattern = Pattern.compile(
-            "%(subject|object)_id EquivalentTo: %(subject|object)_id( and \\((<[^>]+>) some (<[^>]+>)\\))?");
+            "%(subject|object)_id +EquivalentTo: +%(subject|object)_id( +and +\\((<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+) +some +(<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+)\\))?");
     private static final Pattern subclassPattern = Pattern
-            .compile("%(subject|object)_id SubClassOf: %(subject|object)_id");
+            .compile("%(subject|object)_id +SubClassOf: +%(subject|object)_id");
 
     private OWLOntology ontology;
     private OWLDataFactory factory;
