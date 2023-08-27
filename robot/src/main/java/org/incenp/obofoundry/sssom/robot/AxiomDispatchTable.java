@@ -165,6 +165,9 @@ public class AxiomDispatchTable {
                     manager.applyChange(new AddOntologyAnnotation(o, annotation));
                 }
                 manager.addAxioms(o, entry.axioms);
+                if ( entry.additionalAxioms.size() > 0 ) {
+                    manager.addAxioms(o, entry.additionalAxioms);
+                }
                 ioHelper.saveOntology(o, entry.filename);
             }
         }
@@ -251,7 +254,7 @@ public class AxiomDispatchTable {
                     entry.ontologyVersion = parts[1].replace("%date", dateFormatter.format(today));
                 } else if ( parts[0].equals("add-axiom") && manParser != null ) {
                     manParser.setStringToParse(parts[1]);
-                    entry.axioms.add(manParser.parseAxiom());
+                    entry.additionalAxioms.add(manParser.parseAxiom());
                 }
             }
         }
@@ -275,5 +278,6 @@ public class AxiomDispatchTable {
         String ontologyVersion;
         Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
         Set<OWLAxiom> axioms = new HashSet<OWLAxiom>();
+        Set<OWLAxiom> additionalAxioms = new HashSet<OWLAxiom>();
     }
 }
