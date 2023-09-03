@@ -1,3 +1,14 @@
+Changes in sssom-java 0.4.1
+---------------------------
+
+    * New options in sssom-inject:
+      * --invert to invert the mapping set.
+      * --no-default-prefixes to ignore ROBOT's known prefixes.
+      * --bridge-iri to specify the ontology IRI of the bridge.
+      * --only-subject-in to filter mappings on their subject ID.
+      * --only-object-in to filter mappings on their object ID.
+
+
 Changes in sssom-java 0.4.0
 ---------------------------
 
