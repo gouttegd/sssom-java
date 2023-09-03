@@ -27,6 +27,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVReader;
+import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
@@ -86,6 +87,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "dispatch-table", true,
                 "write generated axioms to several output ontologies according to dispatch table");
         options.addOption("r", "reasoner", true, "reasoner to use");
+        options.addOption(null, "invert", false, "invert the mapping set prior to any processing");
     }
 
     @Override
@@ -161,6 +163,10 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
         if ( mappingSet == null ) {
             throw new IllegalArgumentException("Missing SSSOM mapping set");
+        }
+
+        if ( line.hasOption("invert") ) {
+            axiomGenerator.addRule(null, (mapping) -> CommonPredicate.invert(mapping), null);
         }
 
         if ( line.hasOption("check-subject") ) {

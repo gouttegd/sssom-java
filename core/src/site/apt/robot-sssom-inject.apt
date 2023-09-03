@@ -47,6 +47,9 @@ ROBOT sssom-inject command
   ontology with the generated axioms. The newly created ontology becomes
   ROBOT’s current ontology, and will passed down the command pipeline.
   
+  Use the option <<<--invert>>> to invert the entire mapping set before
+  generating any axioms out of it.
+  
 * Checking for the existence of the subject and/or object
 
   By default, <<<sssom-inject>>> will generate axioms regardless of
@@ -61,6 +64,13 @@ ROBOT sssom-inject command
   
   Use the <<<--check-object>>> to do the same, but for the object side
   of a mapping.
+  
+  If the <<<--invert>>> option is also used, the checks take place
+  <after> the inversion. So, using both <<<--invert>>> and
+  <<<--check-subject>>>, for example, will first invert the mappings and
+  then check whether the subject exists in the ontology – therefore,
+  what will really be checked is the existence of the original <object>
+  side of the mapping.
   
 * Specifying the axioms to generate
 
