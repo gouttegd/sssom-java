@@ -144,6 +144,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         OWLOntology ontology = state.getOntology();
         OWLGenerator axiomGenerator = new OWLGenerator();
+        Map<String, String> prefixes = ioHelper.getPrefixes();
 
         MappingSet mappingSet = null;
         if ( line.hasOption("sssom") ) {
@@ -158,7 +159,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
         if ( line.hasOption("extract") ) {
             XrefExtractor extractor = new XrefExtractor();
-            extractor.setPrefixMap(ioHelper.getPrefixes());
+            extractor.setPrefixMap(prefixes);
             extractor.fillPrefixToPredicateMap(ontology);
             if ( mappingSet == null ) {
                 mappingSet = extractor.extract(ontology);
@@ -175,14 +176,14 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("only-subject-in") ) {
-            String pr = ioHelper.getPrefixes().get(line.getOptionValue("only-subject-in"));
+            String pr = prefixes.get(line.getOptionValue("only-subject-in"));
             if ( pr != null ) {
                 axiomGenerator.addStopingRule((mapping) -> !mapping.getSubjectId().startsWith(pr));
             }
         }
 
         if ( line.hasOption("only-object-in") ) {
-            String pr = ioHelper.getPrefixes().get(line.getOptionValue("only-object-in"));
+            String pr = prefixes.get(line.getOptionValue("only-object-in"));
             if ( pr != null ) {
                 axiomGenerator.addStopingRule((mapping) -> !mapping.getObjectId().startsWith(pr));
             }
@@ -209,9 +210,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         if (line.hasOption("hasdbxref")) {
             PrefixManager pm = new PrefixManager();
-            Map<String, String> clMap = ioHelper.getPrefixes();
-            for ( String prefixName : clMap.keySet() ) {
-                pm.add(prefixName, clMap.get(prefixName));
+            for ( String prefixName : prefixes.keySet() ) {
+                pm.add(prefixName, prefixes.get(prefixName));
             }
             IMappingTransformer<String> texter = (mapping) -> pm.shortenIdentifier(mapping.getObjectId());
             axiomGenerator.addRule(null, null, new AnnotationAxiomGenerator(ontology,
@@ -223,7 +223,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(sssomApplication,
                     line.getOptionValue("ruleset"));
             if ( !line.hasOption("no-default-prefixes") ) {
-                sssomtReader.addPrefixMap(ioHelper.getPrefixes());
+                sssomtReader.addPrefixMap(prefixes);
             }
             sssomtReader.read();
 
