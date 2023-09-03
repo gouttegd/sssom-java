@@ -25,7 +25,9 @@ ROBOT sssom-inject command
   That behaviour may be modified with two options.
   
   The option <<<--bridge-file>>>, followed by a filename, will instruct
-  the command to write the generated axioms into a separate file.
+  the command to write the generated axioms into a separate file. The
+  <<<--bridge-iri>>> option can additionally be used to specify the
+  ontology IRI of the file to be created.
   
   The option <<<--no-merge>>> will instruct the command <not> to merge
   the generated axioms into the current ontology, which will then be

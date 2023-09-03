@@ -51,6 +51,7 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +79,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "hasdbxref", false, "inject oboInOwl:hasDbXref annotations from the mappings");
         options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology");
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
+        options.addOption(null, "bridge-iri", true, "specify the ontology IRI for the bridge file");
         options.addOption(null, "create", false, "create a new ontology with the mappings-derived axioms");
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
@@ -241,7 +243,20 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("bridge-file") && !bridgingAxioms.isEmpty() ) {
-            OWLOntology bridgeOntology = ontology.getOWLOntologyManager().createOntology(bridgingAxioms);
+            OWLOntologyManager mgr = ontology.getOWLOntologyManager();
+            OWLOntology bridgeOntology = null;
+            if ( line.hasOption("bridge-iri") ) {
+                IRI bridgeIRI = IRI.create(line.getOptionValue("bridge-iri"));
+                if ( mgr.contains(bridgeIRI) ) {
+                    bridgeOntology = mgr.getOntology(bridgeIRI);
+                    mgr.removeAxioms(bridgeOntology, bridgeOntology.getAxioms());
+                } else {
+                    bridgeOntology = mgr.createOntology(bridgeIRI);
+                }
+            } else {
+                bridgeOntology = mgr.createOntology();
+            }
+            mgr.addAxioms(bridgeOntology, bridgingAxioms);
             ioHelper.saveOntology(bridgeOntology, line.getOptionValue("bridge-file"));
         }
 
