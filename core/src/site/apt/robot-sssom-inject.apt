@@ -124,8 +124,20 @@ ROBOT sssom-inject command
   
   Refer to the {{{./sssom-transform.html}description}} of the
   SSSOM/Transform language for details about the syntax of rules and
-  filter expressions. This section describes the syntax of the
-  application-specific functions expected by <<<sssom-inject>>>.
+  filter expressions. This section describes the aspect that are
+  specific to <<<sssom-inject>>>.
+  
+*** Prefixes
+
+  By default, all prefixes that are known to ROBOT (either because they
+  are declared in the current ontology, or because they have been
+  explicitly specified using the <<<--prefix>>> option) are passed to
+  the SSSOM/Transform parser and can therefore be used in rules without
+  being explicitly declared at the beginning of the SSSOM/Transform
+  file.
+  
+  To disable this behaviour and force a ruleset to explicitly declare
+  all the prefixes it needs, use the <<<--no-default-prefixes>>> option.
   
 *** Axiom-generating functions
 

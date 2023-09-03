@@ -82,6 +82,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "ruleset", true, "inject axioms specified in ruleset file");
+        options.addOption(null, "no-default-prefixes", false, "do not use prefixes known to ROBOT");
         options.addOption(null, "include-rule", true, "Only run rules with the specified tag");
         options.addOption(null, "exclude-rule", true, "Do not run rules with the specified tag");
         options.addOption(null, "dispatch-table", true,
@@ -203,6 +204,9 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             SSSOMTOwl sssomApplication = new SSSOMTOwl(ontology, CommandLineHelper.getReasonerFactory(line));
             SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(sssomApplication,
                     line.getOptionValue("ruleset"));
+            if ( !line.hasOption("no-default-prefixes") ) {
+                sssomtReader.addPrefixMap(ioHelper.getPrefixes());
+            }
             sssomtReader.read();
 
             if ( sssomtReader.hasErrors() ) {
