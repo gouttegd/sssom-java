@@ -49,8 +49,24 @@ ROBOT sssom-inject command
   ontology with the generated axioms. The newly created ontology becomes
   ROBOT’s current ontology, and will passed down the command pipeline.
   
-  Use the option <<<--invert>>> to invert the entire mapping set before
-  generating any axioms out of it.
+* Mapping preprocessing
+
+  A few options allow for basic preprocessing of a mapping set. They are
+  intended to avoid having to use SSSOM/Transform rules for simple use
+  cases.
+  
+  The <<<--invert>>> option allows to invert the entire mapping set.
+  
+  The <<<--only-subject-in>>> allows to filter the mapping set to only
+  keep mappings whose subject ID starts with the specified prefix. For
+  example, use <<<---only-subject-in CL>>> to only keep (and process)
+  mappings with a subject in CL.
+  
+  The <<<--only-object-in>>> is similar, but for the object side of
+  mappings.
+  
+  These options are applied before any other processing. Inversion, if
+  specified, is always performed first. 
   
 * Checking for the existence of the subject and/or object
 

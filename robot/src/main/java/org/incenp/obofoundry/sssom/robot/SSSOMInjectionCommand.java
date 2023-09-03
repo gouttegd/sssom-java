@@ -91,6 +91,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
                 "write generated axioms to several output ontologies according to dispatch table");
         options.addOption("r", "reasoner", true, "reasoner to use");
         options.addOption(null, "invert", false, "invert the mapping set prior to any processing");
+        options.addOption(null, "only-subject-in", true, "Only process mappings whose subject has the given prefix");
+        options.addOption(null, "only-object-in", true, "Only process mappings whose object has the given prefix");
     }
 
     @Override
@@ -170,6 +172,20 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         if ( line.hasOption("invert") ) {
             axiomGenerator.addRule(null, (mapping) -> CommonPredicate.invert(mapping), null);
+        }
+
+        if ( line.hasOption("only-subject-in") ) {
+            String pr = ioHelper.getPrefixes().get(line.getOptionValue("only-subject-in"));
+            if ( pr != null ) {
+                axiomGenerator.addStopingRule((mapping) -> !mapping.getSubjectId().startsWith(pr));
+            }
+        }
+
+        if ( line.hasOption("only-object-in") ) {
+            String pr = ioHelper.getPrefixes().get(line.getOptionValue("only-object-in"));
+            if ( pr != null ) {
+                axiomGenerator.addStopingRule((mapping) -> !mapping.getObjectId().startsWith(pr));
+            }
         }
 
         if ( line.hasOption("check-subject") ) {
