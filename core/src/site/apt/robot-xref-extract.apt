@@ -80,3 +80,24 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   <<<--permissive>>> option. Be aware that using this option may result
   in an invalid SSSOM file if the ontology does contain cross-references
   with non-resolvable prefix names.
+  
+* "Duplicated" cross-references
+
+  Two other options alter the behaviour of the extractor when more than
+  one cross-reference in the source ontology point to the same foreign
+  term.
+  
+  In this situation, the default behaviour is to generate a mapping from
+  all such cross-references.
+  
+  With the option <<<--first-only>>>, a mapping will be generated only
+  from the <first> cross-reference encountered pointing to a foreign
+  term; any subsequent cross-reference pointing to the same term will
+  be ignored.
+  
+  With the option <<<--drop-duplicates>>>, no mapping at all will be
+  generated for cross-references to any foreign term if there are more
+  than one cross-reference to that term.
+  
+  A warning will be emitted for each cross-reference that is ignored as
+  a result of either of those two options.

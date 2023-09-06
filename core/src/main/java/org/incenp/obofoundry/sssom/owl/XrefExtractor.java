@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.owl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,7 +59,9 @@ public class XrefExtractor {
     private static final String SEMAPV = "https://w3id.org/semapv/vocab/";
 
     private HashMap<String, String> prefixToPredicateMap = new HashMap<>();
+    private List<Mapping> dropped = new ArrayList<Mapping>();
     private PrefixManager prefixManager = new PrefixManager();
+    private KeepDuplicates duplicates = KeepDuplicates.ALL;
 
     /**
      * Sets the prefix map to be used when processing cross-reference annotations.
@@ -139,6 +142,16 @@ public class XrefExtractor {
     }
 
     /**
+     * Specify what to do when more than one cross-reference in the ontology point
+     * to the same foreign term. The default is to drop nothing.
+     * 
+     * @param option The behaviour for duplicated cross-references.
+     */
+    public void keepDuplicates(KeepDuplicates option) {
+        duplicates = option;
+    }
+
+    /**
      * Extract mappings from cross-references in the specified ontology. Only
      * cross-references with prefixes that are (1) known, and (2) associated with a
      * predicate (through either
@@ -166,6 +179,7 @@ public class XrefExtractor {
      */
     public MappingSet extract(OWLOntology ontology, boolean permissive, boolean includeGeneric) {
         Set<String> usedPrefixNames = new HashSet<String>();
+        Map<String, Integer> seen = new HashMap<String, Integer>();
         MappingSet ms = MappingSet.builder().curieMap(new HashMap<String, String>()).mappings(new ArrayList<Mapping>())
                 .build();
 
@@ -209,9 +223,32 @@ public class XrefExtractor {
 
                     Mapping m = Mapping.builder().subjectId(subjectId).subjectLabel(label).objectId(objectId)
                             .predicateId(predicateId).mappingJustification(SEMAPV + "UnspecifiedMatching").build();
+
+                    if ( duplicates != KeepDuplicates.ALL ) {
+                        int n = seen.getOrDefault(objectId, 0);
+                        seen.put(objectId, n + 1);
+                        if ( n > 0 && duplicates == KeepDuplicates.FIRST_ONLY ) {
+                            dropped.add(m);
+                            continue;
+                        }
+                    }
+
                     ms.getMappings().add(m);
                 }
             }
+        }
+
+        if ( duplicates == KeepDuplicates.NONE ) {
+            List<Mapping> filtered = new ArrayList<Mapping>();
+            for ( Mapping m : ms.getMappings() ) {
+                int n = seen.get(m.getObjectId());
+                if ( n == 1 ) {
+                    filtered.add(m);
+                } else {
+                    dropped.add(m);
+                }
+            }
+            ms.setMappings(filtered);
         }
 
         for ( String usedPrefixName : usedPrefixNames ) {
@@ -231,6 +268,17 @@ public class XrefExtractor {
         return prefixManager.getUnresolvedPrefixNames();
     }
 
+    /**
+     * Gets the mappings that were initially generated from the cross-references but
+     * subsequently dropped because of the {@link #keepDuplicates(KeepDuplicates)}
+     * option.
+     * 
+     * @return The list of mappings that were excluded.
+     */
+    public List<Mapping> getDroppedMappings() {
+        return dropped;
+    }
+
     private String getLabel(OWLOntology ontology, OWLClass c) {
         for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
             if ( ax.getProperty().isLabel() ) {
@@ -239,5 +287,25 @@ public class XrefExtractor {
         }
 
         return null;
+    }
+
+    /**
+     * The behaviour to adopt when more than cross-reference point to the same
+     * foreign term.
+     */
+    public enum KeepDuplicates {
+        /**
+         * Do not exclude any cross-reference, even the duplicates.
+         */
+        ALL,
+        /**
+         * Once a cross-reference to a foreign term has been found, ignore any
+         * subsequent cross-reference to the same term.
+         */
+        FIRST_ONLY,
+        /**
+         * Ignore all cross-references to a foreign term if there is more than one.
+         */
+        NONE
     }
 }

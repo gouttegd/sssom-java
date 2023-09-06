@@ -18,9 +18,13 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.util.List;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVWriter;
+import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.XrefExtractor;
 import org.obolibrary.robot.Command;
@@ -49,6 +53,8 @@ public class XrefExtractCommand implements Command {
         options.addOption(null, "ignore-treat-xrefs", false, "Ignore treat-xrefs-as-... annotations in the ontology");
         options.addOption(null, "map-prefix-to-predicate", true,
                 "Use specified predicate for cross-references with specified prefix");
+        options.addOption(null, "drop-duplicates", false, "Drop all duplicated cross-references");
+        options.addOption(null, "first-only", false, "Drop duplicated cross-references except the first");
     }
 
     @Override
@@ -105,12 +111,28 @@ public class XrefExtractCommand implements Command {
             }
         }
 
+        if ( line.hasOption("drop-duplicates") ) {
+            extractor.keepDuplicates(XrefExtractor.KeepDuplicates.NONE);
+        } else if ( line.hasOption("first-only") ) {
+            extractor.keepDuplicates(XrefExtractor.KeepDuplicates.FIRST_ONLY);
+        }
+
         MappingSet ms = extractor.extract(state.getOntology(), line.hasOption("permissive"),
                 line.hasOption("all-xrefs"));
 
         if ( !extractor.getUnknownPrefixNames().isEmpty() ) {
             logger.warn("Unknown prefix names found in cross-references: "
                     + String.join(" ", extractor.getUnknownPrefixNames()));
+        }
+
+        List<Mapping> droppedMappings = extractor.getDroppedMappings();
+        if ( !droppedMappings.isEmpty() ) {
+            PrefixManager pm = new PrefixManager();
+            pm.add(ioHelper.getPrefixes());
+            for ( Mapping dropped : extractor.getDroppedMappings() ) {
+                logger.warn(String.format("Cross-reference ignored: %s -> %s",
+                        pm.shortenIdentifier(dropped.getSubjectId()), pm.shortenIdentifier(dropped.getObjectId())));
+            }
         }
 
         if ( line.hasOption("mapping-file") ) {
