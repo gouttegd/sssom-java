@@ -18,7 +18,10 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -129,9 +132,28 @@ public class XrefExtractCommand implements Command {
         if ( !droppedMappings.isEmpty() ) {
             PrefixManager pm = new PrefixManager();
             pm.add(ioHelper.getPrefixes());
-            for ( Mapping dropped : extractor.getDroppedMappings() ) {
-                logger.warn(String.format("Cross-reference ignored: %s -> %s",
-                        pm.shortenIdentifier(dropped.getSubjectId()), pm.shortenIdentifier(dropped.getObjectId())));
+
+            if ( line.hasOption("first-only") ) {
+                // We only have the list of seconds (and thirds, etc.) duplicated
+                // cross-references, print it as it is.
+                for ( Mapping dropped : extractor.getDroppedMappings() ) {
+                    logger.warn(String.format("Cross-reference ignored: %s mapped to %s",
+                            pm.shortenIdentifier(dropped.getObjectId()), pm.shortenIdentifier(dropped.getSubjectId())));
+                }
+            } else if ( line.hasOption("drop-duplicates") ) {
+                // We have all duplicated cross-references, we can produce a more useful report.
+                Map<String, ArrayList<String>> duplicates = new HashMap<String, ArrayList<String>>();
+                for ( Mapping dropped : extractor.getDroppedMappings() ) {
+                    String subjectId = pm.shortenIdentifier(dropped.getSubjectId());
+                    String objectId = pm.shortenIdentifier(dropped.getObjectId());
+                    ArrayList<String> subjects = duplicates.getOrDefault(objectId, new ArrayList<String>());
+                    subjects.add(subjectId);
+                    duplicates.put(objectId, subjects);
+                }
+                for ( String object : duplicates.keySet() ) {
+                    logger.warn(String.format("Cross-reference ignored: %s mapped to %s", object,
+                            String.join(", ", duplicates.get(object))));
+                }
             }
         }
 
