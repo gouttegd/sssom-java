@@ -371,7 +371,9 @@ file: output-file-for-tag.owl
   where <tag> is a tag used in the SSSOM/Transform ruleset. Any axiom
   produced by a rule marked with that tag will be written to the
   indicated output file (in addition to being written to the main
-  output file specified by the <<<--bridge-file>>> option, if used).
+  output file specified by the <<<--bridge-file>>> option, if used). The
+  path to that file is relative to the directory containing the dispatch
+  table itself.
   
   Beyond the <<<file>>> field, the entry may also contain the following
   fields, which will be used to annotate the output file:
@@ -394,7 +396,15 @@ file: output-file-for-tag.owl
   a <<<%date>>> placeholder, which will be replaced by the current date
   in the YYYY-MM-DD format.
   
-  The entry may also contain one or several <<<add-axiom>>> field(s).
+  Both <<<ontology-version>>> and <<<ontology-id>>> can get a default
+  value, to be used by all entries that do not have a value explicitly
+  set for those fields. To set the default value, put it into an entry
+  named <<<__default>>> (that entry does not need to have a <<<file>>>
+  field). Both value may contain a <<<%filename>>> placeholder, which
+  will be replaced by the basename (no directory, no extension) for
+  each entry.
+  
+  An entry may also contain one or several <<<add-axiom>>> field(s).
   Such a field must contain an expression in Manchester syntax that can
   be parsed into a single axiom, which will automatically be added to
   SSSOM-derived axioms.

@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.robot;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -140,7 +141,7 @@ public class AxiomDispatchTable {
      * Adds a pre-built entry to the table.
      */
     private void addEntry(String label, DispatchTableEntry entry) {
-        if ( entry.filename != null ) {
+        if ( entry.filename != null || label.equals("__default") ) {
             table.put(label, entry);
         }
     }
@@ -158,9 +159,9 @@ public class AxiomDispatchTable {
      */
     public void saveAll(IOHelper ioHelper) throws IOException, OWLOntologyCreationException {
         for ( DispatchTableEntry entry : table.values() ) {
-            if ( entry.axioms.size() > 0 ) {
+            if ( entry.axioms.size() > 0 && entry.filename != null ) {
                 OWLOntology o = manager.createOntology();
-                OntologyHelper.setOntologyIRI(o, entry.ontologyID, entry.ontologyVersion);
+                OntologyHelper.setOntologyIRI(o, getOntologyID(entry), getOntologyVersion(entry));
                 for ( OWLAnnotation annotation : entry.annotations ) {
                     manager.applyChange(new AddOntologyAnnotation(o, annotation));
                 }
@@ -171,6 +172,52 @@ public class AxiomDispatchTable {
                 ioHelper.saveOntology(o, entry.filename);
             }
         }
+    }
+
+    /*
+     * Get the ontology ID for a given entry, with fallback to the default entry if
+     * available.
+     */
+    private String getOntologyID(DispatchTableEntry entry) {
+        if ( entry.ontologyID != null ) {
+            return entry.ontologyID;
+        }
+
+        DispatchTableEntry defEntry = table.get("__default");
+        if ( defEntry == null || defEntry.ontologyID == null ) {
+            return null;
+        }
+
+        String basename = new File(entry.filename).getName();
+        int lastDot = basename.lastIndexOf('.');
+        if ( lastDot != -1 ) {
+            basename = basename.substring(0, lastDot);
+        }
+
+        return defEntry.ontologyID.replace("%filename", basename);
+    }
+
+    /*
+     * Get the ontology version IRI for a given entry, with fallback to the default
+     * entry if available.
+     */
+    private String getOntologyVersion(DispatchTableEntry entry) {
+        if ( entry.ontologyVersion != null ) {
+            return entry.ontologyVersion;
+        }
+
+        DispatchTableEntry defEntry = table.get("__default");
+        if ( defEntry == null || defEntry.ontologyVersion == null ) {
+            return null;
+        }
+
+        String basename = new File(entry.filename).getName();
+        int lastDot = basename.lastIndexOf('.');
+        if ( lastDot != -1 ) {
+            basename = basename.substring(0, lastDot);
+        }
+
+        return defEntry.ontologyVersion.replace("%filename", basename);
     }
 
     /**
@@ -221,6 +268,7 @@ public class AxiomDispatchTable {
             manParser.setOWLEntityChecker(entityChecker);
         }
 
+        File parentDir = new File(filename).getParentFile();
         BufferedReader r = new BufferedReader(new FileReader(filename));
         String line;
         String label = null;
@@ -247,7 +295,7 @@ public class AxiomDispatchTable {
                             .add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(ANNOTATIONS.get(parts[0])),
                                     factory.getOWLLiteral(parts[1])));
                 } else if ( parts[0].equals("file") ) {
-                    entry.filename = parts[1];
+                    entry.filename = getEntryFilename(parentDir, parts[1]);
                 } else if ( parts[0].equals("ontology-iri") ) {
                     entry.ontologyID = parts[1];
                 } else if ( parts[0].equals("ontology-version") ) {
@@ -266,6 +314,19 @@ public class AxiomDispatchTable {
         r.close();
 
         return table;
+    }
+
+    /*
+     * Make the filename of an entry relative to the directory containing the table
+     * itself.
+     */
+    private static String getEntryFilename(File parent, String entryName) {
+        File entry = new File(entryName);
+        if ( entry.isAbsolute() || parent == null ) {
+            return entryName;
+        } else {
+            return new File(parent, entryName).getPath();
+        }
     }
 
     /*
