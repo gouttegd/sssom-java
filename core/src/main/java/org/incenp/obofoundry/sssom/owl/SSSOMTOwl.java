@@ -212,6 +212,12 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         case "check_object_existence":
             return (mapping) -> checkExistence(mapping.getObjectId()) ? mapping : null;
+
+        case "drop_duplicate_subjects":
+            return new DuplicateFilterProcessor((mapping) -> mapping.getSubjectId());
+
+        case "drop_duplicate_objects":
+            return new DuplicateFilterProcessor((mapping) -> mapping.getObjectId());
         }
         return super.onPreprocessingAction(name, arguments);
     }

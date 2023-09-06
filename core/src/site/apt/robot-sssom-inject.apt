@@ -90,6 +90,17 @@ ROBOT sssom-inject command
   what will really be checked is the existence of the original <object>
   side of the mapping.
   
+* Dropping “duplicate” mappings
+
+  Use the <<<--drop-duplicate-subjects>>> option to drop any mapping
+  that has the same subject ID as a previously processed mapping. With
+  that option, if two (or more) mappings have the same subject ID, only
+  the first mapping encountered in the set will be kept for further
+  processing.
+  
+  Use the <<<--drop-duplicate-objects>>> option to do the same, but for
+  the object side of mappings.
+  
 * Specifying the axioms to generate
 
   There are two ways of instructing the command of the axioms it is
@@ -251,6 +262,13 @@ subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
                               applied only to selected mappings.
 
   [check_object_existence()] Likewise, but for the object side.
+  
+  [drop_multiple_subjects()] Check whether a mapping with the same
+                             subject has already been processed, and
+                             drop the current mapping if that is the
+                             case.
+  
+  [drop_multiple_objects()] Likewise, but for the object side.
 
 *** Header functions
 
