@@ -1,3 +1,12 @@
+Changes in sssom-java 0.4.2
+---------------------------
+
+	* Allow filtering on mapping cardinality.
+	* Add option --drop-duplicates to xref-extract.
+	* Allow to set default ontology ID/version in a dispatch table.
+	* Dispatch table filenames are relative to the table filename.
+
+
 Changes in sssom-java 0.4.1
 ---------------------------
 
