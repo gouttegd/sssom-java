@@ -40,7 +40,7 @@ negatedFilterItem           : '!' WS* filterItem;
 idField   : 'subject'
           | 'predicate'
           | 'object'
-          | 'mapping_justification'
+          | 'mapping_justification' | 'justification'
           | 'subject_source'
           | 'object_source'
           | 'mapping_source'
@@ -56,7 +56,7 @@ mulIdField: 'creator'
           | 'object_preprocessing'
           ;
 
-cardField : 'mapping_cardinality';
+cardField : 'mapping_cardinality' | 'cardinality';
 
 idValue   : CURIE
           | '*'

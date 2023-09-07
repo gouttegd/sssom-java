@@ -70,7 +70,8 @@ predicate==semapv:crossSpecies*
   name ends with <<<_id>>> (e.g. <<<subject_id>>>, <<<predicate_id>>>,
   <<<creator_id>>>, etc.), the <_id> suffix is dropped (that’s why the
   previous example is <<<predicate==…>>> instead of
-  <<<predicate_id==…>>>).
+  <<<predicate_id==…>>>). Some filters also accept alternative names,
+  as indicated in the list below.
   
   Not all slots can be filtered against. Currently, it is possible to
   filter on the following slots:
@@ -83,7 +84,7 @@ predicate==semapv:crossSpecies*
   
   * <<<predicate_modifier>>>,
   
-  * <<<mapping_justification>>>,
+  * <<<mapping_justification>>> (may be used as <<<justification>>>),
   
   * <<<subject_source>>>,
   
@@ -111,7 +112,7 @@ predicate==semapv:crossSpecies*
   
   * <<<semantic_similarity_score>>>,
   
-  * <<<mapping_cardinality>>>.
+  * <<<mapping_cardinality>>> (may be used as <<<cardinality>>>).
   
 *** Filters on multi-valued slots
 

@@ -570,6 +570,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             break;
 
         case "mapping_justification":
+        case "justification":
             filter = (mapping) -> testValue.apply(mapping.getMappingJustification());
             break;
 
