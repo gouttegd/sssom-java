@@ -175,7 +175,7 @@ public class TSVWriter {
             LocalDateTime date = LocalDateTime.class.cast(value);
             return date.format(DateTimeFormatter.ISO_DATE);
         }
-        return "";
+        return value.toString();
     }
 
     /*

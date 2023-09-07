@@ -28,6 +28,7 @@ import org.apache.commons.cli.Options;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.XrefExtractor;
 import org.obolibrary.robot.Command;
@@ -57,7 +58,6 @@ public class XrefExtractCommand implements Command {
         options.addOption(null, "map-prefix-to-predicate", true,
                 "Use specified predicate for cross-references with specified prefix");
         options.addOption(null, "drop-duplicates", false, "Drop all duplicated cross-references");
-        options.addOption(null, "first-only", false, "Drop duplicated cross-references except the first");
     }
 
     @Override
@@ -114,12 +114,6 @@ public class XrefExtractCommand implements Command {
             }
         }
 
-        if ( line.hasOption("drop-duplicates") ) {
-            extractor.keepDuplicates(XrefExtractor.KeepDuplicates.NONE);
-        } else if ( line.hasOption("first-only") ) {
-            extractor.keepDuplicates(XrefExtractor.KeepDuplicates.FIRST_ONLY);
-        }
-
         MappingSet ms = extractor.extract(state.getOntology(), line.hasOption("permissive"),
                 line.hasOption("all-xrefs"));
 
@@ -128,28 +122,34 @@ public class XrefExtractCommand implements Command {
                     + String.join(" ", extractor.getUnknownPrefixNames()));
         }
 
-        List<Mapping> droppedMappings = extractor.getDroppedMappings();
-        if ( !droppedMappings.isEmpty() ) {
-            PrefixManager pm = new PrefixManager();
-            pm.add(ioHelper.getPrefixes());
+        if ( line.hasOption("drop-duplicates") ) {
+            MappingCardinality.inferCardinality(ms.getMappings());
+            List<Mapping> filteredIn = new ArrayList<Mapping>();
+            List<Mapping> filteredOut = new ArrayList<Mapping>();
 
-            if ( line.hasOption("first-only") ) {
-                // We only have the list of seconds (and thirds, etc.) duplicated
-                // cross-references, print it as it is.
-                for ( Mapping dropped : extractor.getDroppedMappings() ) {
-                    logger.warn(String.format("Cross-reference ignored: %s mapped to %s",
-                            pm.shortenIdentifier(dropped.getObjectId()), pm.shortenIdentifier(dropped.getSubjectId())));
+            for ( Mapping m : ms.getMappings() ) {
+                if ( m.getMappingCardinality() == MappingCardinality.MANY_TO_MANY
+                        || m.getMappingCardinality() == MappingCardinality.ONE_TO_MANY ) {
+                    filteredOut.add(m);
+                } else {
+                    filteredIn.add(m);
                 }
-            } else if ( line.hasOption("drop-duplicates") ) {
-                // We have all duplicated cross-references, we can produce a more useful report.
+            }
+            ms.setMappings(filteredIn);
+
+            if ( !filteredOut.isEmpty() ) {
+                PrefixManager pm = new PrefixManager();
+                pm.add(ioHelper.getPrefixes());
                 Map<String, ArrayList<String>> duplicates = new HashMap<String, ArrayList<String>>();
-                for ( Mapping dropped : extractor.getDroppedMappings() ) {
+
+                for ( Mapping dropped : filteredOut ) {
                     String subjectId = pm.shortenIdentifier(dropped.getSubjectId());
                     String objectId = pm.shortenIdentifier(dropped.getObjectId());
                     ArrayList<String> subjects = duplicates.getOrDefault(objectId, new ArrayList<String>());
                     subjects.add(subjectId);
                     duplicates.put(objectId, subjects);
                 }
+
                 for ( String object : duplicates.keySet() ) {
                     logger.warn(String.format("Cross-reference ignored: %s mapped to %s", object,
                             String.join(", ", duplicates.get(object))));
