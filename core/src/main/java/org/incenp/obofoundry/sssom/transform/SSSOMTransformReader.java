@@ -699,9 +699,35 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
     @Override
     public IMappingFilter visitCardFilterItem(SSSOMTransformParser.CardFilterItemContext ctx) {
-        MappingCardinality mc = MappingCardinality.fromString(ctx.CARDVALUE().getText());
-        return addFilter(new NamedFilter(String.format("cardinality==%s", mc.toString()),
-                (mapping) -> mapping.getMappingCardinality() == mc));
+        String value = ctx.CARDVALUE().getText();
+        IMappingFilter filter = null;
+        switch ( value ) {
+        case "*:n":
+            filter = (mapping) -> mapping.getMappingCardinality() == MappingCardinality.ONE_TO_MANY
+                    || mapping.getMappingCardinality() == MappingCardinality.MANY_TO_MANY;
+            break;
+
+        case "*:1":
+            filter = (mapping) -> mapping.getMappingCardinality() == MappingCardinality.ONE_TO_ONE
+                    || mapping.getMappingCardinality() == MappingCardinality.MANY_TO_ONE;
+            break;
+
+        case "n:*":
+            filter = (mapping) -> mapping.getMappingCardinality() == MappingCardinality.MANY_TO_ONE
+                    || mapping.getMappingCardinality() == MappingCardinality.MANY_TO_MANY;
+            break;
+
+        case "1:*":
+            filter = (mapping) -> mapping.getMappingCardinality() == MappingCardinality.ONE_TO_ONE
+                    || mapping.getMappingCardinality() == MappingCardinality.ONE_TO_MANY;
+            break;
+
+        default:
+            MappingCardinality mc = MappingCardinality.fromString(value);
+            filter = (mapping) -> mapping.getMappingCardinality() == mc;
+            break;
+        }
+        return addFilter(new NamedFilter(String.format("cardinality==%s", value), filter));
     }
 
     @Override

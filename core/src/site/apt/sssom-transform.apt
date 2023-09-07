@@ -154,6 +154,23 @@ confidence>=0.8
   a match for the filter even if its predicate does correspond to the
   pattern that the filter is looking for.
   
+*** Filtering on cardinality
+
+  In addition to the cardinality values specified in the SSSOM
+  specification (<<<1:1>>>, <<<1:n>>>, <<<n:1>>>, etc.), the cardinality
+  filter accepts a joker value on either side of the <<<:>>>. For
+  example
+  
++-----------------------------------------------------------------------
+mapping_cardinality==1:*
++-----------------------------------------------------------------------
+
+  is strictly equivalent to
+  
++-----------------------------------------------------------------------
+mapping_cardinality==1:1 || mapping_cardinality==1:n
++-----------------------------------------------------------------------
+  
 ** Combining filters
 
   As you may have guessed already, if there are <atomic filters>, then

@@ -97,7 +97,7 @@ DQ_STRING : '"' (DQ_ESCAPE|.)*? '"';
 
 TAG       : [a-zA-Z0-9-]+;
 
-CARDVALUE : '1:1' | '1:n' | 'n:1' | '1:0' | '0:1' | 'n:n' ;
+CARDVALUE : '1:1' | '1:n' | 'n:1' | '1:0' | '0:1' | 'n:n' | '*:n' | '*:1' | 'n:*' | '1:*';
 
 CURIE     : PREFIX [a-zA-Z0-9_*-]+;
 
