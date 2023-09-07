@@ -41,6 +41,7 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformBaseVisitor;
 import org.incenp.obofoundry.sssom.transform.parser.SSSOMTransformLexer;
@@ -693,6 +694,13 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         }
 
         return addFilter(new NamedFilter(String.format("%s%s%.2f", fieldName, operator, value), filter));
+    }
+
+    @Override
+    public IMappingFilter visitCardFilterItem(SSSOMTransformParser.CardFilterItemContext ctx) {
+        MappingCardinality mc = MappingCardinality.fromString(ctx.CARDVALUE().getText());
+        return addFilter(new NamedFilter(String.format("cardinality==%s", mc.toString()),
+                (mapping) -> mapping.getMappingCardinality() == mc));
     }
 
     @Override

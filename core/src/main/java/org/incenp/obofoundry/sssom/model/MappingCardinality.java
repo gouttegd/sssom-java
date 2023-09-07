@@ -20,6 +20,7 @@ package org.incenp.obofoundry.sssom.model;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -60,6 +61,29 @@ public enum MappingCardinality {
     }
 
     /**
+     * Gets the inverse of this cardinality (i.e., "1:n" -> "n:1").
+     * 
+     * @return The inverse cardinality (may be identical, e.g. for "1:1").
+     */
+    public MappingCardinality getInverse() {
+        switch ( this ) {
+        case MANY_TO_MANY:
+        case ONE_TO_ONE:
+            return this;
+        case MANY_TO_ONE:
+            return MappingCardinality.ONE_TO_MANY;
+        case NONE_TO_ONE:
+            return MappingCardinality.ONE_TO_NONE;
+        case ONE_TO_MANY:
+            return MappingCardinality.MANY_TO_ONE;
+        case ONE_TO_NONE:
+            return MappingCardinality.NONE_TO_ONE;
+        default: // Should not happen
+            return this;
+        }
+    }
+
+    /**
      * Parses a string into a mapping cardinality enum value.
      * 
      * @param v The string to parse.
@@ -69,5 +93,33 @@ public enum MappingCardinality {
     @JsonCreator
     public static MappingCardinality fromString(String v) {
         return MAP.get(v);
+    }
+
+    /**
+     * Infers the cardinality for all mappings in the given list. This overrides any
+     * cardinality information that may already be stored in each mapping.
+     * 
+     * @param mappings The mappings for which to infer cardinality.
+     */
+    public static void inferCardinality(List<Mapping> mappings) {
+        HashMap<String, Integer> subjects = new HashMap<String, Integer>();
+        HashMap<String, Integer> objects = new HashMap<String, Integer>();
+
+        for ( Mapping m : mappings ) {
+            subjects.put(m.getSubjectId(), subjects.getOrDefault(m.getSubjectId(), 0) + 1);
+            objects.put(m.getObjectId(), objects.getOrDefault(m.getObjectId(), 0) + 1);
+        }
+
+        for ( Mapping m : mappings ) {
+            int nSubjects = subjects.get(m.getSubjectId());
+            int nObjects = objects.get(m.getObjectId());
+
+            if ( nSubjects == 1 ) {
+                m.setMappingCardinality(nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY);
+            } else {
+                m.setMappingCardinality(
+                        nObjects == 1 ? MappingCardinality.MANY_TO_ONE : MappingCardinality.MANY_TO_MANY);
+            }
+        }
     }
 }

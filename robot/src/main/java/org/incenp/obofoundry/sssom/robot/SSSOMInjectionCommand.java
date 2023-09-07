@@ -29,6 +29,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
@@ -175,6 +176,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         if ( mappingSet == null ) {
             throw new IllegalArgumentException("Missing SSSOM mapping set");
         }
+
+        MappingCardinality.inferCardinality(mappingSet.getMappings());
 
         if ( line.hasOption("invert") ) {
             axiomGenerator.addRule(null, (mapping) -> CommonPredicate.invert(mapping), null);

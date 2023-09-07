@@ -153,6 +153,11 @@ public enum CommonPredicate {
                 .objectType(mapping.getSubjectType())
                 .build();
         // @formatter:on
+
+        if ( mapping.getMappingCardinality() != null ) {
+            inverted.setMappingCardinality(mapping.getMappingCardinality().getInverse());
+        }
+
         return inverted;
     }
 }

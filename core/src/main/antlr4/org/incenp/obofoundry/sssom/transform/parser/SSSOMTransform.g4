@@ -17,6 +17,7 @@ filterSet : filterItem (WS+ (binaryOp WS+)? filterItem)*;
 filterItem: idFilterItem
           | multiIdFilterItem
           | numFilterItem
+          | cardFilterItem
           | predicateModifierFilterItem
           | groupFilterItem
           | negatedFilterItem
@@ -27,6 +28,8 @@ idFilterItem                : idField '==' idValue;
 multiIdFilterItem           : mulIdField '==' idValue;
 
 numFilterItem               : numField numOp DOUBLE;
+
+cardFilterItem              : cardField '==' CARDVALUE;
 
 predicateModifierFilterItem : 'predicate_modifier==Not';
 
@@ -52,6 +55,8 @@ mulIdField: 'creator'
           | 'subject_preprocessing'
           | 'object_preprocessing'
           ;
+
+cardField : 'mapping_cardinality';
 
 idValue   : CURIE
           | '*'
@@ -91,6 +96,8 @@ SQ_STRING : '\'' (SQ_ESCAPE|.)*? '\'';
 DQ_STRING : '"' (DQ_ESCAPE|.)*? '"';
 
 TAG       : [a-zA-Z0-9-]+;
+
+CARDVALUE : '1:1' | '1:n' | 'n:1' | '1:0' | '0:1' | 'n:n' ;
 
 CURIE     : PREFIX [a-zA-Z0-9_*-]+;
 

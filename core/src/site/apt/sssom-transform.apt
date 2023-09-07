@@ -109,7 +109,9 @@ predicate==semapv:crossSpecies*
   
   * <<<confidence>>>,
   
-  * <<<semantic_similarity_score>>>.
+  * <<<semantic_similarity_score>>>,
+  
+  * <<<mapping_cardinality>>>.
   
 *** Filters on multi-valued slots
 
