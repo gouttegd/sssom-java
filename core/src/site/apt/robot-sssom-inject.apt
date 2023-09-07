@@ -262,13 +262,6 @@ subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
                               applied only to selected mappings.
 
   [check_object_existence()] Likewise, but for the object side.
-  
-  [drop_multiple_subjects()] Check whether a mapping with the same
-                             subject has already been processed, and
-                             drop the current mapping if that is the
-                             case.
-  
-  [drop_multiple_objects()] Likewise, but for the object side.
 
 *** Header functions
 

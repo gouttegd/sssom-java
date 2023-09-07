@@ -33,7 +33,6 @@ import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
-import org.incenp.obofoundry.sssom.owl.DuplicateFilterProcessor;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
 import org.incenp.obofoundry.sssom.owl.SSSOMTOwl;
@@ -95,10 +94,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "invert", false, "invert the mapping set prior to any processing");
         options.addOption(null, "only-subject-in", true, "Only process mappings whose subject has the given prefix");
         options.addOption(null, "only-object-in", true, "Only process mappings whose object has the given prefix");
-        options.addOption(null, "drop-duplicate-subjects", false,
-                "Drop any mapping involving a subject that has already been seen in a previous mapping");
-        options.addOption(null, "drop-duplicate-objects", false,
-                "Drop any mapping involving an object that has already been seen in a previous mapping");
+        options.addOption(null, "drop-duplicate-subjects", false, "Drop any mapping with a cardinality of n:*");
+        options.addOption(null, "drop-duplicate-objects", false, "Drop any mapping with a cardinality of *:n");
     }
 
     @Override
@@ -206,11 +203,15 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("drop-duplicate-subjects") ) {
-            axiomGenerator.addRule(null, new DuplicateFilterProcessor((mapping) -> mapping.getSubjectId()), null);
+            axiomGenerator
+                    .addStopingRule((mapping) -> mapping.getMappingCardinality() == MappingCardinality.MANY_TO_MANY
+                            || mapping.getMappingCardinality() == MappingCardinality.MANY_TO_ONE);
         }
 
         if ( line.hasOption("drop-duplicate-objects") ) {
-            axiomGenerator.addRule(null, new DuplicateFilterProcessor((mapping) -> mapping.getObjectId()), null);
+            axiomGenerator
+                    .addStopingRule((mapping) -> mapping.getMappingCardinality() == MappingCardinality.MANY_TO_MANY
+                            || mapping.getMappingCardinality() == MappingCardinality.ONE_TO_MANY);
         }
 
         if ( line.hasOption("cross-species") ) {
