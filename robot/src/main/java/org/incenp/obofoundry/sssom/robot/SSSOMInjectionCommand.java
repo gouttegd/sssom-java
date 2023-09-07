@@ -94,8 +94,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "invert", false, "invert the mapping set prior to any processing");
         options.addOption(null, "only-subject-in", true, "Only process mappings whose subject has the given prefix");
         options.addOption(null, "only-object-in", true, "Only process mappings whose object has the given prefix");
-        options.addOption(null, "drop-duplicate-subjects", false, "Drop any mapping with a cardinality of n:*");
-        options.addOption(null, "drop-duplicate-objects", false, "Drop any mapping with a cardinality of *:n");
+        options.addOption(null, "drop-duplicate-subjects", false, "Drop any mapping with a cardinality of *:n");
+        options.addOption(null, "drop-duplicate-objects", false, "Drop any mapping with a cardinality of n:*");
     }
 
     @Override
@@ -205,13 +205,13 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         if ( line.hasOption("drop-duplicate-subjects") ) {
             axiomGenerator
                     .addStopingRule((mapping) -> mapping.getMappingCardinality() == MappingCardinality.MANY_TO_MANY
-                            || mapping.getMappingCardinality() == MappingCardinality.MANY_TO_ONE);
+                            || mapping.getMappingCardinality() == MappingCardinality.ONE_TO_MANY);
         }
 
         if ( line.hasOption("drop-duplicate-objects") ) {
             axiomGenerator
                     .addStopingRule((mapping) -> mapping.getMappingCardinality() == MappingCardinality.MANY_TO_MANY
-                            || mapping.getMappingCardinality() == MappingCardinality.ONE_TO_MANY);
+                            || mapping.getMappingCardinality() == MappingCardinality.MANY_TO_ONE);
         }
 
         if ( line.hasOption("cross-species") ) {

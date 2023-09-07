@@ -94,9 +94,9 @@ ROBOT sssom-inject command
 
   Use the <<<--drop-duplicate-subjects>>> option to drop any mapping
   that has the same subject ID as a previously processed mapping. With
-  that option, if two (or more) mappings have the same subject ID, only
-  the first mapping encountered in the set will be kept for further
-  processing.
+  that option, if two (or more) mappings have the same subject ID
+  (regardless of whether they point to the same object), they will be
+  ignored.
   
   Use the <<<--drop-duplicate-objects>>> option to do the same, but for
   the object side of mappings.

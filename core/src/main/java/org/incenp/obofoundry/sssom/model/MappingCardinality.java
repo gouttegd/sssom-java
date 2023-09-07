@@ -106,13 +106,13 @@ public enum MappingCardinality {
         HashMap<String, Integer> objects = new HashMap<String, Integer>();
 
         for ( Mapping m : mappings ) {
-            subjects.put(m.getSubjectId(), subjects.getOrDefault(m.getSubjectId(), 0) + 1);
-            objects.put(m.getObjectId(), objects.getOrDefault(m.getObjectId(), 0) + 1);
+            subjects.put(m.getObjectId(), subjects.getOrDefault(m.getObjectId(), 0) + 1);
+            objects.put(m.getSubjectId(), objects.getOrDefault(m.getSubjectId(), 0) + 1);
         }
 
         for ( Mapping m : mappings ) {
-            int nSubjects = subjects.get(m.getSubjectId());
-            int nObjects = objects.get(m.getObjectId());
+            int nSubjects = subjects.get(m.getObjectId());
+            int nObjects = objects.get(m.getSubjectId());
 
             if ( nSubjects == 1 ) {
                 m.setMappingCardinality(nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY);

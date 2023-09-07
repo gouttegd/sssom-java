@@ -129,7 +129,7 @@ public class XrefExtractCommand implements Command {
 
             for ( Mapping m : ms.getMappings() ) {
                 if ( m.getMappingCardinality() == MappingCardinality.MANY_TO_MANY
-                        || m.getMappingCardinality() == MappingCardinality.ONE_TO_MANY ) {
+                        || m.getMappingCardinality() == MappingCardinality.MANY_TO_ONE ) {
                     filteredOut.add(m);
                 } else {
                     filteredIn.add(m);
