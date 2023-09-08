@@ -58,6 +58,7 @@ public class XrefExtractCommand implements Command {
         options.addOption(null, "map-prefix-to-predicate", true,
                 "Use specified predicate for cross-references with specified prefix");
         options.addOption(null, "drop-duplicates", false, "Drop all duplicated cross-references");
+        options.addOption(null, "include-obsoletes", false, "Do not ignore cross-references on obsoleted terms");
     }
 
     @Override
@@ -112,6 +113,10 @@ public class XrefExtractCommand implements Command {
                 }
                 extractor.addPrefixToPredicateMapping(parts[0], parts[1]);
             }
+        }
+
+        if ( line.hasOption("include-obsoletes") ) {
+            extractor.includeObsoletes(true);
         }
 
         MappingSet ms = extractor.extract(state.getOntology(), line.hasOption("permissive"),

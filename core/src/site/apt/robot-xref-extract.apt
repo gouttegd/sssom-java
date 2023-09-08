@@ -81,6 +81,10 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   in an invalid SSSOM file if the ontology does contain cross-references
   with non-resolvable prefix names.
   
+  By default, classes that are marked as obsolete (<<<owl:deprecated>>>)
+  are completely ignored. To extract cross-references from obsolete
+  classes as well, use <<<--include-obsoletes>>>.
+  
 * "Duplicated" cross-references
 
   Another option alters the behaviour of the extractor when more than

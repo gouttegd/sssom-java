@@ -32,6 +32,7 @@ import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
 
 /**
@@ -59,6 +60,8 @@ public class XrefExtractor {
 
     private HashMap<String, String> prefixToPredicateMap = new HashMap<>();
     private PrefixManager prefixManager = new PrefixManager();
+    private OWLLiteral falseValue = null;
+    private boolean ignoreObsoleteTerms = true;
 
     /**
      * Sets the prefix map to be used when processing cross-reference annotations.
@@ -139,6 +142,16 @@ public class XrefExtractor {
     }
 
     /**
+     * Indicates whether cross-references on obsoleted terms should be extracted.
+     * The default behaviour is to ignore obsoleted terms.
+     * 
+     * @param value {@code true} to extract cross-references on obsoleted terms.
+     */
+    public void includeObsoletes(boolean value) {
+        ignoreObsoleteTerms = !value;
+    }
+
+    /**
      * Extract mappings from cross-references in the specified ontology. Only
      * cross-references with prefixes that are (1) known, and (2) associated with a
      * predicate (through either
@@ -175,6 +188,10 @@ public class XrefExtractor {
         }
 
         for ( OWLClass c : ontology.getClassesInSignature() ) {
+            if ( ignoreObsoleteTerms && isObsolete(ontology, c) ) {
+                continue;
+            }
+
             String label = null;
             for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
                 if ( ax.getProperty().getIRI().toString().equals(HAS_DB_XREF) ) {
@@ -240,5 +257,20 @@ public class XrefExtractor {
         }
 
         return null;
+    }
+
+    private boolean isObsolete(OWLOntology ontology, OWLClass c) {
+        if ( falseValue == null ) {
+            falseValue = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLLiteral(false);
+        }
+
+        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
+            if ( ax.getProperty().isDeprecated() ) {
+                if ( ax.getValue().asLiteral().or(falseValue).parseBoolean() ) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
