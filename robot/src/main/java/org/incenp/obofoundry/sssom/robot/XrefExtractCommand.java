@@ -51,6 +51,7 @@ public class XrefExtractCommand implements Command {
     public XrefExtractCommand() {
         options = CommandLineHelper.getCommonOptions();
         options.addOption("i", "input", true, "load ontology from file");
+        options.addOption("I", "input-iri", true, "load ontology from an IRI");
         options.addOption(null, "mapping-file", true, "write extracted mappings to file");
         options.addOption(null, "permissive", false, "include cross-references with unknown prefixes");
         options.addOption(null, "all-xrefs", false, "create mappings from all cross-references");

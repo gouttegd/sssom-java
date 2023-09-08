@@ -70,6 +70,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
     public SSSOMInjectionCommand() {
         options = CommandLineHelper.getCommonOptions();
         options.addOption("i", "input", true, "load ontology from file");
+        options.addOption("I", "input-iri", true, "load ontology from an IRI");
         options.addOption("o", "output", true, "save ontology to file");
         options.addOption("s", "sssom", true, "load SSSOM mapping set from file");
         options.addOption(null, "sssom-metadata", true, "load mapping set metadata from specified file");
