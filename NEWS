@@ -1,3 +1,14 @@
+Changes in sssom-java 0.4.3
+---------------------------
+
+	* Update model to sssom-0.15.
+	* Fix writing of date fields.
+	* Fix bogus computation of mapping cardinality.
+	* xref-extract:
+	  * Ignore obsolete classes when extracting cross-references.
+	  * Allow reusing an existing mapping set (or its metadata).
+
+
 Changes in sssom-java 0.4.2
 ---------------------------
 
