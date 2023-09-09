@@ -132,6 +132,7 @@ public class TSVWriter {
         writer.append('\n');
 
         // Write the individual mappings
+        mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
             for ( int i = 0, n = fields.size(); i < n; i++ ) {
                 Field field = fields.get(i);
