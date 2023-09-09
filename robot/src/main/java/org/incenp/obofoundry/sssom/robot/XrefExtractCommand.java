@@ -20,6 +20,7 @@ package org.incenp.obofoundry.sssom.robot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +56,8 @@ public class XrefExtractCommand implements Command {
         options.addOption("I", "input-iri", true, "load ontology from an IRI");
         options.addOption(null, "mapping-file", true, "write extracted mappings to file");
         options.addOption(null, "metadata", true, "Use metadata from the specified YAML file");
+        options.addOption(null, "replace", false, "Replace all mappings with the newly extracted mappings");
+        options.addOption(null, "append", false, "Append newly extracted mappings to existing ones");
         options.addOption(null, "permissive", false, "include cross-references with unknown prefixes");
         options.addOption(null, "all-xrefs", false, "create mappings from all cross-references");
         options.addOption(null, "ignore-treat-xrefs", false, "Ignore treat-xrefs-as-... annotations in the ontology");
@@ -100,17 +103,33 @@ public class XrefExtractCommand implements Command {
             return null;
         }
 
+        if ( !line.hasOption("mapping-file") ) {
+            throw new IllegalArgumentException("Missing --mapping-file option");
+        }
+
         IOHelper ioHelper = CommandLineHelper.getIOHelper(line);
         state = CommandLineHelper.updateInputOntology(ioHelper, state, line);
 
         Map<String, String> prefixMap = ioHelper.getPrefixes();
         MappingSet ms = null;
+        HashSet<Mapping> mappings = new HashSet<Mapping>();
 
-        if ( line.hasOption("metadata") ) {
+        if ( line.hasOption("append") || line.hasOption("replace") ) {
+            // Read the existing mapping file
+            TSVReader reader = new TSVReader(line.getOptionValue("mapping-file"), line.getOptionValue("metadata"));
+            ms = reader.read(line.hasOption("replace"));
+            prefixMap.putAll(ms.getCurieMap());
+            if ( !ms.getMappings().isEmpty() ) {
+                ms.getMappings().forEach(m -> m.setMappingCardinality(null));
+                mappings.addAll(ms.getMappings());
+            }
+        } else if ( line.hasOption("metadata") ) {
+            // Read metadata only, the mapping file may not already exist
             TSVReader reader = new TSVReader(null, line.getOptionValue("metadata"));
             ms = reader.read(true);
             prefixMap.putAll(ms.getCurieMap());
         } else {
+            // Start from an empty set with no metadata
             ms = MappingSet.builder().curieMap(new HashMap<String, String>()).build();
         }
 
@@ -134,7 +153,8 @@ public class XrefExtractCommand implements Command {
 
         MappingSet extracted = extractor.extract(state.getOntology(), line.hasOption("permissive"),
                 line.hasOption("all-xrefs"));
-        ms.setMappings(extracted.getMappings());
+        mappings.addAll(extracted.getMappings());
+        ms.setMappings(new ArrayList<Mapping>(mappings));
         ms.getCurieMap().putAll(extracted.getCurieMap());
 
         if ( !extractor.getUnknownPrefixNames().isEmpty() ) {
@@ -177,10 +197,8 @@ public class XrefExtractCommand implements Command {
             }
         }
 
-        if ( line.hasOption("mapping-file") ) {
-            TSVWriter writer = new TSVWriter(line.getOptionValue("mapping-file"));
-            writer.write(ms);
-        }
+        TSVWriter writer = new TSVWriter(line.getOptionValue("mapping-file"));
+        writer.write(ms);
 
         return state;
     }
