@@ -14,11 +14,8 @@ ROBOT xref-extract command
 +-----------------------------------------------------------------------
 robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
 +-----------------------------------------------------------------------
-
-  The resulting mapping set will have no metadata apart from the Curie
-  map required to resolve the prefixes. Use the <<<--metadata>>> option
-  to specify the name of a file containing SSSOM metadata (in YAML
-  format) to add to the extracted set.
+  
+* How extraction works
 
   The default behaviour is to honour the <<<oboInOwl:treat-xrefs-as->>>
   ontology annotations found in the ontology. Those annotations are used
@@ -48,10 +45,10 @@ robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
   
   []
   
-* Options
-
-  The behaviour above may be altered using the options described in this
-  section.
+  Several options allow to alter the default behaviour, they are
+  described in the next subsections.
+  
+** Custom prefix-to-predicate mappings
   
   Use the <<<--map-prefix-to-predicate>>> option to force the use of a
   given predicate for cross-references with a specific prefix. For
@@ -70,6 +67,8 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   annotations, and only use explicitly specified prefix-to-predicate
   mappings, use the <<<--ignore-treat-xrefs>>> option.
   
+** Extracting cross-references using unmapped prefixes
+  
   By default, only cross-references with a prefix for which there is a
   prefix-to-predicate mapping are used (whether the prefix-to-predicate
   mapping comes from <<<oboInOwl:treat-xref-as-...>>> annotations or
@@ -79,6 +78,8 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   predicate will be turned into mappings with a <<<oboInOwl:hasDbXref>>>
   predicate.
   
+** Extracting cross-references using unknown prefixes
+  
   Lastly, cross-references with a prefix that cannot be resolved are
   completely ignored, regardless of any other options. To force those
   cross-references to be turned into mappings, use the
@@ -86,17 +87,16 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   in an invalid SSSOM file if the ontology does contain cross-references
   with non-resolvable prefix names.
   
+** Extracting cross-references from obsolete classes
+  
   By default, classes that are marked as obsolete (<<<owl:deprecated>>>)
   are completely ignored. To extract cross-references from obsolete
   classes as well, use <<<--include-obsoletes>>>.
   
-* "Duplicated" cross-references
-
-  Another option alters the behaviour of the extractor when more than
-  one cross-reference in the source ontology point to the same foreign
-  term.
+** Pruning "duplicated" cross-references
   
-  In this situation, the default behaviour is to generate a mapping from
+  When more than one cross-reference in the source ontology point to the
+  same foreign term, the default behaviour is to generate a mapping from
   all such cross-references.
   
   With the option <<<--drop-duplicates>>>, no mapping at all will be
@@ -104,3 +104,35 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   than one cross-reference to that term. In addition, a warning will be
   emitted for each such foreign term, giving the list of all subject
   terms that have a cross-reference to it.
+  
+* Re-using an existing mapping set
+
+  By default, the file indicated by the <<<--mapping-file>>> options is
+  not required to exist – and if it does, it will be overwritten.
+  
+  If any of the <<<--append>>> or <<<--replace>>> options is used, then
+  the file indicated by <<<--mapping-file>>> is also an <input> file,
+  which must exist and contain a valid SSSOM set, in addition to being
+  an <output> file.
+  
+  With <<<--append>>>, the mappings extracted from the ontology will be
+  appended to the mappings already present in that file.
+  
+  With <<<--replace>>>, the mappings already present in that file will
+  be discarded and replaced by those extracted from the ontology, but
+  the metadata of the original set will be preserved. This option allows
+  to reuse the metadata of an existing set while ignoring the existing
+  mappings themselves.
+  
+  The existing mapping set may have its metadata in a separate YAML
+  file (instead of being embedded in a commented header). If so, the
+  command will try to automatically locate the metadata file. The
+  <<<--metadata>>> option may also be used to explicitly specify the
+  location of the metadata file. Note that even if the original set uses
+  a separate metadata file, the set produced by the command will be in
+  the “embedded” format.
+  
+  The <<<--metadata>>> option may also be used without an existing
+  mapping set (that is, when neither <<<--append>>> nor <<<--replace>>>
+  are used), to reuse an existing metadata file that is not associated
+  to a set.
