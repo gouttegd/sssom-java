@@ -40,6 +40,13 @@ try {
 TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
 +-----------------------------------------------------------------------
 
+  Sometimes it may be useful to read <only> the metadata, not the
+  mappings themselves. There are two ways to do so: either by setting
+  the first argument to the TSVReader constructor to <<<null>>>, or by
+  calling <<<reader.read(true)>>> instead of <<<reader.read()>>> (the
+  second option is the only possible one if the metadata to read are
+  embedded in the same file as the mappings themselves).
+
   When reading, all short identifiers (aka ”CURIEs”) in the file,
   whether in the metadata or in the mappings themselves, are
   systematically expanded into their corresponding full form according

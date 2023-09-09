@@ -29,6 +29,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -76,15 +77,22 @@ public class TSVReader {
     /**
      * Creates a new instance that will read data from the specified files.
      * 
-     * @param tsvFile  The main TSV file.
+     * @param tsvFile  The main TSV file. May be {@code null} if one only wants to
+     *                 read a metadata file (in which case the second argument
+     *                 cannot also be {@code null}).
      * @param metaFile The accompanying metadata file. If {@code null}, the parser
      *                 will attempt to automatically locate the metadata from the
      *                 main file.
      * @throws FileNotFoundException If any of the files cannot be found.
      */
     public TSVReader(File tsvFile, File metaFile) throws FileNotFoundException {
-        this.tsvFile = tsvFile;
-        tsvReader = new BufferedReader(new FileReader(tsvFile));
+        if ( tsvFile == null && metaFile == null ) {
+            throw new IllegalArgumentException("tsvFile and metaFile cannot both be null");
+        }
+        if ( tsvFile != null ) {
+            this.tsvFile = tsvFile;
+            tsvReader = new BufferedReader(new FileReader(tsvFile));
+        }
         if ( metaFile != null ) {
             metaReader = new FileReader(metaFile);
         }
@@ -105,12 +113,16 @@ public class TSVReader {
     /**
      * Creates a new instance that will read data from the specified files.
      * 
-     * @param tsvFile  The name of the main TSV file.
-     * @param metaFile The name of the accompanying metadata file.
+     * @param tsvFile  The name of the main TSV file. May be {@code null} if one
+     *                 only wants to read a metadata file (in which case the second
+     *                 argument cannot also be {@code null}).
+     * @param metaFile The name of the accompanying metadata file. If {@code null},
+     *                 the parser will attempt to automatically locate the metadata
+     *                 from the main file.
      * @throws FileNotFoundException If any of the files cannot be found.
      */
     public TSVReader(String tsvFile, String metaFile) throws FileNotFoundException {
-        this(new File(tsvFile), metaFile != null ? new File(metaFile) : null);
+        this(tsvFile != null ? new File(tsvFile) : null, metaFile != null ? new File(metaFile) : null);
     }
 
     /**
@@ -128,7 +140,9 @@ public class TSVReader {
     /**
      * Reads a mapping set from the source file(s).
      * 
-     * @return A complete SSSOM mapping set.
+     * @return A complete SSSOM mapping set, unless no TSV file was provided to the
+     *         constructor when this object was created, in which case the returned
+     *         object will contain no mappings.
      * @throws SSSOMFormatException If encountering invalid SSSOM data. This
      *                              includes the case where the metadata cannot be
      *                              found.
@@ -136,6 +150,28 @@ public class TSVReader {
      *                              occurs.
      */
     public MappingSet read() throws SSSOMFormatException, IOException {
+        return read(tsvFile == null);
+    }
+
+    /**
+     * Reads a mapping set from the source file(s), with the option of reading the
+     * metadata only.
+     * 
+     * @param metadataOnly If {@code true}, the mappings themselves will not be
+     *                     read, only the metadata. The returned {@link MappingSet}
+     *                     object will contain no mappings. If no TSV file was
+     *                     provided to the constructor when this object was created,
+     *                     then no mappings will be read regardless of the value of
+     *                     this parameter.
+     * @return A SSSOM mapping set, with or without any mappings depending on the
+     *         parameter.
+     * @throws SSSOMFormatException If encountering invalid SSSOM data. This
+     *                              includes the case where the metadata cannot be
+     *                              found.
+     * @throws IOException          If any kind of non-SSSOM-related I/O error
+     *                              occurs.
+     */
+    public MappingSet read(boolean metadataOnly) throws SSSOMFormatException, IOException {
         if ( metaReader == null ) {
             if ( hasEmbeddedMetadata(tsvReader) ) {
                 metaReader = new StringReader(extractMetadata(tsvReader));
@@ -145,39 +181,35 @@ public class TSVReader {
             }
         }
 
-        return read(metaReader);
+        return read(metaReader, metadataOnly || tsvFile == null);
     }
 
-    /**
+    /*
      * Reads a mapping set from the source file while reading the metadata from the
      * specified source.
-     * 
-     * @param metaReader A Reader from which to get the metadata.
-     * @return A complete SSSOM mapping set.
-     * @throws SSSOMFormatException If encountering invalid SSSOM data.
-     * @throws IOException          If any kind of non-SSSOM-related I/O error
-     *                              occurs.
      */
-    public MappingSet read(Reader metaReader) throws SSSOMFormatException, IOException {
+    private MappingSet read(Reader metaReader, boolean metadataOnly) throws SSSOMFormatException, IOException {
         MappingSet ms = readMetadata(metaReader);
         prefixManager.add(ms.getCurieMap());
         expandEntityReferences(ms);
 
-        ObjectMapper mapper = new CsvMapper().registerModule(new JavaTimeModule());
-        CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t');
-        MappingIterator<Mapping> it = mapper.readerFor(Mapping.class).with(schema).readValues(tsvReader);
-        ArrayList<Mapping> mappings = new ArrayList<Mapping>();
-        while ( it.hasNext() ) {
-            Mapping m;
-            try {
-                m = it.next();
-            } catch ( RuntimeJsonMappingException e ) {
-                throw new SSSOMFormatException("Error when parsing TSV table", e);
+        if ( !metadataOnly ) {
+            ObjectMapper mapper = new CsvMapper().registerModule(new JavaTimeModule());
+            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t');
+            MappingIterator<Mapping> it = mapper.readerFor(Mapping.class).with(schema).readValues(tsvReader);
+            ArrayList<Mapping> mappings = new ArrayList<Mapping>();
+            while ( it.hasNext() ) {
+                Mapping m;
+                try {
+                    m = it.next();
+                } catch ( RuntimeJsonMappingException e ) {
+                    throw new SSSOMFormatException("Error when parsing TSV table", e);
+                }
+                expandEntityReferences(m);
+                mappings.add(m);
             }
-            expandEntityReferences(m);
-            mappings.add(m);
+            ms.setMappings(mappings);
         }
-        ms.setMappings(mappings);
 
         if ( prefixManager.getUnresolvedPrefixNames().size() > 0 ) {
             throw new SSSOMFormatException(String.format("Some prefixes are undeclared: %s",
