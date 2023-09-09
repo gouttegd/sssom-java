@@ -20,6 +20,7 @@ package org.incenp.obofoundry.sssom.model;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -102,17 +103,17 @@ public enum MappingCardinality {
      * @param mappings The mappings for which to infer cardinality.
      */
     public static void inferCardinality(List<Mapping> mappings) {
-        HashMap<String, Integer> subjects = new HashMap<String, Integer>();
-        HashMap<String, Integer> objects = new HashMap<String, Integer>();
+        HashMap<String, HashSet<String>> subjects = new HashMap<String, HashSet<String>>();
+        HashMap<String, HashSet<String>> objects = new HashMap<String, HashSet<String>>();
 
         for ( Mapping m : mappings ) {
-            subjects.put(m.getObjectId(), subjects.getOrDefault(m.getObjectId(), 0) + 1);
-            objects.put(m.getSubjectId(), objects.getOrDefault(m.getSubjectId(), 0) + 1);
+            subjects.computeIfAbsent(m.getObjectId(), k -> new HashSet<String>()).add(m.getSubjectId());
+            objects.computeIfAbsent(m.getSubjectId(), k -> new HashSet<String>()).add(m.getObjectId());
         }
 
         for ( Mapping m : mappings ) {
-            int nSubjects = subjects.get(m.getObjectId());
-            int nObjects = objects.get(m.getSubjectId());
+            int nSubjects = subjects.get(m.getObjectId()).size();
+            int nObjects = objects.get(m.getSubjectId()).size();
 
             if ( nSubjects == 1 ) {
                 m.setMappingCardinality(nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY);
