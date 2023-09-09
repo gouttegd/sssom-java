@@ -15,6 +15,11 @@ ROBOT xref-extract command
 robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
 +-----------------------------------------------------------------------
 
+  The resulting mapping set will have no metadata apart from the Curie
+  map required to resolve the prefixes. Use the <<<--metadata>>> option
+  to specify the name of a file containing SSSOM metadata (in YAML
+  format) to add to the extracted set.
+
   The default behaviour is to honour the <<<oboInOwl:treat-xrefs-as->>>
   ontology annotations found in the ontology. Those annotations are used
   to:
