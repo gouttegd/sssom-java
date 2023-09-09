@@ -209,6 +209,8 @@ public class TSVReader {
                 mappings.add(m);
             }
             ms.setMappings(mappings);
+        } else {
+            ms.setMappings(new ArrayList<Mapping>());
         }
 
         if ( prefixManager.getUnresolvedPrefixNames().size() > 0 ) {
