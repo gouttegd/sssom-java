@@ -289,6 +289,8 @@ public class TSVReader {
                     throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
                 }
             }
+        } else {
+            ms.setCurieMap(new HashMap<String, String>());
         }
 
         return ms;
