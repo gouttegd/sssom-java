@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ public class XrefExtractCommand implements Command {
         options.addOption(null, "metadata", true, "Use metadata from the specified YAML file");
         options.addOption(null, "replace", false, "Replace all mappings with the newly extracted mappings");
         options.addOption(null, "append", false, "Append newly extracted mappings to existing ones");
+        options.addOption(null, "add-pubdate", false, "Set the publication date of the set to the current day");
         options.addOption(null, "permissive", false, "include cross-references with unknown prefixes");
         options.addOption(null, "all-xrefs", false, "create mappings from all cross-references");
         options.addOption(null, "ignore-treat-xrefs", false, "Ignore treat-xrefs-as-... annotations in the ontology");
@@ -131,6 +133,10 @@ public class XrefExtractCommand implements Command {
         } else {
             // Start from an empty set with no metadata
             ms = MappingSet.builder().curieMap(new HashMap<String, String>()).build();
+        }
+
+        if ( line.hasOption("--add-pubdate") ) {
+            ms.setPublicationDate(LocalDate.now());
         }
 
         XrefExtractor extractor = new XrefExtractor();
