@@ -34,4 +34,7 @@ public class MappingRegistry  {
     private String documentation;
 
     private String homepage;
+
+    @JsonProperty("issue_tracker")
+    private String issueTracker;
 }

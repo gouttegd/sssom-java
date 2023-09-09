@@ -75,6 +75,9 @@ public class MappingSet  {
     @JsonProperty("mapping_date")
     private LocalDate mappingDate;
 
+    @JsonProperty("publication_date")
+    private LocalDate publicationDate;
+
     @JsonProperty("subject_match_field")
     @EntityReference
     private List<String> subjectMatchField;
@@ -93,6 +96,9 @@ public class MappingSet  {
 
     @JsonProperty("see_also")
     private List<String> seeAlso;
+
+    @JsonProperty("issue_tracker")
+    private String issueTracker;
 
     private String other;
 

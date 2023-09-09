@@ -15,16 +15,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Builder(toBuilder = true)
 @Data
 @EqualsAndHashCode(callSuper=false)
-public class Mapping  {
-    @JsonProperty("subject_id")
-    @EntityReference
-    private String subjectId;
+public class LiteralMapping  {
+    private String literal;
 
-    @JsonProperty("subject_label")
-    private String subjectLabel;
-
-    @JsonProperty("subject_category")
-    private String subjectCategory;
+    @JsonProperty("literal_datatype")
+    private String literalDatatype;
 
     @JsonProperty("predicate_id")
     @EntityReference
@@ -73,15 +68,12 @@ public class Mapping  {
 
     private String license;
 
-    @JsonProperty("subject_type")
-    private EntityType subjectType;
-
-    @JsonProperty("subject_source")
+    @JsonProperty("literal_source")
     @EntityReference
-    private String subjectSource;
+    private String literalSource;
 
-    @JsonProperty("subject_source_version")
-    private String subjectSourceVersion;
+    @JsonProperty("literal_source_version")
+    private String literalSourceVersion;
 
     @JsonProperty("object_type")
     private EntityType objectType;
@@ -112,21 +104,7 @@ public class Mapping  {
     @JsonProperty("mapping_date")
     private LocalDate mappingDate;
 
-    @JsonProperty("publication_date")
-    private LocalDate publicationDate;
-
     private Double confidence;
-
-    @JsonProperty("curation_rule")
-    @EntityReference
-    private List<String> curationRule;
-
-    @JsonProperty("curation_rule_text")
-    private List<String> curationRuleText;
-
-    @JsonProperty("subject_match_field")
-    @EntityReference
-    private List<String> subjectMatchField;
 
     @JsonProperty("object_match_field")
     @EntityReference
@@ -135,26 +113,22 @@ public class Mapping  {
     @JsonProperty("match_string")
     private List<String> matchString;
 
-    @JsonProperty("subject_preprocessing")
+    @JsonProperty("literal_preprocessing")
     @EntityReference
-    private List<String> subjectPreprocessing;
+    private List<String> literalPreprocessing;
 
     @JsonProperty("object_preprocessing")
     @EntityReference
     private List<String> objectPreprocessing;
 
-    @JsonProperty("semantic_similarity_score")
-    private Double semanticSimilarityScore;
+    @JsonProperty("similarity_score")
+    private Double similarityScore;
 
-    @JsonProperty("semantic_similarity_measure")
-    private String semanticSimilarityMeasure;
+    @JsonProperty("similarity_measure")
+    private String similarityMeasure;
 
     @JsonProperty("see_also")
     private List<String> seeAlso;
-
-    @JsonProperty("issue_tracker_item")
-    @EntityReference
-    private String issueTrackerItem;
 
     private String other;
 
