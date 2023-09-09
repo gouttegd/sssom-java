@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,8 +171,8 @@ public class TSVWriter {
             return String.join("|", list);
         } else if ( fieldType.equals(Double.class) ) {
             return String.format("%f", value);
-        } else if ( fieldType.equals(LocalDateTime.class) ) {
-            LocalDateTime date = LocalDateTime.class.cast(value);
+        } else if ( fieldType.equals(LocalDate.class) ) {
+            LocalDate date = LocalDate.class.cast(value);
             return date.format(DateTimeFormatter.ISO_DATE);
         }
         return value.toString();
@@ -235,8 +235,8 @@ public class TSVWriter {
                         metadata.add(String.format("  %s: \"%s\"", key, map.get(key)));
                     }
                 }
-            } else if ( fieldType.equals(LocalDateTime.class) ) {
-                LocalDateTime v = LocalDateTime.class.cast(value);
+            } else if ( fieldType.equals(LocalDate.class) ) {
+                LocalDate v = LocalDate.class.cast(value);
                 // The SSSOM specification says nothing on how to serialise dates, but LinkML
                 // says “for xsd dates, datetimes, and times, AtomicValue must be a string
                 // conforming to the relevant ISO type”. I assume this means ISO-8601.
