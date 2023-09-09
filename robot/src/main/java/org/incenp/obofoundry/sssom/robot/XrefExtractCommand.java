@@ -180,7 +180,6 @@ public class XrefExtractCommand implements Command {
         if ( line.hasOption("mapping-file") ) {
             TSVWriter writer = new TSVWriter(line.getOptionValue("mapping-file"));
             writer.write(ms);
-            writer.close();
         }
 
         return state;

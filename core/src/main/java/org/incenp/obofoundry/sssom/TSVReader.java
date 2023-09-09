@@ -216,6 +216,11 @@ public class TSVReader {
                     String.join(", ", prefixManager.getUnresolvedPrefixNames())));
         }
 
+        metaReader.close();
+        if ( tsvReader != null ) {
+            tsvReader.close();
+        }
+
         return ms;
     }
 

@@ -88,15 +88,6 @@ public class TSVWriter {
     }
 
     /**
-     * Closes the underlying file.
-     * 
-     * @throws IOException If an I/O error occurs.
-     */
-    public void close() throws IOException {
-        writer.close();
-    }
-
-    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
@@ -148,6 +139,8 @@ public class TSVWriter {
 
             writer.append('\n');
         }
+
+        writer.close();
     }
 
     /*
