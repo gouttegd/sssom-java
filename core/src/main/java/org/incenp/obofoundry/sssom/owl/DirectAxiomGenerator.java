@@ -103,7 +103,7 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
                             factory.getOWLLiteral(mapping.getObjectLabel())));
         }
 
-        if ( !annots.isEmpty() ) {
+        if ( !annots.isEmpty() && axiom != null ) {
             axiom = axiom.getAnnotatedAxiom(annots);
         }
 
