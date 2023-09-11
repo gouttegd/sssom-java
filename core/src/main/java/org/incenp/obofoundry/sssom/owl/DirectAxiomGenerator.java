@@ -35,7 +35,7 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
         ANNOTATION_PREDICATES.add("http://www.w3.org/2004/02/skos/core#closeMatch");
         ANNOTATION_PREDICATES.add("http://www.w3.org/2004/02/skos/core#relatedMatch");
         ANNOTATION_PREDICATES.add("http://www.w3.org/2004/02/skos/core#narrowMatch");
-        ANNOTATION_PREDICATES.add("http://www.w3.org/2004/02/skos/core#BroadMatch");
+        ANNOTATION_PREDICATES.add("http://www.w3.org/2004/02/skos/core#broadMatch");
         ANNOTATION_PREDICATES.add("https://w3id.org/semapv/vocab/crossSpeciesExactMatch");
         ANNOTATION_PREDICATES.add("https://w3id.org/semapv/vocab/crossSpeciesCloseMatch");
         ANNOTATION_PREDICATES.add("https://w3id.org/semapv/vocab/crossSpeciesNarrowMatch");
