@@ -25,16 +25,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
-import org.incenp.obofoundry.sssom.model.EntityReference;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
@@ -191,7 +186,7 @@ public class TSVReader {
     private MappingSet read(Reader metaReader, boolean metadataOnly) throws SSSOMFormatException, IOException {
         MappingSet ms = readMetadata(metaReader);
         prefixManager.add(ms.getCurieMap());
-        expandEntityReferences(ms);
+        SlotHelper.getMappingSetHelper().expandIdentifiers(ms, prefixManager);
 
         if ( !metadataOnly ) {
             ObjectMapper mapper = new CsvMapper().registerModule(new JavaTimeModule());
@@ -205,7 +200,7 @@ public class TSVReader {
                 } catch ( RuntimeJsonMappingException e ) {
                     throw new SSSOMFormatException("Error when parsing TSV table", e);
                 }
-                expandEntityReferences(m);
+                SlotHelper.getMappingHelper().expandIdentifiers(m, prefixManager);
                 mappings.add(m);
             }
             ms.setMappings(mappings);
@@ -333,66 +328,5 @@ public class TSVReader {
         }
 
         return ms;
-    }
-
-    /*
-     * Expand CURIEs in all “EntityReference” fields of the given object.
-     */
-    private void expandEntityReferences(Object object) {
-        for ( Field field : object.getClass().getDeclaredFields() ) {
-            if ( field.getDeclaredAnnotation(EntityReference.class) == null ) {
-                // Not an entity reference, nothing to expand
-                continue;
-            }
-
-            Object value = getValue(object, field.getName());
-            if ( value == null ) {
-                // No value to expand
-                continue;
-            }
-
-            if ( field.getType().equals(String.class) ) { // Single-value field
-                String curie = String.class.cast(value);
-                setValue(object, field.getName(), prefixManager.expandIdentifier(curie));
-            } else if ( field.getType().equals(List.class) ) { // List of entity references
-                @SuppressWarnings("unchecked")
-                List<String> curies = List.class.cast(value);
-                prefixManager.expandIdentifiers(curies, true);
-            }
-        }
-    }
-
-    /*
-     * Helper method to get the value of a field on a given object through
-     * reflection.
-     */
-    private Object getValue(Object object, String fieldName) {
-        String accessorName = String.format("get%c%s", Character.toUpperCase(fieldName.charAt(0)),
-                fieldName.substring(1));
-        try {
-            Method accessor = object.getClass().getDeclaredMethod(accessorName, (Class<?>[]) null);
-            return accessor.invoke(object, (Object[]) null);
-        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e ) {
-            // Should never happen, or something went very bad
-        }
-
-        return null;
-    }
-
-    /*
-     * Helper method to set the value of a field on a given object through
-     * reflection.
-     */
-    private void setValue(Object object, String fieldName, String value) {
-        String accessorName = String.format("set%c%s", Character.toUpperCase(fieldName.charAt(0)),
-                fieldName.substring(1));
-        try {
-            Method accessor = object.getClass().getDeclaredMethod(accessorName, new Class<?>[] { String.class });
-            accessor.invoke(object, new Object[] { value });
-        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e ) {
-            // Should never happen, or something went very bad
-        }
     }
 }

@@ -22,24 +22,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.incenp.obofoundry.sssom.model.EntityReference;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * A writer to serialise a SSSOM mapping set into the TSV format. For now, only
@@ -98,24 +90,28 @@ public class TSVWriter {
 
         // Write the metadata
         // FIXME: Support writing them in a separate file
-        List<String> metadata = renderMetadata(mappingSet);
-        for ( String s : metadata ) {
-            writer.append('#');
-            writer.append(s);
-            writer.append('\n');
+        SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
+        setHelper.setAlphabeticalOrder();
+        for ( String meta : setHelper.visitSlots(mappingSet, new MappingSetSlotVisitor(prefixManager)) ) {
+            writer.append(meta);
         }
 
-        // Write the column headers
-        List<Field> fields = findUsedFields(mappingSet);
-        for ( int i = 0, n = fields.size(); i < n; i++ ) {
-            Field field = fields.get(i);
-            String json_name = field.getName();
-            JsonProperty jsonAnnot = field.getDeclaredAnnotation(JsonProperty.class);
-            if ( jsonAnnot != null ) {
-                json_name = jsonAnnot.value();
-            }
+        // Find the used slots
+        SlotHelper<Mapping> helper = SlotHelper.getMappingHelper(true);
+        MappingSlotUsageVisitor usageVisitor = new MappingSlotUsageVisitor();
+        Set<String> usedSlotNames = new HashSet<String>();
+        for ( Mapping mapping : mappingSet.getMappings() ) {
+            usedSlotNames.addAll(helper.visitSlots(mapping, usageVisitor));
+        }
 
-            writer.append(json_name);
+        // Only visit those slots. We need to explicitly set the list of slots to visit
+        // in case some slots are empty in some mappings but not in others.
+        helper.setSlots(new ArrayList<String>(usedSlotNames), false);
+
+        // Write the column headers
+        List<Slot<Mapping>> usedSlots = helper.getSlots();
+        for ( int i = 0, n = usedSlots.size(); i < n; i++ ) {
+            writer.append(usedSlots.get(i).getName());
             if ( i < n - 1 ) {
                 writer.append('\t');
             }
@@ -123,15 +119,12 @@ public class TSVWriter {
         writer.append('\n');
 
         // Write the individual mappings
+        MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(prefixManager);
         mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
-            for ( int i = 0, n = fields.size(); i < n; i++ ) {
-                Field field = fields.get(i);
-                Object value = getValue(mapping, field.getName());
-                if ( value != null ) {
-                    writer.append(renderValue(field, value));
-                }
-
+            List<String> values = helper.visitSlots(mapping, mappingVisitor, true);
+            for ( int i = 0, n = values.size(); i < n; i++ ) {
+                writer.append(values.get(i));
                 if ( i < n - 1 ) {
                     writer.append('\t');
                 }
@@ -144,145 +137,146 @@ public class TSVWriter {
     }
 
     /*
-     * Translate a single value from a mapping into a string.
+     * Visits all slots in a MappingSet to get the lines that will make up the
+     * metadata block.
      */
-    private String renderValue(Field field, Object value) {
-        Type fieldType = field.getType();
-        boolean isEntityReference = field.isAnnotationPresent(EntityReference.class);
+    private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, String> {
+        PrefixManager pm;
 
-        if ( fieldType.equals(String.class) ) {
-            if ( isEntityReference ) {
-                return prefixManager.shortenIdentifier(String.class.cast(value));
-            } else {
-                return value.toString();
+        MappingSetSlotVisitor(PrefixManager prefixManager) {
+            pm = prefixManager;
+        }
+
+        @Override
+        public String visit(Slot<MappingSet> slot, MappingSet set, String value) {
+            return String.format("#%s: \"%s\"\n", slot.getName(),
+                    slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+        }
+
+        @Override
+        public String visit(Slot<MappingSet> slot, MappingSet set, List<String> values) {
+            if ( values.size() > 0 ) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("#");
+                sb.append(slot.getName());
+                sb.append(":\n");
+                for ( String value : values ) {
+                    sb.append("#  - \"");
+                    sb.append(slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+                    sb.append("\"\n");
+                }
+                return sb.toString();
             }
-        } else if ( fieldType.equals(List.class) ) {
-            @SuppressWarnings("unchecked")
-            List<String> list = List.class.cast(value);
-            if ( isEntityReference ) {
-                list = prefixManager.shortenIdentifiers(list, false);
+            return null;
+        }
+
+        @Override
+        public String visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
+            if ( values.size() > 0 ) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("#");
+                sb.append(slot.getName());
+                sb.append(":\n");
+                for ( String key : values.keySet() ) {
+                    sb.append("#  ");
+                    sb.append(key);
+                    sb.append(": \"");
+                    sb.append(values.get(key));
+                    sb.append("\"\n");
+                }
+                return sb.toString();
             }
-            return String.join("|", list);
-        } else if ( fieldType.equals(Double.class) ) {
+            return null;
+        }
+
+        @Override
+        public String visit(Slot<MappingSet> slot, MappingSet set, Double value) {
             return String.format("%f", value);
-        } else if ( fieldType.equals(LocalDate.class) ) {
-            LocalDate date = LocalDate.class.cast(value);
-            return date.format(DateTimeFormatter.ISO_DATE);
         }
-        return value.toString();
+
+        @Override
+        public String visit(Slot<MappingSet> slot, MappingSet set, LocalDate value) {
+            // The SSSOM specification says nothing on how to serialise dates, but LinkML
+            // says “for xsd dates, datetimes, and times, AtomicValue must be a string
+            // conforming to the relevant ISO type”. I assume this means ISO-8601.
+            return String.format("#%s: \"%s\"\n", slot.getName(), value.format(DateTimeFormatter.ISO_DATE));
+        }
+
+        @Override
+        public String getDefault(Slot<MappingSet> slot, MappingSet set, Object value) {
+            return value != null ? value.toString() : "";
+        }
     }
 
     /*
-     * Translate the metadata of a mapping set into a list of strings.
+     * Visits all slots in a mapping to render their values as a TSV cell.
      */
-    private List<String> renderMetadata(MappingSet mappingSet) {
-        List<String> metadata = new ArrayList<String>();
+    private class MappingSlotVisitor extends SlotVisitorBase<Mapping, String> {
+        private PrefixManager pm;
 
-        Field[] fields = mappingSet.getClass().getDeclaredFields();
-        // Metadata elements SHOULD appear by alphabetical order
-        Arrays.sort(fields, (f1, f2) -> String.CASE_INSENSITIVE_ORDER.compare(f1.getName(), f2.getName()));
+        MappingSlotVisitor(PrefixManager prefixManager) {
+            pm = prefixManager;
+        }
 
-        for ( Field field : fields ) {
-            if ( field.getName().equals("mappings") ) {
-                // For now we are dealing with the metadata only, ignore the mappings
-                continue;
-            }
-
-            Object value = getValue(mappingSet, field.getName());
+        @Override
+        public String visit(Slot<Mapping> slot, Mapping object, String value) {
             if ( value == null ) {
-                continue;
-            }
-
-            String json_name = field.getName();
-            JsonProperty jsonAnnot = field.getDeclaredAnnotation(JsonProperty.class);
-            if ( jsonAnnot != null ) {
-                json_name = jsonAnnot.value();
-            }
-
-            boolean isEntityReference = field.isAnnotationPresent(EntityReference.class);
-
-            Type fieldType = field.getType();
-            if ( fieldType.equals(String.class) ) {
-                String text = String.class.cast(value);
-                if ( isEntityReference ) {
-                    text = prefixManager.shortenIdentifier(text);
-                }
-                metadata.add(String.format("%s: \"%s\"", json_name, text));
-            } else if ( fieldType.equals(List.class) ) {
-                @SuppressWarnings("unchecked")
-                List<String> list = List.class.cast(value);
-                if ( list.size() > 0 ) {
-                    metadata.add(json_name + ":");
-                    for ( String text : list ) {
-                        if ( isEntityReference ) {
-                            text = prefixManager.shortenIdentifier(text);
-                        }
-                        metadata.add(String.format("  - \"%s\"", text));
-                    }
-                }
-            } else if ( fieldType.equals(Map.class) ) {
-                @SuppressWarnings("unchecked")
-                Map<String, String> map = Map.class.cast(value);
-                if ( map.size() > 0 ) {
-                    metadata.add(json_name + ":");
-                    for ( String key : map.keySet() ) {
-                        metadata.add(String.format("  %s: \"%s\"", key, map.get(key)));
-                    }
-                }
-            } else if ( fieldType.equals(LocalDate.class) ) {
-                LocalDate v = LocalDate.class.cast(value);
-                // The SSSOM specification says nothing on how to serialise dates, but LinkML
-                // says “for xsd dates, datetimes, and times, AtomicValue must be a string
-                // conforming to the relevant ISO type”. I assume this means ISO-8601.
-                metadata.add(String.format("%s: \"%s\"", json_name, v.format(DateTimeFormatter.ISO_DATE)));
+                return "";
+            } else if ( slot.isEntityReference() ) {
+                return pm.shortenIdentifier(value);
+            } else {
+                return value;
             }
         }
 
-        return metadata;
+        @Override
+        public String visit(Slot<Mapping> slot, Mapping object, List<String> values) {
+            if ( values == null ) {
+                return "";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for ( int i = 0, n = values.size(); i < n; i++ ) {
+                String value = values.get(i);
+                sb.append(slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+                if ( i < n - 1 ) {
+                    sb.append('|');
+                }
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public String visit(Slot<Mapping> slot, Mapping object, Double value) {
+            if ( value == null ) {
+                return "";
+            } else {
+                return String.format("%f", value);
+            }
+        }
+
+        @Override
+        public String visit(Slot<Mapping> slot, Mapping object, LocalDate value) {
+            if ( value == null ) {
+                return "";
+            } else {
+                return value.format(DateTimeFormatter.ISO_DATE);
+            }
+        }
+
+        @Override
+        protected String getDefault(Slot<Mapping> slot, Mapping object, Object value) {
+            return value != null ? value.toString() : "";
+        }
     }
 
     /*
-     * Figure out which fields we need to write.
+     * Visits non-null slots to get a list of all slots that do have a value.
      */
-    private List<Field> findUsedFields(MappingSet mappingSet) {
-        Set<Field> usedFields = new HashSet<Field>();
-        Field[] fields = Mapping.class.getDeclaredFields();
-        for ( Mapping mapping : mappingSet.getMappings() ) {
-            for ( Field field : fields ) {
-                Object value = getValue(mapping, field.getName());
-                if ( value != null ) {
-                    usedFields.add(field);
-                }
-            }
+    private class MappingSlotUsageVisitor extends SlotVisitorBase<Mapping, String> {
+        @Override
+        protected String getDefault(Slot<Mapping> slot, Mapping object, Object value) {
+            return slot.getName();
         }
-
-        List<Field> sortedFields = new ArrayList<Field>();
-        // FIXME: This relies on Java reflection giving us the fields in the order in
-        // which they are declared. This is not guaranteed.
-        for ( Field field : fields ) {
-            if ( usedFields.contains(field) ) {
-                sortedFields.add(field);
-            }
-        }
-
-        return sortedFields;
-    }
-
-    /*
-     * Helper method to get the value of a field on a given object through
-     * reflection.
-     */
-    private Object getValue(Object object, String fieldName) {
-        String accessorName = String.format("get%c%s", Character.toUpperCase(fieldName.charAt(0)),
-                fieldName.substring(1));
-        try {
-            Method accessor = object.getClass().getDeclaredMethod(accessorName, (Class<?>[]) null);
-            return accessor.invoke(object, (Object[]) null);
-        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e ) {
-            // Should never happen, or something went very bad
-        }
-
-        return null;
     }
 }

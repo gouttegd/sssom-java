@@ -1,8 +1,15 @@
 package org.incenp.obofoundry.sssom.owl;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.incenp.obofoundry.sssom.Slot;
+import org.incenp.obofoundry.sssom.SlotHelper;
+import org.incenp.obofoundry.sssom.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.semanticweb.owlapi.model.IRI;
@@ -11,6 +18,7 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.vocab.XSDVocabulary;
 
 /**
  * A class to generate OWL axioms “directly”, that is without any external input
@@ -44,6 +52,7 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
     private OWLDataFactory factory;
     private OWLOntology ontology;
+    private SlotHelper<Mapping> slotHelper;
 
     /**
      * Creates a new instance.
@@ -53,6 +62,8 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
     public DirectAxiomGenerator(OWLOntology ontology) {
         this.ontology = ontology;
         this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        slotHelper = SlotHelper.getMappingHelper(true);
+        slotHelper.excludeSlots(Arrays.asList(new String[] { "subject_id", "predicate_id", "object_id" }));
     }
 
     @Override
@@ -80,34 +91,70 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
             }
         }
 
+        if ( axiom == null ) {
+            return null;
+        }
+
         // Add mapping metadata as annotations on the generated axiom.
-        // TODO: Add missing metadata (ALL of them? or a custom selection?)
-        Set<OWLAnnotation> annots = new HashSet<OWLAnnotation>();
-
-        if ( mapping.getMappingJustification() != null ) {
-            annots.add(factory.getOWLAnnotation(
-                    factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + "mapping_justification")),
-                    IRI.create(mapping.getMappingJustification())));
-        }
-
-        if ( mapping.getAuthorId() != null ) {
-            OWLAnnotationProperty p = factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + "author_id"));
-            for ( String author_id : mapping.getAuthorId() ) {
-                annots.add(factory.getOWLAnnotation(p, IRI.create(author_id)));
-            }
-        }
-
-        if ( mapping.getObjectLabel() != null ) {
-            annots.add(
-                    factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + "object_label")),
-                            factory.getOWLLiteral(mapping.getObjectLabel())));
-        }
-
-        if ( !annots.isEmpty() && axiom != null ) {
-            axiom = axiom.getAnnotatedAxiom(annots);
+        AnnotationVisitor visitor = new AnnotationVisitor(factory);
+        slotHelper.visitSlots(mapping, visitor);
+        if ( !visitor.annots.isEmpty() ) {
+            axiom = axiom.getAnnotatedAxiom(visitor.annots);
         }
 
         return axiom;
+    }
+
+    private class AnnotationVisitor extends SlotVisitorBase<Mapping, Void> {
+        Set<OWLAnnotation> annots = new HashSet<OWLAnnotation>();
+        OWLDataFactory factory;
+
+        AnnotationVisitor(OWLDataFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public Void visit(Slot<Mapping> slot, Mapping mapping, String value) {
+            annots.add(
+                    factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + slot.getName())),
+                    slot.isEntityReference() ? IRI.create(value) : factory.getOWLLiteral(value)));
+            return null;
+        }
+
+        @Override
+        public Void visit(Slot<Mapping> slot, Mapping mapping, List<String> values) {
+            OWLAnnotationProperty p = factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + slot.getName()));
+            for ( String value : values ) {
+                annots.add(factory.getOWLAnnotation(p,
+                        slot.isEntityReference() ? IRI.create(value) : factory.getOWLLiteral(value)));
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(Slot<Mapping> slot, Mapping mapping, Double value) {
+            annots.add(
+                    factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + slot.getName())),
+                            factory.getOWLLiteral(value)));
+            return null;
+        }
+
+        @Override
+        public Void visit(Slot<Mapping> slot, Mapping mapping, LocalDate value) {
+            annots.add(
+                    factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + slot.getName())),
+                            factory.getOWLLiteral(value.format(DateTimeFormatter.ISO_DATE),
+                                    factory.getOWLDatatype(XSDVocabulary.DATE.getIRI()))));
+            return null;
+        }
+
+        @Override
+        protected Void getDefault(Slot<Mapping> slot, Mapping mapping, Object value) {
+            annots.add(
+                    factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + slot.getName())),
+                            factory.getOWLLiteral(value.toString())));
+            return null;
+        }
     }
 
 }
