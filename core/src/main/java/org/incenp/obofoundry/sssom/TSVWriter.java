@@ -177,7 +177,9 @@ public class TSVWriter {
                 sb.append("#");
                 sb.append(slot.getName());
                 sb.append(":\n");
-                for ( String key : values.keySet() ) {
+                List<String> keys = new ArrayList<String>(values.keySet());
+                keys.sort((s1, s2) -> s1.compareTo(s2));
+                for ( String key : keys ) {
                     sb.append("#  ");
                     sb.append(key);
                     sb.append(": \"");
