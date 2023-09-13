@@ -5,4 +5,5 @@ target/
 
 dependency-reduced-pom.xml
 
+core/src/test/resources/*.out
 core/src/main/java/org/incenp/obofoundry/sssom/tests

@@ -1,0 +1,2 @@
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration

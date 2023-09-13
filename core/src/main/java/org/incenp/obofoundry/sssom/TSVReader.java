@@ -261,7 +261,7 @@ public class TSVReader {
             metaFile = new File(file.getParent(), metaFilename);
 
             if ( !metaFile.exists() ) {
-                throw new SSSOMFormatException("Exernal metadata file not found");
+                throw new SSSOMFormatException("External metadata file not found");
             }
         }
 

@@ -1,0 +1,17 @@
+#creator_id:
+#  - "ORCID:0000-0002-6095-8718"
+#curie_map:
+#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
+#  ORCID: "https://orcid.org/"
+#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+#mapping_set_title: "Sample mapping set 1"
+#publication_date: "2023-09-13"
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration
+FBbt:00000002	tagma	semapv:crossSpeciesExactMatch	UBERON:6000002	semapv:ManualMappingCuration
+FBbt:00000003	segment	semapv:crossSpeciesExactMatch	UBERON:0000914	semapv:ManualMappingCuration
+FBbt:00000004	head	semapv:crossSpeciesExactMatch	UBERON:0000033	semapv:ManualMappingCuration
+FBbt:00000004	head	semapv:crossSpeciesExactMatch	UBERON:6000004	semapv:ManualMappingCuration
+FBbt:00000005	ocular segment	semapv:crossSpeciesExactMatch	UBERON:6000005	semapv:ManualMappingCuration
+FBbt:00000006	head segment	semapv:crossSpeciesExactMatch	UBERON:6000006	semapv:ManualMappingCuration
+FBbt:00000007	procephalic segment	semapv:crossSpeciesExactMatch	UBERON:6000007	semapv:ManualMappingCuration
