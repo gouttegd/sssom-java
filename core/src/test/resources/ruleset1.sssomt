@@ -1,0 +1,38 @@
+# Prefix declarations
+prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_>
+prefix CL:     <http://purl.obolibrary.org/obo/CL_>
+prefix BFO:    <http://purl.obolibrary.org/obo/BFO_>
+prefix FBbt:   <http://purl.obolibrary.org/obo/FBbt_>
+prefix IAO:    <http://purl.obolibrary.org/obo/IAO_>
+prefix TAX:    <http://purl.obolibrary.org/obo/NCBITaxon_>
+prefix OIO:    <http://www.geneontology.org/formats/oboInOwl#>
+
+# Header functions
+declare_class(TAX:7227);
+
+# Rules
+# -----
+
+# Make sure UBERON/CL terms are on the object side
+(subject==UBERON:* || subject==CL:*) -> invert();
+
+# Exclude any mapping to something else than UBERON/CL
+!(object==UBERON:* || object==CL:*) -> stop();
+
+# A foreign term should be mapped to no more than one UBERON/CL term
+!cardinality==1:* -> stop();
+
+# FBbt bridge
+[fbbt] subject==FBbt:* predicate==semapv:crossSpeciesExactMatch {
+    [uberon-fbbt] object==UBERON:* -> {
+        annotate_subject(IAO:0000589, '%subject_label (Drosophila)');
+        create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227)');
+    }
+    [cl-fbbt] object==CL:* -> {
+        annotate_subject(IAO:0000589, '%subject_label (Drosophila)');
+        create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227)');
+    }
+}
+
+# Old-style cross-references, for backwards compatibility
+[xrefs] predicate==* -> annotate_object(OIO:hasDbXref, "%subject_curie");
