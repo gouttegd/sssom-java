@@ -1,0 +1,7 @@
+#curie_map:
+#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
+#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+subject_id	subject_label	predicate_id	predicate_modifier	object_id	mapping_justification	confidence
+FBbt:00000001		semapv:crossSpeciesExactMatch		UBERON:0000468	semapv:ManualMappingCuration	
+FBbt:00000001		semapv:crossSpeciesExactMatch		UBERON:0000468	semapv:ManualMappingCuration	0.800000
+FBbt:00000001	the subject label	semapv:crossSpeciesExactMatch	Not	UBERON:0000468	semapv:ManualMappingCuration	

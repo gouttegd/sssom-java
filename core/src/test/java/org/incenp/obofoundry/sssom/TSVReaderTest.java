@@ -62,6 +62,29 @@ public class TSVReaderTest {
     }
 
     /*
+     * Check that we can read a file where not all mappings have values in all
+     * columns. Missing values should result in the corresponding slots being set to
+     * null.
+     */
+    @Test
+    void testMissingValues() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/missing-values.sssom.tsv");
+        List<Mapping> mappings = reader.read().getMappings();
+
+        Assertions.assertNull(mappings.get(0).getSubjectLabel());
+        Assertions.assertNull(mappings.get(0).getConfidence());
+        Assertions.assertNull(mappings.get(0).getPredicateModifier());
+
+        Assertions.assertNull(mappings.get(1).getSubjectLabel());
+        Assertions.assertNotNull(mappings.get(1).getConfidence());
+        Assertions.assertNull(mappings.get(1).getPredicateModifier());
+
+        Assertions.assertNotNull(mappings.get(2).getSubjectLabel());
+        Assertions.assertNull(mappings.get(2).getConfidence());
+        Assertions.assertNotNull(mappings.get(2).getPredicateModifier());
+    }
+
+    /*
      * Check that we can find an external metadata file that has the same basename
      * as the TSV file.
      */

@@ -76,18 +76,36 @@ public class TSVWriterTest {
      */
     @Test
     void testRoundtrip() throws IOException, SSSOMFormatException {
-        File source = new File("src/test/resources/sample1.sssom.tsv");
+        Assertions.assertTrue(roundtrip("sample1"));
+    }
+
+    /*
+     * Same, but with a set where not all mappings have values in all columns. This
+     * checks that the writer correctly determines the columns to write based on
+     * which slots are used in the set.
+     */
+    @Test
+    void testWriteMappingsWithMissingValues() throws IOException, SSSOMFormatException {
+        Assertions.assertTrue(roundtrip("missing-values"));
+    }
+
+    /*
+     * Read a mapping set, write it out, and compare.
+     */
+    private boolean roundtrip(String name) throws IOException, SSSOMFormatException {
+        File source = new File(String.format("src/test/resources/%s.sssom.tsv", name));
         TSVReader reader = new TSVReader(source);
         MappingSet ms = reader.read();
 
-        File target = new File("src/test/resources/sample1.sssom.tsv.out");
+        File target = new File(String.format("src/test/resources/%s.sssom.tsv.out", name));
         TSVWriter writer = new TSVWriter(target);
         writer.write(ms);
 
         boolean same = FileUtils.contentEquals(source, target);
-        Assertions.assertTrue(same);
         if ( same ) {
             target.delete();
         }
+
+        return same;
     }
 }
