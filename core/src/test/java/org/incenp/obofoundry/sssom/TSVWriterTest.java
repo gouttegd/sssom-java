@@ -90,6 +90,15 @@ public class TSVWriterTest {
     }
 
     /*
+     * Same, but with a set that contains (both at the set level and at the mapping
+     * level) list-valued slots.
+     */
+    @Test
+    void testWriteListValues() throws IOException, SSSOMFormatException {
+        Assertions.assertTrue(roundtrip("list-values"));
+    }
+
+    /*
      * Read a mapping set, write it out, and compare.
      */
     private boolean roundtrip(String name) throws IOException, SSSOMFormatException {

@@ -85,6 +85,31 @@ public class TSVReaderTest {
     }
 
     /*
+     * Check that we can read a file that uses multi-valued slots.
+     */
+    @Test
+    void testListValues() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/list-values.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(2, ms.getCreatorId().size());
+        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0001", ms.getCreatorId().get(0));
+        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0002", ms.getCreatorId().get(1));
+
+        Assertions.assertEquals(1, ms.getSeeAlso().size());
+        Assertions.assertEquals("https://example.org/seealso1", ms.getSeeAlso().get(0));
+
+        Mapping m = ms.getMappings().get(0);
+
+        Assertions.assertEquals(2, m.getAuthorId().size());
+        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0003", m.getAuthorId().get(0));
+        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0004", m.getAuthorId().get(1));
+
+        Assertions.assertEquals(1, m.getSeeAlso().size());
+        Assertions.assertEquals("https://example.org/seealso2", m.getSeeAlso().get(0));
+    }
+
+    /*
      * Check that we can find an external metadata file that has the same basename
      * as the TSV file.
      */

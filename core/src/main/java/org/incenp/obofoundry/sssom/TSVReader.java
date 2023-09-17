@@ -190,7 +190,8 @@ public class TSVReader {
 
         if ( !metadataOnly ) {
             ObjectMapper mapper = new CsvMapper().registerModule(new JavaTimeModule());
-            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t').withNullValue("");
+            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t').withNullValue("")
+                    .withArrayElementSeparator("|");
             MappingIterator<Mapping> it = mapper.readerFor(Mapping.class).with(schema).readValues(tsvReader);
             ArrayList<Mapping> mappings = new ArrayList<Mapping>();
             while ( it.hasNext() ) {
