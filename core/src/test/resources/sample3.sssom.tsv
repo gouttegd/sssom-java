@@ -1,0 +1,14 @@
+#curie_map:
+#  CL: "http://purl.obolibrary.org/obo/CL_"
+#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
+#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+#  WBbt: "http://purl.obolibrary.org/obo/WBbt_"
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration
+FBbt:00000003	segment	semapv:crossSpeciesCloseMatch	UBERON:0000914	semapv:ManualMappingCuration
+FBbt:00000004	head	semapv:crossSpeciesExactMatch	UBERON:0000033	semapv:ManualMappingCuration
+FBbt:00000004	head	semapv:crossSpeciesExactMatch	UBERON:6000004	semapv:ManualMappingCuration
+FBbt:00000092	primordial germ cell	semapv:crossSpeciesExactMatch	CL:0000301	semapv:ManualMappingCuration
+FBbt:00005074	muscle cell	semapv:crossSpeciesExactMatch	WBbt:0003675	semapv:ManualMappingCuration
+UBERON:6000002	insect tagma	semapv:crossSpeciesExactMatch	FBbt:00000002	semapv:ManualMappingCuration
+WBbt:0007833	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration

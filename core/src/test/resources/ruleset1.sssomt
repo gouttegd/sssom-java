@@ -9,6 +9,7 @@ prefix OIO:    <http://www.geneontology.org/formats/oboInOwl#>
 
 # Header functions
 declare_class(TAX:7227);
+declare_object_property(BFO:0000050);
 
 # Rules
 # -----
@@ -20,7 +21,7 @@ declare_class(TAX:7227);
 !(object==UBERON:* || object==CL:*) -> stop();
 
 # A foreign term should be mapped to no more than one UBERON/CL term
-!cardinality==1:* -> stop();
+!cardinality==*:1 -> stop();
 
 # FBbt bridge
 [fbbt] subject==FBbt:* predicate==semapv:crossSpeciesExactMatch {

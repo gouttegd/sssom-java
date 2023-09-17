@@ -141,9 +141,11 @@ public class SSSOMTransformReaderTest {
 
         Assertions.assertFalse(reader.hasErrors());
 
-        Assertions.assertEquals(1, app.headerFunctions.size());
+        Assertions.assertEquals(2, app.headerFunctions.size());
         Assertions.assertEquals("declare_class(http://purl.obolibrary.org/obo/NCBITaxon_7227)",
                 app.headerFunctions.get(0));
+        Assertions.assertEquals("declare_object_property(http://purl.obolibrary.org/obo/BFO_0000050)",
+                app.headerFunctions.get(1));
 
         List<MappingProcessingRule<Void>> rules = reader.getRules();
         Assertions.assertEquals(8, rules.size());
@@ -151,7 +153,7 @@ public class SSSOMTransformReaderTest {
         String[] renditions = new String[] {
                 "((subject==http://purl.obolibrary.org/obo/UBERON_* || subject==http://purl.obolibrary.org/obo/CL_*)) -> invert()",
                 "(!(object==http://purl.obolibrary.org/obo/UBERON_* || object==http://purl.obolibrary.org/obo/CL_*)) -> stop()",
-                "(!cardinality==1:*) -> stop()",
+                "(!cardinality==*:1) -> stop()",
                 "[fbbt,uberon-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/UBERON_*)) -> annotate_subject(http://purl.obolibrary.org/obo/IAO_0000589, %subject_label (Drosophila))",
                 "[fbbt,uberon-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/UBERON_*)) -> create_axiom(%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227))",
                 "[fbbt,cl-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/CL_*)) -> annotate_subject(http://purl.obolibrary.org/obo/IAO_0000589, %subject_label (Drosophila))",
