@@ -23,42 +23,33 @@ import java.util.Comparator;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
- * Comparator for mapping objects. This class allows to sort mappings in
- * <em>almost</em> the order recommended by the SSSOM specification.
+ * Comparator for mapping objects. This class allows to sort mappings in the
+ * order recommended by the SSSOM specification.
+ * <p>
+ * The recommended order is obtained by sorting mappings on each slot, in the
+ * order they are listed in the specification. That is, mappings are compared
+ * first on their subject IDs, then on their subject labels, then on their
+ * subject categories, then on their predicate IDs, etc.
  */
 public class DefaultMappingComparator implements Comparator<Mapping> {
 
+    private SlotVisitor<Mapping, String> visitor = new StringifyVisitor();
+
     @Override
     public int compare(Mapping o1, Mapping o2) {
-        // Try comparing on subject - predicate - object. This should already be enough
-        // for most mappings.
-        int ret = o1.getSubjectId().compareTo(o2.getSubjectId());
-        if ( ret == 0 ) {
-            ret = o1.getPredicateId().compareTo(o2.getPredicateId());
-        }
-        if ( ret == 0 ) {
-            ret = o1.getObjectId().compareTo(o2.getObjectId());
-        }
+        // We create a rough string representation of the mappings that we can then just
+        // compare directly.
+        String s1 = String.join(",", SlotHelper.getMappingHelper().visitSlots(o1, visitor, true));
+        String s2 = String.join(",", SlotHelper.getMappingHelper().visitSlots(o2, visitor, true));
 
-        // Sort on a few other fields. According to the SSSOM specification we should
-        // sort on *all* fields, but we are not going to do that here.
-        if ( ret == 0 && o1.getComment() != null && o2.getComment() != null ) {
-            ret = o1.getComment().compareTo(o2.getComment());
-        }
-        if ( ret == 0 && o1.getMappingJustification() != null && o2.getMappingJustification() != null ) {
-            ret = o1.getMappingJustification().compareTo(o2.getMappingJustification());
-        }
-        if ( ret == 0 && o1.getConfidence() != null && o2.getConfidence() != null ) {
-            ret = o1.getConfidence().compareTo(o2.getConfidence());
-        }
-        if ( ret == 0 && o1.getSemanticSimilarityScore() != null && o2.getSemanticSimilarityScore() != null ) {
-            ret = o1.getSemanticSimilarityScore().compareTo(o2.getSemanticSimilarityScore());
-        }
+        return s1.compareTo(s2);
+    }
 
-        // Giving up. If both mappings still can't be distinguished at this point, let
-        // the result be non-deterministic.
-
-        return ret;
+    private class StringifyVisitor extends SlotVisitorBase<Mapping, String> {
+        @Override
+        protected String getDefault(Slot<Mapping> slot, Mapping mapping, Object value) {
+            return value != null ? value.toString() : "";
+        }
     }
 
 }
