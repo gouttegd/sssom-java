@@ -89,7 +89,7 @@ string    : SQ_STRING
           | DQ_STRING
           ;
 
-FUNCTION  : [a-zA_Z_] [a-zA-Z0-9_]+ '(';
+FUNCTION  : [a-zA-Z_] [a-zA-Z0-9_]+ '(';
 
 SQ_STRING : '\'' (SQ_ESCAPE|.)*? '\'';
 
