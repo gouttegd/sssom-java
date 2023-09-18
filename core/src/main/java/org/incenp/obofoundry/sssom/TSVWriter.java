@@ -90,9 +90,8 @@ public class TSVWriter {
 
         // Write the metadata
         // FIXME: Support writing them in a separate file
-        SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setAlphabeticalOrder();
-        for ( String meta : setHelper.visitSlots(mappingSet, new MappingSetSlotVisitor(prefixManager)) ) {
+        for ( String meta : SlotHelper.getMappingSetHelper().visitSlots(mappingSet,
+                new MappingSetSlotVisitor(prefixManager)) ) {
             writer.append(meta);
         }
 

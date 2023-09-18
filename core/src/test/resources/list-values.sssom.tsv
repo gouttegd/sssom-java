@@ -1,10 +1,10 @@
-#creator_id:
-#  - "ORCID:AAAA-BBBB-CCCC-0001"
-#  - "ORCID:AAAA-BBBB-CCCC-0002"
 #curie_map:
 #  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
 #  ORCID: "https://orcid.org/"
 #  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+#creator_id:
+#  - "ORCID:AAAA-BBBB-CCCC-0001"
+#  - "ORCID:AAAA-BBBB-CCCC-0002"
 #see_also:
 #  - "https://example.org/seealso1"
 subject_id	predicate_id	object_id	mapping_justification	author_id	see_also

@@ -17,6 +17,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class MappingSet  {
+    @JsonProperty("curie_map")
+    private Map<String,String> curieMap;
+
     private List<Mapping> mappings;
 
     @JsonProperty("mapping_set_id")
@@ -103,7 +106,4 @@ public class MappingSet  {
     private String other;
 
     private String comment;
-
-    @JsonProperty("curie_map")
-    private Map<String,String> curieMap;
 }

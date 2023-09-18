@@ -1,9 +1,9 @@
-#creator_id:
-#  - "ORCID:0000-0002-6095-8718"
 #curie_map:
 #  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
 #  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
 #mapping_set_title: "Sample mapping set 1"
+#creator_id:
+#  - "ORCID:0000-0002-6095-8718"
 #publication_date: "2023-09-13"
 subject_id	subject_label	predicate_id	object_id	mapping_justification
 FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration
