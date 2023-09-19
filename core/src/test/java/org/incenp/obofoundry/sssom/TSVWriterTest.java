@@ -99,6 +99,56 @@ public class TSVWriterTest {
     }
 
     /*
+     * Check that superfluous prefixes are not written to the Curie map.
+     */
+    @Test
+    void testStripUnusedPrefix() throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/sample1.sssom.tsv");
+        TSVReader reader = new TSVReader(source);
+        MappingSet ms = reader.read();
+
+        // Add unused prefixes to the Curie map
+        ms.getCurieMap().put("UNUSED1", "http://purl.obolibrary.org/obo/");
+        ms.getCurieMap().put("UNUSED2", "https://example.org/");
+
+        File target = new File("src/test/resources/unused-prefixes.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(target);
+        writer.write(ms);
+
+        boolean same = FileUtils.contentEquals(source, target);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            target.delete();
+        }
+    }
+
+    @Test
+    void testCustomCurieMap() throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/sample1.sssom.tsv");
+        TSVReader reader = new TSVReader(source);
+        MappingSet ms = reader.read();
+
+        // Build a custom map from the existing one...
+        HashMap<String, String> customMap = new HashMap<String, String>();
+        customMap.putAll(ms.getCurieMap());
+
+        // then empty the existing map...
+        ms.getCurieMap().clear();
+
+        // and write the set with the custom map
+        File target = new File("src/test/resources/custom-map.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(target);
+        writer.setCurieMap(customMap);
+        writer.write(ms);
+
+        boolean same = FileUtils.contentEquals(source, target);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            target.delete();
+        }
+    }
+
+    /*
      * Read a mapping set, write it out, and compare.
      */
     private boolean roundtrip(String name) throws IOException, SSSOMFormatException {

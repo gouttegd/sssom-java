@@ -25,11 +25,13 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
@@ -47,7 +49,6 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  * try {
  *     TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv");
  *     writer.write(mappingSet);
- *     writer.close();
  * } catch ( IOException ioe ) {
  *     // Generic I/O error
  * }
@@ -57,6 +58,8 @@ public class TSVWriter {
 
     private BufferedWriter writer;
     private PrefixManager prefixManager = new PrefixManager();
+    private Set<String> usedPrefixes = new HashSet<String>();
+    private boolean customMap = false;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -80,13 +83,35 @@ public class TSVWriter {
     }
 
     /**
+     * Sets the Curie map to use to shorten identifiers. The Curie map associated
+     * with the mapping set ({@link MappingSet#getCurieMap()}) will then be
+     * completely ignored in favour of the specified map.
+     * 
+     * @param map A map associating prefix names to prefixes.
+     */
+    public void setCurieMap(Map<String, String> map) {
+        prefixManager.add(map);
+        customMap = true;
+    }
+
+    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
      * @throws IOException If an I/O error occurs.
      */
     public void write(MappingSet mappingSet) throws IOException {
-        prefixManager.add(mappingSet.getCurieMap());
+        if ( !customMap ) {
+            prefixManager.add(mappingSet.getCurieMap());
+        }
+
+        // Find out which prefixes are actually needed
+        SlotHelper.getMappingSetHelper().visitSlots(mappingSet, new MappingSetPrefixVisitor());
+        MappingPrefixVisitor prefixVisitor = new MappingPrefixVisitor();
+        mappingSet.getMappings().forEach(m -> SlotHelper.getMappingHelper().visitSlots(m, prefixVisitor));
+        for ( BuiltinPrefix bp : BuiltinPrefix.values() ) {
+            usedPrefixes.remove(bp.getPrefixName());
+        }
 
         // Write the metadata
         // FIXME: Support writing them in a separate file
@@ -171,6 +196,17 @@ public class TSVWriter {
 
         @Override
         public String visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
+            // We ignore the Curie map provided in the mapping set to write the effective
+            // map instead. Of note, currently "curie_map" is the only map-type slot, but we
+            // still test on the name just in case another slot of the same type is later
+            // added to the model.
+            if ( slot.getName().equals("curie_map") ) {
+                values = new HashMap<String, String>();
+                for ( String prefixName : usedPrefixes ) {
+                    values.put(prefixName, prefixManager.getPrefix(prefixName));
+                }
+            }
+
             if ( values.size() > 0 ) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("#");
@@ -187,6 +223,7 @@ public class TSVWriter {
                 }
                 return sb.toString();
             }
+
             return null;
         }
 
@@ -278,6 +315,54 @@ public class TSVWriter {
         @Override
         protected String getDefault(Slot<Mapping> slot, Mapping object, Object value) {
             return slot.getName();
+        }
+    }
+
+    /*
+     * Visits all string slots in a mapping set to compile a list of used prefix
+     * names.
+     */
+    private class MappingSetPrefixVisitor extends SlotVisitorBase<MappingSet, Void> {
+        @Override
+        public Void visit(Slot<MappingSet> slot, MappingSet object, String value) {
+            if ( slot.isEntityReference() ) {
+                usedPrefixes.add(prefixManager.getPrefixName(value));
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(Slot<MappingSet> slot, MappingSet object, List<String> values) {
+            if ( slot.isEntityReference() ) {
+                for ( String value : values ) {
+                    usedPrefixes.add(prefixManager.getPrefixName(value));
+                }
+            }
+            return null;
+        }
+    }
+
+    /*
+     * Visits all string slots in a mapping to compile a list of used prefix names.
+     */
+    private class MappingPrefixVisitor extends SlotVisitorBase<Mapping, Void> {
+
+        @Override
+        public Void visit(Slot<Mapping> slot, Mapping object, String value) {
+            if ( slot.isEntityReference() ) {
+                usedPrefixes.add(prefixManager.getPrefixName(value));
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(Slot<Mapping> slot, Mapping object, List<String> values) {
+            if ( slot.isEntityReference() ) {
+                for ( String value : values ) {
+                    usedPrefixes.add(prefixManager.getPrefixName(value));
+                }
+            }
+            return null;
         }
     }
 }
