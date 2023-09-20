@@ -105,9 +105,9 @@ Jar files:
   containing only the classes from this project proper (dependencies
   _not_ included).
 * `sssom-robot-plugin-x.y.z.jar` (in `robot/target`): a file usable as a
-  ROBOT plugin, once ROBOT supports such plugins.
+  ROBOT plugin.
 * `sssom-robot-standalone-x.y.z.jar` (in `robot/target`): a standalone
-  version of ROBOT (1.9.4), which includes the command(s) from the SSSOM
+  version of ROBOT (1.9.5), which includes the command(s) from the SSSOM
   plugin as if they were built-in commands.
 
 To use the library in a Java project, use the following identifiers:

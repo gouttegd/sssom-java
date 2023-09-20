@@ -6,16 +6,32 @@ ROBOT commands
   
 * Enabling the SSSOM commands in ROBOT
 
-  Ultimately, the commands will be provided under the form of a <plugin>
-  that can be loaded dynamically by the standard distribution of ROBOT,
-  once said distribution has support for dynamic plugins.
+  ROBOT 1.9.5 has built-in support for pluggable commands. To enable the
+  commands provided by this project in ROBOT, place the
+  <<<sssom-robot-plugin-X.Y.Z.jar>>> file in a directory where ROBOT
+  searches for plugins:
   
-  In the meantime, building SSSOM-Java with the standard Maven goal
-  <<<package>>> will produce, among other artifacts, a Jar file named
-  <<<sssom-robot-standalone-X.Y.Z.jar>>>. That file will contain a full
-  distribution of the latest version of ROBOT (1.9.4) in which the
-  commands below will be available as built-in comands (in addition to
-  all the standard commands).
+  * the <<<~/.robot/plugins>>> directory in your home directory;
+  
+  * the directory specified by the <<<ROBOT_PLUGINS_DIRECTORY>>>
+    environment variable;
+  
+  * the directory specified by the <<<robot.pluginsdir>>> Java system
+    property.
+    
+  []
+  
+  It is recommended to rename the archive file to a simple, mono-word
+  name, such as <<<sssom.jar>>>. The commands provided by the plugins
+  will then be available from the command line under the name
+  <<<sssom:COMMAND_NAME>>>, such as <<<sssom:xref-extract>>>.
+  
+  If for some reasons the use of a plugin is not possible or not wanted,
+  building SSSOM-Java with the standard Maven goal <<<package>>> will
+  also produce a Jar file named <<<sssom-robot-standalone-X.Y.Z.jar>>>.
+  That file will contain a full distribution of the latest version of
+  ROBOT (1.9.5) in which the commands below will be available as
+  built-in comands (in addition to all the standard commands).
   
 * Available commands
 
