@@ -22,10 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.model.EntityType;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
-import org.incenp.obofoundry.sssom.model.PredicateModifier;
-
 /**
  * A pseudo-visitor interface to visit the different metadata slots of a SSSOM
  * Java object.
@@ -88,32 +84,13 @@ public interface SlotVisitor<T, V> {
     public V visit(Slot<T> slot, T object, LocalDate value);
 
     /**
-     * Visits a slot containing an entity type.
+     * Visits a slot that has a enum value. Implementations should consult the
+     * {@code slot} parameter to figure out the type of the enum, if needed.
      * 
      * @param slot   The slot that is being visited.
      * @param object The object to which the slot is attached.
      * @param value  The value of the slot.
      * @return Whatever value the visitor wishes to return.
      */
-    public V visit(Slot<T> slot, T object, EntityType value);
-
-    /**
-     * Visits a slot containing a mapping cardinality value.
-     * 
-     * @param slot   The slot that is being visited.
-     * @param object The object to which the slot is attached.
-     * @param value  The value of the slot.
-     * @return Whatever value the visitor wishes to return.
-     */
-    public V visit(Slot<T> slot, T object, MappingCardinality value);
-
-    /**
-     * Visits a slot containing a predicate modifier.
-     * 
-     * @param slot   The slot that is being visited.
-     * @param object The object to which the slot is attached.
-     * @param value  The value of the slot.
-     * @return Whatever value the visitor wishes to return.
-     */
-    public V visit(Slot<T> slot, T object, PredicateModifier value);
+    public V visit(Slot<T> slot, T object, Object value);
 }

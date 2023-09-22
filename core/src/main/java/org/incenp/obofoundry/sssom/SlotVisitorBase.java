@@ -22,10 +22,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.model.EntityType;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
-import org.incenp.obofoundry.sssom.model.PredicateModifier;
-
 /**
  * A default implementation of the {@link SlotVisitor} interface that returns
  * {@code null} for every slot. Client code can extend this class and override
@@ -75,17 +71,7 @@ public class SlotVisitorBase<T, V> implements SlotVisitor<T, V> {
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, EntityType value) {
-        return getDefault(slot, object, value);
-    }
-
-    @Override
-    public V visit(Slot<T> slot, T object, MappingCardinality value) {
-        return getDefault(slot, object, value);
-    }
-
-    @Override
-    public V visit(Slot<T> slot, T object, PredicateModifier value) {
+    public V visit(Slot<T> slot, T object, Object value) {
         return getDefault(slot, object, value);
     }
 }

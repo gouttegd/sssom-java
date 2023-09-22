@@ -241,7 +241,7 @@ public class TSVWriter {
         }
 
         @Override
-        public String getDefault(Slot<MappingSet> slot, MappingSet set, Object value) {
+        public String visit(Slot<MappingSet> slot, MappingSet set, Object value) {
             return value != null ? value.toString() : "";
         }
     }
@@ -303,7 +303,7 @@ public class TSVWriter {
         }
 
         @Override
-        protected String getDefault(Slot<Mapping> slot, Mapping object, Object value) {
+        public String visit(Slot<Mapping> slot, Mapping object, Object value) {
             return value != null ? value.toString() : "";
         }
     }

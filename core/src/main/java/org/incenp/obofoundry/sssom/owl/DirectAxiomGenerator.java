@@ -149,7 +149,7 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
         }
 
         @Override
-        protected Void getDefault(Slot<Mapping> slot, Mapping mapping, Object value) {
+        public Void visit(Slot<Mapping> slot, Mapping mapping, Object value) {
             annots.add(
                     factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(SSSOM_BASE + slot.getName())),
                             factory.getOWLLiteral(value.toString())));
