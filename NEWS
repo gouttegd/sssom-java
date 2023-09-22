@@ -1,3 +1,17 @@
+Changes in sssom-java 0.5.0
+---------------------------
+
+    * Fix sssom-inject crash when using --direct option.
+    * Fix parsing of multi-valued slots in mappings.
+    * Make TSVWriter output fully predictable:
+      * Sort mapping set metadata by "spec order".
+      * Sort Curie map entries by alphabetical order.
+      * Sort mappings using all available slots.
+      * Write the effective Curie map only.
+    * Add SlotVisitor interface.
+    * Add test suite.
+
+
 Changes in sssom-java 0.4.3
 ---------------------------
 
