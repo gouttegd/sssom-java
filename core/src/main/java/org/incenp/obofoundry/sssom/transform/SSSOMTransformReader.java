@@ -265,6 +265,11 @@ public class SSSOMTransformReader<T> {
      * As a convenience, this method will call {@link #read()} automatically if
      * needed, if an input has been set. The caller should then use
      * {@link #hasErrors()} to check whether syntax errors were found.
+     * <p>
+     * When {@link #read(String)} is called repeatedly on different inputs, this
+     * method always returns <em>all</em> the rules that have been parsed since this
+     * object was created, not only the rules resulting from the last
+     * {@link #read(String)} call.
      * 
      * @return The SSSOM/T processing rules. May be an empty list if nothing has
      *         been parsed or if syntax errors were found.

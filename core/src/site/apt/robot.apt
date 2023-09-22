@@ -6,10 +6,10 @@ ROBOT commands
   
 * Enabling the SSSOM commands in ROBOT
 
-  ROBOT 1.9.5 has built-in support for pluggable commands. To enable the
-  commands provided by this project in ROBOT, place the
-  <<<sssom-robot-plugin-X.Y.Z.jar>>> file in a directory where ROBOT
-  searches for plugins:
+  ROBOT 1.9.5 has {{{http://robot.obolibrary.org/plugins}built-in
+  support}} for pluggable commands. To enable the commands provided by
+  this project in ROBOT, place the <<<sssom-robot-plugin-X.Y.Z.jar>>>
+  file in a directory where ROBOT searches for plugins:
   
   * the <<<~/.robot/plugins>>> directory in your home directory;
   

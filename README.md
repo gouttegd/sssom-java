@@ -54,7 +54,6 @@ MappingSet mappingSet = ...;
 try {
     TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv");
     writer.write(mappingSet);
-    writer.close();
 } catch (IOException e) {
     // I/O error
 }

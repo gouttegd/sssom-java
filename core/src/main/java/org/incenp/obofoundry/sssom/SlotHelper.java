@@ -35,9 +35,22 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
 /**
  * A class to facilitate the manipulation of SSSOM slots. This class is mostly
  * intended to hide all the hideous hacks relying on Java reflection.
+ * <p>
+ * It provides a visitor-like pattern to easily apply treatments on all slots of
+ * a mapping or a mapping set without having to explicitly call the accessor for
+ * each slot. For example, to “visit” all (non-{@code null}) slots of a
+ * {@link Mapping} object, serialise them as strings, and collect said strings:
+ * 
+ * <pre>
+ * SlotVisitor&lt;Mapping,String&gt; myVisitor = ...;
+ * Mapping mapping = ...;
+ * 
+ * List&lt;String&gt; slotsAsStrings = SlotHelper.getMappingHelper().visitSlots(mapping, myVisitor);
+ * </pre>
  * 
  * @param <T> The SSSOM object (Mapping or MappingSet) this class is intended to
  *            ease the manipulation of.
+ * @see SlotVisitor
  */
 public class SlotHelper<T> {
 

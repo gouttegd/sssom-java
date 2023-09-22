@@ -153,8 +153,8 @@ ROBOT sssom-inject command
   
   Refer to the {{{./sssom-transform.html}description}} of the
   SSSOM/Transform language for details about the syntax of rules and
-  filter expressions. This section describes the aspect that are
-  specific to <<<sssom-inject>>>.
+  filter expressions. This section describes the details that are
+  specific to the <SSSOM/T-OWL> dialect used by <<<sssom-inject>>>.
   
 *** Prefixes
 
@@ -197,7 +197,7 @@ ROBOT sssom-inject command
   
   []
   
-  The argument to <<<create_axiom>>> and the second argumentto both
+  The argument to <<<create_axiom>>> and the second argument to both
   <<<annotate_subject>>> and <<<annotate_object>>> can contain the
   following placeholders:
   

@@ -337,13 +337,15 @@ mapping_justification==semapv:ManualMappingCuration && subject==CL:* -> invert()
 ** Application-specific functions
 
   Application-specific functions are entirely left at the
-  discretion of applications, which must provide their own parser
-  (built on top of the default parser provided by SSSOM-Java) to
-  define and implement them.
+  discretion of applications that use SSSOM/Transform. The variant of
+  SSSOM/Transform usable in an application, with its own list of
+  application-specific functions, is called a <SSSOM/Transform
+  application> or <SSSOM/Transform dialect>.
   
   For example, the {{{./robot.html}sssom-inject}} ROBOT command uses the
   SSSOM/Transform language to generate OWL axioms from mappings. To that
-  effect, it defines several application-specific functions, such as
+  effect, it defines a SSSOM/Transform dialect called <SSSOM/T-OWL>.
+  That dialect defines several application-specific functions, such as
   <<<annotate_subject>>>, which may be used as follows:
   
 +-----------------------------------------------------------------------
@@ -358,9 +360,10 @@ predicate==skos:exactMatch -> annotate_subject(oboInOwl:hasDbXref, "%subject_cur
   subject.
   
   Other applications can devise whatever syntax is appropriate for their
-  specific functions. For example, if application used
+  specific functions. For example, if an application used
   SSSOM/Transform-based rules to load SSSOM data into a database, one
-  could imagine an hypothetical <<<insert>>> function such as:
+  could imagine a hypothetical <SSSOM/T-SQL> dialect with an
+  <<<insert>>> function such as:
   
 +-----------------------------------------------------------------------
 predicate==skos:exactMatch -> insert("exact_matches", "%subject_id", "%object_id"");
