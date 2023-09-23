@@ -107,6 +107,12 @@ public class SSSOMTransformReaderTest {
 
         parseRule("subject==FBbt:* || predicate==skos:exactMatch -> action();\n",
                 "(subject==http://purl.obolibrary.org/obo/FBbt_* || predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
+
+        parseRule("mapping_provider=='a provider' -> action();\n", "(mapping_provider==a provider) -> action()");
+
+        parseRule("see_also==\"check this*\" -> action();\n", "(see_also==check this*) -> action()");
+
+        parseRule("subject_type=='owl class' -> action();\n", "(subject_type==owl class) -> action()");
     }
 
     /*

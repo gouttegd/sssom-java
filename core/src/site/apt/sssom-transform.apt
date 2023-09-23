@@ -70,49 +70,31 @@ predicate==semapv:crossSpecies*
   name ends with <<<_id>>> (e.g. <<<subject_id>>>, <<<predicate_id>>>,
   <<<creator_id>>>, etc.), the <_id> suffix is dropped (that’s why the
   previous example is <<<predicate==…>>> instead of
-  <<<predicate_id==…>>>). Some filters also accept alternative names,
-  as indicated in the list below.
+  <<<predicate_id==…>>>). Also, <<<justification>>> is accepted as an
+  alias for <<<mapping_justification>>> and <<<cardinality>>> is
+  accepted as an alias for <<<mapping_cardinality>>>.
   
-  Not all slots can be filtered against. Currently, it is possible to
-  filter on the following slots:
+  It is not possible to filter against the <<<subject_label>>>,
+  <<<object_label>>>, and <<<predicate_label>>> slots. This is by
+  design: filtering on the subject, object, or predicate should always
+  be done using an identifier rather than a free-form label.
   
-  *  <<<subject_id>>>,
+*** Filters on free-form text slots
+
+  For the filters that act on slots that contain a free-form text value
+  or an URI (rather than an identifier, a numerical value, or an enum
+  value), the value to filter against must be specified in single or
+  double quotes. For example:
   
-  * <<<object_id>>>,
-  
-  * <<<predicate_id>>>,
-  
-  * <<<predicate_modifier>>>,
-  
-  * <<<mapping_justification>>> (may be used as <<<justification>>>),
-  
-  * <<<subject_source>>>,
-  
-  * <<<object_source>>>,
-  
-  * <<<mapping_source>>>,
-  
-  * <<<creator_id>>>,
-  
-  * <<<author_id>>>,
-  
-  * <<<reviewer_id>>>,
-  
-  * <<<curation_rule>>>,
-  
-  * <<<subject_match_field>>>,
-  
-  * <<<object_match_field>>>,
-  
-  * <<<subject_preprocessing>>>,
-  
-  * <<<object_preprocessing>>>,
-  
-  * <<<confidence>>>,
-  
-  * <<<semantic_similarity_score>>>,
-  
-  * <<<mapping_cardinality>>> (may be used as <<<cardinality>>>).
++-----------------------------------------------------------------------
+mapping_tool=="mira"
++-----------------------------------------------------------------------
+
+  This also applies, by exception, to the <<<subject_type>>> and
+  <<<object_type>>> slots, because even though they are enum-typed,
+  the values they accept (from the
+  {{{https://mapping-commons.github.io/sssom/EntityTypeEnum/}EntityType
+  enum}} in SSSOM) contain whitespaces.
   
 *** Filters on multi-valued slots
 

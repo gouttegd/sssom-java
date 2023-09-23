@@ -16,9 +16,12 @@ filterSet : filterItem (WS+ (binaryOp WS+)? filterItem)*;
 
 filterItem: idFilterItem
           | multiIdFilterItem
+          | textFilterItem
+          | multiTextFilterItem
           | numFilterItem
           | cardFilterItem
           | predicateModifierFilterItem
+          | entityTypeFilterItem
           | groupFilterItem
           | negatedFilterItem
           ;
@@ -27,36 +30,67 @@ idFilterItem                : idField '==' idValue;
 
 multiIdFilterItem           : mulIdField '==' idValue;
 
+textFilterItem              : txField '==' string;
+
+multiTextFilterItem         : mulTxField '==' string;
+
 numFilterItem               : numField numOp DOUBLE;
 
 cardFilterItem              : cardField '==' CARDVALUE;
 
 predicateModifierFilterItem : 'predicate_modifier==Not';
 
+entityTypeFilterItem        : entField '==' string;
+
 groupFilterItem             : '(' WS* filterSet WS* ')';
 
 negatedFilterItem           : '!' WS* filterItem;
 
-idField   : 'subject'
-          | 'predicate'
-          | 'object'
-          | 'mapping_justification' | 'justification'
-          | 'subject_source'
-          | 'object_source'
+idField   : 'issue_tracker_item'
+          | 'justification'
+          | 'mapping_justification'
           | 'mapping_source'
+          | 'object'
+          | 'object_source'
+          | 'predicate'
+          | 'subject'
+          | 'subject_source'
           ;
 
-mulIdField: 'creator'
-          | 'author'
-          | 'reviewer'
+mulIdField: 'author'
+          | 'creator'
           | 'curation_rule'
-          | 'subject_match_field'
           | 'object_match_field'
-          | 'subject_preprocessing'
           | 'object_preprocessing'
+          | 'reviewer'
+          | 'subject_match_field'
+          | 'subject_preprocessing'
+          ;
+
+txField   : 'comment'
+          | 'license'
+          | 'mapping_provider'
+          | 'mapping_tool'
+          | 'mapping_tool_version'
+          | 'object_category'
+          | 'object_source_version'
+          | 'other'
+          | 'subject_category'
+          | 'subject_source_version'
+          ;
+
+mulTxField: 'author_label'
+          | 'creator_label'
+          | 'curation_rule_text'
+          | 'reviewer_label'
+          | 'see_also'
           ;
 
 cardField : 'mapping_cardinality' | 'cardinality';
+
+entField  : 'object_type'
+          | 'subject_type'
+          ;
 
 idValue   : CURIE
           | '*'

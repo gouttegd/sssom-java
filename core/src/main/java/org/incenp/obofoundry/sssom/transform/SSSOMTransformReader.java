@@ -40,6 +40,7 @@ import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
@@ -539,39 +540,48 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         return filterSet;
     }
 
-    /*
-     * Create a filter object to filter mappings on the value of a single ID field.
-     */
     @Override
     public IMappingFilter visitIdFilterItem(SSSOMTransformParser.IdFilterItemContext ctx) {
-        String fieldName = ctx.idField().getText();
-        String value = ctx.idValue().getText();
+        return handleTextBasedFilter(ctx.idField().getText(), ctx.idValue().getText(), true);
+    }
 
+    @Override
+    public IMappingFilter visitTextFilterItem(SSSOMTransformParser.TextFilterItemContext ctx) {
+        return handleTextBasedFilter(ctx.txField().getText(), unquote(ctx.string().getText()), false);
+    }
+
+    /*
+     * Handle filters on ID and text fields. Both types of filters are handled in
+     * almost exactly the same way, the only difference is that for ID fields, the
+     * value to test against must be expanded.
+     */
+    private IMappingFilter handleTextBasedFilter(String fieldName, String value, boolean expand) {
         if ( value.equals("*") ) {
             // The entire value is a joker, create a dummy filter that accepts everything
             return addFilter(new NamedFilter("*", (mapping) -> true));
         }
 
-        value = prefixManager.expandIdentifier(value);
+        if ( expand ) {
+            value = prefixManager.expandIdentifier(value);
+        }
+
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
-
         Function<String, Boolean> testValue = glob ? (v) -> v != null && v.startsWith(pattern)
                 : (v) -> v != null && v.equals(pattern);
 
         IMappingFilter filter = null;
         switch ( fieldName ) {
-        case "subject":
-            filter = (mapping) -> testValue.apply(mapping.getSubjectId());
+        case "comment":
+            filter = (mapping) -> testValue.apply(mapping.getComment());
             break;
 
-        case "object":
-            filter = (mapping) -> testValue.apply(mapping.getObjectId());
+        case "issue_tracker_item":
+            filter = (mapping) -> testValue.apply(mapping.getIssueTrackerItem());
             break;
 
-        case "predicate":
-            filter = (mapping) -> testValue.apply(mapping.getPredicateId())
-                    && mapping.getPredicateModifier() != PredicateModifier.NOT;
+        case "license":
+            filter = (mapping) -> testValue.apply(mapping.getLicense());
             break;
 
         case "mapping_justification":
@@ -579,16 +589,61 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             filter = (mapping) -> testValue.apply(mapping.getMappingJustification());
             break;
 
-        case "subject_source":
-            filter = (mapping) -> testValue.apply(mapping.getSubjectSource());
+        case "mapping_provider":
+            filter = (mapping) -> testValue.apply(mapping.getMappingProvider());
+            break;
+
+        case "mapping_source":
+            filter = (mapping) -> testValue.apply(mapping.getMappingSource());
+            break;
+
+        case "mapping_tool":
+            filter = (mapping) -> testValue.apply(mapping.getMappingTool());
+            break;
+
+        case "mapping_tool_version":
+            filter = (mapping) -> testValue.apply(mapping.getMappingToolVersion());
+            break;
+
+        case "object":
+            filter = (mapping) -> testValue.apply(mapping.getObjectId());
+            break;
+
+        case "object_category":
+            filter = (mapping) -> testValue.apply(mapping.getObjectCategory());
             break;
 
         case "object_source":
             filter = (mapping) -> testValue.apply(mapping.getObjectSource());
             break;
 
-        case "mapping_source":
-            filter = (mapping) -> testValue.apply(mapping.getMappingSource());
+        case "object_source_version":
+            filter = (mapping) -> testValue.apply(mapping.getObjectSourceVersion());
+            break;
+
+        case "other":
+            filter = (mapping) -> testValue.apply(mapping.getOther());
+            break;
+
+        case "predicate":
+            filter = (mapping) -> testValue.apply(mapping.getPredicateId())
+                    && mapping.getPredicateModifier() != PredicateModifier.NOT;
+            break;
+
+        case "subject":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectId());
+            break;
+
+        case "subject_category":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectCategory());
+            break;
+
+        case "subject_source":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectSource());
+            break;
+
+        case "subject_source_version":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectSourceVersion());
             break;
         }
 
@@ -597,65 +652,104 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
     @Override
     public IMappingFilter visitMultiIdFilterItem(SSSOMTransformParser.MultiIdFilterItemContext ctx) {
-        String fieldName = ctx.mulIdField().getText();
-        String value = ctx.idValue().getText();
+        return handleTextBasedListFilter(ctx.mulIdField().getText(), ctx.idValue().getText(), true);
+    }
 
+    @Override
+    public IMappingFilter visitMultiTextFilterItem(SSSOMTransformParser.MultiTextFilterItemContext ctx) {
+        return handleTextBasedListFilter(ctx.mulTxField().getText(), unquote(ctx.string().getText()), false);
+    }
+
+    /*
+     * Handle filters on fields containing a list of either ID or text values.
+     * Again, both types of filters are handled in almost exactly the same way, the
+     * only difference is that for ID fields, the value to test against must be
+     * expanded.
+     */
+    private IMappingFilter handleTextBasedListFilter(String fieldName, String value, boolean expand) {
         if ( value.equals("*") ) {
             return addFilter(new NamedFilter("*", (mapping) -> true));
         }
 
-        value = prefixManager.expandIdentifier(value);
+        if ( expand ) {
+            value = prefixManager.expandIdentifier(value);
+        }
+
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
 
-        Function<List<String>, Boolean> testValue = glob ? (v) -> v != null && globListValue(v, pattern)
-                : (v) -> v != null && v.contains(pattern);
+        Function<List<String>, Boolean> testValue;
+        if ( glob ) {
+            testValue = (v) -> {
+                if ( v != null ) {
+                    for ( String item : v ) {
+                        if ( item.startsWith(pattern) ) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            };
+        } else {
+            testValue = (v) -> v != null && v.contains(pattern);
+        }
 
         IMappingFilter filter = null;
         switch ( fieldName ) {
-        case "creator":
-            filter = (mapping) -> testValue.apply(mapping.getCreatorId());
-            break;
-
         case "author":
             filter = (mapping) -> testValue.apply(mapping.getAuthorId());
             break;
 
-        case "reviewer":
-            filter = (mapping) -> testValue.apply(mapping.getReviewerId());
+        case "author_label":
+            filter = (mapping) -> testValue.apply(mapping.getAuthorLabel());
+            break;
+
+        case "creator":
+            filter = (mapping) -> testValue.apply(mapping.getCreatorId());
+            break;
+
+        case "creator_label":
+            filter = (mapping) -> testValue.apply(mapping.getCreatorLabel());
             break;
 
         case "curation_rule":
             filter = (mapping) -> testValue.apply(mapping.getCurationRule());
             break;
 
-        case "subject_match_field":
-            filter = (mapping) -> testValue.apply(mapping.getSubjectMatchField());
+        case "curation_rule_text":
+            filter = (mapping) -> testValue.apply(mapping.getCurationRuleText());
             break;
 
         case "object_match_field":
             filter = (mapping) -> testValue.apply(mapping.getObjectMatchField());
             break;
 
-        case "subject_preprocessing":
-            filter = (mapping) -> testValue.apply(mapping.getSubjectPreprocessing());
-            break;
-
         case "object_preprocessing":
             filter = (mapping) -> testValue.apply(mapping.getObjectPreprocessing());
+            break;
+
+        case "reviewer":
+            filter = (mapping) -> testValue.apply(mapping.getReviewerId());
+            break;
+
+        case "reviewer_label":
+            filter = (mapping) -> testValue.apply(mapping.getReviewerLabel());
+            break;
+
+        case "see_also":
+            filter = (mapping) -> testValue.apply(mapping.getSeeAlso());
+            break;
+
+        case "subject_match_field":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectMatchField());
+            break;
+
+        case "subject_preprocessing":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectPreprocessing());
             break;
         }
 
         return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
-    }
-
-    public static boolean globListValue(List<String> values, String pattern) {
-        for ( String value : values ) {
-            if ( value.startsWith(pattern) ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -664,9 +758,10 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         String operator = ctx.numOp().getText();
         Double value = Double.valueOf(ctx.DOUBLE().getText());
 
-        Function<Double, Boolean> testValue = null;
+        Function<Double, Boolean> testValue;
         switch ( operator ) {
         case "==":
+        default:
             testValue = (v) -> v != null && v == value;
             break;
 
@@ -686,16 +781,15 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             testValue = (v) -> v != null && v <= value;
             break;
         }
-        Function<Double, Boolean> finalTestValue = testValue;
 
         IMappingFilter filter = null;
         switch ( fieldName ) {
         case "confidence":
-            filter = (mapping) -> finalTestValue.apply(mapping.getConfidence());
+            filter = (mapping) -> testValue.apply(mapping.getConfidence());
             break;
 
         case "semantic_similarity_score":
-            filter = (mapping) -> finalTestValue.apply(mapping.getSemanticSimilarityScore());
+            filter = (mapping) -> testValue.apply(mapping.getSemanticSimilarityScore());
             break;
         }
 
@@ -743,6 +837,29 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     }
 
     @Override
+    public IMappingFilter visitEntityTypeFilterItem(SSSOMTransformParser.EntityTypeFilterItemContext ctx) {
+        String fieldName = ctx.entField().getText();
+
+        EntityType et = EntityType.fromString(unquote(ctx.string().getText()));
+        if ( et == null ) {
+            return addFilter(new NamedFilter("*", (mapping) -> false));
+        }
+
+        IMappingFilter filter = null;
+        switch ( fieldName ) {
+        case "object_type":
+            filter = (mapping) -> mapping.getObjectType() == et;
+            break;
+
+        case "subject_type":
+            filter = (mapping) -> mapping.getSubjectType() == et;
+            break;
+        }
+
+        return addFilter(new NamedFilter(String.format("%s==%s", fieldName, et.toString()), filter));
+    }
+
+    @Override
     public IMappingFilter visitGroupFilterItem(SSSOMTransformParser.GroupFilterItemContext ctx) {
         ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
         return addFilter(ctx.filterSet().accept(v));
@@ -769,5 +886,16 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         lastOperator = "&&";
 
         return newFilter;
+    }
+
+    private String unquote(String s) {
+        StringBuilder sb = new StringBuilder();
+        for ( int i = 1, n = s.length(); i < n - 1; i++ ) {
+            char c = s.charAt(i);
+            if ( c != '\\' ) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 }
