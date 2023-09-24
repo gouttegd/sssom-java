@@ -245,6 +245,47 @@ public class SlotHelper<T> {
     }
 
     /**
+     * Visits the slots of a given object, with a visitor that does not distinguish
+     * between slot types.
+     * 
+     * @param <V>     The type of objects the visitor should return for each slot.
+     * @param object  The object whose slots should be visited.
+     * @param visitor The visitor to use.
+     * @return A list of all values returned by the visitor for each slot.
+     */
+    public <V> List<V> visitSlots(T object, SimpleSlotVisitor<T, V> visitor) {
+        return visitSlots(object, visitor, false);
+    }
+
+    /**
+     * Visits the slots of a given object, with a visitor that does not distinguish
+     * between slot types.
+     * 
+     * @param <V>       The type of objects the visitor should return for each slot.
+     * @param object    The object whose slots should be visited.
+     * @param visitor   The visitor to use.
+     * @param visitNull If {@code true}, slots with a {@code null} value will be
+     *                  visited as well.
+     * @return A list of all values returned by the visitor for each slot.
+     */
+    public <V> List<V> visitSlots(T object, SimpleSlotVisitor<T, V> visitor, boolean visitNull) {
+        List<V> visited = new ArrayList<V>();
+        for ( Slot<T> slot : slots ) {
+            Object slotValue = slot.getValue(object);
+            if ( slotValue == null && !visitNull ) {
+                continue;
+            }
+
+            V value = visitor.visit(slot, object, slotValue);
+            if ( value != null ) {
+                visited.add(value);
+            }
+        }
+
+        return visited;
+    }
+
+    /**
      * Expands identifiers in all slots holding entity references.
      * 
      * @param object        The object whose entity reference slots should be

@@ -122,10 +122,9 @@ public class TSVWriter {
 
         // Find the used slots
         SlotHelper<Mapping> helper = SlotHelper.getMappingHelper(true);
-        MappingSlotUsageVisitor usageVisitor = new MappingSlotUsageVisitor();
         Set<String> usedSlotNames = new HashSet<String>();
         for ( Mapping mapping : mappingSet.getMappings() ) {
-            usedSlotNames.addAll(helper.visitSlots(mapping, usageVisitor));
+            usedSlotNames.addAll(helper.visitSlots(mapping, (slot, m, value) -> slot.getName()));
         }
 
         // Only visit those slots. We need to explicitly set the list of slots to visit
@@ -305,16 +304,6 @@ public class TSVWriter {
         @Override
         public String visit(Slot<Mapping> slot, Mapping object, Object value) {
             return value != null ? value.toString() : "";
-        }
-    }
-
-    /*
-     * Visits non-null slots to get a list of all slots that do have a value.
-     */
-    private class MappingSlotUsageVisitor extends SlotVisitorBase<Mapping, String> {
-        @Override
-        protected String getDefault(Slot<Mapping> slot, Mapping object, Object value) {
-            return slot.getName();
         }
     }
 
