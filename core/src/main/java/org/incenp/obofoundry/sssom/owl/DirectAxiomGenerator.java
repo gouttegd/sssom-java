@@ -63,7 +63,8 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
         this.ontology = ontology;
         this.factory = ontology.getOWLOntologyManager().getOWLDataFactory();
         slotHelper = SlotHelper.getMappingHelper(true);
-        slotHelper.excludeSlots(Arrays.asList(new String[] { "subject_id", "predicate_id", "object_id" }));
+        slotHelper.excludeSlots(
+                Arrays.asList(new String[] { "subject_id", "predicate_id", "object_id", "mapping_cardinality" }));
     }
 
     @Override
