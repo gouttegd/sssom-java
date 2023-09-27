@@ -205,6 +205,8 @@ public class TSVReader {
                 mappings.add(m);
             }
             ms.setMappings(mappings);
+
+            new SlotPropagator(PropagationPolicy.NeverReplace).propagate(ms);
         } else {
             ms.setMappings(new ArrayList<Mapping>());
         }

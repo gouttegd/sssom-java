@@ -212,4 +212,20 @@ public class TSVReaderTest {
             Assertions.assertEquals("Re-defined builtin prefix in the provided curie map", sfe.getMessage());
         }
     }
+
+    /*
+     * "Propagatable" slots in the set metadata should be propagated to the
+     * individual mappings.
+     */
+    @Test
+    void testSlotPropagation() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/propagated-slots.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        for ( Mapping m : ms.getMappings() ) {
+            Assertions.assertEquals("http://example.org/provider", m.getMappingProvider());
+            Assertions.assertNotEquals("sample mapping tool", m.getMappingTool());
+        }
+        Assertions.assertEquals("another mapping tool", ms.getMappings().get(2).getMappingTool());
+    }
 }

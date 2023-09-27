@@ -113,6 +113,9 @@ public class TSVWriter {
             usedPrefixes.remove(bp.getPrefixName());
         }
 
+        // Condense the set
+        Set<String> condensedSlots = new SlotPropagator(PropagationPolicy.NeverReplace).condense(mappingSet, true);
+
         // Write the metadata
         // FIXME: Support writing them in a separate file
         for ( String meta : SlotHelper.getMappingSetHelper().visitSlots(mappingSet,
@@ -126,6 +129,9 @@ public class TSVWriter {
         for ( Mapping mapping : mappingSet.getMappings() ) {
             usedSlotNames.addAll(helper.visitSlots(mapping, (slot, m, value) -> slot.getName()));
         }
+
+        // Remove the slots that have been condensed
+        usedSlotNames.removeAll(condensedSlots);
 
         // Only visit those slots. We need to explicitly set the list of slots to visit
         // in case some slots are empty in some mappings but not in others.

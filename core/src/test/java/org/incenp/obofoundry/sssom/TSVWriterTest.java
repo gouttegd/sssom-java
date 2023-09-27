@@ -149,6 +149,14 @@ public class TSVWriterTest {
     }
 
     /*
+     * Check that "propagatable" slots are condensed back when writing.
+     */
+    @Test
+    void testSlotCondensation() throws IOException, SSSOMFormatException {
+        Assertions.assertTrue(roundtrip("propagated-slots"));
+    }
+
+    /*
      * Read a mapping set, write it out, and compare.
      */
     private boolean roundtrip(String name) throws IOException, SSSOMFormatException {
