@@ -60,7 +60,7 @@ public class SimpleCLI {
 
         opts.addOption(
                 Option.builder("i").longOpt("input").hasArg().argName("SET").desc("A mapping set to load.").build());
-        opts.addOption(Option.builder("o").longOpt("output").hasArg().argName("SET")
+        opts.addOption(Option.builder("o").longOpt("output").hasArg().argName("FILE")
                 .desc("The file to write the mapping set to.").build());
 
         opts.addOption(Option.builder("v").longOpt("version").desc("Print version information.").build());
@@ -88,14 +88,6 @@ public class SimpleCLI {
             System.exit(NO_ERROR);
         }
 
-        if ( !cmd.hasOption("i") ) {
-            showHelp(options, "No input set specified.");
-        }
-
-        if ( !cmd.hasOption("o") ) {
-            showHelp(options, "No output file specified.");
-        }
-
         return cmd;
     }
 
@@ -105,7 +97,7 @@ public class SimpleCLI {
 
     private void showHelp(Options options, String message) {
         HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("sssom-cli [options] -i <MAPPINGSET>... -o <OUTPUTFILE>",
+        formatter.printHelp("sssom-cli [options] [-i <MAPPINGSET>...] [-o <OUTPUTFILE>]",
                 "Read and write SSSOM mapping sets.\n\nOptions:", options,
                 "\nReport bugs to Damien Goutte-Gattat <dgouttegattat@incenp.org>\n\n");
 
@@ -118,9 +110,11 @@ public class SimpleCLI {
 
     private MappingSet loadInputs(CommandLine cmd) {
         MappingSet ms = null;
-        for ( String input : cmd.getOptionValues("i") ) {
+        String[] inputFiles = cmd.hasOption("i") ? cmd.getOptionValues("i") : new String[] { "-" };
+        for ( String input : inputFiles ) {
             try {
-                TSVReader reader = new TSVReader(input);
+                boolean stdin = input.equals("-");
+                TSVReader reader = stdin ? new TSVReader(System.in) : new TSVReader(input);
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
@@ -137,11 +131,13 @@ public class SimpleCLI {
     }
 
     private void writeOutput(CommandLine cmd, MappingSet set) {
+        boolean stdout = !cmd.hasOption("o") || cmd.getOptionValue("o").equals("-");
         try {
-            TSVWriter writer = new TSVWriter(cmd.getOptionValue("o"));
+            TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(cmd.getOptionValue("o"));
             writer.write(set);
         } catch ( IOException ioe ) {
-            error(SSSOM_OUTPUT_ERROR, "Cannot write to file %s: %s", cmd.getOptionValues("o"), ioe.getMessage());
+            error(SSSOM_OUTPUT_ERROR, "cannot write to file %s: %s", stdout ? "-" : cmd.getOptionValues("o"),
+                    ioe.getMessage());
         }
     }
 
