@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
@@ -183,6 +184,25 @@ public class TSVReaderTest {
         ms = reader.read(false);
         Assertions.assertEquals("Sample mapping set with external metadata", ms.getMappingSetTitle());
         Assertions.assertEquals(0, ms.getMappings().size());
+    }
+
+    /*
+     * Check that we can read from a stream rather than from a file.
+     */
+    @Test
+    void testReadingFromStream() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader(new FileInputStream("src/test/resources/sample1.sssom.tsv"));
+        MappingSet ms = reader.read();
+        Assertions.assertEquals("Sample mapping set 1", ms.getMappingSetTitle());
+        Assertions.assertEquals(8, ms.getMappings().size());
+
+        reader = new TSVReader(new FileInputStream("src/test/resources/sample-external-metadata.sssom.tsv"));
+        try {
+            reader.read();
+            Assertions.fail("SSSOMFormatException not thrown for missing metadata when reading from stream");
+        } catch ( SSSOMFormatException sfe ) {
+            Assertions.assertEquals("No embedded metadata and external metadata not specified", sfe.getMessage());
+        }
     }
 
     /*

@@ -22,6 +22,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -69,6 +71,15 @@ public class TSVWriter {
      */
     public TSVWriter(File file) throws IOException {
         writer = new BufferedWriter(new FileWriter(file));
+    }
+
+    /**
+     * Creates a new instance that will write data to the specified stream.
+     * 
+     * @param stream The stream to write to.
+     */
+    public TSVWriter(OutputStream stream) {
+        writer = new BufferedWriter(new OutputStreamWriter(stream));
     }
 
     /**

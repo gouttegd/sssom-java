@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -106,6 +108,41 @@ public class TSVReader {
     }
 
     /**
+     * Creates a new instance that will read data from the specified streams. Note
+     * that when reading from a stream, the metadata either needs to be embedded
+     * with the TSV stream or an explicit metadata stream must be specified; the
+     * reader cannot automatically locate an external metadata file.
+     * 
+     * @param tsvStream  The main stream, containing the TSV data. May be
+     *                   {@code null} if one only wants to read a metadata stream
+     *                   (in which case the second argument cannot also be
+     *                   {@code null}).
+     * @param metaStream The accompanying metadata stream. If {@code null}, the
+     *                   metadata must be embedded in the TSV stream.
+     */
+    public TSVReader(InputStream tsvStream, InputStream metaStream) {
+        if ( tsvStream == null && metaStream == null ) {
+            throw new IllegalArgumentException("tsvStream and metaStream cannot both be null");
+        }
+        if ( tsvStream != null ) {
+            tsvReader = new BufferedReader(new InputStreamReader(tsvStream));
+        }
+        if ( metaStream != null ) {
+            metaReader = new InputStreamReader(metaStream);
+        }
+    }
+
+    /**
+     * Creates a new instance that will read data from a single stream. That file
+     * must contain an embedded metadata block.
+     * 
+     * @param stream The single stream to read from.
+     */
+    public TSVReader(InputStream stream) {
+        this(stream, null);
+    }
+
+    /**
      * Creates a new instance that will read data from the specified files.
      * 
      * @param tsvFile  The name of the main TSV file. May be {@code null} if one
@@ -145,7 +182,7 @@ public class TSVReader {
      *                              occurs.
      */
     public MappingSet read() throws SSSOMFormatException, IOException {
-        return read(tsvFile == null);
+        return read(tsvReader == null);
     }
 
     /**
@@ -170,13 +207,15 @@ public class TSVReader {
         if ( metaReader == null ) {
             if ( hasEmbeddedMetadata(tsvReader) ) {
                 metaReader = new StringReader(extractMetadata(tsvReader));
-            } else {
+            } else if ( tsvFile != null ) {
                 File metaFile = findMetadata(tsvFile);
                 metaReader = new FileReader(metaFile);
+            } else {
+                throw new SSSOMFormatException("No embedded metadata and external metadata not specified");
             }
         }
 
-        return read(metaReader, metadataOnly || tsvFile == null);
+        return read(metaReader, metadataOnly || tsvReader == null);
     }
 
     /*
