@@ -31,7 +31,11 @@ import org.apache.commons.cli.ParseException;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
+import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.transform.MappingProcessor;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 
 public class SimpleCLI {
 
@@ -39,11 +43,26 @@ public class SimpleCLI {
     private final static int COMMAND_LINE_ERROR = 1;
     private final static int SSSOM_INPUT_ERROR = 2;
     private final static int SSSOM_OUTPUT_ERROR = 3;
+    private final static int SSSOMT_INPUT_ERROR = 4;
+
+    private boolean noExit = false;
 
     private void print(PrintStream stream, String format, Object... args) {
         stream.printf("sssom-cli: ");
         stream.printf(format, args);
         stream.print('\n');
+    }
+
+    /*
+     * We wrap System.exit() so that we don't actually terminate the JVM when
+     * running the tests.
+     */
+    private void exit(int code) {
+        if ( noExit ) {
+            throw new RuntimeException(String.valueOf(code));
+        } else {
+            System.exit(code);
+        }
     }
 
     private void info(String format, Object... args) {
@@ -52,7 +71,9 @@ public class SimpleCLI {
 
     private void error(int code, String format, Object... args) {
         print(System.err, format, args);
-        System.exit(code);
+        if ( code != 0 ) {
+            exit(code);
+        }
     }
 
     private Options getOptions() {
@@ -62,6 +83,9 @@ public class SimpleCLI {
                 Option.builder("i").longOpt("input").hasArg().argName("SET").desc("A mapping set to load.").build());
         opts.addOption(Option.builder("o").longOpt("output").hasArg().argName("FILE")
                 .desc("The file to write the mapping set to.").build());
+
+        opts.addOption(Option.builder("r").longOpt("ruleset").hasArg().argName("RULESET")
+                .desc("A SSSOM/T ruleset to apply.").build());
 
         opts.addOption(Option.builder("v").longOpt("version").desc("Print version information.").build());
         opts.addOption(Option.builder("h").longOpt("help").desc("Print the help message.").build());
@@ -141,13 +165,44 @@ public class SimpleCLI {
         }
     }
 
+    private void transform(CommandLine cmd, MappingSet ms) {
+        if ( !cmd.hasOption("r") ) {
+            return;
+        }
+
+        try {
+            SSSOMTransformReader<Mapping> reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping(),
+                    cmd.getOptionValue("r"));
+            reader.read();
+            if ( reader.hasErrors() ) {
+                for ( SSSOMTransformError error : reader.getErrors() ) {
+                    error(0, "Error when parsing SSSOM/T ruleset: %s", error.getMessage());
+                }
+                error(SSSOMT_INPUT_ERROR, "Invalid SSSOM/T ruleset");
+            }
+
+            MappingProcessor<Mapping> processor = new MappingProcessor<Mapping>();
+            processor.addRules(reader.getRules());
+
+            ms.setMappings(processor.process(ms.getMappings()));
+        } catch ( IOException ioe ) {
+            error(SSSOMT_INPUT_ERROR, "Cannot read ruleset from file %s: %s", cmd.getOptionValue("r"),
+                    ioe.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         SimpleCLI cli = new SimpleCLI();
+        if ( System.getProperty("org.incenp.obofoundry.sssom.cli.SimpleCLI#inTest") != null ) {
+            cli.noExit = true;
+        }
+
         CommandLine cmd = cli.parseArguments(args);
 
         MappingSet ms = cli.loadInputs(cmd);
+        cli.transform(cmd, ms);
         cli.writeOutput(cmd, ms);
 
-        System.exit(NO_ERROR);
+        cli.exit(NO_ERROR);
     }
 }

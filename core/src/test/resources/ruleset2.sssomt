@@ -1,0 +1,6 @@
+prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_>
+prefix FBbt:   <http://purl.obolibrary.org/obo/FBbt_>
+
+subject==FBbt:* -> invert();
+subject==UBERON:6* -> stop();
+subject==* -> include();
