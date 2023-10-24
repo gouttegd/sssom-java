@@ -43,7 +43,7 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
-import org.semanticweb.owlapi.vocab.DublinCoreVocabulary;
+import org.semanticweb.owlapi.vocab.Namespaces;
 
 /**
  * An axiom dispatcher. This class allows to dispatch axioms to different
@@ -61,10 +61,10 @@ public class AxiomDispatchTable {
 
     static {
         ANNOTATIONS = new HashMap<String, IRI>();
-        ANNOTATIONS.put("dc-title", DublinCoreVocabulary.TITLE.getIRI());
-        ANNOTATIONS.put("dc-description", DublinCoreVocabulary.DESCRIPTION.getIRI());
-        ANNOTATIONS.put("dc-creator", DublinCoreVocabulary.CREATOR.getIRI());
-        ANNOTATIONS.put("dc-contributor", DublinCoreVocabulary.CONTRIBUTOR.getIRI());
+        ANNOTATIONS.put("dc-title", IRI.create(Namespaces.DCTERMS.toString(), "title"));
+        ANNOTATIONS.put("dc-description", IRI.create(Namespaces.DCTERMS.toString(), "description"));
+        ANNOTATIONS.put("dc-creator", IRI.create(Namespaces.DCTERMS.toString(), "creator"));
+        ANNOTATIONS.put("dc-contributor", IRI.create(Namespaces.DCTERMS.toString(), "contributor"));
     }
 
     private Map<String, DispatchTableEntry> table = new HashMap<String, DispatchTableEntry>();
