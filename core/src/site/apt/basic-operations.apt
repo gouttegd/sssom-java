@@ -57,6 +57,21 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   form is considered a serialisation detail that the client code needs
   not know about.
   
+  The parser automatically propagates metadata from the mapping set down
+  to the individual mappings. Of note, this propagation is currently
+  only partially imeplemented, since the details of which metadata slots
+  should be propagated and how that propagation should happen exactly
+  have not been fully ironed out yet by the authors of the SSSOM
+  specification.
+  
+  The parser has a liberal behaviour, in that: a) slots that it does not
+  recognise are silently ignored and do not cause a parsing failure; it
+  aims to deal gracefully with obsolete fields, converting them to their
+  newer equivalents whenever possible. The second point in particular
+  means that the parser should always be able to read a file regardless
+  of which version of the specification the file is conformant to.
+  
+  
 * Writing mappings
 
   Again, only the TSV format is supported. Contrary to reading, only the
@@ -86,6 +101,14 @@ try {
   defined in the SSSOM specification are always used even if they are
   not explicitly listed in the CURIE map.
   
+  Some metadata slots are automatically “condensed” by the writer: if
+  all the mappings in the set have the same value for a given slot, the
+  value is written once in the mapping set metadata instead of being
+  written for all mappings. This ”condensation” is the opposite
+  operation of the “propagation” that happens upon parsing. As for
+  propagation, it is only partially implemented as this feature is not
+  fully specified yet.
+  
 * Manipulating the mapping set and the mappings
 
   As hinted in the examples above, a mapping set is represented by the
@@ -100,14 +123,6 @@ try {
   by the {{{./apidocs/org/incenp/obofoundry/sssom/model/Mapping.html}Mapping}}
   class. Again, that class has read/write accessors for all
   mapping-level metadata slot defined in the SSSOM schema.
-  
-  Of note, propagation of metadata from the mapping set down to the
-  individual mappings is currently <<not>> implemented, since the
-  details of which metadata slots should be propagated and how that
-  propagation should happen have not been ironed out yet by the authors
-  of the SSSOM specification. For now, this propagation, when it is
-  desired, should be done by the client code. In the future, it will be
-  done automatically by the <<<TSVReader>>> class.
   
   To create a new mapping from scratch, either call the default
   constructor of the <<<Mapping>>> class and then set the various slots
