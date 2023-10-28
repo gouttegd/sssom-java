@@ -27,23 +27,26 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * A parser to read a SSSOM mapping set from the TSV serialisation format. It
@@ -224,27 +227,39 @@ public class TSVReader {
      */
     private MappingSet read(Reader metaReader, boolean metadataOnly) throws SSSOMFormatException, IOException {
         MappingSet ms = readMetadata(metaReader);
-        prefixManager.add(ms.getCurieMap());
-        SlotHelper.getMappingSetHelper().expandIdentifiers(ms, prefixManager);
 
         if ( !metadataOnly ) {
-            ObjectMapper mapper = new CsvMapper().registerModule(new JavaTimeModule());
-            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t').withNullValue("")
-                    .withArrayElementSeparator("|");
-            MappingIterator<Mapping> it = mapper.readerFor(Mapping.class).with(schema).readValues(tsvReader);
             ArrayList<Mapping> mappings = new ArrayList<Mapping>();
+            ms.setMappings(mappings);
+
+            // Prepare the list of accepted slots
+            Map<String, Slot<Mapping>> slotMaps = new HashMap<String, Slot<Mapping>>();
+            for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
+                slotMaps.put(slot.getName(), slot);
+            }
+
+            // Read the mappings as generic Map objects
+            ObjectMapper mapper = new CsvMapper();
+            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t').withNullValue("");
+            MappingIterator<Map<String, Object>> it = mapper.readerFor(Map.class).with(schema).readValues(tsvReader);
             while ( it.hasNext() ) {
-                Mapping m;
                 try {
-                    m = it.next();
+                    Mapping mapping = new Mapping();
+
+                    Map<String, Object> rawMapping = it.next();
+                    for ( String key : rawMapping.keySet() ) {
+                        if ( slotMaps.containsKey(key) ) {
+                            setSlotValue(slotMaps.get(key), mapping, rawMapping.get(key));
+                        }
+                    }
+
+                    mappings.add(mapping);
                 } catch ( RuntimeJsonMappingException e ) {
                     throw new SSSOMFormatException("Error when parsing TSV table", e);
                 }
-                SlotHelper.getMappingHelper().expandIdentifiers(m, prefixManager);
-                mappings.add(m);
             }
-            ms.setMappings(mappings);
 
+            // Propagate values from set-level to mapping-level
             new SlotPropagator(PropagationPolicy.NeverReplace).propagate(ms);
         } else {
             ms.setMappings(new ArrayList<Mapping>());
@@ -346,29 +361,168 @@ public class TSVReader {
      * Parse a metadata YAML block into a MappingSet object.
      */
     private MappingSet readMetadata(Reader reader) throws SSSOMFormatException, IOException {
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory()).registerModule(new JavaTimeModule());
-        MappingSet ms;
-        try {
-            ms = mapper.readValue(reader, MappingSet.class);
-        } catch ( JsonParseException e ) {
-            throw new SSSOMFormatException("Error when reading YAML metadata", e);
-        } catch ( JsonMappingException e ) {
-            throw new SSSOMFormatException("Error when mapping YAML metadata", e);
+        MappingSet ms = new MappingSet();
+
+        // Parse the metadata block into a generic map
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> rawSet = mapper.readValue(reader, Map.class);
+
+        // Prepare the list of accepted slots
+        Map<String, Slot<MappingSet>> slotMaps = new HashMap<String, Slot<MappingSet>>();
+        for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
+            slotMaps.put(slot.getName(), slot);
         }
 
-        // Check the provided curie map does not override the builtin prefixes
-        Map<String, String> curieMap = ms.getCurieMap();
-        if ( curieMap != null ) {
+        // Process the CURIE map first, so that we can expand CURIEs as soon as possible
+        Object rawCurieMap = rawSet.getOrDefault("curie_map", new HashMap<String, String>());
+        if ( isMapOfStrings(rawCurieMap) ) {
+            @SuppressWarnings("unchecked")
+            Map<String, String> curieMap = Map.class.cast(rawCurieMap);
             for ( String prefix : curieMap.keySet() ) {
                 BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
                 if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
                     throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
                 }
             }
+            ms.setCurieMap(curieMap);
+            rawSet.remove("curie_map");
+            prefixManager.add(curieMap);
         } else {
-            ms.setCurieMap(new HashMap<String, String>());
+            onTypingError("curie_map");
+        }
+
+        // Now process the remaining slots
+        for ( String key : rawSet.keySet() ) {
+            if ( slotMaps.containsKey(key) ) {
+                setSlotValue(slotMaps.get(key), ms, rawSet.get(key));
+            }
         }
 
         return ms;
+    }
+
+    /*
+     * Try to assign a parsed YAML value to a mapping or mapping set slot.
+     */
+    private <T> void setSlotValue(Slot<T> slot, T object, Object rawValue) throws SSSOMFormatException {
+        if ( slot.getType() == String.class && String.class.isInstance(rawValue) ) {
+            String value = String.class.cast(rawValue);
+            if ( slot.isEntityReference() ) {
+                value = prefixManager.expandIdentifier(value);
+            }
+            slot.setValue(object, value);
+        } else if ( slot.getType() == List.class && isListOfStrings(rawValue) ) {
+            @SuppressWarnings("unchecked")
+            List<String> value = List.class.cast(rawValue);
+            if ( slot.isEntityReference() ) {
+                prefixManager.expandIdentifiers(value, true);
+            }
+            slot.setValue(object, value);
+        } else if ( slot.getType() == List.class && String.class.isInstance(rawValue) ) {
+            /*
+             * When reading from the TSV table, list values will appear to the YAML parser
+             * as a single string; list values must be extracted by splitting the string
+             * around '|' characters.
+             * 
+             * This has the side-effect of allowing list-valued slots to be used as if they
+             * were single-valued, which is strictly speaking invalid but happens in the
+             * wild (including in the examples shown in the SSSOM documentation!).
+             */
+            List<String> value = new ArrayList<String>();
+            for ( String item : String.class.cast(rawValue).split("\\|") ) {
+                value.add(slot.isEntityReference() ? prefixManager.expandIdentifier(item) : item);
+            }
+            slot.setValue(object, value);
+        } else if ( slot.getType() == LocalDate.class && String.class.isInstance(rawValue) ) {
+            try {
+                LocalDate value = LocalDate.parse(String.class.cast(rawValue));
+                slot.setValue(object, value);
+            } catch ( DateTimeParseException e ) {
+                onTypingError(slot.getName(), e);
+            }
+        } else if ( slot.getType() == Double.class && String.class.isInstance(rawValue) ) {
+            try {
+                Double value = Double.valueOf(String.class.cast(rawValue));
+                slot.setValue(object, value);
+            } catch ( NumberFormatException e ) {
+                onTypingError(slot.getName(), e);
+            }
+        } else if ( slot.getType() == EntityType.class && String.class.isInstance(rawValue) ) {
+            EntityType value = EntityType.fromString(String.class.cast(rawValue));
+            if ( value != null ) {
+                slot.setValue(object, value);
+            } else {
+                onTypingError(slot.getName());
+            }
+        } else if ( slot.getType() == MappingCardinality.class && String.class.isInstance(rawValue) ) {
+            MappingCardinality value = MappingCardinality.fromString(String.class.cast(rawValue));
+            if ( value != null ) {
+                slot.setValue(object, value);
+            } else {
+                onTypingError(slot.getName());
+            }
+        } else if ( slot.getType() == PredicateModifier.class && String.class.isInstance(rawValue) ) {
+            PredicateModifier value = PredicateModifier.fromString(String.class.cast(rawValue));
+            if ( value != null ) {
+                slot.setValue(object, value);
+            } else {
+                onTypingError(slot.getName());
+            }
+        } else if ( rawValue == null ) {
+            slot.setValue(object, null);
+        } else {
+            onTypingError(slot.getName());
+        }
+    }
+
+    /*
+     * Check that a given object is a List<String>
+     */
+    private boolean isListOfStrings(Object value) {
+        if ( List.class.isInstance(value) ) {
+            @SuppressWarnings("unchecked")
+            List<Object> list = List.class.cast(value);
+            for ( Object item : list ) {
+                if ( !String.class.isInstance(item) ) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+     * Check that a given object is a Map<String, String>.
+     */
+    private boolean isMapOfStrings(Object value) {
+        if ( Map.class.isInstance(value) ) {
+            @SuppressWarnings("unchecked")
+            Map<Object, Object> map = Map.class.cast(value);
+            for ( Object key : map.keySet() ) {
+                if ( !String.class.isInstance(key) || !String.class.isInstance(map.get(key)) ) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+     * Called when a parsed value does not match the expected type for a slot.
+     */
+    private void onTypingError(String slotName, Throwable innerException) throws SSSOMFormatException {
+        throw new SSSOMFormatException(String.format("Typing error when parsing '%s'", slotName), innerException);
+    }
+
+    /*
+     * Same, but without an underlying exception as the cause for the typing error.
+     */
+    private void onTypingError(String slotName) throws SSSOMFormatException {
+        onTypingError(slotName, null);
     }
 }
