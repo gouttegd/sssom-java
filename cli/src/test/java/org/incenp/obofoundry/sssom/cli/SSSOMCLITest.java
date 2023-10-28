@@ -30,9 +30,14 @@ public class SSSOMCLITest {
 
     @BeforeEach
     void setUp() {
+        // Let the CLI know it is running as part of the test suite, so that it does not
+        // call System.exit (which would terminate the testing framework).
         System.setProperty("org.incenp.obofoundry.sssom.cli.SimpleCLI#inTest", "yes");
     }
 
+    /*
+     * Check that we can apply a SSSOM/T ruleset.
+     */
     @Test
     void testSimpleSSSOMTRuleset() throws IOException {
         // @formatter:off
@@ -43,6 +48,35 @@ public class SSSOMCLITest {
         checkOutput("filtered1.sssom.tsv");
     }
 
+    /*
+     * Check that obsolete fields in input are translated to their standard
+     * equivalents in output.
+     */
+    @Test
+    void testUpdateOldFile() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/obsolete-fields.sssom.tsv",
+                      "--output", "src/test/resources/updated-fields.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("updated-fields.sssom.tsv");
+    }
+
+    /*
+     * Check that multi-valued slots misused as single-value slots in input are
+     * correctly written as true multi-valued slots in output.
+     */
+    @Test
+    void testNormalisePseudoLists() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/pseudo-list-values.sssom.tsv",
+                      "--output", "src/test/resources/normalised-lists.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("normalised-lists.sssom.tsv");
+    }
+
+    /*
+     * Run a CLI command.
+     */
     private int runCommand(int code, String... strings) {
         try {
             SimpleCLI.main(strings);
@@ -52,6 +86,9 @@ public class SSSOMCLITest {
         return code;
     }
 
+    /*
+     * Compare a file with its expected contents.
+     */
     private void checkOutput(String filename) throws IOException {
         File expected = new File("src/test/resources/" + filename);
         File written = new File("src/test/resources/" + filename + ".out");

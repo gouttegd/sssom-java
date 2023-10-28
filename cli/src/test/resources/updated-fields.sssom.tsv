@@ -1,0 +1,6 @@
+#curie_map:
+#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
+#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:LexicalMatching
+FBbt:00000002	tagma	semapv:crossSpeciesExactMatch	UBERON:6000002	
