@@ -248,4 +248,16 @@ public class TSVReaderTest {
         }
         Assertions.assertEquals("another mapping tool", ms.getMappings().get(2).getMappingTool());
     }
+
+    /*
+     * Obsolete fields should be translated to their standard equivalents.
+     */
+    void testObsoleteFields() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/obsolete-fields.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals("https://w3id.org/semapv/vocab/LexicalMatching",
+                ms.getMappings().get(0).getMappingJustification());
+        Assertions.assertNull(ms.getMappings().get(1).getMappingJustification());
+    }
 }

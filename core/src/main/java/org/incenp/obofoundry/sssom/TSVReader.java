@@ -247,6 +247,7 @@ public class TSVReader {
                     Mapping mapping = new Mapping();
 
                     Map<String, Object> rawMapping = it.next();
+                    processForBackwardsCompatibility(rawMapping);
                     for ( String key : rawMapping.keySet() ) {
                         if ( slotMaps.containsKey(key) ) {
                             setSlotValue(slotMaps.get(key), mapping, rawMapping.get(key));
@@ -392,6 +393,9 @@ public class TSVReader {
             onTypingError("curie_map");
         }
 
+        // Deal with variations from older versions of the spec
+        processForBackwardsCompatibility(rawSet);
+
         // Now process the remaining slots
         for ( String key : rawSet.keySet() ) {
             if ( slotMaps.containsKey(key) ) {
@@ -524,5 +528,49 @@ public class TSVReader {
      */
     private void onTypingError(String slotName) throws SSSOMFormatException {
         onTypingError(slotName, null);
+    }
+
+    /*
+     * Tweak the parsed YAML dictionary if needed to match the currently supported
+     * version of the spec.
+     */
+    private void processForBackwardsCompatibility(Map<String, Object> rawMap) throws SSSOMFormatException {
+
+        // match_type has been replaced by mapping_justification in SSSOM 0.9.1
+        if ( rawMap.containsKey("match_type") && !rawMap.containsKey("mapping_justification") ) {
+            Object rawValue = rawMap.get("match_type");
+            String value = null;
+            if ( rawValue != null ) {
+                if ( String.class.isInstance(rawValue) ) {
+                    switch ( String.class.cast(rawValue) ) {
+                    case "Lexical":
+                        value = "semapv:LexicalMatching";
+                        break;
+                    case "Logical":
+                        value = "semapv:LogicalMatching";
+                        break;
+                    case "HumanCurated":
+                        value = "semapv:ManualMappingCuration";
+                        break;
+                    case "Complex":
+                        value = "semapv:CompositeMatching";
+                        break;
+                    case "Unspecified":
+                        value = "semapv:UnspecifiedMatching";
+                        break;
+                    case "SemanticSimilarity":
+                        value = "semapv:SemanticSimilarityThresholdMatching";
+                        break;
+                    }
+                }
+
+                if ( value == null ) {
+                    onTypingError("match_type");
+                }
+            }
+
+            rawMap.remove("match_type");
+            rawMap.put("mapping_justification", value);
+        }
     }
 }
