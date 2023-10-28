@@ -96,6 +96,9 @@ robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
                --output bridged.owl
 ```
 
+* Manipulating mapping sets from the command line, with a dedicated
+  command-line tool named `sssom-cli`.
+
 Building
 --------
 Build by running `mvn clean package`. This will produce three distinct

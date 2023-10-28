@@ -37,6 +37,9 @@ import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 
+/**
+ * A command-line interface to manipulate mapping sets.
+ */
 public class SimpleCLI {
 
     private final static int NO_ERROR = 0;
@@ -80,15 +83,15 @@ public class SimpleCLI {
         Options opts = new Options();
 
         opts.addOption(
-                Option.builder("i").longOpt("input").hasArg().argName("SET").desc("A mapping set to load.").build());
+                Option.builder("i").longOpt("input").hasArg().argName("SET").desc("Load a mapping set").build());
         opts.addOption(Option.builder("o").longOpt("output").hasArg().argName("FILE")
-                .desc("The file to write the mapping set to.").build());
+                .desc("Write the mapping set to FILE").build());
 
         opts.addOption(Option.builder("r").longOpt("ruleset").hasArg().argName("RULESET")
-                .desc("A SSSOM/T ruleset to apply.").build());
+                .desc("Apply a SSSOM/T ruleset").build());
 
-        opts.addOption(Option.builder("v").longOpt("version").desc("Print version information.").build());
-        opts.addOption(Option.builder("h").longOpt("help").desc("Print the help message.").build());
+        opts.addOption(Option.builder("v").longOpt("version").desc("Print version information").build());
+        opts.addOption(Option.builder("h").longOpt("help").desc("Print the help message").build());
 
         return opts;
     }
@@ -122,8 +125,8 @@ public class SimpleCLI {
     private void showHelp(Options options, String message) {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("sssom-cli [options] [-i <MAPPINGSET>...] [-o <OUTPUTFILE>]",
-                "Read and write SSSOM mapping sets.\n\nOptions:", options,
-                "\nReport bugs to Damien Goutte-Gattat <dgouttegattat@incenp.org>\n\n");
+                "Read, manipulate, and write SSSOM mapping sets.\n\nOptions:", options,
+                "\nReport bugs to Damien Goutte-Gattat <dgouttegattat@incenp.org>.\n\n");
 
         if ( message != null ) {
             error(COMMAND_LINE_ERROR, "Invalid command line: %s", message);

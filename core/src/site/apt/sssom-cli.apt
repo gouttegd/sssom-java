@@ -1,0 +1,79 @@
+Command-line tool
+
+  SSSOM-Java provides a command-line tool called <<<sssom-cli>>> to
+  manipulate mapping sets from the command line. It is currently very
+  limited but will progressively acquire more features.
+  
+* Reading and writing mapping sets
+
+  SSSOM-CLI acts as a filter that can read one or more mapping set(s),
+  perform some treatments on the mappings (at least in the future;
+  currently, the only possible treatment is apply some filtering, as
+  explained below), and then write the resulting mapping set out.
+  
+  Input mapping sets are specified with the <<<--input>>> option. Repeat
+  that option as needed to read more than one mapping sets. All mapping
+  sets will be merged into a single set. If no <<<--input>>> option is
+  specified, SSSOM-CLI will attempt to read a set from its standard
+  input.
+  
+  To read both from the standard input and from one or several file(s),
+  use the special value <<<->>> in an <<<--input>>> option. For example,
+  the following command reads a set from <<<file1.sssom.tsv>>> and from
+  the standard input:
+  
++-----------------------------------------------------------------------
+sssom-cli --input file1.sssom.tsv --input -
++-----------------------------------------------------------------------
+
+  The <<<--input>>> options are processed in the order in which they
+  appear in the command line. In the example above,
+  <<<file1.sssom.tsv>>> is read first, followed by the standard input.
+  
+  By default, SSSOM-CLI writes the resulting mapping set to the standard
+  output. Use the <<<--output>>> option to specify an output file
+  instead.
+  
+* Filtering mappings with SSSOM/T
+
+  Use the <<<--ruleset>>> option to specify the name of a
+  {{{./sssom-transform.html}SSSOM/Transform}} file containing the
+  filtering rules to apply to the mapping set.
+  
+  The SSSOM/T dialect used by SSSOM-CLI is currently very simple and
+  comprises, in addition to the generic <<<stop()>>> and <<<invert()>>>
+  function, only one dialect-specific function called <<<include()>>>.
+  
+  Use <<<include()>>> in a SSSOM/T rule to indicate that the mappings
+  the rule is applied to should be included in the resulting mapping
+  set written out by SSSOM-CLI. This allows to create arbitrary complex
+  filters and to select precisely which mappings should or should not
+  appear in the resulting set.
+  
+  The ruleset must contain at least one rule that uses the
+  <<<include()>>> function, otherwise the resulting set will be
+  completely empty.
+  
+  The following example shows how to filter out any mapping that does
+  not have a subject in the <<<http://purl.obolibrary.org/obo/UBERON_>>>
+  namespace:
+  
++-----------------------------------------------------------------------
+prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_>
+
+subject==UBERON:* -> include();
++-----------------------------------------------------------------------
+
+  Here is a slightly more complex example (prefix declarations have been
+  omitted for the sake of brevity):
+  
++-----------------------------------------------------------------------
+# Ensure CL and UBERON are on the object side
+subject==CL:* || subject==UBERON:* -> invert();
+
+# Filter out any mapping to something else than CL or UBERON
+!(object==CL:* || object==UBERON:*) -> stop();
+
+# Include all remaining mappings
+subject==* -> include()
++-----------------------------------------------------------------------

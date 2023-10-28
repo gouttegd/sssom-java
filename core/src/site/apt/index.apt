@@ -20,7 +20,9 @@
   objects.
   
   It also provides a {{{./robot.html}ROBOT plugin}} to use or generate
-  SSSOM mapping sets as part of a pipeline of ROBOT commands.
+  SSSOM mapping sets as part of a pipeline of ROBOT commands, and a
+  {{{./sssom-cli.html}standalone command-line tool}} to manipulate
+  mapping sets from the command line.
 
 Homepage and repository
 

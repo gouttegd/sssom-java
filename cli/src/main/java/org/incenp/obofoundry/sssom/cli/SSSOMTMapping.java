@@ -25,6 +25,17 @@ import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 
+/**
+ * A specialised application of the SSSOM/Transform language to read mapping
+ * processing rules that produce mappings from mappings.
+ * <p>
+ * This application recognises the following actions:
+ * <ul>
+ * <li>{@code stop()} to stop any further processing for the current mapping;
+ * <li>{@code invert()} to invert the current mapping;
+ * <li>{@code include()} to produce the current mapping as it is.
+ * </ul>
+ */
 public class SSSOMTMapping extends SSSOMTransformApplicationBase<Mapping> {
 
     @Override
