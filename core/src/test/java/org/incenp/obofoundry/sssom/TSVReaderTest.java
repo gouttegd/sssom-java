@@ -111,6 +111,23 @@ public class TSVReaderTest {
     }
 
     /*
+     * Check that we can read a file that misuses multi-valued slots for
+     * single-valued slots.
+     * 
+     */
+    @Test
+    void testPseudoListValues() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/pseudo-list-values.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(1, ms.getCreatorId().size());
+        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0001", ms.getCreatorId().get(0));
+
+        Assertions.assertEquals(1, ms.getSeeAlso().size());
+        Assertions.assertEquals("https://example.org/seealso1", ms.getSeeAlso().get(0));
+    }
+
+    /*
      * Check that we can find an external metadata file that has the same basename
      * as the TSV file.
      */
@@ -252,6 +269,7 @@ public class TSVReaderTest {
     /*
      * Obsolete fields should be translated to their standard equivalents.
      */
+    @Test
     void testObsoleteFields() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/obsolete-fields.sssom.tsv");
         MappingSet ms = reader.read();
