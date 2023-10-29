@@ -49,6 +49,7 @@ public class YAMLConverter {
 
         preprocessors = new ArrayList<IYAMLPreprocessor>();
         preprocessors.add(new MatchTypeConverter());
+        preprocessors.add(new MatchTermTypeConverter());
 
         setSlotMaps = new HashMap<String, Slot<MappingSet>>();
         for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {

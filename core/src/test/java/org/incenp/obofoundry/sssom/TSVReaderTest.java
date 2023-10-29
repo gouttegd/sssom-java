@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
@@ -273,9 +274,15 @@ public class TSVReaderTest {
     void testObsoleteFields() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/obsolete-fields.sssom.tsv");
         MappingSet ms = reader.read();
+        Mapping m1 = ms.getMappings().get(0);
+        Mapping m2 = ms.getMappings().get(1);
 
-        Assertions.assertEquals("https://w3id.org/semapv/vocab/LexicalMatching",
-                ms.getMappings().get(0).getMappingJustification());
-        Assertions.assertNull(ms.getMappings().get(1).getMappingJustification());
+        Assertions.assertEquals("https://w3id.org/semapv/vocab/LexicalMatching", m1.getMappingJustification());
+        Assertions.assertNull(m2.getMappingJustification());
+        
+        Assertions.assertNull(m1.getSubjectType());
+        Assertions.assertNull(m1.getObjectType());
+        Assertions.assertEquals(EntityType.OWL_CLASS, m2.getSubjectType());
+        Assertions.assertEquals(EntityType.OWL_CLASS, m2.getObjectType());
     }
 }
