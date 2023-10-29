@@ -1,3 +1,19 @@
+Changes in sssom-java 0.6.0
+---------------------------
+
+    * SSSOM/T can now filter on all available slots.
+    * Changes to the TSV reader:
+      * Silently ignore unknown slots.
+      * Recognise and convert slots from older versions.
+      * Propagate slots down to individual mappings.
+    * Changes to the TSV Writer:
+      * Condense slots up to the level of the mapping set.
+    * SSSOM-to-OWL:
+      * Exclude mapping_cardinality from OWL serialisation.
+      * Use dc/terms rather dc/elements/1.1 for dispatch table metadata.
+    * Addition of sssom-cli, a command-line tool to manipulate sets.
+
+
 Changes in sssom-java 0.5.0
 ---------------------------
 
