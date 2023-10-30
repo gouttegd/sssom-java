@@ -101,7 +101,7 @@ robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
 
 Building
 --------
-Build by running `mvn clean package`. This will produce three distinct
+Build by running `mvn clean package`. This will produce four distinct
 Jar files:
 
 * `sssom-core-x.y.z.jar` (in `core/target`): a minimal Java library,
@@ -112,6 +112,8 @@ Jar files:
 * `sssom-robot-standalone-x.y.z.jar` (in `robot/target`): a standalone
   version of ROBOT (1.9.5), which includes the command(s) from the SSSOM
   plugin as if they were built-in commands.
+* `sssom-cli-x.y.z.jar` (in `cli/target`): the `sssom-cli` command-line
+  tool, as a self-sufficient executable Jar archive.
 
 To use the library in a Java project, use the following identifiers:
 

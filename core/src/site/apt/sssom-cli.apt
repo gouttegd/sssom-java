@@ -75,5 +75,5 @@ subject==CL:* || subject==UBERON:* -> invert();
 !(object==CL:* || object==UBERON:*) -> stop();
 
 # Include all remaining mappings
-subject==* -> include()
+subject==* -> include();
 +-----------------------------------------------------------------------

@@ -65,11 +65,12 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   specification.
   
   The parser has a liberal behaviour, in that: a) slots that it does not
-  recognise are silently ignored and do not cause a parsing failure; it
-  aims to deal gracefully with obsolete fields, converting them to their
-  newer equivalents whenever possible. The second point in particular
-  means that the parser should always be able to read a file regardless
-  of which version of the specification the file is conformant to.
+  recognise are silently ignored and do not cause a parsing failure; b)
+  it aims to deal gracefully with obsolete fields, converting them to
+  their newer equivalents whenever possible. The second point in
+  particular means that the parser should always be able to read a file
+  regardless of which version of the specification the file is
+  conformant to.
   
   
 * Writing mappings
