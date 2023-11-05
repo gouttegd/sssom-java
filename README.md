@@ -90,7 +90,7 @@ generate a merged ontology between FBbt, UBERON, and CL as follows:
 
 ```sh
 robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
-      sssom-inject --sssom fbbt-mappings.sssom.tsv \
+      sssom:inject --sssom fbbt-mappings.sssom.tsv \
                    --ruleset bridge.rules \
       annotate --ontology-iri http://purl.obolibrary.org/obo/bridged.owl \
                --output bridged.owl

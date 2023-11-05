@@ -101,7 +101,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
     @Override
     public String getName() {
-        return "sssom-inject";
+        return "inject";
     }
 
     @Override
@@ -111,7 +111,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
     @Override
     public String getUsage() {
-        return "robot sssom-inject -i <INPUT> -s <SSSOM_FILE> [axiom type options] -o <OUTPUT>";
+        return "robot inject -i <INPUT> -s <SSSOM_FILE> [axiom type options] -o <OUTPUT>";
     }
 
     @Override

@@ -33,6 +33,9 @@ ROBOT commands
   ROBOT (1.9.5) in which the commands below will be available as
   built-in comands (in addition to all the standard commands).
   
+  Note that in the standalone version, the <<<inject>>> command is
+  renamed to <<<sssom-inject>>> for clarity.
+  
 * Available commands
 
   Currently, this project provides two commands:
@@ -40,5 +43,5 @@ ROBOT commands
   * {{{./robot-xref-extract.html}xref-extract}} to extract mappings from
     cross-reference annotations in an ontology;
 
-  * {{{./robot-sssom-inject.html}sssom-inject}} to inject SSSOM-derived
-    axioms into an ontology.
+  * {{{./robot-sssom-inject.html}inject}} to inject SSSOM-derived axioms
+    into an ontology.

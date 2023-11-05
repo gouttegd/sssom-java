@@ -1,14 +1,14 @@
-ROBOT sssom-inject command
+ROBOT inject command
 
-  The <<<sssom-inject>>> command is intended to allow the injection of
+  The <<<inject>>> command is intended to allow the injection of
   SSSOM-derived axioms into an ontology as part of a ROBOT pipeline.
   
 * Usage
 
-  The <<<sssom-inject>>> command takes a SSSOM mapping set file
-  specified with the <<<-s>>> (or <<<--sssom>>>) option. If the metadata
-  section of the mapping set is not embedded within the TSV file, it can
-  be specified separately with the <<<--sssom-metadata>>> option.
+  The <<<inject>>> command takes a SSSOM mapping set file specified with
+  the <<<-s>>> (or <<<--sssom>>>) option. If the metadata section of the
+  mapping set is not embedded within the TSV file, it can be specified
+  separately with the <<<--sssom-metadata>>> option.
   
   You can use the <<<--sssom>>> option repeatedly to load more than one
   mapping set; mappings from all mapping sets will be combined into a
@@ -70,10 +70,9 @@ ROBOT sssom-inject command
   
 * Checking for the existence of the subject and/or object
 
-  By default, <<<sssom-inject>>> will generate axioms regardless of
-  whether the subject and object of a mapping exist in the current
-  ontology (if they don’t exist, declaration axioms will be
-  automatically generated).
+  By default, <<<inject>>> will generate axioms regardless of whether
+  the subject and object of a mapping exist in the current ontology (if
+  they don’t exist, declaration axioms will be automatically generated).
   
   Use the <<<--check-subject>>> option to instruct the command to check
   for the existence and status of the subject of a mapping before
@@ -154,7 +153,7 @@ ROBOT sssom-inject command
   Refer to the {{{./sssom-transform.html}description}} of the
   SSSOM/Transform language for details about the syntax of rules and
   filter expressions. This section describes the details that are
-  specific to the <SSSOM/T-OWL> dialect used by <<<sssom-inject>>>.
+  specific to the <SSSOM/T-OWL> dialect used by <<<inject>>>.
   
 *** Prefixes
 
@@ -278,10 +277,10 @@ subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
   []
   
   Most of the time, those functions should not be needed. This is
-  because the <<<sssom-inject>>> command is already aware of all the
-  classes and object properties defined in the ontology that is
-  currently being manipulated by the ROBOT pipeline.
-  
+  because the <<<inject>>> command is already aware of all the classes
+  and object properties defined in the ontology that is currently being
+  manipulated by the ROBOT pipeline.
+    
   For example, considering the following rule:
   
 +-----------------------------------------------------------------------
@@ -296,9 +295,9 @@ subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0
   don’t have anything to do.
   
   But if if the ontology does not actually contain these declaration
-  axioms, then the <<<sssom-inject>>> command will fail because it will
-  not be able to parse the expression. To avoid that, we must declare
-  any entity we may want to use in a <<<create_axiom>>> function:
+  axioms, then the <<<inject>>> command will fail because it will not be
+  able to parse the expression. To avoid that, we must declare any
+  entity we may want to use in a <<<create_axiom>>> function:
   
 +-----------------------------------------------------------------------
 declare_class(NCBITaxon:7227);
@@ -339,7 +338,7 @@ subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (%REL 
   When using a SSSOM/Transform ruleset (with the <<<--ruleset>>>
   option), if the ruleset contains
   {{{./sssom-transform.html#Tagging_rules}tags}}, two more features are
-  available to <<<sssom-inject>>>.
+  available to <<<inject>>>.
   
 ** Selectively enable or disabled tagged rules
 
