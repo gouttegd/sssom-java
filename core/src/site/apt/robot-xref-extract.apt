@@ -136,3 +136,24 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   mapping set (that is, when neither <<<--append>>> nor <<<--replace>>>
   are used), to reuse an existing metadata file that is not associated
   to a set.
+  
+* Manually specifying some set metadata
+
+  Some of the metadata for the extracted mapping set can be explicitly
+  specified on the command line.
+  
+  Use the <<<--set-id>>> option to explicitly specify the mapping set
+  ID (metadata slot <<<mapping_set_id>>>).
+  
+  Use the <<<--set-license>>> option to explicitly specify the license
+  of the mapping set (metadata slot <<<license>>>).
+  
+  The values specified with those options override any value found in
+  the existing metadata, when a pre-existing set is reused (see previous
+  section).
+  
+  Both the ID and the license should take the form of an URI, “ideally
+  resolvable” as per the SSSOM specification. However <<<xref-extract>>>
+  does not enforce that and will use whatever value is provided on the
+  command line without checking that the value is a URI (even less that
+  it is resolvable).

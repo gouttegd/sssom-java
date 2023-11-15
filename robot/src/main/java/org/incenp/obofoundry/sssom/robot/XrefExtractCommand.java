@@ -67,6 +67,8 @@ public class XrefExtractCommand implements Command {
                 "Use specified predicate for cross-references with specified prefix");
         options.addOption(null, "drop-duplicates", false, "Drop all duplicated cross-references");
         options.addOption(null, "include-obsoletes", false, "Do not ignore cross-references on obsoleted terms");
+        options.addOption(null, "set-id", true, "Set the ID of the extracted mapping set");
+        options.addOption(null, "set-license", true, "Set the license URL of the extracted mapping set");
     }
 
     @Override
@@ -201,6 +203,13 @@ public class XrefExtractCommand implements Command {
                             String.join(", ", duplicates.get(object))));
                 }
             }
+        }
+
+        if ( line.hasOption("set-id") ) {
+            ms.setMappingSetId(line.getOptionValue("set-id"));
+        }
+        if ( line.hasOption("set-license") ) {
+            ms.setLicense(line.getOptionValue("set-license"));
         }
 
         TSVWriter writer = new TSVWriter(line.getOptionValue("mapping-file"));
