@@ -90,27 +90,27 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   class). Given a list of rules, the processor will apply them to a list
   of mappings as follows:
   
-  [[1]] For each mapping in the list:
+  [[1]] For each rule in the list:
   
-        [[1]] For each rule in the list:
+        [[1]] For each mapping in the list:
         
               [[1]] Apply the <filter> to the mapping. If there is no
                     filter, this is equivalent to a filter that accepts
                     any mapping.
               
               [[2]] If the filter rejects the mapping, skip to the next
-                    rule, otherwise continue.
+                    mapping, otherwise continue.
                     
               [[3]] Apply the <preprocessor> to the mapping. If there is
                     no preprocessor, this is equivalent to a
                     preprocessor that returns the original mapping
                     unmodified.
                     
-              [[4]] If the preprocessor returns <<<null>>>, skip to the
-                    next mapping (that is, skip all the remaining rules
-                    for the current mapping); otherwise, set the current
-                    mapping to the one returned by the preprocessor and
-                    continue.
+              [[4]] If the preprocessor returns <<<null>>>, drop the
+                    mapping from the list (meaning that no further rule
+                    will be applied to this mapping) and skip to the
+                    next mapping; otherwise, set the current mapping to
+                    the one returned by the preprocessor and continue.
                     
               [[5]] If there is a <generator>, apply it to the mapping;
                     if it returns a non-<<<null>>> value (hereafter
@@ -118,8 +118,8 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
                     
   []
   
-  Once all mappings have been processed, the processor will return a
-  list of the products collected at step 1.1.5.
+  Once all rules have been applied, the processor will return a list of
+  the products collected at step 1.1.5.
   
   The following example (somewhat contrived) shows a processor that
   generates text representations of mappings (as <<<String>>> objects).
