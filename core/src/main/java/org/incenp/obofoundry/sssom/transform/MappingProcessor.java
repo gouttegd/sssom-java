@@ -119,20 +119,14 @@ public class MappingProcessor<T> {
     public List<T> process(List<Mapping> mappings) {
         List<T> products = new ArrayList<T>();
 
-        List<MappingProcessingRule<T>> effectiveRules;
-        if ( selectedTags != null ) {
-            effectiveRules = new ArrayList<MappingProcessingRule<T>>();
-            for ( MappingProcessingRule<T> rule : rules ) {
+        for ( MappingProcessingRule<T> rule : rules ) {
+            if ( selectedTags != null ) {
                 boolean match = compareTags(selectedTags, rule.getTags());
-                if ( (includeSelectedTags && match) || (!includeSelectedTags && !match) ) {
-                    effectiveRules.add(rule);
+                if ( (includeSelectedTags && !match) || (!includeSelectedTags && match) ) {
+                    continue;
                 }
             }
-        } else {
-            effectiveRules = rules;
-        }
 
-        for ( MappingProcessingRule<T> rule : effectiveRules ) {
             List<Mapping> keptMappings = new ArrayList<Mapping>();
             for ( Mapping mapping : mappings ) {
                 if ( rule.apply(mapping) ) {
