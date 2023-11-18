@@ -1,3 +1,18 @@
+Changes in sssom-java-0.6.1
+---------------------------
+
+    * TSV writer:
+      * Write out a default license value if no license is set.
+      * Write out an automically generated ID if no ID is set.
+    * SSSOM/T:
+      * Fix filtering on mapping cardinality.
+    * xref-extract:
+      * Try to infer mapping ID and license from the source ontology.
+      * New options --set-id and --set-license.
+    * sssom-inject:
+      * Renamed to "inject".
+
+
 Changes in sssom-java 0.6.0
 ---------------------------
 
