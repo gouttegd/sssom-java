@@ -43,6 +43,7 @@ public class MappingProcessingRule<T> {
     private IMappingTransformer<Mapping> preprocessor;
     private IMappingTransformer<T> generator;
     private HashSet<String> tags = null;
+    private boolean cardinalityNeeded = false;
 
     /**
      * Creates a new instance.
@@ -63,6 +64,26 @@ public class MappingProcessingRule<T> {
         this.filter = filter;
         this.preprocessor = preprocessor;
         this.generator = generator;
+    }
+
+    /**
+     * Marks this rule as making use of cardinality information in mappings.
+     * 
+     * @param needed {@code true} to mark the rule as needing accurate cardinality
+     *               information, {@code false} otherwise.
+     */
+    public void setCardinalityNeeded(boolean needed) {
+        cardinalityNeeded = needed;
+    }
+
+    /**
+     * Indicates whether this rule makes use of cardinality information mappings.
+     * 
+     * @return {@code true} if the rule needs accurate cardinality information,
+     *         {@code false} otherwise.
+     */
+    public boolean needsCardinality() {
+        return cardinalityNeeded;
     }
 
     /**

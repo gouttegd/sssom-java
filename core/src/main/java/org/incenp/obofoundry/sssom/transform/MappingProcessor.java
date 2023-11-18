@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 
 /**
  * An engine for applying {@link MappingProcessingRule}s to mappings. This
@@ -118,6 +119,7 @@ public class MappingProcessor<T> {
      */
     public List<T> process(List<Mapping> mappings) {
         List<T> products = new ArrayList<T>();
+        boolean dirtyCard = true; /* Assume original cardinality data is unreliable. */
 
         for ( MappingProcessingRule<T> rule : rules ) {
             if ( selectedTags != null ) {
@@ -125,6 +127,11 @@ public class MappingProcessor<T> {
                 if ( (includeSelectedTags && !match) || (!includeSelectedTags && match) ) {
                     continue;
                 }
+            }
+
+            if ( rule.needsCardinality() && dirtyCard ) {
+                MappingCardinality.inferCardinality(mappings);
+                dirtyCard = false;
             }
 
             List<Mapping> keptMappings = new ArrayList<Mapping>();
@@ -138,6 +145,9 @@ public class MappingProcessor<T> {
                             products.add(product);
                         }
                         keptMappings.add(mapping);
+                    } else {
+                        /* One mapping is dropped, so cardinality data is no longer reliable. */
+                        dirtyCard = true;
                     }
                 } else {
                     keptMappings.add(mapping);

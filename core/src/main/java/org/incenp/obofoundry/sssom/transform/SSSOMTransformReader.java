@@ -242,6 +242,12 @@ public class SSSOMTransformReader<T> {
 
                     MappingProcessingRule<T> rule = new MappingProcessingRule<T>(filter, preprocessor, generator);
                     rule.getTags().addAll(parsedRule.tags);
+
+                    /* TODO: There should be a cleaner way to do this. */
+                    if ( filter.toString().contains("cardinality==") ) {
+                        rule.setCardinalityNeeded(true);
+                    }
+
                     rules.add(rule);
                 } catch ( SSSOMTransformError e ) {
                     errors.add(e);
