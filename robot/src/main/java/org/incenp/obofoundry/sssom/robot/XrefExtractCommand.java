@@ -38,6 +38,10 @@ import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
 import org.obolibrary.robot.IOHelper;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.vocab.Namespaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,14 +211,44 @@ public class XrefExtractCommand implements Command {
 
         if ( line.hasOption("set-id") ) {
             ms.setMappingSetId(line.getOptionValue("set-id"));
+        } else if ( ms.getMappingSetId() == null ) {
+            inferSetID(state.getOntology(), ms);
         }
+
         if ( line.hasOption("set-license") ) {
             ms.setLicense(line.getOptionValue("set-license"));
+        } else if ( ms.getLicense() == null ) {
+            inferLicense(state.getOntology(), ms);
         }
 
         TSVWriter writer = new TSVWriter(line.getOptionValue("mapping-file"));
         writer.write(ms);
 
         return state;
+    }
+
+    private void inferSetID(OWLOntology ontology, MappingSet mappingSet) {
+        IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orNull();
+        if ( ontologyIRI != null ) {
+            String ontologyID = ontologyIRI.toString();
+            if ( ontologyID.endsWith(".owl") ) {
+                ontologyID = ontologyID.substring(0, ontologyID.length() - 4);
+            }
+            if ( !ontologyID.endsWith("/") ) {
+                ontologyID += "/";
+            }
+            mappingSet.setMappingSetId(ontologyID + "mappings.sssom.tsv");
+        }
+    }
+
+    private void inferLicense(OWLOntology ontology, MappingSet mappingSet) {
+        String dctermsLicense = Namespaces.DCTERMS.toString() + "license";
+        for ( OWLAnnotation annot : ontology.getAnnotations() ) {
+            if ( annot.getProperty().getIRI().toString().equals(dctermsLicense) ) {
+                if ( annot.getValue().isIRI() ) {
+                    mappingSet.setLicense(annot.getValue().asIRI().get().toString());
+                }
+            }
+        }
     }
 }
