@@ -132,9 +132,10 @@ public class MappingProcessor<T> {
             effectiveRules = rules;
         }
 
-        for ( Mapping mapping : mappings ) {
-            for ( MappingProcessingRule<T> rule : effectiveRules ) {
-                if ( mapping != null && rule.apply(mapping) ) {
+        for ( MappingProcessingRule<T> rule : effectiveRules ) {
+            List<Mapping> keptMappings = new ArrayList<Mapping>();
+            for ( Mapping mapping : mappings ) {
+                if ( rule.apply(mapping) ) {
                     mapping = rule.preprocess(mapping);
                     if ( mapping != null ) {
                         T product = rule.generate(mapping);
@@ -142,9 +143,13 @@ public class MappingProcessor<T> {
                             onGeneratedProduct(rule, mapping, product);
                             products.add(product);
                         }
+                        keptMappings.add(mapping);
                     }
+                } else {
+                    keptMappings.add(mapping);
                 }
             }
+            mappings = keptMappings;
         }
 
         return products;
