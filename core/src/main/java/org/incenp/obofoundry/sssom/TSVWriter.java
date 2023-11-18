@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -114,6 +115,16 @@ public class TSVWriter {
     public void write(MappingSet mappingSet) throws IOException {
         if ( !customMap ) {
             prefixManager.add(mappingSet.getCurieMap());
+        }
+
+        // The "license" slot MUST be present.
+        if ( mappingSet.getLicense() == null || mappingSet.getLicense().isEmpty() ) {
+            mappingSet.setLicense("https://w3id.org/sssom/license/all-rights-reserved");
+        }
+
+        // Ditto for the mapping set ID.
+        if ( mappingSet.getMappingSetId() == null || mappingSet.getMappingSetId().isEmpty() ) {
+            mappingSet.setMappingSetId("http://sssom.invalid/" + UUID.randomUUID().toString());
         }
 
         // Find out which prefixes are actually needed

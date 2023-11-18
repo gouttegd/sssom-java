@@ -2,9 +2,11 @@
 #  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
 #  ORCID: "https://orcid.org/"
 #  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+#mapping_set_id: "https://example.org/sssom/sample-mapping-set"
 #creator_id:
 #  - "ORCID:AAAA-BBBB-CCCC-0001"
 #  - "ORCID:AAAA-BBBB-CCCC-0002"
+#license: "https://creativecommons.org/licenses/by/4.0/"
 #see_also:
 #  - "https://example.org/seealso1"
 subject_id	predicate_id	object_id	mapping_justification	author_id	see_also

@@ -45,6 +45,8 @@ public class TSVWriterTest {
                 .publicationDate(LocalDate.of(2023, 9, 13))
                 .mappings(new ArrayList<Mapping>())
                 .curieMap(new HashMap<String, String>())
+                .license("https://creativecommons.org/licenses/by/4.0/")
+                .mappingSetId("https://example.org/sssom/sample-mapping-set")
                 .build();
         ms.getMappings().add(Mapping.builder()
                 .subjectId("http://purl.obolibrary.org/obo/FBbt_00000001")
@@ -154,6 +156,43 @@ public class TSVWriterTest {
     @Test
     void testSlotCondensation() throws IOException, SSSOMFormatException {
         Assertions.assertTrue(roundtrip("propagated-slots"));
+    }
+
+    /*
+     * Test license and mapping set ID slots are forcefully generated if absent.
+     */
+    @Test
+    void testWritingDefaultSlots() throws IOException, SSSOMFormatException {
+        // @formatter:off
+        MappingSet ms = MappingSet.builder()
+                .mappings(new ArrayList<Mapping>())
+                .curieMap(new HashMap<String, String>())
+                .build();
+        ms.getMappings().add(Mapping.builder()
+                .subjectId("http://purl.obolibrary.org/obo/FBbt_00000001")
+                .predicateId("https://w3id.org/semapv/vocab/crossSpeciesExactMatch")
+                .objectId("http://purl.obolibrary.org/obo/UBERON_0000468")
+                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
+                .build());
+        // @formatter:on
+
+        ms.getCurieMap().put("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
+        ms.getCurieMap().put("UBERON", "http://purl.obolibrary.org/obo/UBERON_");
+
+        File written = new File("src/test/resources/default-slots.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.write(ms);
+
+        TSVReader reader = new TSVReader(written);
+        ms = reader.read();
+
+        Assertions.assertNotNull(ms.getLicense());
+        Assertions.assertEquals("https://w3id.org/sssom/license/all-rights-reserved", ms.getLicense());
+
+        Assertions.assertNotNull(ms.getMappingSetId());
+        Assertions.assertTrue(ms.getMappingSetId().startsWith("http://sssom.invalid/"));
+
+        written.delete();
     }
 
     /*
