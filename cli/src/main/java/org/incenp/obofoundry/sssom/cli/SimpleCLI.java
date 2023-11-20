@@ -20,6 +20,8 @@ package org.incenp.obofoundry.sssom.cli;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -87,6 +89,10 @@ public class SimpleCLI {
         opts.addOption(Option.builder("o").longOpt("output").hasArg().argName("FILE")
                 .desc("Write the mapping set to FILE").build());
 
+        opts.addOption(Option.builder().longOpt("prefix").hasArg().argName("NAME=PREFIX")
+                .desc("Declare a prefix for use in SSSOM/T rules").build());
+        opts.addOption(Option.builder("R").longOpt("rule").hasArg().argName("RULE").desc("Apply a single SSSOM/T rule")
+                .build());
         opts.addOption(Option.builder("r").longOpt("ruleset").hasArg().argName("RULESET")
                 .desc("Apply a SSSOM/T ruleset").build());
 
@@ -168,29 +174,60 @@ public class SimpleCLI {
         }
     }
 
-    private void transform(CommandLine cmd, MappingSet ms) {
-        if ( !cmd.hasOption("r") ) {
-            return;
+    private void loadTransformRules(CommandLine cmd, MappingProcessor<Mapping> processor,
+            Map<String, String> prefixMap) {
+        SSSOMTransformReader<Mapping> reader = null;
+
+        if (cmd.hasOption("ruleset")) {
+            String inputFile = cmd.getOptionValue("ruleset");
+            try {
+                reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping(), inputFile);
+                reader.addPrefixMap(prefixMap);
+                reader.read();
+            } catch (IOException ioe) {
+                error(SSSOMT_INPUT_ERROR, "Cannot read ruleset from file %s: %s", inputFile, ioe.getMessage());
+            }
         }
 
-        try {
-            SSSOMTransformReader<Mapping> reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping(),
-                    cmd.getOptionValue("r"));
-            reader.read();
+        if ( cmd.hasOption("rule") ) {
+            if ( reader == null ) {
+                reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping());
+                reader.addPrefixMap(prefixMap);
+            }
+            for ( String rule : cmd.getOptionValues("rule") ) {
+                reader.read(rule);
+            }
+        }
+
+        if ( reader != null ) {
             if ( reader.hasErrors() ) {
                 for ( SSSOMTransformError error : reader.getErrors() ) {
                     error(0, "Error when parsing SSSOM/T ruleset: %s", error.getMessage());
                 }
                 error(SSSOMT_INPUT_ERROR, "Invalid SSSOM/T ruleset");
             }
-
-            MappingProcessor<Mapping> processor = new MappingProcessor<Mapping>();
             processor.addRules(reader.getRules());
+        }
+    }
 
+    private void transform(CommandLine cmd, MappingSet ms) {
+        MappingProcessor<Mapping> processor = new MappingProcessor<Mapping>();
+        Map<String, String> prefixMap = new HashMap<String, String>();
+
+        if ( cmd.hasOption("prefix") ) {
+            for ( String prefixDecl : cmd.getOptionValues("prefix") ) {
+                String[] items = prefixDecl.split("=", 2);
+                if ( items.length != 2 ) {
+                    error(COMMAND_LINE_ERROR, "invalid prefix declaration: %s", prefixDecl);
+                }
+                prefixMap.put(items[0], items[1]);
+            }
+        }
+
+        loadTransformRules(cmd, processor, prefixMap);
+
+        if ( processor.hasRules() ) {
             ms.setMappings(processor.process(ms.getMappings()));
-        } catch ( IOException ioe ) {
-            error(SSSOMT_INPUT_ERROR, "Cannot read ruleset from file %s: %s", cmd.getOptionValue("r"),
-                    ioe.getMessage());
         }
     }
 

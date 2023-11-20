@@ -111,6 +111,16 @@ public class MappingProcessor<T> {
     }
 
     /**
+     * Indicates whether this processor has some rules to work with.
+     * 
+     * @return {@code true} if the processor has a least one rule, {@code false}
+     *         otherwise.
+     */
+    public boolean hasRules() {
+        return rules.size() > 0;
+    }
+
+    /**
      * Applies all the rules to the given mappings.
      * 
      * @param mappings The mappings the rules should be applied to.

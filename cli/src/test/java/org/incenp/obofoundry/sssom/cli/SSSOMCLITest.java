@@ -49,6 +49,23 @@ public class SSSOMCLITest {
     }
 
     /*
+     * Check that we can apply single SSSOM/T rules.
+     */
+    @Test
+    void testSimpleSSSOMRules() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input",  "../core/src/test/resources/sample1.sssom.tsv",
+                      "--prefix", "UBERON=http://purl.obolibrary.org/obo/UBERON_",
+                      "--prefix", "FBbt=http://purl.obolibrary.org/obo/FBbt_",
+                      "--rule",   "subject==FBbt:* -> invert()",
+                      "--rule",   "subject==UBERON:6* -> stop()",
+                      "--rule",   "subject==* -> include()",
+                      "--output", "src/test/resources/filtered1.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("filtered1.sssom.tsv");
+    }
+
+    /*
      * Check that obsolete fields in input are translated to their standard
      * equivalents in output.
      */
