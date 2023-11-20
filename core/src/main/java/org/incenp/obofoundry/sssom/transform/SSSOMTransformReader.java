@@ -188,12 +188,55 @@ public class SSSOMTransformReader<T> {
      * This method does not require that an input has been set and may be called
      * repeatedly on different inputs in the lifetime of the SSSOMTransformReader
      * object.
+     * <p>
+     * For convenience, this method does not require a single-action rule to be
+     * terminated by a semi-colon. That is, an input of
+     * 
+     * <pre>
+     * "subject==UBERON:* -&gt; stop()"
+     * </pre>
+     * 
+     * will be accepted as equivalent to
+     * 
+     * <pre>
+     * "subject==UBERON:* -&gt; stop();"
+     * </pre>
+     * 
+     * even though the former is, strictly speaking, incorrect as per the SSSOM/T
+     * syntax. This is only true if the input has no trailing whitespace, though.
      * 
      * @param text The SSSOM/T ruleset to parse.
      * @return {@code true} if the ruleset was successfully parsed, or {@code false}
      *         of SSSOM/T syntax errors were found.
      */
     public boolean read(String text) {
+        int len = text.length();
+        if ( len == 0 ) {
+            return true; // Just ignore empty string
+        }
+
+        /*
+         * The parser is primarily designed to read from files, so the syntax mandates a
+         * whitespace at the end of the ruleset. Callers of that method may not expect
+         * that the input string needs to be terminated by a whitespace though, so for
+         * convenience we forcibly add a terminating whitespace if needed. This is a bit
+         * hacky but simpler than amending the syntax to allow for the absence of
+         * whitespace.
+         * 
+         * For the same reason, we also add the ';' terminator if required.
+         */
+        char last = text.charAt(len - 1);
+        if ( last == ' ' || last == '\t' || last == '\n' || last == '\r' ) {
+            // Terminating whitespace is there, so we assume the caller took care of
+            // everything
+        } else if ( last == ';' || last == '}' ) {
+            // Rule has a terminator, but still needs a whitespace
+            text += "\n";
+        } else {
+            // Rule needs both a terminator and a whitespace
+            text += ";\n";
+        }
+
         SSSOMTransformLexer lexer = new SSSOMTransformLexer(CharStreams.fromString(text));
         return doParse(lexer);
     }

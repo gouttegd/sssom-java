@@ -54,6 +54,23 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
+     * Check that the parser automatically add terminator and trailing whitespace as
+     * needed.
+     */
+    @Test
+    void testParsingTerminators() {
+        // All those calls should be equivalent
+        parseRule("predicate==* -> action()", "(*) -> action()");
+        parseRule("predicate==* -> action();", "(*) -> action()");
+        parseRule("predicate==* -> action();\n", "(*) -> action()");
+        parseRule("predicate==* -> action();\n\n", "(*) -> action()");
+
+        // Likewise
+        parseRule("predicate==* -> { action(); }", "(*) -> action()");
+        parseRule("predicate==* -> { action(); }\n", "(*) -> action()");
+    }
+
+    /*
      * Check consistency of failure indicators.
      */
     @Test
