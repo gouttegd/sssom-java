@@ -35,6 +35,7 @@ import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
@@ -95,6 +96,9 @@ public class SimpleCLI {
                 .build());
         opts.addOption(Option.builder("r").longOpt("ruleset").hasArg().argName("RULESET")
                 .desc("Apply a SSSOM/T ruleset").build());
+
+        opts.addOption(Option.builder("a").longOpt("include-all")
+                .desc("Add a default include rule at the end of the processing set").build());
 
         opts.addOption(Option.builder("v").longOpt("version").desc("Print version information").build());
         opts.addOption(Option.builder("h").longOpt("help").desc("Print the help message").build());
@@ -227,6 +231,9 @@ public class SimpleCLI {
         loadTransformRules(cmd, processor, prefixMap);
 
         if ( processor.hasRules() ) {
+            if ( cmd.hasOption("include-all") ) {
+                processor.addRule(new MappingProcessingRule<Mapping>(null, null, (mapping) -> mapping));
+            }
             ms.setMappings(processor.process(ms.getMappings()));
         }
     }
