@@ -32,7 +32,7 @@ public class SSSOMCLITest {
     void setUp() {
         // Let the CLI know it is running as part of the test suite, so that it does not
         // call System.exit (which would terminate the testing framework).
-        System.setProperty("org.incenp.obofoundry.sssom.cli.SimpleCLI#inTest", "yes");
+        System.setProperty("org.incenp.obofoundry.sssom.cli#inTest", "yes");
     }
 
     /*
