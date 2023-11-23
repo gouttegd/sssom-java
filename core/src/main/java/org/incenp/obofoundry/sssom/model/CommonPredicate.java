@@ -141,7 +141,7 @@ public enum CommonPredicate {
                 .subjectMatchField(mapping.getObjectMatchField())
                 .subjectPreprocessing(mapping.getObjectPreprocessing())
                 .subjectSource(mapping.getObjectSource())
-                .subjectSourceVersion(mapping.getObjectSource())
+                .subjectSourceVersion(mapping.getObjectSourceVersion())
                 .subjectType(mapping.getObjectType())
                 .objectCategory(mapping.getSubjectCategory())
                 .objectId(mapping.getSubjectId())
