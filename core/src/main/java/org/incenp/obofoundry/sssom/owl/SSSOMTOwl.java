@@ -224,7 +224,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         switch ( name ) {
         case "direct":
             checkArguments(name, 0, arguments);
-            transformer = new DirectAxiomGenerator(ontology);
+            transformer = new AnnotatedAxiomGenerator(ontology);
             break;
 
         case "annotate_subject":
