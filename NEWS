@@ -1,3 +1,14 @@
+Changes in sssom-java-0.6.2
+---------------------------
+
+    * Fix erroneous inversion of object_source slot.
+    * sssom-cli:
+      * Provide a self-executable Jar file (Unix only).
+      * Add the --rule option to specify a single SSSOM/T rule.
+    * sssom-inject:
+      * Allow to create annotated axioms using mapping metadata.
+
+
 Changes in sssom-java-0.6.1
 ---------------------------
 
