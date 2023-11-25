@@ -244,8 +244,53 @@ subject==FBbt:* -> annotate_subject(IAO:0000589,  "%subject_label (Drosophila)")
   value being the shortened identifier of the subject:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> annotate_object(oio:hasDbXref "%subject_curie");
+subject==FBbt:* -> annotate_object(oio:hasDbXref, "%subject_curie");
 +-----------------------------------------------------------------------
+
+*** Annotating axioms
+
+  The axiom-generating functions listed in the previous section accepts
+  an additional, optional argument that indicates whether the generated
+  axiom should itself be annotated with the mapping metadata. The
+  argument should be of the form <<<translator:slot_list>>>, where
+  <<<translator>>> is the name of a metadata translator and
+  <<<slot_list>>> is the list of slots from which to derive annotations.
+  
+  Currently, the only allowe value for the <<<translator>>> part is
+  <<<direct>>>; it instructs to create annotations using the IRI of the
+  slot itself. For example, under <<<direct>>>, a <mapping_provider>
+  slot would result in a <<<https://w3id.org/sssom/mapping_provider>>>
+  annotation.
+  
+  The <<<slot_list>>> is a comma-separated list of slot names. Each name
+  may be preceded by a <<<->>> character, indicating that the
+  corresponding slot should be excluded when creating annotations.
+  
+  The following special slot names are accepted:
+  
+  [all] Include all available slots;
+  
+  [mapping] Include all the slots that are about the mapping itself
+  			rather than its metadata; that means <<<subject_id>>>,
+  			<<<predicate_id>>>, and <<<object_id>>>;
+  
+  [metadata] Include all the slots that are strictly about the
+             mapping metadata, excluding <<<subject_id>>>,
+             <<<predicate_id>>>, and <<<object_id>>>.
+  
+  []
+  
+  For example, the following call:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* -> annotate_object(oio:hasDbXref, "%subject_curie"
+                   "direct:metadata,-mapping_cardinality"
+                   );
++-----------------------------------------------------------------------
+
+  would create an annotation axiom which would itself be annotated with
+  values derived from the all the metadata slots except
+  <<<mapping_cardinality>>>.
 
 *** Preprocessing functions
 

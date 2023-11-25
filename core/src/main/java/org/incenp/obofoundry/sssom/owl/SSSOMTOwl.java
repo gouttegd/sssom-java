@@ -25,9 +25,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
+import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
@@ -229,13 +231,16 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         case "annotate_subject":
         case "annotate_object":
-            checkArguments(name, 2, arguments);
+            checkArguments(name, 2, arguments, true);
             transformer = new AnnotationAxiomGenerator(ontology, IRI.create(arguments.get(0)),
                     formatter.getTransformer(arguments.get(1)), name.endsWith("_object"));
+            if ( arguments.size() == 3 ) {
+                transformer = createAnnotatedTransformer(transformer, arguments.get(2));
+            }
             break;
 
         case "create_axiom":
-            checkArguments(name, 1, arguments);
+            checkArguments(name, 1, arguments, true);
             String text = arguments.get(0);
 
             // First look if the expression is a "common" one, to avoid if possible
@@ -257,6 +262,10 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                 } catch ( IllegalArgumentException e ) {
                     throw new SSSOMTransformError(e.getMessage());
                 }
+            }
+
+            if ( arguments.size() == 2 ) {
+                transformer = createAnnotatedTransformer(transformer, arguments.get(1));
             }
             break;
         }
@@ -419,6 +428,23 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             return true;
         }
         return false;
+    }
+
+    private IMappingTransformer<OWLAxiom> createAnnotatedTransformer(IMappingTransformer<OWLAxiom> inner, String spec)
+            throws SSSOMTransformError {
+        IMetadataTransformer<Mapping, IRI> transformer = null;
+        String[] items = spec.replaceAll("( |\r|\n|\r)", "").split(":", 2);
+        if ( items[0].equalsIgnoreCase("direct") ) {
+            transformer = new DirectMetadataTransformer();
+        } else {
+            throw new SSSOMTransformError(String.format("Unknown metadata transformer: %s", items[0]));
+        }
+
+        if ( items.length == 1 ) {
+            return new AnnotatedAxiomGenerator(ontology, inner, transformer);
+        } else {
+            return new AnnotatedAxiomGenerator(ontology, inner, transformer, SlotHelper.getMappingSlotList(items[1]));
+        }
     }
 
     /*

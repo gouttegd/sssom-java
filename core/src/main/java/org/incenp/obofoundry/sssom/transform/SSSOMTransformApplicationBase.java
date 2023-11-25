@@ -75,7 +75,11 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     protected void checkArguments(String name, int expected, List<String> arguments) throws SSSOMTransformError {
-        if ( arguments.size() != expected ) {
+        checkArguments(name, expected, arguments, false);
+    }
+
+    protected void checkArguments(String name, int expected, List<String> arguments, boolean min) throws SSSOMTransformError {
+        if ( (min && arguments.size() < expected) || (!min && arguments.size() != expected) ) {
             throw new SSSOMTransformError(
                     String.format("Invalid number of arguments for function %s: expected %d, found %d", name, expected,
                             arguments.size()));
