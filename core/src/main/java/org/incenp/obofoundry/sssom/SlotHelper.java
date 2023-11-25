@@ -22,7 +22,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -158,6 +160,15 @@ public class SlotHelper<T> {
     }
 
     /**
+     * Explicitly sets the list of slots to visit.
+     * 
+     * @param slotNames The names of the slots that this object should visit.
+     */
+    public void setSlots(Collection<String> slotNames) {
+        slots.removeIf(slot -> !slotNames.contains(slot.getName()));
+    }
+
+    /**
      * Excludes the specified slots from being visited.
      * 
      * @param slotNames The names of the slots that this object should not visit.
@@ -170,10 +181,24 @@ public class SlotHelper<T> {
      * Gets the current list of slots set to be visited. They are listed in the
      * order they would be visited.
      * 
-     * @return The current slot lists.
+     * @return The current slots list.
      */
     public List<Slot<T>> getSlots() {
         return slots;
+    }
+
+    /**
+     * Gets the current list of slot names to be visited. They are listed in the
+     * order they would be visited.
+     * 
+     * @return The current slot names list.
+     */
+    public List<String> getSlotNames() {
+        ArrayList<String> names = new ArrayList<String>();
+        for ( Slot<T> slot : slots ) {
+            names.add(slot.getName());
+        }
+        return names;
     }
 
     /**
@@ -308,5 +333,86 @@ public class SlotHelper<T> {
                 }
             }
         }
+    }
+
+    /**
+     * Helper method to construct a list of slot names from a string specification.
+     * <p>
+     * The string is expected to be a comma-separated list of names. Each name
+     * should be the name of the slot to include, unless it is prefixed by a
+     * {@code -}, in which case the slot is to be excluded. The following special
+     * names can also be used:
+     * <ul>
+     * <li>{@code all}: represents all slots;
+     * <li>{@code mapping}: represents the slots that are about the mapping itself
+     * (<em>subject_id</em>, <em>predicate_id</em>, <em>object_id</em>;
+     * <li>{code metadata}: represents the slots that are about the mapping metadata
+     * (all slots except the above three).
+     * </ul>
+     * 
+     * <p>
+     * Examples:
+     * 
+     * <pre>
+     * subject_id,object_id
+     * </pre>
+     * 
+     * will construct a list comprising only the <em>subject_id</em> and
+     * <em>object_id</em> slots;
+     * 
+     * <pre>
+     * all,-predicate_id
+     * </pre>
+     * 
+     * will construct a list comprising all slots except <em>predicate_id</em>;
+     * 
+     * <pre>
+     * mapping,mapping_provider
+     * </pre>
+     * 
+     * will construct a list comprising the three slots describing the mapper proper
+     * (<em>subject_id</em>, <em>predicate_id</em>, <em>object_id</em>) plus
+     * <em>mapping_provider</em>;
+     * 
+     * @param spec A textual specification of the slots list.
+     * @return The corresponding list of slot names.
+     */
+    public static Collection<String> getMappingSlotList(String spec) {
+        List<String> allSlots = getMappingHelper().getSlotNames();
+
+        HashSet<String> mappingSlots = new HashSet<String>();
+        mappingSlots.add("subject_id");
+        mappingSlots.add("predicate_id");
+        mappingSlots.add("object_id");
+
+        HashSet<String> metaSlots = new HashSet<String>(allSlots);
+        metaSlots.removeAll(mappingSlots);
+
+        HashSet<String> added = new HashSet<String>();
+        HashSet<String> removed = new HashSet<String>();
+
+        for ( String item : spec.split(",") ) {
+            if ( item.startsWith("-") ) {
+                String name = item.substring(1);
+                if ( name.equals("mapping") ) {
+                    removed.addAll(mappingSlots);
+                } else if ( name.equalsIgnoreCase("metadata") ) {
+                    removed.addAll(metaSlots);
+                } else {
+                    removed.add(name);
+                }
+            } else if ( item.equalsIgnoreCase("all") ) {
+                added.addAll(allSlots);
+            } else if ( item.equalsIgnoreCase("mapping") ) {
+                added.addAll(mappingSlots);
+            } else if ( item.equalsIgnoreCase("metadata") ) {
+                added.addAll(metaSlots);
+            } else if ( allSlots.contains(item) ) {
+                added.add(item);
+            }
+        }
+
+        added.removeAll(removed);
+        return added;
     }
 }

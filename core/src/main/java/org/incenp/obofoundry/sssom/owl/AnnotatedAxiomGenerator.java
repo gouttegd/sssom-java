@@ -18,12 +18,13 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
+import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -36,65 +37,113 @@ import org.semanticweb.owlapi.model.OWLOntology;
 public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
     private OWLDataFactory factory;
-    private IMappingTransformer<OWLAxiom> innerGenerator;
+    private IMappingTransformer<OWLAxiom> generator;
+    private IMetadataTransformer<Mapping, IRI> translator;
     private SlotHelper<Mapping> slotHelper;
 
     /**
-     * Creates a new instance that generate “direct” OWL axioms.
-     * <p>
-     * Using this constructor is equivalent to calling
-     * 
-     * <pre>
-     * new AnnotatedAxiomGenerator(ontology, new DirectAxiomGenerator(ontology));
-     * </pre>
+     * Creates a new instance that generate “direct” OWL axioms with “direct”
+     * annotations from the mapping metadata.
      * 
      * @param ontology The ontology to generate axioms for.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology) {
-        this(ontology, new DirectAxiomGenerator(ontology));
+        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer(), true);
     }
 
     /**
-     * Creates a new instance.
+     * Creates a new instance that generates “direct” OWL axioms with “direct”
+     * annotations from either the mapping metadata slots or all the mapping slots.
      * 
-     * @param ontology The ontology to generate axiom for.
-     * @param inner    The mapping transformer to produce the axioms to annotate.
+     * @param ontology     The ontology to generate axioms for.
+     * @param onlyMetadata If {@code true}, only generate annotations from metadata
+     *                     slots (excluding subject_id, predicate_id, and object_id,
+     *                     as well as mapping_cardinality); otherwise, generate
+     *                     annotations from available slots.
      */
-    public AnnotatedAxiomGenerator(OWLOntology ontology, IMappingTransformer<OWLAxiom> inner) {
-        factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        innerGenerator = inner;
-        slotHelper = SlotHelper.getMappingHelper(true);
-        slotHelper.excludeSlots(
-                Arrays.asList(new String[] { "subject_id", "predicate_id", "object_id", "mapping_cardinality" }));
+    public AnnotatedAxiomGenerator(OWLOntology ontology, boolean onlyMetadata) {
+        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer(), onlyMetadata);
     }
 
     /**
-     * Creates a new instance with a customised list of slots to use to generate the
-     * annotations.
+     * Creates a new instance that generates “direct” OWL axioms with “direct”
+     * annotations from the specified list of slots.
      * 
      * @param ontology The ontology to generate axioms for.
-     * @param inner    The mapping transformer to produce the axioms to annotate.
-     * @param slots    The list of slots from which to derive annotations.
+     * @param slots    The list of slots from which to derive annotations; if
+     *                 {@code null}, all available slots will be used.
      */
-    public AnnotatedAxiomGenerator(OWLOntology ontology, IMappingTransformer<OWLAxiom> inner, List<String> slots) {
-        factory = ontology.getOWLOntologyManager().getOWLDataFactory();
-        innerGenerator = inner;
-        slotHelper = SlotHelper.getMappingHelper(true);
+    public AnnotatedAxiomGenerator(OWLOntology ontology, Collection<String> slots) {
+        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer(), slots);
+    }
 
-        // TODO: Validate the list of slots
-        slotHelper.setSlots(slots, false);
+    /**
+     * Creates a new instance with the specified generator and metadata transformer.
+     * Axiom annotations are derived from the mapping metadata slots only.
+     * 
+     * @param ontology       The ontology to generate axioms for.
+     * @param innerGenerator The mapping transformer to produce the axioms to
+     *                       annotate.
+     * @param slotTranslator The metadata-to-IRI translator indicating the
+     *                       annotation property to use for each slot.
+     */
+    public AnnotatedAxiomGenerator(OWLOntology ontology, IMappingTransformer<OWLAxiom> innerGenerator,
+            IMetadataTransformer<Mapping, IRI> slotTranslator) {
+        this(ontology, innerGenerator, slotTranslator, true);
+    }
+
+    /**
+     * Creates a new instance with the specified generator and metadata transformer.
+     * Axiom annotations are derived from either the metadata slots only or from all
+     * the mapping slots.
+     * 
+     * @param ontology       The ontology to generate axioms for.
+     * @param innerGenerator The mapping transformer to produce the axioms to
+     *                       annotate.
+     * @param slotTranslator The metadata-to-IRI translator indicating the
+     *                       annotation property to use for each metadata slot.
+     * @param onlyMetadata   If {@code true}, only generate annotations from
+     *                       metadata slots (excluding subject_id, predicate_id, and
+     *                       object_id, as well as mapping_cardinality); otherwise,
+     *                       generate annotations from available slots.
+     */
+    public AnnotatedAxiomGenerator(OWLOntology ontology, IMappingTransformer<OWLAxiom> innerGenerator,
+            IMetadataTransformer<Mapping, IRI> slotTranslator, boolean onlyMetadata) {
+        this(ontology, innerGenerator, slotTranslator,
+                onlyMetadata ? SlotHelper.getMappingSlotList("metadata,-mapping_cardinality") : null);
+    }
+
+    /**
+     * Creates a new instance with the specified generator and metadata transformer,
+     * and a customised list of slots to use to generate the annotations.
+     * 
+     * @param ontology       The ontology to generate axioms for.
+     * @param innerGenerator The mapping transformer to produce the axioms to
+     *                       annotate.
+     * @param slotTranslator The metadata-to-IRI translator indicating the
+     *                       annotation property to use for each slot.
+     * @param slots          The list of slots from which to derive annotations; if
+     *                       {@code null}, all available slots will be used.
+     */
+    public AnnotatedAxiomGenerator(OWLOntology ontology, IMappingTransformer<OWLAxiom> innerGenerator,
+            IMetadataTransformer<Mapping, IRI> slotTranslator, Collection<String> slots) {
+        factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        generator = innerGenerator;
+        translator = slotTranslator;
+        slotHelper = SlotHelper.getMappingHelper(slots != null);
+        if ( slots != null ) {
+            slotHelper.setSlots(slots);
+        }
     }
 
     @Override
     public OWLAxiom transform(Mapping mapping) {
-        OWLAxiom axiom = innerGenerator.transform(mapping);
+        OWLAxiom axiom = generator.transform(mapping);
         if ( axiom != null ) {
-            AnnotationVisitor visitor = new AnnotationVisitor(factory);
+            AnnotationVisitor visitor = new AnnotationVisitor(factory, translator);
             slotHelper.visitSlots(mapping, visitor);
             axiom = visitor.annotate(axiom);
         }
         return axiom;
     }
-
-
 }
