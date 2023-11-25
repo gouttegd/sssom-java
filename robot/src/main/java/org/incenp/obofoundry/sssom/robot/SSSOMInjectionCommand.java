@@ -31,8 +31,8 @@ import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.owl.AnnotatedAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
-import org.incenp.obofoundry.sssom.owl.DirectAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
 import org.incenp.obofoundry.sssom.owl.SSSOMTOwl;
@@ -223,7 +223,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("direct") ) {
-            axiomGenerator.addRule(null, null, new DirectAxiomGenerator(ontology));
+            axiomGenerator.addRule(null, null, new AnnotatedAxiomGenerator(ontology));
         }
 
         if (line.hasOption("hasdbxref")) {
