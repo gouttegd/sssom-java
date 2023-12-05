@@ -96,6 +96,9 @@ robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
                --output bridged.owl
 ```
 
+* Renaming entities within a OWL ontology, using a SSSOM mapping set as
+the source of truth for which entity should be renamed and into what.
+
 * Manipulating mapping sets from the command line, with a dedicated
   command-line tool named `sssom-cli`.
 

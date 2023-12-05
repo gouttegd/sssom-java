@@ -1,0 +1,37 @@
+ROBOT rename command
+
+  The <<<rename>>> command provided by the SSSOM plugin does a similar
+  thing as the standard <<<rename>>> command in ROBOT: it renames
+  entities in the source ontology. The difference with the standard
+  command is that it uses a SSSOM mapping set as source of truth for
+  which entity should be renamed into what, instead of the ad-hoc,
+  dual-column TSV format used by the standard command.
+  
+* Usage
+
+  The command just needs the <<<--sssom>>> option, which indicates the
+  file containing the mapping set to use for renaming. Any entity within
+  the ontology that has an IRI that is the subject of one of the
+  mappings will be renamed to the IRI of the object of that same mapping.
+  
+* Selecting mappings to use
+
+  By default, only mappings whose mapping predicate is
+  <<<http://purl.obolibrary.org/obo/IAO_0100001>>> (“term replaced by”)
+  will be considered.
+  
+  To explicitly specify another mapping predicate, use the
+  <<<-predicate>>> option. That option may be repeated as many times as
+  desired to select mappings based on several predicates.
+  
+  To use all mappings regardless of their mapping predicate, use the
+  special value <<<all>>> (or <<<any>>>) to the <<<--predicate>>>
+  option.
+  
+* Updating labels
+
+  If the <<<--labels>>> option is used, and the mapping set contains
+  <<<object_label>>> metadata, then in addition to changing the IRI the
+  command will also update the label of the class or property that is
+  being renamed, using the <<<object_label>>> slot of the mapping as the
+  new label.

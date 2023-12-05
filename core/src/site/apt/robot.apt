@@ -38,10 +38,13 @@ ROBOT commands
   
 * Available commands
 
-  Currently, this project provides two commands:
+  Currently, this project provides three commands:
   
   * {{{./robot-xref-extract.html}xref-extract}} to extract mappings from
     cross-reference annotations in an ontology;
 
   * {{{./robot-sssom-inject.html}inject}} to inject SSSOM-derived axioms
-    into an ontology.
+    into an ontology;
+    
+  * {{{./robot-rename.html}rename}} to rename entities in an ontology,
+    using a mapping set as data source.

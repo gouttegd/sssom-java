@@ -18,6 +18,7 @@
       <item name="ROBOT commands" href="robot.html">
         <item name="xref-extract" href="robot-xref-extract.html" />
         <item name="inject" href="robot-sssom-inject.html" />
+        <item name="rename" href="robot-rename" />
       </item>
       <item name="SSSOM-CLI" href="sssom-cli.html" />
       <item name="API Documentation" href="apidocs/index.html" />
