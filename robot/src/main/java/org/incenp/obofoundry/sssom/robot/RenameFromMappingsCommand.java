@@ -23,6 +23,7 @@ import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -102,12 +103,15 @@ public class RenameFromMappingsCommand implements Command {
         boolean updateLabels = line.hasOption('l');
         boolean noFiltering = false;
         if ( line.hasOption('p') ) {
+            PrefixManager pm = new PrefixManager();
+            pm.add(ioHelper.getPrefixes());
+
             predicates.clear();
             for ( String value : line.getOptionValues('p') ) {
                 if ( value.equalsIgnoreCase("all") || value.equalsIgnoreCase("any") ) {
                     noFiltering = true;
                 } else {
-                    predicates.add(value);
+                    predicates.add(pm.expandIdentifier(value));
                 }
             }
         }
