@@ -14,6 +14,10 @@ ROBOT rename command
   the ontology that has an IRI that is the subject of one of the
   mappings will be renamed to the IRI of the object of that same mapping.
   
+  The <<<--sssom>>> option may be repeated as many times as needed to
+  read mappings from more than one file. All mapping sets will be
+  combined before the renaming operation is performed.
+  
 * Selecting mappings to use
 
   By default, only mappings whose mapping predicate is

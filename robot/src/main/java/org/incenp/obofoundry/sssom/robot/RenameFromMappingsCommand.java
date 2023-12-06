@@ -97,8 +97,16 @@ public class RenameFromMappingsCommand implements Command {
         if ( !line.hasOption('s') ) {
             throw new IllegalArgumentException("Missing SSSOM mapping set");
         }
-        TSVReader reader = new TSVReader(line.getOptionValue('s'));
-        MappingSet ms = reader.read();
+
+        MappingSet ms = null;
+        for ( String sssomFile : line.getOptionValues('s') ) {
+            TSVReader reader = new TSVReader(sssomFile);
+            if ( ms == null ) {
+                ms = reader.read();
+            } else {
+                ms.getMappings().addAll(reader.read().getMappings());
+            }
+        }
 
         boolean updateLabels = line.hasOption('l');
         boolean noFiltering = false;
