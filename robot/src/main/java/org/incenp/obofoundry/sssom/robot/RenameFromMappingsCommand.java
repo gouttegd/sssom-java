@@ -130,7 +130,7 @@ public class RenameFromMappingsCommand implements Command {
             if ( noFiltering || predicates.contains(mapping.getPredicateId()) ) {
                 renames.put(mapping.getSubjectId(), mapping.getObjectId());
                 if ( updateLabels && mapping.getObjectLabel() != null ) {
-                    labels.put(IRI.create(mapping.getSubjectId()), mapping.getObjectLabel());
+                    labels.put(IRI.create(mapping.getObjectId()), mapping.getObjectLabel());
                 }
             }
         }
