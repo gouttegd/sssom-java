@@ -146,6 +146,9 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
         }
 
         values.put(slotName, parsedValue);
+
+        // Reset slotHelper so that the list of visited slots is up-to-date
+        slotHelper = null;
     }
 
     private SlotHelper<Mapping> getHelper() {
