@@ -101,6 +101,8 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
      * @param value    The new value of the slot. May be {@code null} or an empty
      *                 string to remove an existing value. For multi-value slots,
      *                 the values must be separated by a {@code |} character.
+     * @exception IllegalArgumentException If {@code slotName} is not a valid slot
+     *                                     name, or if the value is invalid.
      */
     public void addEdit(String slotName, String value) {
         Slot<Mapping> slot = slotsDict.get(slotName);
@@ -109,6 +111,9 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
         }
 
         if ( value == null || value.isEmpty() ) {
+            if ( slotName.equals("subject_id") || slotName.equals("object_id") || slotName.equals("predicate_id") ) {
+                throw new IllegalArgumentException(String.format("Cannot set slot \"%s\" to nothing", slotName));
+            }
             values.put(slotName, null);
             return;
         }
