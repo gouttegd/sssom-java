@@ -8,8 +8,9 @@ Command-line tool
 
   SSSOM-CLI acts as a filter that can read one or more mapping set(s),
   perform some treatments on the mappings (at least in the future;
-  currently, the only possible treatment is apply some filtering, as
-  explained below), and then write the resulting mapping set out.
+  currently, the only possible treatment is to apply some filtering and
+  transformation, as explained below), and then write the resulting
+  mapping set out.
   
   Input mapping sets are specified with the <<<--input>>> option. Repeat
   that option as needed to read more than one mapping sets. All mapping
@@ -41,8 +42,9 @@ sssom-cli --input file1.sssom.tsv --input -
   filtering rules to apply to the mapping set.
   
   The SSSOM/T dialect used by SSSOM-CLI is currently very simple and
-  comprises, in addition to the generic <<<stop()>>> and <<<invert()>>>
-  function, only one dialect-specific function called <<<include()>>>.
+  comprises, in addition to the generic <<<stop()>>>, <<<invert()>>>,
+  and <<<edit>>> functions, only one dialect-specific function called
+  <<<include()>>>.
   
   Use <<<include()>>> in a SSSOM/T rule to indicate that the mappings
   the rule is applied to should be included in the resulting mapping
@@ -73,6 +75,10 @@ subject==CL:* || subject==UBERON:* -> invert();
 
 # Filter out any mapping to something else than CL or UBERON
 !(object==CL:* || object==UBERON:*) -> stop();
+
+# Forcibly set the object source to CL or UBERON
+object==CL:* -> edit("object_source=http://purl.obolibrary.org/obo/cl.owl");
+object==UBERON:* -> edit("object_source=http://purl.obolibrary.org/obo/uberon.owl");
 
 # Include all remaining mappings
 subject==* -> include();

@@ -267,7 +267,7 @@ my_function(arg1, arg2, arg3);
   
 ** Built-in functions
 
-  The default parser provided with SSSOM-Java recognises two built-in
+  The default parser provided with SSSOM-Java recognises three built-in
   functions:
   
   * The <<<stop()>>> function indicates that the mapping to which the
@@ -285,6 +285,19 @@ my_function(arg1, arg2, arg3);
     
     See the {{{https://mapping-commons.github.io/sssom/chaining_rules/#inverse-rules}SSSOM documentation}}
     about mapping inversion.
+    
+  * The <<<edit()>>> function allows to modify the selected mapping. It
+    takes any number of arguments (at least one), each argument being a
+    <<<key=value>>> pair where <<<key>>> is the name of the metadata
+    slot to edit and <<<value>>> the new value to assign to that slot.
+    
+    The <<<value>>> may be an empty string (<<<key=>>>) to indicate that
+    the slot should have no value (any existing value for that slot
+    would then be removed). To set several values in a multi-valued slot
+    (such as <<<creator_id>>>, separate the values with a <<<|>>>
+    character). When setting a value to a slot that accepts an entity
+    reference, short identifiers may be used using any prefix that is
+    declared in a <<<prefix>>> declaration (see below).
     
   []
   
@@ -315,6 +328,14 @@ mapping_justification==semapv:ManualMappingCuration && subject==CL:* -> invert()
   mappings that are not manually curated are still present in the set
   – they have been excluded from the <<<invert()>>> rule, but not
   removed, so they will be seen by any rule that may follow.
+  
+  This other example shows how to modify mappings. Here, any mapping
+  using a <<<oboInOwl:hasDbXref>>> predicate is modified to use a
+  <<<skos:exactMatch>>> predicate instead:
+  
++-----------------------------------------------------------------------
+predicate==oboInOwl:hasDbXref -> edit("predicate_id=skos:exactMatch");
++-----------------------------------------------------------------------
   
 ** Application-specific functions
 
