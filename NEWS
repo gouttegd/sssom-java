@@ -1,3 +1,10 @@
+Changes in sssom-java-0.7.0
+---------------------------
+
+    * New ROBOT command to rename entities in a OWL ontology.
+    * New SSSOM/T preprocessing function to edit mappings on the fly.
+
+
 Changes in sssom-java-0.6.2
 ---------------------------
 
