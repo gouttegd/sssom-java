@@ -230,7 +230,9 @@ public class TSVWriter {
             if ( slot.getName().equals("curie_map") ) {
                 values = new HashMap<String, String>();
                 for ( String prefixName : usedPrefixes ) {
-                    values.put(prefixName, prefixManager.getPrefix(prefixName));
+                    if ( prefixName != null ) {
+                        values.put(prefixName, prefixManager.getPrefix(prefixName));
+                    }
                 }
             }
 
