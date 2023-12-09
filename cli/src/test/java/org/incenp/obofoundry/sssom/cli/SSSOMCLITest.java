@@ -92,6 +92,20 @@ public class SSSOMCLITest {
     }
 
     /*
+     * Check that we can apply changes to mappings as part of a SSSOM/T ruleset.
+     */
+    @Test
+    void testMappingEdition() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input",  "../core/src/test/resources/sample1.sssom.tsv",
+                "--rule",   "subject==* -> edit(\"predicate_id=skos:exactMatch\")",
+                "--rule",   "subject==* -> include()",
+                "--output", "src/test/resources/edited1.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("edited1.sssom.tsv");
+    }
+
+    /*
      * Run a CLI command.
      */
     private int runCommand(int code, String... strings) {
