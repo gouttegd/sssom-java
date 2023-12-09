@@ -159,6 +159,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         entityChecker = new CustomEntityChecker(ontology, pm);
         manParser.setOWLEntityChecker(entityChecker);
+
+        super.onInit(pm);
     }
 
     @Override
