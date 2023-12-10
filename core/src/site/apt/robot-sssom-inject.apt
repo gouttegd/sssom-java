@@ -291,6 +291,23 @@ subject==FBbt:* -> annotate_object(oio:hasDbXref, "%subject_curie"
   would create an annotation axiom which would itself be annotated with
   values derived from the all the metadata slots except
   <<<mapping_cardinality>>>.
+  
+  Of note, the default behaviour of the <<<direct>>> function is already
+  to generate axiom annotations from all the mapping metadata slots
+  except <<<mapping_cardinality>>>. That is, a single call to
+  <<<direct()>>>, without any argument, is actually equivalent to
+  
++-----------------------------------------------------------------------
+direct("direct:metadata,-mapping_cardinality");
++-----------------------------------------------------------------------
+
+  To generate direct OWL axioms without any annotation, that default
+  behaviour may be disabled by passing an argument with an empty list of
+  slots:
+  
++-----------------------------------------------------------------------
+direct("direct:");
++-----------------------------------------------------------------------
 
 *** Preprocessing functions
 
