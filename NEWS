@@ -1,3 +1,9 @@
+Changes in sssom-java-0.7.1
+---------------------------
+
+    * Fix missing optional argument in SSSOM/T-OWL "direct" function.
+
+
 Changes in sssom-java-0.7.0
 ---------------------------
 
