@@ -23,6 +23,9 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SimpleSlotVisitor;
@@ -37,21 +40,24 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
  * A mapping transformer that applies arbitrary changes to a mapping.
  * <p>
  * Changes to be applied must be specified by one or several calls to
- * {@link #addEdit(String, String)}:
+ * {@link #addSimpleAssign(String, String)} or
+ * {@link #addReplacement(String, String, String)}:
  * 
  * <pre>
  * MappingEditor editor = new MappingEditor();
  * // set a mapping justification
- * editor.addEdit("mapping_justification", "semapv:ManualMappingCuration");
+ * editor.addSimpleAssign("mapping_justification", "semapv:ManualMappingCuration");
  * // remove subject source
- * editor.addEdit("subject_source", null);
+ * editor.addSimpleAssign("subject_source", null);
+ * // do a regex-based replacement
+ * editor.addReplacement("subject_id", "https://meshb.nlm.nih.gov/record/ui[?]ui=", "http://id.nlm.nih.gov/mesh/");
  * </pre>
  */
 public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVisitor<Mapping, Void> {
 
     private static HashMap<String, Slot<Mapping>> slotsDict = new HashMap<String, Slot<Mapping>>();
 
-    private HashMap<String, Object> values = new HashMap<String, Object>();
+    private HashMap<String, IMappingTransformer<Object>> values = new HashMap<String, IMappingTransformer<Object>>();
     private SlotHelper<Mapping> slotHelper = null;
     private PrefixManager pm;
 
@@ -71,7 +77,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
     /**
      * Creates a new instance with the specified prefix manager. The prefix manager
      * is used to expand short identifiers in arguments to
-     * {@link #addEdit(String, String)}.
+     * {@link #addSimpleAssign(String, String)}.
      * 
      * @param prefixManager The prefix manager to use.
      */
@@ -89,13 +95,15 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
     @Override
     public Void visit(Slot<Mapping> slot, Mapping object, Object value) {
         if ( values.containsKey(slot.getName()) ) {
-            slot.setValue(object, values.get(slot.getName()));
+            slot.setValue(object, values.get(slot.getName()).transform(object));
         }
         return null;
     }
 
     /**
-     * Adds a change to be applied by this transformer.
+     * Adds a change to be applied by this transformer. This is a simple change
+     * where the value to assign is already fully known when the method is called:
+     * the value does not depend on the mapping the change is applied to.
      * 
      * @param slotName The name of the mapping slot to change.
      * @param value    The new value of the slot. May be {@code null} or an empty
@@ -104,7 +112,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
      * @exception IllegalArgumentException If {@code slotName} is not a valid slot
      *                                     name, or if the value is invalid.
      */
-    public void addEdit(String slotName, String value) {
+    public void addSimpleAssign(String slotName, String value) {
         Slot<Mapping> slot = slotsDict.get(slotName);
         if ( slot == null ) {
             throw new IllegalArgumentException(String.format("Invalid slot name: %s", slotName));
@@ -114,7 +122,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
             if ( slotName.equals("subject_id") || slotName.equals("object_id") || slotName.equals("predicate_id") ) {
                 throw new IllegalArgumentException(String.format("Cannot set slot \"%s\" to nothing", slotName));
             }
-            values.put(slotName, null);
+            values.put(slotName, (mapping) -> null);
             return;
         }
 
@@ -150,7 +158,65 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
             throw new IllegalArgumentException(String.format("Invalid value \"%s\" for slot \"%s\"", value, slotName));
         }
 
-        values.put(slotName, parsedValue);
+        Object setValue = parsedValue;
+        values.put(slotName, (mapping) -> setValue);
+
+        // Reset slotHelper so that the list of visited slots is up-to-date
+        slotHelper = null;
+    }
+
+    /**
+     * Adds a replacement operation to be applied by this transformer. The new value
+     * of the edited slot is computed by finding all occurrences of the specified
+     * pattern in the original slot value, and replacing them with the specified
+     * replacement value.
+     * 
+     * @param slotName    The name of the mapping slot to change.
+     * @param pattern     The pattern to replace in the slot's original value.
+     * @param replacement The value the pattern should be replaced by.
+     * @exception IllegalArgumentException If {@code slotName} is not a valid slot
+     *                                     name, if the pattern is not a valid
+     *                                     regular expression, or if the slot type
+     *                                     is unsupported (only string and
+     *                                     list-of-strings slots are supported for
+     *                                     now).
+     */
+    public void addReplacement(String slotName, String pattern, String replacement) {
+        Slot<Mapping> slot = slotsDict.get(slotName);
+        if ( slot == null ) {
+            throw new IllegalArgumentException(String.format("Invalid slot name: %s", slotName));
+        }
+
+        Pattern compiledPattern;
+        try {
+            compiledPattern = Pattern.compile(pattern);
+        } catch ( PatternSyntaxException pse ) {
+            throw new IllegalArgumentException(String.format("Invalid regular expression: %s", pse.getMessage()));
+        }
+
+        Class<?> type = slot.getType();
+        if ( type == String.class ) {
+            IMappingTransformer<Object> t = (mapping) -> {
+                Matcher m = compiledPattern.matcher((String) slot.getValue(mapping));
+                return m.replaceAll(replacement);
+            };
+            values.put(slotName, t);
+        } else if ( type == List.class ) {
+            IMappingTransformer<Object> t = (mapping) -> {
+                @SuppressWarnings("unchecked")
+                List<String> oldList = (List<String>) slot.getValue(mapping);
+                ArrayList<String> newList = new ArrayList<String>();
+                for ( String oldValue : oldList ) {
+                    Matcher m = compiledPattern.matcher(oldValue);
+                    newList.add(m.replaceAll(replacement));
+                }
+                return newList;
+            };
+            values.put(slotName, t);
+        } else {
+            throw new IllegalArgumentException(
+                    String.format("Replacement operation not supported for slot '%s'", slotName));
+        }
 
         // Reset slotHelper so that the list of visited slots is up-to-date
         slotHelper = null;

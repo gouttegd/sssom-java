@@ -66,7 +66,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
 
         case "edit":
             checkArguments(name, 1, arguments, true);
-            MappingEditor editor = new MappingEditor(pm);
+            MappingEditor editEditor = new MappingEditor(pm);
             for (String argument : arguments) {
                 String[] items = argument.split("=", 2);
                 if (items.length != 2) {
@@ -74,13 +74,19 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
                             "Invalid argument for function edit: expected \"key=value\" pair, found \"%\"", argument));
                 }
                 try {
-                    editor.addEdit(items[0], items[1]);
+                    editEditor.addSimpleAssign(items[0], items[1]);
                 } catch ( IllegalArgumentException iae ) {
                     throw new SSSOMTransformError(
                             String.format("Invalid argument for function edit: %s", iae.getMessage()));
                 }
             }
-            return new NamedMappingTransformer<Mapping>("edit()", editor);
+            return new NamedMappingTransformer<Mapping>("edit()", editEditor);
+
+        case "replace":
+            checkArguments(name, 3, arguments);
+            MappingEditor replaceEditor = new MappingEditor(pm);
+            replaceEditor.addReplacement(arguments.get(0), arguments.get(1), arguments.get(2));
+            return new NamedMappingTransformer<Mapping>("replace()", replaceEditor);
         }
         return null;
     }

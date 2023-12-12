@@ -32,7 +32,7 @@ public class MappingEditorTest {
     @Test
     void testBasicChange() {
         MappingEditor editor = new MappingEditor();
-        editor.addEdit("object_id", "https://example.org/anotherObject");
+        editor.addSimpleAssign("object_id", "https://example.org/anotherObject");
 
         Mapping m1 = getSampleMapping();
         Mapping edited = editor.transform(m1);
@@ -44,13 +44,20 @@ public class MappingEditorTest {
     @Test
     void testSettingNoValue() {
         MappingEditor editor = new MappingEditor();
-        editor.addEdit("mapping_justification", null);
+        editor.addSimpleAssign("mapping_justification", null);
         assertNull(editor.transform(getSampleMapping()).getMappingJustification());
 
-        editor.addEdit("mapping_justification", "");
+        editor.addSimpleAssign("mapping_justification", "");
         assertNull(editor.transform(getSampleMapping()).getMappingJustification());
 
-        assertThrows(IllegalArgumentException.class, () -> editor.addEdit("object_id", null));
+        assertThrows(IllegalArgumentException.class, () -> editor.addSimpleAssign("object_id", null));
+    }
+
+    @Test
+    void testReplacement() {
+        MappingEditor editor = new MappingEditor();
+        editor.addReplacement("object_id", "example.org/([a-z]+)$", "example.net/$1");
+        assertEquals("https://example.net/object", editor.transform(getSampleMapping()).getObjectId());
     }
 
     private Mapping getSampleMapping() {
