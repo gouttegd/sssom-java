@@ -71,6 +71,15 @@ public class PrefixManager {
     }
 
     /**
+     * Gets the underlying map of prefix names to URL prefixes.
+     * 
+     * @return The prefix map used by this prefix manager.
+     */
+    public Map<String, String> getPrefixMap() {
+        return prefixMap;
+    }
+
+    /**
      * Gets the prefix names that this resolver could not expand.
      * 
      * @return The set of all prefixes encountered in the lifetime of this object

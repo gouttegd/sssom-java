@@ -162,6 +162,17 @@ public class SSSOMTransformReader<T> {
     }
 
     /**
+     * Gets the effective prefix map used by this reader. It contains all prefixes
+     * known to the reader, whether they were read from a SSSOM/T file or explicitly
+     * added by {@link #addPrefix(String, String)}.
+     * 
+     * @return The prefix map as used by the reader.
+     */
+    public Map<String, String> getPrefixMap() {
+        return prefixManager.getPrefixMap();
+    }
+
+    /**
      * Parses the SSSOM/T ruleset from the underlying source. After this methods
      * returns {@code true}, call the {@link #getRules()} method to get the result.
      * <p>

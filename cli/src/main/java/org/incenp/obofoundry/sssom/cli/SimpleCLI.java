@@ -115,6 +115,11 @@ public class SimpleCLI implements Runnable {
         boolean stdout = outputFile.equals("-");
         try {
             TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputFile);
+            // Combine the original CURIE map with the one used to process the mappings, but
+            // make sure the latter takes precedence
+            Map<String, String> outputPrefixMap = set.getCurieMap();
+            outputPrefixMap.putAll(prefixMap);
+            writer.setCurieMap(outputPrefixMap);
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputFile, ioe.getMessage());
@@ -152,6 +157,7 @@ public class SimpleCLI implements Runnable {
                 helper.error("Invalid SSSOM/T ruleset");
             }
             processor.addRules(reader.getRules());
+            prefixMap.putAll(reader.getPrefixMap());
         }
     }
 
