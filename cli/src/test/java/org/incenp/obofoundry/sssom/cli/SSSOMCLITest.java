@@ -105,6 +105,28 @@ public class SSSOMCLITest {
         checkOutput("edited1.sssom.tsv");
     }
 
+    @Test
+    void testEditionWithAssign() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/sample1.sssom.tsv",
+                "--rule",   "subject==* -> assign(\"predicate_id\", \"skos:exactMatch\")",
+                "--rule",   "subject==* -> include()",
+                "--output", "src/test/resources/edited2.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("edited2.sssom.tsv");
+    }
+
+    @Test
+    void testEditionWithReplace() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/sample1.sssom.tsv",
+                "--rule",   "subject==* -> replace(\"predicate_id\", \"ExactMatch\", \"BroadMatch\")",
+                "--rule",   "subject==* -> include()",
+                "--output", "src/test/resources/edited3.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("edited3.sssom.tsv");
+    }
+
     /*
      * Run a CLI command.
      */

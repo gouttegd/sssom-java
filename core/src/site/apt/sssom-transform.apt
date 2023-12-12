@@ -267,7 +267,7 @@ my_function(arg1, arg2, arg3);
   
 ** Built-in functions
 
-  The default parser provided with SSSOM-Java recognises three built-in
+  The default parser provided with SSSOM-Java recognises four built-in
   functions:
   
   * The <<<stop()>>> function indicates that the mapping to which the
@@ -286,18 +286,36 @@ my_function(arg1, arg2, arg3);
     See the {{{https://mapping-commons.github.io/sssom/chaining_rules/#inverse-rules}SSSOM documentation}}
     about mapping inversion.
     
-  * The <<<edit()>>> function allows to modify the selected mapping. It
-    takes any number of arguments (at least one), each argument being a
-    <<<key=value>>> pair where <<<key>>> is the name of the metadata
-    slot to edit and <<<value>>> the new value to assign to that slot.
+  * The <<<assign()>>> function allows to modify the selected mapping by
+    assigned a constant value to a given slot. It takes at least two
+    arguments, the first one being the name of the slot to modify and
+    the second one being the value to assign to that slot.
     
-    The <<<value>>> may be an empty string (<<<key=>>>) to indicate that
-    the slot should have no value (any existing value for that slot
+    The second argument may be an empty string (<<<"">>>) to indicate
+    that the slot should have no value (any existing value for that slot
     would then be removed). To set several values in a multi-valued slot
-    (such as <<<creator_id>>>, separate the values with a <<<|>>>
-    character). When setting a value to a slot that accepts an entity
-    reference, short identifiers may be used using any prefix that is
-    declared in a <<<prefix>>> declaration (see below).
+    (such as <<<creator_id>>>), separate the values with a <<<|>>>. When
+    setting a value to a slot that accepts an entity reference, short
+    identifiers may be used using any prefix that is declared in a
+    <<<prefix>>> declaration (see below).
+    
+    It is possible to modify more than one slots in a single call by
+    adding extra arguments. Each supplementary pair of arguments should
+    follow the same rules as the first pair (so, the third argument is
+    the name of the second slot to modify, the fourth argument is the
+    value to assign to that slot, and so on).
+    
+  * The <<<replace()>>> function allows to modify the selected mapping
+    by assigning to a slot a value that is calculated at runtime. It
+    takes at least three arguments: the name of the slot to modify, a
+    pattern to find within the value of that slot for a given mapping,
+    and a string to replace all occurrences of the pattern with.
+    
+    Currently, that function is only available for slots whose values
+    are either string or list-of-strings (including entity references).
+    
+    As for the <<<assign()>>> function, it is possible to modify more
+    than one slot by adding extra triplets of arguments.
     
   []
   
@@ -334,8 +352,22 @@ mapping_justification==semapv:ManualMappingCuration && subject==CL:* -> invert()
   <<<skos:exactMatch>>> predicate instead:
   
 +-----------------------------------------------------------------------
-predicate==oboInOwl:hasDbXref -> edit("predicate_id=skos:exactMatch");
+predicate==oboInOwl:hasDbXref -> assign("predicate_id", "skos:exactMatch");
 +-----------------------------------------------------------------------
+
+  Finally, this example shows how to perform string replacements within
+  a mapping. Here, object IDs are renamed to fix a bogus prefix URL:
+  
++-----------------------------------------------------------------------
+predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui=", "http://id.nlm.nih.gov/mesh/");
++-----------------------------------------------------------------------
+
+  Any object ID with an IRI starting with
+  <<<https://meshb.nlm.nih.gov/record/ui?ui=>>> will be renamed so that
+  its IRI starts with <http://id.nlm.nih.gov/mesh/>>> instead. Note how
+  the <<<?>>> character in the original URL prefix had to be escaped,
+  since that character has a special meaning in regular expressions.
+  
   
 ** Application-specific functions
 

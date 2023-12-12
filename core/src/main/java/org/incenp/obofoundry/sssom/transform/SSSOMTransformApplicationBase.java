@@ -82,10 +82,28 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
             }
             return new NamedMappingTransformer<Mapping>("edit()", editEditor);
 
+        case "assign":
+            if ( arguments.size() % 2 != 0 ) {
+                throw new SSSOMTransformError(String.format(
+                        "Invalid number of arguments for function assign: expected multiple of 2, found %d",
+                        arguments.size()));
+            }
+            MappingEditor assignEditor = new MappingEditor();
+            for ( int i = 0; i < arguments.size(); i += 2 ) {
+                assignEditor.addSimpleAssign(arguments.get(i), arguments.get(i + 1));
+            }
+            return new NamedMappingTransformer<Mapping>("assign()", assignEditor);
+
         case "replace":
-            checkArguments(name, 3, arguments);
+            if ( arguments.size() % 3 != 0 ) {
+                throw new SSSOMTransformError(String.format(
+                        "Invalid number of arguments for function replace: expected multiple of 3, found %d",
+                        arguments.size()));
+            }
             MappingEditor replaceEditor = new MappingEditor(pm);
-            replaceEditor.addReplacement(arguments.get(0), arguments.get(1), arguments.get(2));
+            for ( int i = 0; i < arguments.size(); i += 3 ) {
+                replaceEditor.addReplacement(arguments.get(i), arguments.get(i + 1), arguments.get(i + 2));
+            }
             return new NamedMappingTransformer<Mapping>("replace()", replaceEditor);
         }
         return null;
