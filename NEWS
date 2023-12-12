@@ -1,3 +1,14 @@
+Changes in sssom-java-0.7.2
+---------------------------
+
+    * SSSOM/T:
+      * New function "assign()" to edit mapping slots with fixed values.
+      * New function "replace()" to perform replacement on slot values.
+      * Previously introduced function "edit()" obsoleted.
+    * sssom-inject:
+      * New option --error-on-unshortenable-iris.
+
+
 Changes in sssom-java-0.7.1
 ---------------------------
 

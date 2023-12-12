@@ -97,7 +97,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "drop-duplicate-subjects", false, "Drop any mapping with a cardinality of *:n");
         options.addOption(null, "drop-duplicate-objects", false, "Drop any mapping with a cardinality of n:*");
         options.addOption(null, "error-on-unshortenable-iris", false,
-                "Error out if some IRIs could not be shortened as beeded");
+                "Error out if some IRIs could not be shortened as needed");
     }
 
     @Override
