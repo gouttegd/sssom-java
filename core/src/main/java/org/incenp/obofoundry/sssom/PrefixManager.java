@@ -40,6 +40,7 @@ public class PrefixManager {
     private Map<String, String> iri2CurieCache = new HashMap<String, String>();
     private Map<String, String> iri2PrefixCache = new HashMap<String, String>();
     private Set<String> unresolved = new HashSet<String>();
+    private Set<String> unshortened = new HashSet<String>();
 
     /**
      * Creates a new instance.
@@ -90,6 +91,17 @@ public class PrefixManager {
     }
 
     /**
+     * Gets the IRIs that could not be shortened by
+     * {@link #shortenIdentifier(String)} for lack of a suitable prefix declaration.
+     * 
+     * @return The set of all IRIs encountered in the lifetime of this object that
+     *         could not be shortened.
+     */
+    public Set<String> getUnshortenedIRIs() {
+        return unshortened;
+    }
+
+    /**
      * Gets the prefix associated with the given prefix name.
      * 
      * @param prefixName The name of the prefix to retrieve.
@@ -123,6 +135,8 @@ public class PrefixManager {
 
             if ( bestPrefix != null ) {
                 iri2PrefixCache.put(iri, bestPrefix);
+            } else {
+                unshortened.add(iri);
             }
 
         }
@@ -155,6 +169,8 @@ public class PrefixManager {
             if ( bestPrefix != null ) {
                 shortId = bestPrefix + ":" + iri.substring(bestLength);
                 iri2CurieCache.put(iri, shortId);
+            } else {
+                unshortened.add(iri);
             }
         }
 

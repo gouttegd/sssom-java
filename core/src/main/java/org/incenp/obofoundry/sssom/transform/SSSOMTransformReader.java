@@ -142,6 +142,22 @@ public class SSSOMTransformReader<T> {
     }
 
     /**
+     * Sets the prefix manager to use. Calling this method voids all prefixes
+     * previously declared with {@link #addPrefix(String, String)} or
+     * {@link #addPrefixMap(Map)}.
+     * <p>
+     * This method is intended to be used in situations where the calling code may
+     * need more than just the prefix map itself -- for example, if it needs to know
+     * whether the manager has encountered any prefix that it could not expand or
+     * any IRI that it could not shorten.
+     * 
+     * @param prefixManager The prefix manager used by this reader.
+     */
+    public void setPrefixManager(PrefixManager prefixManager) {
+        this.prefixManager = prefixManager;
+    }
+
+    /**
      * Adds a prefix to the reader's prefix map. The prefix map is used to expand
      * short identifiers ("CURIEs") that may be found in the SSSOM/T ruleset.
      * 

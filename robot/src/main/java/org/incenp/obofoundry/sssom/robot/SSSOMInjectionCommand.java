@@ -20,7 +20,6 @@ package org.incenp.obofoundry.sssom.robot;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
@@ -97,6 +96,8 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "only-object-in", true, "Only process mappings whose object has the given prefix");
         options.addOption(null, "drop-duplicate-subjects", false, "Drop any mapping with a cardinality of *:n");
         options.addOption(null, "drop-duplicate-objects", false, "Drop any mapping with a cardinality of n:*");
+        options.addOption(null, "error-on-unshortenable-iris", false,
+                "Error out if some IRIs could not be shortened as beeded");
     }
 
     @Override
@@ -148,7 +149,11 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         OWLOntology ontology = state.getOntology();
         OWLGenerator axiomGenerator = new OWLGenerator();
-        Map<String, String> prefixes = ioHelper.getPrefixes();
+
+        PrefixManager pm = new PrefixManager();
+        if ( !line.hasOption("no-default-prefixes") ) {
+            pm.add(ioHelper.getPrefixes());
+        }
 
         MappingSet mappingSet = null;
         if ( line.hasOption("sssom") ) {
@@ -163,7 +168,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
         if ( line.hasOption("extract") ) {
             XrefExtractor extractor = new XrefExtractor();
-            extractor.setPrefixMap(prefixes);
+            extractor.setPrefixMap(pm.getPrefixMap());
             extractor.fillPrefixToPredicateMap(ontology);
             if ( mappingSet == null ) {
                 mappingSet = extractor.extract(ontology);
@@ -182,17 +187,13 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if ( line.hasOption("only-subject-in") ) {
-            String pr = prefixes.get(line.getOptionValue("only-subject-in"));
-            if ( pr != null ) {
-                axiomGenerator.addStopingRule((mapping) -> !mapping.getSubjectId().startsWith(pr));
-            }
+            String pr = pm.expandIdentifier(line.getOptionValue("only-subject-in"));
+            axiomGenerator.addStopingRule((mapping) -> !mapping.getSubjectId().startsWith(pr));
         }
 
         if ( line.hasOption("only-object-in") ) {
-            String pr = prefixes.get(line.getOptionValue("only-object-in"));
-            if ( pr != null ) {
-                axiomGenerator.addStopingRule((mapping) -> !mapping.getObjectId().startsWith(pr));
-            }
+            String pr = pm.expandIdentifier(line.getOptionValue("only-object-in"));
+            axiomGenerator.addStopingRule((mapping) -> !mapping.getObjectId().startsWith(pr));
         }
 
         if ( line.hasOption("check-subject") ) {
@@ -227,10 +228,6 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         if (line.hasOption("hasdbxref")) {
-            PrefixManager pm = new PrefixManager();
-            for ( String prefixName : prefixes.keySet() ) {
-                pm.add(prefixName, prefixes.get(prefixName));
-            }
             IMappingTransformer<String> texter = (mapping) -> pm.shortenIdentifier(mapping.getObjectId());
             axiomGenerator.addRule(null, null, new AnnotationAxiomGenerator(ontology,
                     IRI.create("http://www.geneontology.org/formats/oboInOwl#hasDbXref"), texter, false));
@@ -240,9 +237,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             SSSOMTOwl sssomApplication = new SSSOMTOwl(ontology, CommandLineHelper.getReasonerFactory(line));
             SSSOMTransformReader<OWLAxiom> sssomtReader = new SSSOMTransformReader<OWLAxiom>(sssomApplication,
                     line.getOptionValue("ruleset"));
-            if ( !line.hasOption("no-default-prefixes") ) {
-                sssomtReader.addPrefixMap(prefixes);
-            }
+            sssomtReader.setPrefixManager(pm);
             sssomtReader.read();
 
             if ( sssomtReader.hasErrors() ) {
@@ -267,6 +262,22 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         Set<OWLAxiom> bridgingAxioms = new HashSet<OWLAxiom>(axiomGenerator.process(mappingSet.getMappings()));
+
+        boolean errorOnUnshortenableIRIs = line.hasOption("error-on-unshortenable-iris");
+        if ( !pm.getUnshortenedIRIs().isEmpty() ) {
+            for ( String unshortenedIRI : pm.getUnshortenedIRIs() ) {
+                String msg = String.format("IRI could not be shortened: %s", unshortenedIRI);
+                if ( errorOnUnshortenableIRIs ) {
+                    logger.error(msg);
+                } else {
+                    logger.warn(msg);
+                }
+            }
+            if ( errorOnUnshortenableIRIs ) {
+                throw new IllegalStateException(String.format("Some IRIs could not be shortened (%d in total)",
+                        pm.getUnshortenedIRIs().size()));
+            }
+        }
 
         if ( dispatchTable != null ) {
             dispatchTable.saveAll(ioHelper);

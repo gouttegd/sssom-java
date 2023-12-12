@@ -215,6 +215,13 @@ ROBOT inject command
   Corresponding placeholders are also available for the object side
   (<<<%object_id>>>, etc.).
   
+  Of note, the use of <<<%subject_curie>>> (or <<<%object_curie>>>
+  requires that a suitable prefix has been declared to shorten the
+  subject (or object) ID. Without such a prefix, the identifier is
+  written in its canonical full-form and a warning will be emitted.
+  Use the <<<--error-on-unshortenable-iris>>> to force the command
+  to error out if that happens.
+  
   Below are some example of axiom-producing SSSOM/Transform rules (the
   prefix declarations are omitted for brevity).
   
