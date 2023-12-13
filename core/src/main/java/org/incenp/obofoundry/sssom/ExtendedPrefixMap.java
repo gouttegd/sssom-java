@@ -18,8 +18,12 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ExtendedPrefixMap {
 
-    private File mapFile;
+    private BufferedReader mapReader;
     private HashMap<String, String> prefixMap = new HashMap<String, String>();
     private HashMap<String, String> synonymMap = new HashMap<String, String>();
     private HashMap<String, String> iri2CanonCache = new HashMap<String, String>();
@@ -68,7 +72,7 @@ public class ExtendedPrefixMap {
      *                     format error).
      */
     public ExtendedPrefixMap(File file) throws IOException {
-        mapFile = file;
+        mapReader = new BufferedReader(new FileReader(file));
         read();
     }
 
@@ -81,6 +85,18 @@ public class ExtendedPrefixMap {
      */
     public ExtendedPrefixMap(String filename) throws IOException {
         this(new File(filename));
+    }
+
+    /**
+     * Creates a new extended prefix map from the specified stream.
+     * 
+     * @param stream The stream to read the map from.
+     * @throws IOException If any error occurs when reading the file (including a
+     *                     format error).
+     */
+    public ExtendedPrefixMap(InputStream stream) throws IOException {
+        mapReader = new BufferedReader(new InputStreamReader(stream));
+        read();
     }
 
     /**
@@ -195,7 +211,7 @@ public class ExtendedPrefixMap {
         JsonFactory factory = new JsonFactory();
         ObjectMapper mapper = new ObjectMapper(factory);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ExtendedPrefixMapEntry[] rawMap = mapper.readerFor(ExtendedPrefixMapEntry[].class).readValue(mapFile);
+        ExtendedPrefixMapEntry[] rawMap = mapper.readerFor(ExtendedPrefixMapEntry[].class).readValue(mapReader);
 
         for (ExtendedPrefixMapEntry entry : rawMap) {
             prefixMap.put(entry.prefixName, entry.prefix);

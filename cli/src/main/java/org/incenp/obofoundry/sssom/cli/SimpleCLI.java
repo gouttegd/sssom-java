@@ -115,12 +115,17 @@ public class SimpleCLI implements Runnable {
         }
 
         if ( epmFile != null ) {
+            ExtendedPrefixMap epm = null;
             try {
-                ExtendedPrefixMap epm = new ExtendedPrefixMap(epmFile);
-                epm.canonicalise(ms);
+                if ( epmFile.equals("obo") ) {
+                    epm = new ExtendedPrefixMap(ExtendedPrefixMap.class.getResourceAsStream("/obo.epm.json"));
+                } else {
+                    epm = new ExtendedPrefixMap(epmFile);
+                }
             } catch ( IOException ioe ) {
-                helper.error("Cannot read extended prefix map %s: %s", epmFile, ioe.getMessage());
+                helper.error("Cannot read extended prefix map: %s", ioe.getMessage());
             }
+            epm.canonicalise(ms);
         }
 
         return ms;
