@@ -27,6 +27,7 @@ import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
@@ -76,6 +77,9 @@ public class SimpleCLI implements Runnable {
             description = "Add a default include rule at the end of the processing set.")
     private boolean includeAll;
 
+    @Option(names = { "-c", "--force-cardinality" }, description = "Include mapping cardinality values.")
+    private boolean forceCardinality;
+
     @Option(names = "--mangle-iris",
             paramLabel = "EPM",
             description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
@@ -93,6 +97,7 @@ public class SimpleCLI implements Runnable {
     public void run() {
         MappingSet ms = loadInputs();
         transform(ms);
+        postProcess(ms);
         writeOutput(ms);
     }
 
@@ -191,6 +196,14 @@ public class SimpleCLI implements Runnable {
                 processor.addRule(new MappingProcessingRule<Mapping>(null, null, (mapping) -> mapping));
             }
             ms.setMappings(processor.process(ms.getMappings()));
+        }
+    }
+
+    private void postProcess(MappingSet ms) {
+        if ( forceCardinality ) {
+            MappingCardinality.inferCardinality(ms.getMappings());
+        } else {
+            ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
         }
     }
 }
