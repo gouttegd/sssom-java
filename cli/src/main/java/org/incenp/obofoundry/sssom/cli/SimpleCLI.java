@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
@@ -75,6 +76,11 @@ public class SimpleCLI implements Runnable {
             description = "Add a default include rule at the end of the processing set.")
     private boolean includeAll;
 
+    @Option(names = "--mangle-iris",
+            paramLabel = "EPM",
+            description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
+    private String epmFile;
+
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
@@ -105,6 +111,15 @@ public class SimpleCLI implements Runnable {
                 helper.error("Cannot read file %s: %s", input, ioe.getMessage());
             } catch ( SSSOMFormatException sfe ) {
                 helper.error("Invalid SSSOM data in file %s: %s", input, sfe.getMessage());
+            }
+        }
+
+        if ( epmFile != null ) {
+            try {
+                ExtendedPrefixMap epm = new ExtendedPrefixMap(epmFile);
+                epm.canonicalise(ms);
+            } catch ( IOException ioe ) {
+                helper.error("Cannot read extended prefix map %s: %s", epmFile, ioe.getMessage());
             }
         }
 

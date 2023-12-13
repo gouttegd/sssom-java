@@ -127,6 +127,16 @@ public class SSSOMCLITest {
         checkOutput("edited3.sssom.tsv");
     }
 
+    @Test
+    void testManglingWithEPM() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/uncanonical.sssom.tsv",
+                "--mangle-iris",  "../core/src/test/resources/obo.epm.json",
+                "--output",       "src/test/resources/canonicalised.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("canonicalised.sssom.tsv");
+    }
+
     /*
      * Run a CLI command.
      */
