@@ -445,7 +445,7 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         if ( ctx.action().arglist() != null ) {
             for ( ArgumentContext argCtx : ctx.action().arglist().argument() ) {
                 if ( argCtx.string() != null ) {
-                    rule.arguments.add(unquote(argCtx.string().getText()));
+                    rule.arguments.add(processString(argCtx.string().getText()));
                 } else if ( argCtx.IRI() != null ) {
                     String iri = argCtx.IRI().getText();
                     int iriLen = iri.length();
@@ -534,7 +534,7 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         if ( ctx.arglist() != null ) {
             for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
                 if ( argCtx.string() != null ) {
-                    rule.arguments.add(unquote(argCtx.string().getText()));
+                    rule.arguments.add(processString(argCtx.string().getText()));
                 } else if ( argCtx.IRI() != null ) {
                     String iri = argCtx.IRI().getText();
                     int iriLen = iri.length();
@@ -550,15 +550,9 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         return null;
     }
 
-    private String unquote(String s) {
-        StringBuilder sb = new StringBuilder();
-        for ( int i = 1, n = s.length(); i < n - 1; i++ ) {
-            char c = s.charAt(i);
-            if ( c != '\\' ) {
-                sb.append(c);
-            }
-        }
-        String unquoted = sb.toString();
+    // Un-quote and un-escape the string, then eventually replace any CURIE in it
+    private String processString(String s) {
+        String unquoted = unescape(s);
 
         if ( curieFormat != null ) {
             Matcher curieFinder = curiePattern.matcher(unquoted);
@@ -576,6 +570,32 @@ class ParseTree2RuleVisitor extends SSSOMTransformBaseVisitor<Void> {
         }
 
         return unquoted;
+    }
+
+    // Un-quote and un-escape the string as provided by the parser
+    // This is static because it does not depend on any state and is re-used below
+    // by the filter visitor.
+    static String unescape(String s) {
+        StringBuilder sb = new StringBuilder();
+        boolean escaped = false;
+        for ( int i = 1, n = s.length(); i < n - 1; i++ ) {
+            char c = s.charAt(i);
+            if ( c != '\\' || escaped ) {
+                sb.append(c);
+                escaped = false;
+            } else if ( i < n - 2 ) {
+                char next = s.charAt(i + 1);
+                if ( next == '"' || next == '\'' || next == '\\' ) {
+                    escaped = true;
+                } else {
+                    sb.append(c);
+                    escaped = false;
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 }
 
@@ -623,7 +643,8 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
     @Override
     public IMappingFilter visitTextFilterItem(SSSOMTransformParser.TextFilterItemContext ctx) {
-        return handleTextBasedFilter(ctx.txField().getText(), unquote(ctx.string().getText()), false);
+        return handleTextBasedFilter(ctx.txField().getText(), ParseTree2RuleVisitor.unescape(ctx.string().getText()),
+                false);
     }
 
     /*
@@ -733,7 +754,8 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
     @Override
     public IMappingFilter visitMultiTextFilterItem(SSSOMTransformParser.MultiTextFilterItemContext ctx) {
-        return handleTextBasedListFilter(ctx.mulTxField().getText(), unquote(ctx.string().getText()), false);
+        return handleTextBasedListFilter(ctx.mulTxField().getText(),
+                ParseTree2RuleVisitor.unescape(ctx.string().getText()), false);
     }
 
     /*
@@ -916,7 +938,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     public IMappingFilter visitEntityTypeFilterItem(SSSOMTransformParser.EntityTypeFilterItemContext ctx) {
         String fieldName = ctx.entField().getText();
 
-        EntityType et = EntityType.fromString(unquote(ctx.string().getText()));
+        EntityType et = EntityType.fromString(ParseTree2RuleVisitor.unescape(ctx.string().getText()));
         if ( et == null ) {
             return addFilter(new NamedFilter("*", (mapping) -> false));
         }
@@ -962,16 +984,5 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         lastOperator = "&&";
 
         return newFilter;
-    }
-
-    private String unquote(String s) {
-        StringBuilder sb = new StringBuilder();
-        for ( int i = 1, n = s.length(); i < n - 1; i++ ) {
-            char c = s.charAt(i);
-            if ( c != '\\' ) {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
     }
 }
