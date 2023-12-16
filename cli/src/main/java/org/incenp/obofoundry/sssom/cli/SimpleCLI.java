@@ -18,11 +18,15 @@
 
 package org.incenp.obofoundry.sssom.cli;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
+import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
@@ -63,6 +67,11 @@ public class SimpleCLI implements Runnable {
             description = "Write the mapping set to FILE. Default is to write to standard output.",
             defaultValue = "-")
     private String outputFile;
+
+    @Option(names = "--split",
+            paramLabel = "DIRECTORY",
+            description = "Split the set along subject and object prefix names and write the split sets in the specified directory.")
+    private String splitOutputDirectory;
 
     @Option(names = { "-r", "--ruleset" }, paramLabel = "RULESET", description = "Apply a SSSOM/T ruleset.")
     private String rulesetFile;
@@ -110,7 +119,9 @@ public class SimpleCLI implements Runnable {
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
-                    ms.getMappings().addAll(reader.read().getMappings());
+                    MappingSet tmp = reader.read();
+                    ms.getMappings().addAll(tmp.getMappings());
+                    ms.getCurieMap().putAll(tmp.getCurieMap());
                 }
             } catch ( IOException ioe ) {
                 helper.error("Cannot read file %s: %s", input, ioe.getMessage());
@@ -137,17 +148,56 @@ public class SimpleCLI implements Runnable {
     }
 
     private void writeOutput(MappingSet set) {
+        if ( splitOutputDirectory != null ) {
+            writeSplitSet(set, splitOutputDirectory);
+            return; // Skip writing the full set when writing splits
+        }
         boolean stdout = outputFile.equals("-");
         try {
             TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputFile);
             // Combine the original CURIE map with the one used to process the mappings, but
             // make sure the latter takes precedence
+            // TODO: Allow controlling the output prefix map
             Map<String, String> outputPrefixMap = set.getCurieMap();
             outputPrefixMap.putAll(prefixMap);
             writer.setCurieMap(outputPrefixMap);
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputFile, ioe.getMessage());
+        }
+    }
+
+    private void writeSplitSet(MappingSet ms, String directory) {
+        File dir = new File(directory);
+        if ( !dir.isDirectory() && !dir.mkdirs() ) {
+            helper.error("cannot create directory %s", directory);
+        }
+
+        HashMap<String, List<Mapping>> mappingsBySplit = new HashMap<String, List<Mapping>>();
+        PrefixManager pm = new PrefixManager();
+        // TODO: Allow controlling the output prefix map
+        pm.add(ms.getCurieMap());
+
+        for ( Mapping mapping : ms.getMappings() ) {
+            String subjectPrefixName = pm.getPrefixName(mapping.getSubjectId());
+            String objectPrefixName = pm.getPrefixName(mapping.getObjectId());
+            if ( subjectPrefixName != null && objectPrefixName != null ) {
+                String splitId = subjectPrefixName + "-to-" + objectPrefixName;
+                mappingsBySplit.computeIfAbsent(splitId, k -> new ArrayList<Mapping>()).add(mapping);
+            }
+        }
+
+        for ( String splitId : mappingsBySplit.keySet() ) {
+            MappingSet splitSet = ms.toBuilder().mappings(null).build();
+            splitSet.setMappings(mappingsBySplit.get(splitId));
+
+            File output = new File(dir, splitId + ".sssom.tsv");
+            try {
+                TSVWriter writer = new TSVWriter(output);
+                writer.write(splitSet);
+            } catch ( IOException ioe ) {
+                helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());
+            }
         }
     }
 
