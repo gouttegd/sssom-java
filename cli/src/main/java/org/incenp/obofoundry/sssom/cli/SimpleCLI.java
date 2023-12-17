@@ -112,6 +112,11 @@ public class SimpleCLI implements Runnable {
             description = "Do not attempt to merge the set-level metadata of the input sets.")
     private boolean noMetadataMerge;
 
+    @Option(names = { "-m", "--output-metadata" },
+            paramLabel = "META",
+            description = "Use metadata from specified file.")
+    private String outputMetadataFile;
+
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
@@ -168,6 +173,25 @@ public class SimpleCLI implements Runnable {
                 helper.error("Cannot read extended prefix map: %s", ioe.getMessage());
             }
             epm.canonicalise(ms);
+        }
+
+        if ( outputMetadataFile != null ) {
+            try {
+                // Read the metadata as a new mapping set and exchange it with the real combined
+                // input set.
+                TSVReader reader = new TSVReader(null, outputMetadataFile);
+                MappingSet tmpSet = reader.read(true);
+                tmpSet.setMappings(ms.getMappings());
+                ms.getCurieMap().forEach((k, v) -> tmpSet.getCurieMap().putIfAbsent(k, v));
+                if ( !noMetadataMerge ) {
+                    merger.merge(tmpSet, ms);
+                }
+                ms = tmpSet;
+            } catch ( IOException ioe ) {
+                helper.error("Cannot read file %s: %s", outputMetadataFile, ioe.getMessage());
+            } catch ( SSSOMFormatException sfe ) {
+                helper.error("Invalid SSSOM data in file %s: %s", outputMetadataFile, sfe.getMessage());
+            }
         }
 
         return ms;
