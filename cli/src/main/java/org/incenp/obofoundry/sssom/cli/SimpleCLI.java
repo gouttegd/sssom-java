@@ -108,6 +108,10 @@ public class SimpleCLI implements Runnable {
             description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}.")
     private OutputMapSource outputPrefixMapSource = OutputMapSource.BOTH;
 
+    @Option(names = "--no-metadata-merge",
+            description = "Do not attempt to merge the set-level metadata of the input sets.")
+    private boolean noMetadataMerge;
+
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
@@ -127,6 +131,7 @@ public class SimpleCLI implements Runnable {
 
     private MappingSet loadInputs() {
         MappingSet ms = null;
+        MetadataMerger merger = new MetadataMerger();
         for ( String input : inputFiles ) {
             String[] items = input.split(":", 2);
             String tsvFile = items[0];
@@ -140,6 +145,9 @@ public class SimpleCLI implements Runnable {
                     MappingSet tmp = reader.read();
                     ms.getMappings().addAll(tmp.getMappings());
                     ms.getCurieMap().putAll(tmp.getCurieMap());
+                    if ( !noMetadataMerge ) {
+                        merger.merge(ms, tmp);
+                    }
                 }
             } catch ( IOException ioe ) {
                 helper.error("Cannot read file %s: %s", input, ioe.getMessage());
