@@ -79,8 +79,17 @@ public class SimpleCLI implements Runnable {
     @Option(names = { "-R", "--rule" }, paramLabel = "RULE", description = "Apply a single SSSOM/T rule.")
     private String[] rules = new String[] {};
 
-    @Option(names = "--prefix", paramLabel = "NAME=PREFIX", description = "Declare a prefix for use in a SSSOM/T rule.")
+    @Option(names = "--prefix", paramLabel = "NAME=PREFIX", description = "Declare a prefix for use in SSSOM/T.")
     private Map<String, String> prefixMap = new HashMap<String, String>();
+
+    @Option(names = "--prefix-map",
+            paramLabel = "METAFILE",
+            description = "Use the prefix map from specified metadata file for SSSOM/T.")
+    private String externalPrefixMap;
+
+    @Option(names = "--use-input-prefix-map",
+            description = "Use the prefix map of the input set(s) for SSSOM/T (not recommended).")
+    private boolean useInputMap;
 
     @Option(names = { "-a", "--include-all" },
             description = "Add a default include rule at the end of the processing set.")
@@ -236,9 +245,31 @@ public class SimpleCLI implements Runnable {
         }
     }
 
+    private void setTransformPrefixMap(MappingSet ms) {
+        HashMap<String, String> map = new HashMap<String, String>();
+        if ( useInputMap ) {
+            map.putAll(ms.getCurieMap());
+        }
+        if ( externalPrefixMap != null ) {
+            try {
+                TSVReader reader = new TSVReader(null, externalPrefixMap);
+                map.putAll(reader.read(true).getCurieMap());
+            } catch ( IOException ioe ) {
+                helper.error("Cannot read file %s: %s", externalPrefixMap, ioe.getMessage());
+            } catch ( SSSOMFormatException sfe ) {
+                helper.error("Invalid SSSOM data in file %s: %s", externalPrefixMap, sfe.getMessage());
+            }
+        }
+
+        // Prefixes declared on the command line always take precedence over the input
+        // maps and the external prefix map
+        map.forEach((k, v) -> prefixMap.putIfAbsent(k, v));
+    }
+
     private void transform(MappingSet ms) {
         MappingProcessor<Mapping> processor = new MappingProcessor<Mapping>();
 
+        setTransformPrefixMap(ms);
         loadTransformRules(processor);
 
         if ( processor.hasRules() ) {
