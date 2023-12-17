@@ -103,6 +103,11 @@ public class SimpleCLI implements Runnable {
             description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
     private String epmFile;
 
+    @Option(names = "--output-map-from",
+            paramLabel = "SRC",
+            description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}.")
+    private OutputMapSource outputMap = OutputMapSource.BOTH;
+
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
@@ -157,6 +162,14 @@ public class SimpleCLI implements Runnable {
     }
 
     private void writeOutput(MappingSet set) {
+        if ( outputMap == OutputMapSource.SSSOMT ) {
+            // Replace the input map with the SSSOM/T map
+            set.setCurieMap(prefixMap);
+        } else if ( outputMap == OutputMapSource.BOTH ) {
+            // Add the SSSOM/T map to the input map (the SSSOM/T map takes precedence)
+            set.getCurieMap().putAll(prefixMap);
+        }
+
         if ( splitOutputDirectory != null ) {
             writeSplitSet(set, splitOutputDirectory);
             return; // Skip writing the full set when writing splits
@@ -164,12 +177,6 @@ public class SimpleCLI implements Runnable {
         boolean stdout = outputFile.equals("-");
         try {
             TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputFile);
-            // Combine the original CURIE map with the one used to process the mappings, but
-            // make sure the latter takes precedence
-            // TODO: Allow controlling the output prefix map
-            Map<String, String> outputPrefixMap = set.getCurieMap();
-            outputPrefixMap.putAll(prefixMap);
-            writer.setCurieMap(outputPrefixMap);
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputFile, ioe.getMessage());
@@ -184,7 +191,6 @@ public class SimpleCLI implements Runnable {
 
         HashMap<String, List<Mapping>> mappingsBySplit = new HashMap<String, List<Mapping>>();
         PrefixManager pm = new PrefixManager();
-        // TODO: Allow controlling the output prefix map
         pm.add(ms.getCurieMap());
 
         for ( Mapping mapping : ms.getMappings() ) {
@@ -286,5 +292,11 @@ public class SimpleCLI implements Runnable {
         } else {
             ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
         }
+    }
+
+    enum OutputMapSource {
+        INPUT,
+        SSSOMT,
+        BOTH;
     }
 }
