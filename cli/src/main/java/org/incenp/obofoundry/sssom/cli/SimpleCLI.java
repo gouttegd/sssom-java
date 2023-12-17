@@ -58,7 +58,7 @@ public class SimpleCLI implements Runnable {
      */
 
     @Option(names = { "-i", "--input" },
-            paramLabel = "SET",
+            paramLabel = "SET[:META]",
             description = "Load a mapping set. Default is to read from standard input.")
     private String[] inputFiles = new String[] { "-" };
 
@@ -128,9 +128,12 @@ public class SimpleCLI implements Runnable {
     private MappingSet loadInputs() {
         MappingSet ms = null;
         for ( String input : inputFiles ) {
+            String[] items = input.split(":", 2);
+            String tsvFile = items[0];
+            String metaFile = items.length == 2 ? items[1] : null;
             try {
-                boolean stdin = input.equals("-");
-                TSVReader reader = stdin ? new TSVReader(System.in) : new TSVReader(input);
+                boolean stdin = tsvFile.equals("-");
+                TSVReader reader = stdin ? new TSVReader(System.in) : new TSVReader(tsvFile, metaFile);
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
