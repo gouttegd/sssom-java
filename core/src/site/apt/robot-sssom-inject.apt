@@ -167,6 +167,14 @@ ROBOT inject command
   To disable this behaviour and force a ruleset to explicitly declare
   all the prefixes it needs, use the <<<--no-default-prefixes>>> option.
   
+  It is also possible to use the prefix map from the input SSSOM set (or
+  the <combined> prefix map, when more than one input sets are used). To
+  do so, pass the <<<--use-input-prefix-map>>> option.
+  
+  Prefixes explicitly declared in the SSSOM/T ruleset will always take
+  precedence over ROBOT’s built-in prefixes and prefixes declared in the
+  input prefix map.
+  
 *** Axiom-generating functions
 
   Those are the functions that may be used in a SSSOM/Transform rule.

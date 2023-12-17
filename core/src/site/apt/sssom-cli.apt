@@ -1,16 +1,13 @@
 Command-line tool
 
   SSSOM-Java provides a command-line tool called <<<sssom-cli>>> to
-  manipulate mapping sets from the command line. It is currently very
-  limited but will progressively acquire more features.
-  
-* Reading and writing mapping sets
+  manipulate mapping sets from the command line.
 
   SSSOM-CLI acts as a filter that can read one or more mapping set(s),
-  perform some treatments on the mappings (at least in the future;
-  currently, the only possible treatment is to apply some filtering and
-  transformation, as explained below), and then write the resulting
+  perform some treatments on the mappings, and then write the resulting
   mapping set out.
+
+* Input options
   
   Input mapping sets are specified with the <<<--input>>> option. Repeat
   that option as needed to read more than one mapping sets. All mapping
@@ -31,15 +28,87 @@ sssom-cli --input file1.sssom.tsv --input -
   appear in the command line. In the example above,
   <<<file1.sssom.tsv>>> is read first, followed by the standard input.
   
+  If an input file does not contain embedded metadata, SSSOM-CLI will
+  automatically find and read the required external metadata file if it
+  follows the naming convention recommended by the SSSOM specification
+  (that is, if the TSV file is named <<<set.sssom.tsv>>>, SSSOM-CLI will
+  lookup for a metadata file named <<<set.sssom.yml>>>). To use another
+  metadata file, specify its name after the TSV file, separated by a
+  colon, as in:
+  
++-----------------------------------------------------------------------
+sssom-cli --input set.sssom.tsv:metadata.yaml
++-----------------------------------------------------------------------
+
+** Merging metadata
+
+  When merging several sets, by default multi-valued metadata slots are
+  merged together. For example, if the first set has a
+  <<<creator_label>>> slot set to “Alice” and the second set has for the
+  same slot the value “Bob”, the resulting set will contain both values.
+  Use the <<<--no-metadata-merge>>> option to disable merging and force
+  the result set to contain only the metadata from the <first> input
+  set.
+  
+** Extended Prefix Map support
+
+  Once a mapping set has been read, any IRI it contains may be
+  “reconciled” against an
+  {{{Extended Prefix Map}https://github.com/cthoyt/curies/blob/main/docs/source/struct.rst#extended-prefix-maps}},
+  by specifying the extended prefix map to use with the
+  <<<--mangle-iris>>> option.
+  
+* Output options
+  
   By default, SSSOM-CLI writes the resulting mapping set to the standard
   output. Use the <<<--output>>> option to specify an output file
   instead.
   
-* Filtering mappings with SSSOM/T
+** Output prefix map
 
-  Use the <<<--ruleset>>> option to specify the name of a
-  {{{./sssom-transform.html}SSSOM/Transform}} file containing the
-  filtering rules to apply to the mapping set.
+  The <<<--output-prefix-map>>> option allows to control which prefix
+  map is used to shorten IRIs when writing the result set. That option
+  accepts three values:
+  
+  [INPUT] The output prefix map is the same as the one used in the
+          input set (when there are several input sets, their prefix
+          maps are merged into one).
+          
+  [SSSOMT] The output prefix map is the one used for SSSOM/T processing
+           (see the “Transformations” section below).
+           
+  [BOTH] The output prefix map is the combination of the prefix map from
+         the input set(s) and the prefix map used for SSSOM/T, with the
+         latter taking precedence over the former. This is the default
+         behaviour.
+         
+** Metadata of the output set
+
+  By default, the output set will contain the same set-level metadata as
+  the <first> input set, except for multi-valued slots which will
+  contain values coming from all the input sets (unless the
+  <<<--no-metadata-merge>>> option is used, see above).
+  
+  Use the <<<--output-metadata>>> option to read the metadata to use for
+  the output set from a specific metadata file. Single-valued slots from
+  the first input set will then no longer be carried over to the result
+  sets. Multi-valued slots from all sets will still be carried over,
+  unless again the <<<-no-metadata-merge>>> option is also used – in
+  which case the output metadata will <only> come from the
+  <<<--output-metadata>>> option.
+  
+** Splitting the result set
+
+  Instead of writing a single mapping set, it is possible to split the
+  result set along the subject and object prefixes with the
+  <<<--split>>> option, which accepts the name of a directory where the
+  split sets will be written.
+  
+* Transformations
+
+  The {{{./sssom-transform.html}SSSOM/Transform}} language can be used
+  to apply arbitrary transformations to the mapping set before it is
+  written to output.
   
   The SSSOM/T dialect used by SSSOM-CLI is currently very simple and
   comprises, in addition to the generic <<<stop()>>>, <<<invert()>>>,
@@ -54,8 +123,45 @@ sssom-cli --input file1.sssom.tsv --input -
   
   The ruleset must contain at least one rule that uses the
   <<<include()>>> function, otherwise the resulting set will be
-  completely empty.
+  completely empty. Use the <<<--include-all>>> option to
+  automatically add a default rule at the end of the ruleset that
+  includes any mapping that has not been dropped.
   
+  A full ruleset can be specified with the <<<--ruleset>>> option.
+  Single rules can also be specified on the command line with the
+  <<<--rule>>> option. If both a <<<--ruleset>>> option and one or
+  several <<<--rule>>> option(s) are used, the rules defined by the
+  <<<--rule>>> options are added after the rules from the ruleset file.
+
+** Prefix map for SSSOM/T rules
+
+  All prefixes used in SSSOM/T rules must be declared. There are four
+  different ways of declaring them. By order of precedence, they are:
+  
+  * <<<prefix>>> declarations in the header of the SSSOM/T ruleset file;
+  
+  * prefixes declared on the command line with the <<<--prefix>>> option
+    (as in <<<--prefix "PFX=http://example.org/prefix">>>);
+    
+  * prefixes declared in the <<<curie_map>>> slot of the metadata file
+    specified with the <<<--prefix-map>>> option;
+    
+  * prefixes declared in the prefix map of the input set(s), if the
+    <<<--prefix-map-from-input>>> option is used.
+    
+  []
+  
+  Regardless of where a prefix declaration comes from, once it is
+  declared, a prefix can be used in any SSSOM/T rule. For example, a
+  rule in the SSSOM/T file can use a prefix declared with a
+  <<<--prefix>>> declaration on the command line or (if the
+  <<<--prefix-map-from-input>>> option is used) a prefix declared in the
+  prefix map from the input set. Conversely, a rule defined on the
+  command line (with a <<<--rule>>> option) can use a prefix declared in
+  the header of the SSSOM/T file.
+    
+** Examples 
+
   The following example shows how to filter out any mapping that does
   not have a subject in the <<<http://purl.obolibrary.org/obo/UBERON_>>>
   namespace:
