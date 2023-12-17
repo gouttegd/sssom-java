@@ -1,3 +1,17 @@
+Changes in sssom-java-0.7.3
+---------------------------
+
+    * sssom-core:
+      * Added support for Extended Prefix Maps.
+    * sssom-inject:
+      * New option --use-input-prefix-map.
+    * sssom-cli:
+      * New output option --split.
+      * Support "reconciliating" a set against an Extended Prefix Map.
+      * New options to control the metadata of the result set.
+      * New options to control the output prefix map.
+    
+
 Changes in sssom-java-0.7.2
 ---------------------------
 
