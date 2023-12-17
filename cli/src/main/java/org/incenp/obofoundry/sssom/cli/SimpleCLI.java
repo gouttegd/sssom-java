@@ -38,6 +38,7 @@ import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 
+import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 
@@ -49,7 +50,7 @@ import picocli.CommandLine.Option;
         versionProvider = CommandHelper.class,
         description = "Read, manipulate, and write SSSOM mapping sets.",
         footer = "Report bugs to <dgouttegattat@incenp.org>.",
-        optionListHeading = "%nOptions:%n",
+        optionListHeading = "%nGeneral options:%n",
         footerHeading = "%n")
 public class SimpleCLI implements Runnable {
 
@@ -57,65 +58,86 @@ public class SimpleCLI implements Runnable {
      * Command line options
      */
 
-    @Option(names = { "-i", "--input" },
-            paramLabel = "SET[:META]",
-            description = "Load a mapping set. Default is to read from standard input.")
-    private String[] inputFiles = new String[] { "-" };
+    @ArgGroup(validate = false, heading = "Input options:%n")
+    private InputOptions inputOpts = new InputOptions();
 
-    @Option(names = { "-o", "--output" },
-            paramLabel = "FILE",
-            description = "Write the mapping set to FILE. Default is to write to standard output.",
-            defaultValue = "-")
-    private String outputFile;
+    private static class InputOptions {
+        @Option(names = { "-i", "--input" },
+                paramLabel = "SET[:META]",
+                description = "Load a mapping set. Default is to read from standard input.")
+        String[] files = new String[] { "-" };
 
-    @Option(names = "--split",
-            paramLabel = "DIRECTORY",
-            description = "Split the set along subject and object prefix names and write the split sets in the specified directory.")
-    private String splitOutputDirectory;
+        @Option(names = "--mangle-iris",
+                paramLabel = "EPM",
+                description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
+        String epmFile;
 
-    @Option(names = { "-r", "--ruleset" }, paramLabel = "RULESET", description = "Apply a SSSOM/T ruleset.")
-    private String rulesetFile;
+        @Option(names = "--no-metadata-merge",
+                description = "Do not attempt to merge the set-level metadata of the input sets.")
+        boolean noMetadataMerge;
+    }
 
-    @Option(names = { "-R", "--rule" }, paramLabel = "RULE", description = "Apply a single SSSOM/T rule.")
-    private String[] rules = new String[] {};
+    @ArgGroup(validate = false, heading = "Output options:%n")
+    private OutputOptions outputOpts = new OutputOptions();
 
-    @Option(names = "--prefix", paramLabel = "NAME=PREFIX", description = "Declare a prefix for use in SSSOM/T.")
-    private Map<String, String> prefixMap = new HashMap<String, String>();
+    private static class OutputOptions {
+        @Option(names = { "-o", "--output" },
+                paramLabel = "FILE",
+                description = "Write the mapping set to FILE. Default is to write to standard output.",
+                defaultValue = "-")
+        String file;
 
-    @Option(names = "--prefix-map",
-            paramLabel = "METAFILE",
-            description = "Use the prefix map from specified metadata file for SSSOM/T.")
-    private String externalPrefixMap;
+        @Option(names = "--split",
+                paramLabel = "DIRECTORY",
+                description = "Split the set along subject and object prefix names and write the split sets in the specified directory.")
+        String splitDirectory;
 
-    @Option(names = "--prefix-map-from-input",
-            description = "Use the prefix map of the input set(s) for SSSOM/T (not recommended).")
-    private boolean useInputPrefixMap;
+        @Option(names = { "-c", "--force-cardinality" }, description = "Include mapping cardinality values.")
+        boolean forceCardinality;
 
-    @Option(names = { "-a", "--include-all" },
-            description = "Add a default include rule at the end of the processing set.")
-    private boolean includeAll;
+        @Option(names = "--output-prefix-map",
+                paramLabel = "SRC",
+                description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}.")
+        OutputMapSource prefixMapSource = OutputMapSource.BOTH;
 
-    @Option(names = { "-c", "--force-cardinality" }, description = "Include mapping cardinality values.")
-    private boolean forceCardinality;
+        @Option(names = { "-m", "--output-metadata" },
+                paramLabel = "META",
+                description = "Use metadata from specified file.")
+        String metadataFile;
+    }
 
-    @Option(names = "--mangle-iris",
-            paramLabel = "EPM",
-            description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
-    private String epmFile;
+    enum OutputMapSource {
+        INPUT,
+        SSSOMT,
+        BOTH;
+    }
 
-    @Option(names = "--output-prefix-map",
-            paramLabel = "SRC",
-            description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}.")
-    private OutputMapSource outputPrefixMapSource = OutputMapSource.BOTH;
+    @ArgGroup(validate = false, heading = "SSSOM/transform options:%n")
+    private TransformOptions transOpts = new TransformOptions();
 
-    @Option(names = "--no-metadata-merge",
-            description = "Do not attempt to merge the set-level metadata of the input sets.")
-    private boolean noMetadataMerge;
+    private static class TransformOptions {
+        @Option(names = { "-r", "--ruleset" }, paramLabel = "RULESET", description = "Apply a SSSOM/T ruleset.")
+        String rulesetFile;
 
-    @Option(names = { "-m", "--output-metadata" },
-            paramLabel = "META",
-            description = "Use metadata from specified file.")
-    private String outputMetadataFile;
+        @Option(names = { "-R", "--rule" }, paramLabel = "RULE", description = "Apply a single SSSOM/T rule.")
+        String[] rules = new String[] {};
+
+        @Option(names = "--prefix", paramLabel = "NAME=PREFIX", description = "Declare a prefix for use in SSSOM/T.")
+        Map<String, String> prefixMap = new HashMap<String, String>();
+
+        @Option(names = "--prefix-map",
+                paramLabel = "METAFILE",
+                description = "Use the prefix map from specified metadata file for SSSOM/T.")
+        String externalPrefixMap;
+
+        @Option(names = "--prefix-map-from-input",
+                description = "Use the prefix map of the input set(s) for SSSOM/T (not recommended).")
+        boolean useInputPrefixMap;
+
+        @Option(names = { "-a", "--include-all" },
+                description = "Add a default include rule at the end of the processing set.")
+        boolean includeAll;
+    }
 
     private CommandHelper helper = new CommandHelper();
 
@@ -134,10 +156,14 @@ public class SimpleCLI implements Runnable {
         writeOutput(ms);
     }
 
+    /*
+     * Input
+     */
+
     private MappingSet loadInputs() {
         MappingSet ms = null;
         MetadataMerger merger = new MetadataMerger();
-        for ( String input : inputFiles ) {
+        for ( String input : inputOpts.files ) {
             String[] items = input.split(":", 2);
             String tsvFile = items[0];
             String metaFile = items.length == 2 ? items[1] : null;
@@ -150,7 +176,7 @@ public class SimpleCLI implements Runnable {
                     MappingSet tmp = reader.read();
                     ms.getMappings().addAll(tmp.getMappings());
                     ms.getCurieMap().putAll(tmp.getCurieMap());
-                    if ( !noMetadataMerge ) {
+                    if ( !inputOpts.noMetadataMerge ) {
                         merger.merge(ms, tmp);
                     }
                 }
@@ -161,13 +187,13 @@ public class SimpleCLI implements Runnable {
             }
         }
 
-        if ( epmFile != null ) {
+        if ( inputOpts.epmFile != null ) {
             ExtendedPrefixMap epm = null;
             try {
-                if ( epmFile.equals("obo") ) {
+                if ( inputOpts.epmFile.equals("obo") ) {
                     epm = new ExtendedPrefixMap(ExtendedPrefixMap.class.getResourceAsStream("/obo.epm.json"));
                 } else {
-                    epm = new ExtendedPrefixMap(epmFile);
+                    epm = new ExtendedPrefixMap(inputOpts.epmFile);
                 }
             } catch ( IOException ioe ) {
                 helper.error("Cannot read extended prefix map: %s", ioe.getMessage());
@@ -175,47 +201,59 @@ public class SimpleCLI implements Runnable {
             epm.canonicalise(ms);
         }
 
-        if ( outputMetadataFile != null ) {
+        if ( outputOpts.metadataFile != null ) {
             try {
                 // Read the metadata as a new mapping set and exchange it with the real combined
                 // input set.
-                TSVReader reader = new TSVReader(null, outputMetadataFile);
+                TSVReader reader = new TSVReader(null, outputOpts.metadataFile);
                 MappingSet tmpSet = reader.read(true);
                 tmpSet.setMappings(ms.getMappings());
                 ms.getCurieMap().forEach((k, v) -> tmpSet.getCurieMap().putIfAbsent(k, v));
-                if ( !noMetadataMerge ) {
+                if ( !inputOpts.noMetadataMerge ) {
                     merger.merge(tmpSet, ms);
                 }
                 ms = tmpSet;
             } catch ( IOException ioe ) {
-                helper.error("Cannot read file %s: %s", outputMetadataFile, ioe.getMessage());
+                helper.error("Cannot read file %s: %s", outputOpts.metadataFile, ioe.getMessage());
             } catch ( SSSOMFormatException sfe ) {
-                helper.error("Invalid SSSOM data in file %s: %s", outputMetadataFile, sfe.getMessage());
+                helper.error("Invalid SSSOM data in file %s: %s", outputOpts.metadataFile, sfe.getMessage());
             }
         }
 
         return ms;
     }
 
+    /*
+     * Output
+     */
+
+    private void postProcess(MappingSet ms) {
+        if ( outputOpts.forceCardinality ) {
+            MappingCardinality.inferCardinality(ms.getMappings());
+        } else {
+            ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
+        }
+    }
+
     private void writeOutput(MappingSet set) {
-        if ( outputPrefixMapSource == OutputMapSource.SSSOMT ) {
+        if ( outputOpts.prefixMapSource == OutputMapSource.SSSOMT ) {
             // Replace the input map with the SSSOM/T map
-            set.setCurieMap(prefixMap);
-        } else if ( outputPrefixMapSource == OutputMapSource.BOTH ) {
+            set.setCurieMap(transOpts.prefixMap);
+        } else if ( outputOpts.prefixMapSource == OutputMapSource.BOTH ) {
             // Add the SSSOM/T map to the input map (the SSSOM/T map takes precedence)
-            set.getCurieMap().putAll(prefixMap);
+            set.getCurieMap().putAll(transOpts.prefixMap);
         }
 
-        if ( splitOutputDirectory != null ) {
-            writeSplitSet(set, splitOutputDirectory);
+        if ( outputOpts.splitDirectory != null ) {
+            writeSplitSet(set, outputOpts.splitDirectory);
             return; // Skip writing the full set when writing splits
         }
-        boolean stdout = outputFile.equals("-");
+        boolean stdout = outputOpts.file.equals("-");
         try {
-            TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputFile);
+            TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputOpts.file);
             writer.write(set);
         } catch ( IOException ioe ) {
-            helper.error("cannot write to file %s: %s", stdout ? "-" : outputFile, ioe.getMessage());
+            helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
         }
     }
 
@@ -252,25 +290,29 @@ public class SimpleCLI implements Runnable {
         }
     }
 
+    /*
+     * Transformations
+     */
+
     private void loadTransformRules(MappingProcessor<Mapping> processor) {
         SSSOMTransformReader<Mapping> reader = null;
 
-        if ( rulesetFile != null ) {
+        if ( transOpts.rulesetFile != null ) {
             try {
-                reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping(), rulesetFile);
-                reader.addPrefixMap(prefixMap);
+                reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping(), transOpts.rulesetFile);
+                reader.addPrefixMap(transOpts.prefixMap);
                 reader.read();
             } catch (IOException ioe) {
-                helper.error("Cannot read ruleset from file %s: %s", rulesetFile, ioe.getMessage());
+                helper.error("Cannot read ruleset from file %s: %s", transOpts.rulesetFile, ioe.getMessage());
             }
         }
 
-        if ( rules.length > 0 ) {
+        if ( transOpts.rules.length > 0 ) {
             if ( reader == null ) {
                 reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping());
-                reader.addPrefixMap(prefixMap);
+                reader.addPrefixMap(transOpts.prefixMap);
             }
-            for ( String rule : rules ) {
+            for ( String rule : transOpts.rules ) {
                 reader.read(rule);
             }
         }
@@ -283,29 +325,29 @@ public class SimpleCLI implements Runnable {
                 helper.error("Invalid SSSOM/T ruleset");
             }
             processor.addRules(reader.getRules());
-            prefixMap.putAll(reader.getPrefixMap());
+            transOpts.prefixMap.putAll(reader.getPrefixMap());
         }
     }
 
     private void setTransformPrefixMap(MappingSet ms) {
         HashMap<String, String> map = new HashMap<String, String>();
-        if ( useInputPrefixMap ) {
+        if ( transOpts.useInputPrefixMap ) {
             map.putAll(ms.getCurieMap());
         }
-        if ( externalPrefixMap != null ) {
+        if ( transOpts.externalPrefixMap != null ) {
             try {
-                TSVReader reader = new TSVReader(null, externalPrefixMap);
+                TSVReader reader = new TSVReader(null, transOpts.externalPrefixMap);
                 map.putAll(reader.read(true).getCurieMap());
             } catch ( IOException ioe ) {
-                helper.error("Cannot read file %s: %s", externalPrefixMap, ioe.getMessage());
+                helper.error("Cannot read file %s: %s", transOpts.externalPrefixMap, ioe.getMessage());
             } catch ( SSSOMFormatException sfe ) {
-                helper.error("Invalid SSSOM data in file %s: %s", externalPrefixMap, sfe.getMessage());
+                helper.error("Invalid SSSOM data in file %s: %s", transOpts.externalPrefixMap, sfe.getMessage());
             }
         }
 
         // Prefixes declared on the command line always take precedence over the input
         // maps and the external prefix map
-        map.forEach((k, v) -> prefixMap.putIfAbsent(k, v));
+        map.forEach((k, v) -> transOpts.prefixMap.putIfAbsent(k, v));
     }
 
     private void transform(MappingSet ms) {
@@ -315,24 +357,10 @@ public class SimpleCLI implements Runnable {
         loadTransformRules(processor);
 
         if ( processor.hasRules() ) {
-            if ( includeAll ) {
+            if ( transOpts.includeAll ) {
                 processor.addRule(new MappingProcessingRule<Mapping>(null, null, (mapping) -> mapping));
             }
             ms.setMappings(processor.process(ms.getMappings()));
         }
-    }
-
-    private void postProcess(MappingSet ms) {
-        if ( forceCardinality ) {
-            MappingCardinality.inferCardinality(ms.getMappings());
-        } else {
-            ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
-        }
-    }
-
-    enum OutputMapSource {
-        INPUT,
-        SSSOMT,
-        BOTH;
     }
 }
