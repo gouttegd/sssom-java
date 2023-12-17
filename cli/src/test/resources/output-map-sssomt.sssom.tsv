@@ -1,0 +1,7 @@
+#curie_map:
+#  MESH: "https://meshb.nlm.nih.gov/record/ui?ui="
+#mapping_set_id: "https://example.org/sssom/sample-mapping-set-4"
+#mapping_set_title: "Sample mapping set 4"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+http://purl.obolibrary.org/obo/UBERON_0000017	exocrine pancreas	skos:exactMatch	MESH:D046790	semapv:ManualMappingCuration

@@ -136,6 +136,88 @@ public class SSSOMCLITest {
         // @formatter:on
         checkOutput("canonicalised.sssom.tsv");
     }
+    
+    @Test
+    void testMergingMetadata() throws IOException {
+    	// @formatter:off
+    	runCommand(0, "--input", "../core/src/test/resources/sample1.sssom.tsv",
+    	        "--input",       "../core/src/test/resources/sample2.sssom.tsv",
+    	        "--output",      "src/test/resources/merged1+2.sssom.tsv.out");
+    	// @formatter:on
+    	checkOutput("merged1+2.sssom.tsv");
+    	
+    	// @formatter:off
+    	runCommand(0, "--input", "../core/src/test/resources/sample2.sssom.tsv",
+    	        "--input",       "../core/src/test/resources/sample1.sssom.tsv",
+    	        "--output",      "src/test/resources/merged2+1.sssom.tsv.out");
+    	// @formatter:on
+    	checkOutput("merged2+1.sssom.tsv");
+    	
+    	// @formatter:off
+    	runCommand(0, "--input", "../core/src/test/resources/sample2.sssom.tsv",
+    	        "--input",       "../core/src/test/resources/sample1.sssom.tsv",
+    	        "--no-metadata-merge",
+    	        "--output",      "src/test/resources/merged2+1-no-metadata-merge.sssom.tsv.out");
+    	// @formatter:on
+    	checkOutput("merged2+1-no-metadata-merge.sssom.tsv");
+    }
+    
+    @Test
+    void testMergingExternalMetadata() throws IOException {
+    	// @formatter:off
+    	runCommand(0, "--input",     "../core/src/test/resources/sample2.sssom.tsv",
+    	        "--output-metadata", "../core/src/test/resources/sample-external-metadata.sssom.yml",
+    	        "--output",      "src/test/resources/merged-external-metadata.sssom.tsv.out");
+    	// @formatter:on
+    	checkOutput("merged-external-metadata.sssom.tsv");
+    }
+    
+    @Test
+    void testOutputPrefixMap() throws IOException {
+    	// @formatter:off
+    	runCommand(0, "--input",       "../core/src/test/resources/sample4.sssom.tsv",
+    			"--output",            "src/test/resources/output-map-both.sssom.tsv.out",
+    			"--include-all",       "--prefix", "MESH=https://meshb.nlm.nih.gov/record/ui?ui=",
+    			"--output-prefix-map", "BOTH");
+    	// @formatter:on
+    	checkOutput("output-map-both.sssom.tsv");
+    	
+    	// @formatter:off
+    	runCommand(0, "--input",       "../core/src/test/resources/sample4.sssom.tsv",
+    			"--output",            "src/test/resources/output-map-input.sssom.tsv.out",
+    			"--include-all",       "--prefix", "MESH=https://meshb.nlm.nih.gov/record/ui?ui=",
+    			"--output-prefix-map", "INPUT");
+    	// @formatter:on
+    	checkOutput("output-map-input.sssom.tsv");
+
+    	// @formatter:off
+    	runCommand(0, "--input",       "../core/src/test/resources/sample4.sssom.tsv",
+    			"--output",            "src/test/resources/output-map-sssomt.sssom.tsv.out",
+    			"--include-all",       "--prefix", "MESH=https://meshb.nlm.nih.gov/record/ui?ui=",
+    			"--output-prefix-map", "SSSOMT");
+    	// @formatter:on
+    	checkOutput("output-map-sssomt.sssom.tsv");
+    }
+    
+    @Test
+    void testTransformPrefixMapPrecedence() throws IOException {
+    	// @formatter:off
+    	runCommand(0, "--input",       "../core/src/test/resources/sample4.sssom.tsv",
+    			"--output",            "src/test/resources/transform-map-1.sssom.tsv.out",
+    			"--rule",              "object==mesh:* -> include()",
+    			"--prefix-map-from-input");
+    	// @formatter:on
+    	checkOutput("transform-map-1.sssom.tsv");
+    	
+    	// @formatter:off
+    	runCommand(0, "--input",       "../core/src/test/resources/sample4.sssom.tsv",
+    			"--output",            "src/test/resources/transform-map-2.sssom.tsv.out",
+    			"--rule",              "object==mesh:* -> include()",
+    			"--prefix",            "mesh=http://id.nlm.nih.gov/mesh",
+    			"--prefix-map-from-input");
+    	// @formatter:on
+    	checkOutput("transform-map-2.sssom.tsv");
+    }
 
     /*
      * Run a CLI command.
