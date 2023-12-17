@@ -87,9 +87,9 @@ public class SimpleCLI implements Runnable {
             description = "Use the prefix map from specified metadata file for SSSOM/T.")
     private String externalPrefixMap;
 
-    @Option(names = "--use-input-prefix-map",
+    @Option(names = "--prefix-map-from-input",
             description = "Use the prefix map of the input set(s) for SSSOM/T (not recommended).")
-    private boolean useInputMap;
+    private boolean useInputPrefixMap;
 
     @Option(names = { "-a", "--include-all" },
             description = "Add a default include rule at the end of the processing set.")
@@ -103,16 +103,17 @@ public class SimpleCLI implements Runnable {
             description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
     private String epmFile;
 
-    @Option(names = "--output-map-from",
+    @Option(names = "--output-prefix-map",
             paramLabel = "SRC",
             description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}.")
-    private OutputMapSource outputMap = OutputMapSource.BOTH;
+    private OutputMapSource outputPrefixMapSource = OutputMapSource.BOTH;
 
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
         SimpleCLI cli = new SimpleCLI();
-        int rc = new picocli.CommandLine(cli).setExecutionExceptionHandler(cli.helper).execute(args);
+        int rc = new picocli.CommandLine(cli).setExecutionExceptionHandler(cli.helper)
+                .setUsageHelpLongOptionsMaxWidth(23).setUsageHelpAutoWidth(true).execute(args);
         cli.helper.exit(rc);
     }
 
@@ -162,10 +163,10 @@ public class SimpleCLI implements Runnable {
     }
 
     private void writeOutput(MappingSet set) {
-        if ( outputMap == OutputMapSource.SSSOMT ) {
+        if ( outputPrefixMapSource == OutputMapSource.SSSOMT ) {
             // Replace the input map with the SSSOM/T map
             set.setCurieMap(prefixMap);
-        } else if ( outputMap == OutputMapSource.BOTH ) {
+        } else if ( outputPrefixMapSource == OutputMapSource.BOTH ) {
             // Add the SSSOM/T map to the input map (the SSSOM/T map takes precedence)
             set.getCurieMap().putAll(prefixMap);
         }
@@ -253,7 +254,7 @@ public class SimpleCLI implements Runnable {
 
     private void setTransformPrefixMap(MappingSet ms) {
         HashMap<String, String> map = new HashMap<String, String>();
-        if ( useInputMap ) {
+        if ( useInputPrefixMap ) {
             map.putAll(ms.getCurieMap());
         }
         if ( externalPrefixMap != null ) {
