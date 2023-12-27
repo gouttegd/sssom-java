@@ -1,0 +1,17 @@
+#curie_map:
+#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
+#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+#mapping_set_id: "https://example.org/sssom/sample-mapping-set"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+#extra_slots:
+#  - "bar"
+#  - "baz"
+#extra_set_slots:
+#  - "foo"
+#foo: "ABC"
+#notfoo: "DEF"
+subject_id	subject_label	predicate_id	object_id	mapping_justification	bar	bat	baz
+FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration	Bar1	Bat1	Baz1
+FBbt:00000003	segment	semapv:crossSpeciesCloseMatch	UBERON:0000914	semapv:ManualMappingCuration	Bar2	Bat2	Baz2
+FBbt:00000004	head	semapv:crossSpeciesExactMatch	UBERON:0000033	semapv:ManualMappingCuration	Bar3	Bat3	Baz3
+FBbt:00000004	head	semapv:crossSpeciesExactMatch	UBERON:6000004	semapv:ManualMappingCuration	Bar4	Bat4	Baz4

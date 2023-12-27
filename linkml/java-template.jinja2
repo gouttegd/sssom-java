@@ -2,7 +2,7 @@ package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
 import java.time.LocalDate;
-{% if cls.name == 'MappingSet' -%}
+{% if cls.name == 'MappingSet' or cls.name == 'Mapping' -%}
 import java.util.Map;
 {% endif -%}
 import lombok.AccessLevel;
@@ -36,5 +36,9 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
             {%- elif f.source_slot.range == 'predicate_modifier_enum' %}PredicateModifier
             {%- else %}{{ f.range }}{% endif %} {{ f.name }};
 {% endfor -%}
+%{- if cls.name == 'MappingSet' or cls.name == 'Mapping' %}
+    @JsonProperty("__extra")
+    private Map<String,String> extra;
+{% endif -%}
 }
 

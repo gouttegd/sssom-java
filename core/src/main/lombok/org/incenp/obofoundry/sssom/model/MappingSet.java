@@ -106,4 +106,13 @@ public class MappingSet  {
     private String other;
 
     private String comment;
+
+    @JsonProperty("extra_slots")
+    private List<String> extraSlots;
+
+    @JsonProperty("extra_set_slots")
+    private List<String> extraSetSlots;
+
+    @JsonProperty("__extra")
+    private Map<String,String> extra;
 }

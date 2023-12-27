@@ -22,8 +22,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -40,6 +42,7 @@ public class YAMLConverter {
     private List<IYAMLPreprocessor> preprocessors;
     private Map<String, Slot<MappingSet>> setSlotMaps;
     private Map<String, Slot<Mapping>> mappingSlotMaps;
+    private Set<String> extraSlots;
 
     /**
      * Creates a new YAML converter.
@@ -54,14 +57,17 @@ public class YAMLConverter {
         setSlotMaps = new HashMap<String, Slot<MappingSet>>();
         for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
             String slotName = slot.getName();
-            if ( !slotName.equals("curie_map") && !slotName.equals("mappings") ) {
+            if ( !slotName.equals("curie_map") && !slotName.equals("mappings") && !slotName.equals("__extra") ) {
                 setSlotMaps.put(slotName, slot);
             }
         }
 
         mappingSlotMaps = new HashMap<String, Slot<Mapping>>();
         for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
-            mappingSlotMaps.put(slot.getName(), slot);
+            String slotName = slot.getName();
+            if ( !slotName.equals("__extra") ) {
+                mappingSlotMaps.put(slotName, slot);
+            }
         }
     }
 
@@ -151,10 +157,35 @@ public class YAMLConverter {
         }
 
         // Process the bulk of the metadata slots
+        ArrayList<String> unknownSlots = new ArrayList<String>();
         for ( String key : rawMap.keySet() ) {
             if ( setSlotMaps.containsKey(key) ) {
                 setSlotValue(setSlotMaps.get(key), ms, rawMap.get(key));
+            } else {
+                unknownSlots.add(key);
             }
+        }
+
+        // Process declared extra slots
+        if ( !unknownSlots.isEmpty() && ms.getExtraSetSlots() != null ) {
+            HashSet<String> declaredExtraSlots = new HashSet<String>(ms.getExtraSetSlots());
+            HashMap<String, String> extraSlotMap = new HashMap<String, String>();
+            for ( String unknownSlot : unknownSlots ) {
+                if ( declaredExtraSlots.contains(unknownSlot) ) {
+                    Object rawExtraValue = rawMap.get(unknownSlot);
+                    if ( String.class.isInstance(rawExtraValue) ) {
+                        String extraValue = String.class.cast(rawExtraValue);
+                        extraSlotMap.put(unknownSlot, extraValue);
+                    }
+                    // TODO: Warn and/or reject if the extra value is not a string?
+                }
+            }
+            ms.setExtra(extraSlotMap);
+        }
+
+        // Keep aside the list of declared mapping-level extra slots
+        if ( ms.getExtraSlots() != null && !ms.getExtraSlots().isEmpty() ) {
+            extraSlots = new HashSet<String>(ms.getExtraSlots());
         }
 
         // Process the mappings themselves, if we have them
@@ -188,6 +219,7 @@ public class YAMLConverter {
      */
     public Mapping convertMapping(Map<String, Object> rawMap) throws SSSOMFormatException {
         Mapping m = new Mapping();
+        HashMap<String, String> extraSlotMap = null;
 
         for ( IYAMLPreprocessor preprocessor : preprocessors ) {
             preprocessor.process(rawMap);
@@ -196,6 +228,16 @@ public class YAMLConverter {
         for ( String key : rawMap.keySet() ) {
             if ( mappingSlotMaps.containsKey(key) ) {
                 setSlotValue(mappingSlotMaps.get(key), m, rawMap.get(key));
+            } else if ( extraSlots != null && extraSlots.contains(key) ) {
+                Object rawValue = rawMap.get(key);
+                if ( String.class.isInstance(rawValue) ) {
+                    if ( extraSlotMap == null ) {
+                        extraSlotMap = new HashMap<String, String>();
+                        m.setExtra(extraSlotMap);
+                    }
+                    extraSlotMap.put(key, String.class.cast(rawValue));
+                }
+                // TODO: Warn and/or reject if the extra value is not a string?
             }
         }
 

@@ -1,6 +1,7 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
+import java.util.Map;
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -159,4 +160,7 @@ public class Mapping  {
     private String other;
 
     private String comment;
+
+    @JsonProperty("__extra")
+    private Map<String,String> extra;
 }
