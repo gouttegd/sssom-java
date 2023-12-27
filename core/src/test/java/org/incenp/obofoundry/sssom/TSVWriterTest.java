@@ -159,6 +159,28 @@ public class TSVWriterTest {
     }
 
     /*
+     * Check that "extra" slots are handled correctly (discarded by default,
+     * preserved in the "__extra" dictionaries if they are declared.
+     */
+    @Test
+    void testExtraSlots() throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/extra-slots.sssom.tsv");
+        TSVReader reader = new TSVReader(source);
+        MappingSet ms = reader.read();
+
+        File target = new File("src/test/resources/extra-slots-parsed.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(target);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/extra-slots-parsed.sssom.tsv");
+        boolean same = FileUtils.contentEquals(expected, target);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            target.delete();
+        }
+    }
+
+    /*
      * Test license and mapping set ID slots are forcefully generated if absent.
      */
     @Test

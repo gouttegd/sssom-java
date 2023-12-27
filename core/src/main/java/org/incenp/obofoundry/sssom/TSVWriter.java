@@ -152,6 +152,35 @@ public class TSVWriter {
             usedSlotNames.addAll(helper.visitSlots(mapping, (slot, m, value) -> slot.getName()));
         }
 
+        // Figure out if we need to write extra columns
+        List<String> extraColumnNames = new ArrayList<String>();
+        Set<String> extraColumnNameSet = new HashSet<String>();
+        if ( mappingSet.getExtraSlots() == null || mappingSet.getExtraSlots().isEmpty() ) {
+            // No need to bother with extra slots at all if none are declared
+            usedSlotNames.remove("__extra");
+        } else {
+            // Find out which extra slot (among those declared) are actually used in
+            // mappings
+            Set<String> declaredExtraSlots = new HashSet<String>(mappingSet.getExtraSlots());
+            for ( Mapping mapping : mappingSet.getMappings() ) {
+                if ( mapping.getExtra() != null ) {
+                    for ( String key : mapping.getExtra().keySet() ) {
+                        if ( declaredExtraSlots.contains(key) ) {
+                            extraColumnNameSet.add(key);
+                        }
+                    }
+                }
+            }
+            if ( extraColumnNameSet.isEmpty() ) {
+                // None of the declared extra slots are used, don't bother
+                usedSlotNames.remove("__extra");
+            } else {
+                // Make sure extra slots will be written in predictable order
+                extraColumnNames.addAll(extraColumnNameSet);
+                extraColumnNames.sort((s1, s2) -> s1.compareTo(s2));
+            }
+        }
+
         // Remove the slots that have been condensed
         usedSlotNames.removeAll(condensedSlots);
 
@@ -162,7 +191,12 @@ public class TSVWriter {
         // Write the column headers
         List<Slot<Mapping>> usedSlots = helper.getSlots();
         for ( int i = 0, n = usedSlots.size(); i < n; i++ ) {
-            writer.append(usedSlots.get(i).getName());
+            String name = usedSlots.get(i).getName();
+            if ( name.equals("__extra") ) {
+                writer.append(String.join("\t", extraColumnNames));
+            } else {
+                writer.append(name);
+            }
             if ( i < n - 1 ) {
                 writer.append('\t');
             }
@@ -170,7 +204,7 @@ public class TSVWriter {
         writer.append('\n');
 
         // Write the individual mappings
-        MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(prefixManager);
+        MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(prefixManager, extraColumnNames);
         mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
             List<String> values = helper.visitSlots(mapping, mappingVisitor, true);
@@ -223,17 +257,40 @@ public class TSVWriter {
 
         @Override
         public String visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
-            // We ignore the Curie map provided in the mapping set to write the effective
-            // map instead. Of note, currently "curie_map" is the only map-type slot, but we
-            // still test on the name just in case another slot of the same type is later
-            // added to the model.
             if ( slot.getName().equals("curie_map") ) {
+                // We ignore the Curie map provided in the mapping set to write the effective
+                // map instead.
                 values = new HashMap<String, String>();
                 for ( String prefixName : usedPrefixes ) {
                     if ( prefixName != null ) {
                         values.put(prefixName, prefixManager.getPrefix(prefixName));
                     }
                 }
+            }
+
+            if ( slot.getName().equals("__extra") ) {
+                // Extra slots are written as if they were first-level slots, but only if they
+                // have been declared.
+                List<String> keys = new ArrayList<String>();
+                Set<String> declaredKeys = new HashSet<>();
+                if ( set.getExtraSetSlots() != null ) {
+                    declaredKeys.addAll(set.getExtraSetSlots());
+                }
+                for ( String key : values.keySet() ) {
+                    if ( declaredKeys.contains(key) ) {
+                        keys.add(key);
+                    }
+                }
+                keys.sort((s1, s2) -> s1.compareTo(s2));
+                StringBuilder sb = new StringBuilder();
+                for ( String key : keys ) {
+                    sb.append("#");
+                    sb.append(key);
+                    sb.append(": \"");
+                    sb.append(values.get(key));
+                    sb.append("\"\n");
+                }
+                return sb.toString();
             }
 
             if ( values.size() > 0 ) {
@@ -280,9 +337,11 @@ public class TSVWriter {
      */
     private class MappingSlotVisitor extends SlotVisitorBase<Mapping, String> {
         private PrefixManager pm;
+        private List<String> extraSlots;
 
-        MappingSlotVisitor(PrefixManager prefixManager) {
+        MappingSlotVisitor(PrefixManager prefixManager, List<String> extraSlots) {
             pm = prefixManager;
+            this.extraSlots = extraSlots;
         }
 
         @Override
@@ -334,6 +393,15 @@ public class TSVWriter {
         @Override
         public String visit(Slot<Mapping> slot, Mapping object, Object value) {
             return value != null ? value.toString() : "";
+        }
+
+        @Override
+        public String visit(Slot<Mapping> slot, Mapping object, Map<String, String> values) {
+            List<String> items = new ArrayList<String>();
+            for ( String key : extraSlots ) {
+                items.add(values.getOrDefault(key, ""));
+            }
+            return String.join("\t", items);
         }
     }
 
