@@ -295,26 +295,21 @@ public class TSVReaderTest {
         TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
         MappingSet ms = reader.read();
 
-        Assertions.assertNotNull(ms.getExtraSetSlots());
-        Assertions.assertTrue(ms.getExtraSetSlots().contains("foo"));
-        Assertions.assertFalse(ms.getExtraSetSlots().contains("notfoo"));
+        Assertions.assertNotNull(ms.getExtraMetadata());
+        Assertions.assertTrue(ms.getExtraMetadata().containsKey("foo"));
+        Assertions.assertEquals("ABC", ms.getExtraMetadata().get("foo"));
 
-        Assertions.assertNotNull(ms.getExtra());
-        Assertions.assertTrue(ms.getExtra().containsKey("foo"));
-        Assertions.assertEquals("ABC", ms.getExtra().get("foo"));
-        Assertions.assertFalse(ms.getExtra().containsKey("notfoo"));
-
-        Assertions.assertNotNull(ms.getExtraSlots());
-        Assertions.assertTrue(ms.getExtraSlots().contains("bar"));
-        Assertions.assertTrue(ms.getExtraSlots().contains("baz"));
-        Assertions.assertFalse(ms.getExtraSlots().contains("bat"));
+        Assertions.assertNotNull(ms.getExtraColumns());
+        Assertions.assertTrue(ms.getExtraColumns().contains("bar"));
+        Assertions.assertTrue(ms.getExtraColumns().contains("baz"));
+        Assertions.assertFalse(ms.getExtraColumns().contains("bat"));
 
         Mapping m1 = ms.getMappings().get(0);
-        Assertions.assertNotNull(m1.getExtra());
-        Assertions.assertTrue(m1.getExtra().containsKey("bar"));
-        Assertions.assertEquals("Bar1", m1.getExtra().get("bar"));
-        Assertions.assertTrue(m1.getExtra().containsKey("baz"));
-        Assertions.assertEquals("Baz1", m1.getExtra().get("baz"));
-        Assertions.assertFalse(m1.getExtra().containsKey("bat"));
+        Assertions.assertNotNull(m1.getExtraMetadata());
+        Assertions.assertTrue(m1.getExtraMetadata().containsKey("bar"));
+        Assertions.assertEquals("Bar1", m1.getExtraMetadata().get("bar"));
+        Assertions.assertTrue(m1.getExtraMetadata().containsKey("baz"));
+        Assertions.assertEquals("Baz1", m1.getExtraMetadata().get("baz"));
+        Assertions.assertFalse(m1.getExtraMetadata().containsKey("bat"));
     }
 }

@@ -37,8 +37,8 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
             {%- else %}{{ f.range }}{% endif %} {{ f.name }};
 {% endfor -%}
 %{- if cls.name == 'MappingSet' or cls.name == 'Mapping' %}
-    @JsonProperty("__extra")
-    private Map<String,String> extra;
+    @JsonProperty("extra_metadata")
+    private Map<String,String> extraMetadata;
 {% endif -%}
 }
 

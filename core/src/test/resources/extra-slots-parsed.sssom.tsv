@@ -3,12 +3,11 @@
 #  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
 #mapping_set_id: "https://example.org/sssom/sample-mapping-set"
 #license: "https://creativecommons.org/licenses/by/4.0/"
-#extra_slots:
+#extra_columns:
 #  - "bar"
 #  - "baz"
-#extra_set_slots:
-#  - "foo"
-#foo: "ABC"
+#extra_metadata:
+#  foo: "ABC"
 subject_id	subject_label	predicate_id	object_id	mapping_justification	bar	baz
 FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration	Bar1	Baz1
 FBbt:00000003	segment	semapv:crossSpeciesCloseMatch	UBERON:0000914	semapv:ManualMappingCuration	Bar2	Baz2

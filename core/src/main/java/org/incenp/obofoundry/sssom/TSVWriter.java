@@ -155,16 +155,16 @@ public class TSVWriter {
         // Figure out if we need to write extra columns
         List<String> extraColumnNames = new ArrayList<String>();
         Set<String> extraColumnNameSet = new HashSet<String>();
-        if ( mappingSet.getExtraSlots() == null || mappingSet.getExtraSlots().isEmpty() ) {
+        if ( mappingSet.getExtraColumns() == null || mappingSet.getExtraColumns().isEmpty() ) {
             // No need to bother with extra slots at all if none are declared
-            usedSlotNames.remove("__extra");
+            usedSlotNames.remove("extra_metadata");
         } else {
             // Find out which extra slot (among those declared) are actually used in
             // mappings
-            Set<String> declaredExtraSlots = new HashSet<String>(mappingSet.getExtraSlots());
+            Set<String> declaredExtraSlots = new HashSet<String>(mappingSet.getExtraColumns());
             for ( Mapping mapping : mappingSet.getMappings() ) {
-                if ( mapping.getExtra() != null ) {
-                    for ( String key : mapping.getExtra().keySet() ) {
+                if ( mapping.getExtraMetadata() != null ) {
+                    for ( String key : mapping.getExtraMetadata().keySet() ) {
                         if ( declaredExtraSlots.contains(key) ) {
                             extraColumnNameSet.add(key);
                         }
@@ -173,7 +173,7 @@ public class TSVWriter {
             }
             if ( extraColumnNameSet.isEmpty() ) {
                 // None of the declared extra slots are used, don't bother
-                usedSlotNames.remove("__extra");
+                usedSlotNames.remove("extra_metadata");
             } else {
                 // Make sure extra slots will be written in predictable order
                 extraColumnNames.addAll(extraColumnNameSet);
@@ -192,7 +192,7 @@ public class TSVWriter {
         List<Slot<Mapping>> usedSlots = helper.getSlots();
         for ( int i = 0, n = usedSlots.size(); i < n; i++ ) {
             String name = usedSlots.get(i).getName();
-            if ( name.equals("__extra") ) {
+            if ( name.equals("extra_metadata") ) {
                 writer.append(String.join("\t", extraColumnNames));
             } else {
                 writer.append(name);
@@ -266,31 +266,6 @@ public class TSVWriter {
                         values.put(prefixName, prefixManager.getPrefix(prefixName));
                     }
                 }
-            }
-
-            if ( slot.getName().equals("__extra") ) {
-                // Extra slots are written as if they were first-level slots, but only if they
-                // have been declared.
-                List<String> keys = new ArrayList<String>();
-                Set<String> declaredKeys = new HashSet<>();
-                if ( set.getExtraSetSlots() != null ) {
-                    declaredKeys.addAll(set.getExtraSetSlots());
-                }
-                for ( String key : values.keySet() ) {
-                    if ( declaredKeys.contains(key) ) {
-                        keys.add(key);
-                    }
-                }
-                keys.sort((s1, s2) -> s1.compareTo(s2));
-                StringBuilder sb = new StringBuilder();
-                for ( String key : keys ) {
-                    sb.append("#");
-                    sb.append(key);
-                    sb.append(": \"");
-                    sb.append(values.get(key));
-                    sb.append("\"\n");
-                }
-                return sb.toString();
             }
 
             if ( values.size() > 0 ) {

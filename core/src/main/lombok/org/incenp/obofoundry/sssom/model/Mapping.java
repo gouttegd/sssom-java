@@ -161,6 +161,6 @@ public class Mapping  {
 
     private String comment;
 
-    @JsonProperty("__extra")
-    private Map<String,String> extra;
+    @JsonProperty("extra_metadata")
+    private Map<String,String> extraMetadata;
 }

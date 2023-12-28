@@ -107,12 +107,9 @@ public class MappingSet  {
 
     private String comment;
 
-    @JsonProperty("extra_slots")
-    private List<String> extraSlots;
+    @JsonProperty("extra_columns")
+    private List<String> extraColumns;
 
-    @JsonProperty("extra_set_slots")
-    private List<String> extraSetSlots;
-
-    @JsonProperty("__extra")
-    private Map<String,String> extra;
+    @JsonProperty("extra_metadata")
+    private Map<String,String> extraMetadata;
 }

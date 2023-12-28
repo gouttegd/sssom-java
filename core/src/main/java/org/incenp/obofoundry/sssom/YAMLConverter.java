@@ -57,7 +57,7 @@ public class YAMLConverter {
         setSlotMaps = new HashMap<String, Slot<MappingSet>>();
         for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
             String slotName = slot.getName();
-            if ( !slotName.equals("curie_map") && !slotName.equals("mappings") && !slotName.equals("__extra") ) {
+            if ( !slotName.equals("curie_map") && !slotName.equals("mappings") ) {
                 setSlotMaps.put(slotName, slot);
             }
         }
@@ -65,7 +65,7 @@ public class YAMLConverter {
         mappingSlotMaps = new HashMap<String, Slot<Mapping>>();
         for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
             String slotName = slot.getName();
-            if ( !slotName.equals("__extra") ) {
+            if ( !slotName.equals("extra_metadata") ) {
                 mappingSlotMaps.put(slotName, slot);
             }
         }
@@ -166,26 +166,9 @@ public class YAMLConverter {
             }
         }
 
-        // Process declared extra slots
-        if ( !unknownSlots.isEmpty() && ms.getExtraSetSlots() != null ) {
-            HashSet<String> declaredExtraSlots = new HashSet<String>(ms.getExtraSetSlots());
-            HashMap<String, String> extraSlotMap = new HashMap<String, String>();
-            for ( String unknownSlot : unknownSlots ) {
-                if ( declaredExtraSlots.contains(unknownSlot) ) {
-                    Object rawExtraValue = rawMap.get(unknownSlot);
-                    if ( String.class.isInstance(rawExtraValue) ) {
-                        String extraValue = String.class.cast(rawExtraValue);
-                        extraSlotMap.put(unknownSlot, extraValue);
-                    }
-                    // TODO: Warn and/or reject if the extra value is not a string?
-                }
-            }
-            ms.setExtra(extraSlotMap);
-        }
-
         // Keep aside the list of declared mapping-level extra slots
-        if ( ms.getExtraSlots() != null && !ms.getExtraSlots().isEmpty() ) {
-            extraSlots = new HashSet<String>(ms.getExtraSlots());
+        if ( ms.getExtraColumns() != null && !ms.getExtraColumns().isEmpty() ) {
+            extraSlots = new HashSet<String>(ms.getExtraColumns());
         }
 
         // Process the mappings themselves, if we have them
@@ -233,7 +216,7 @@ public class YAMLConverter {
                 if ( String.class.isInstance(rawValue) ) {
                     if ( extraSlotMap == null ) {
                         extraSlotMap = new HashMap<String, String>();
-                        m.setExtra(extraSlotMap);
+                        m.setExtraMetadata(extraSlotMap);
                     }
                     extraSlotMap.put(key, String.class.cast(rawValue));
                 }
@@ -291,6 +274,10 @@ public class YAMLConverter {
             for ( String item : String.class.cast(rawValue).split("\\|") ) {
                 value.add(slot.isEntityReference() ? prefixManager.expandIdentifier(item) : item);
             }
+            slot.setValue(object, value);
+        } else if ( type == Map.class && isMapOf(rawValue, String.class) ) {
+            @SuppressWarnings("unchecked")
+            Map<String, String> value = Map.class.cast(rawValue);
             slot.setValue(object, value);
         } else if ( type == LocalDate.class && String.class.isInstance(rawValue) ) {
             try {
