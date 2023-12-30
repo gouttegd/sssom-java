@@ -287,29 +287,84 @@ public class TSVReaderTest {
     }
 
     /*
-     * Extra slots should be put into the "extra" dictionary but only if they have
-     * been properly declared.
+     * Extra slots should be completely ignored when ExtraMetadataPolicy is set to
+     * NONE.
      */
     @Test
-    void testExtraSlots() throws IOException, SSSOMFormatException {
+    void testIgnoreExtraMetadata() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE);
+        MappingSet ms = reader.read();
+
+        Assertions.assertNull(ms.getExtraMetadata());
+
+        Assertions.assertNull(ms.getExtraColumns());
+
+        Assertions.assertNull(ms.getMappings().get(0).getExtraMetadata());
+    }
+
+    /*
+     * Only the extra slots that have been properly "declared" (by being located
+     * under the "extra_metadata" slot for set-level metadata, or by being declared
+     * in the "extra_columns" slot for mapping-level metadata) should be accepted
+     * when ExtraMetadataPolicy is set to DECLARATION_REQUIRED.
+     */
+    @Test
+    void testAcceptDeclaredExtraMetadata() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARATION_REQUIRED);
         MappingSet ms = reader.read();
 
         Assertions.assertNotNull(ms.getExtraMetadata());
         Assertions.assertTrue(ms.getExtraMetadata().containsKey("foo"));
         Assertions.assertEquals("ABC", ms.getExtraMetadata().get("foo"));
+        Assertions.assertFalse(ms.getExtraMetadata().containsKey("notfoo"));
 
         Assertions.assertNotNull(ms.getExtraColumns());
         Assertions.assertTrue(ms.getExtraColumns().contains("bar"));
-        Assertions.assertTrue(ms.getExtraColumns().contains("baz"));
         Assertions.assertFalse(ms.getExtraColumns().contains("bat"));
+        Assertions.assertFalse(ms.getExtraColumns().contains("bax"));
+        Assertions.assertTrue(ms.getExtraColumns().contains("baz"));
 
         Mapping m1 = ms.getMappings().get(0);
         Assertions.assertNotNull(m1.getExtraMetadata());
         Assertions.assertTrue(m1.getExtraMetadata().containsKey("bar"));
         Assertions.assertEquals("Bar1", m1.getExtraMetadata().get("bar"));
+        Assertions.assertFalse(m1.getExtraMetadata().containsKey("bat"));
         Assertions.assertTrue(m1.getExtraMetadata().containsKey("baz"));
         Assertions.assertEquals("Baz1", m1.getExtraMetadata().get("baz"));
-        Assertions.assertFalse(m1.getExtraMetadata().containsKey("bat"));
+    }
+
+    /*
+     * All non-standard metadata should end up in the "extra_metadata" slots,
+     * regardless of whether they have been declared, when ExtraMetadataPolicy is
+     * set to ALL.
+     */
+    @Test
+    void testAcceptAllExtraMetadata() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.ALL);
+        MappingSet ms = reader.read();
+
+        Assertions.assertNotNull(ms.getExtraMetadata());
+        Assertions.assertTrue(ms.getExtraMetadata().containsKey("foo"));
+        Assertions.assertEquals("ABC", ms.getExtraMetadata().get("foo"));
+        Assertions.assertTrue(ms.getExtraMetadata().containsKey("notfoo"));
+        Assertions.assertEquals("DEF", ms.getExtraMetadata().get("notfoo"));
+
+        Assertions.assertNotNull(ms.getExtraColumns());
+        Assertions.assertTrue(ms.getExtraColumns().contains("bar"));
+        Assertions.assertTrue(ms.getExtraColumns().contains("bat"));
+        Assertions.assertFalse(ms.getExtraColumns().contains("bax"));
+        Assertions.assertTrue(ms.getExtraColumns().contains("baz"));
+
+        Mapping m1 = ms.getMappings().get(0);
+        Assertions.assertNotNull(m1.getExtraMetadata());
+        Assertions.assertTrue(m1.getExtraMetadata().containsKey("bar"));
+        Assertions.assertEquals("Bar1", m1.getExtraMetadata().get("bar"));
+        Assertions.assertTrue(m1.getExtraMetadata().containsKey("bat"));
+        Assertions.assertEquals("Bat1", m1.getExtraMetadata().get("bat"));
+        Assertions.assertTrue(m1.getExtraMetadata().containsKey("baz"));
+        Assertions.assertEquals("Baz1", m1.getExtraMetadata().get("baz"));
     }
 }

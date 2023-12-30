@@ -159,25 +159,30 @@ public class TSVWriterTest {
     }
 
     /*
-     * Check that "extra" slots are handled correctly (discarded by default,
-     * preserved in the "__extra" dictionaries if they are declared.
+     * Check that extra slots are either not written, written in "declared" form, or
+     * written as if they were standard slots, depending on the ExtraMetadataPolicy.
      */
     @Test
-    void testExtraSlots() throws IOException, SSSOMFormatException {
+    void testWritingExtraSlots() throws IOException, SSSOMFormatException {
         File source = new File("src/test/resources/extra-slots.sssom.tsv");
         TSVReader reader = new TSVReader(source);
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.ALL);
         MappingSet ms = reader.read();
 
-        File target = new File("src/test/resources/extra-slots-parsed.sssom.tsv.out");
-        TSVWriter writer = new TSVWriter(target);
+        TSVWriter writer = new TSVWriter("src/test/resources/extra-slots-none.sssom.tsv.out");
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE);
         writer.write(ms);
+        Assertions.assertTrue(checkExpectedFile("extra-slots-none"));
 
-        File expected = new File("src/test/resources/extra-slots-parsed.sssom.tsv");
-        boolean same = FileUtils.contentEquals(expected, target);
-        Assertions.assertTrue(same);
-        if ( same ) {
-            target.delete();
-        }
+        writer = new TSVWriter("src/test/resources/extra-slots-declared.sssom.tsv.out");
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARATION_REQUIRED);
+        writer.write(ms);
+        Assertions.assertTrue(checkExpectedFile("extra-slots-declared"));
+
+        writer = new TSVWriter("src/test/resources/extra-slots-all.sssom.tsv.out");
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.ALL);
+        writer.write(ms);
+        Assertions.assertTrue(checkExpectedFile("extra-slots-all"));
     }
 
     /*
@@ -215,6 +220,19 @@ public class TSVWriterTest {
         Assertions.assertTrue(ms.getMappingSetId().startsWith("http://sssom.invalid/"));
 
         written.delete();
+    }
+
+    /*
+     * Compare a written out set with a file containing the expected output.
+     */
+    private boolean checkExpectedFile(String basename) throws IOException, SSSOMFormatException {
+        File expected = new File(String.format("src/test/resources/%s.sssom.tsv", basename));
+        File target = new File(String.format("src/test/resources/%s.sssom.tsv.out", basename));
+        boolean same = FileUtils.contentEquals(expected, target);
+        if ( same ) {
+            target.delete();
+        }
+        return same;
     }
 
     /*

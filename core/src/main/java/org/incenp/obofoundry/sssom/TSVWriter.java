@@ -63,6 +63,7 @@ public class TSVWriter {
     private PrefixManager prefixManager = new PrefixManager();
     private Set<String> usedPrefixes = new HashSet<String>();
     private boolean customMap = false;
+    private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -107,6 +108,19 @@ public class TSVWriter {
     }
 
     /**
+     * Sets the policy to deal with non-standard metadata in the mapping set to
+     * write.
+     * 
+     * @param policy The policy instructing the writer about what to do with any
+     *               non-standard metadata. The default policy is
+     *               {@link ExtraMetadataPolicy#NONE}, meaning that no non-standard
+     *               metadata is ever written.
+     */
+    public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
+        extraPolicy = policy;
+    }
+
+    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
@@ -138,6 +152,28 @@ public class TSVWriter {
         // Condense the set
         Set<String> condensedSlots = new SlotPropagator(PropagationPolicy.NeverReplace).condense(mappingSet, true);
 
+        // Figure out if we need to write extra columns
+        List<String> extraColumnNames = new ArrayList<String>();
+        Set<String> extraColumnNameSet = new HashSet<String>();
+        mappingSet.setExtraColumns(null); // Ignore the provided list
+        if ( extraPolicy != ExtraMetadataPolicy.NONE ) {
+            for ( Mapping mapping : mappingSet.getMappings() ) {
+                if ( mapping.getExtraMetadata() != null ) {
+                    for ( String key : mapping.getExtraMetadata().keySet() ) {
+                        extraColumnNameSet.add(key);
+                    }
+                }
+            }
+            if ( !extraColumnNameSet.isEmpty() ) {
+                if ( extraPolicy == ExtraMetadataPolicy.DECLARATION_REQUIRED ) {
+                    mappingSet.setExtraColumns(new ArrayList<String>(extraColumnNameSet));
+                }
+                // Make sure extra columns will be written in predictable order
+                extraColumnNames.addAll(extraColumnNameSet);
+                extraColumnNames.sort((s1, s2) -> s1.compareTo(s2));
+            }
+        }
+
         // Write the metadata
         // FIXME: Support writing them in a separate file
         for ( String meta : SlotHelper.getMappingSetHelper().visitSlots(mappingSet,
@@ -152,37 +188,14 @@ public class TSVWriter {
             usedSlotNames.addAll(helper.visitSlots(mapping, (slot, m, value) -> slot.getName()));
         }
 
-        // Figure out if we need to write extra columns
-        List<String> extraColumnNames = new ArrayList<String>();
-        Set<String> extraColumnNameSet = new HashSet<String>();
-        if ( mappingSet.getExtraColumns() == null || mappingSet.getExtraColumns().isEmpty() ) {
-            // No need to bother with extra slots at all if none are declared
-            usedSlotNames.remove("extra_metadata");
-        } else {
-            // Find out which extra slot (among those declared) are actually used in
-            // mappings
-            Set<String> declaredExtraSlots = new HashSet<String>(mappingSet.getExtraColumns());
-            for ( Mapping mapping : mappingSet.getMappings() ) {
-                if ( mapping.getExtraMetadata() != null ) {
-                    for ( String key : mapping.getExtraMetadata().keySet() ) {
-                        if ( declaredExtraSlots.contains(key) ) {
-                            extraColumnNameSet.add(key);
-                        }
-                    }
-                }
-            }
-            if ( extraColumnNameSet.isEmpty() ) {
-                // None of the declared extra slots are used, don't bother
-                usedSlotNames.remove("extra_metadata");
-            } else {
-                // Make sure extra slots will be written in predictable order
-                extraColumnNames.addAll(extraColumnNameSet);
-                extraColumnNames.sort((s1, s2) -> s1.compareTo(s2));
-            }
-        }
-
         // Remove the slots that have been condensed
         usedSlotNames.removeAll(condensedSlots);
+
+        // Don't bother visiting the extra metadata slot if there are no extra metadata
+        // to write
+        if ( extraColumnNameSet.isEmpty() ) {
+            usedSlotNames.remove("extra_metadata");
+        }
 
         // Only visit those slots. We need to explicitly set the list of slots to visit
         // in case some slots are empty in some mappings but not in others.
@@ -257,7 +270,9 @@ public class TSVWriter {
 
         @Override
         public String visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
-            if ( slot.getName().equals("curie_map") ) {
+            String name = slot.getName();
+            boolean isExtraMetadata = false;
+            if ( name.equals("curie_map") ) {
                 // We ignore the Curie map provided in the mapping set to write the effective
                 // map instead.
                 values = new HashMap<String, String>();
@@ -266,23 +281,12 @@ public class TSVWriter {
                         values.put(prefixName, prefixManager.getPrefix(prefixName));
                     }
                 }
+            } else if ( name.equals("extra_metadata") ) {
+                isExtraMetadata = true;
             }
 
-            if ( values.size() > 0 ) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("#");
-                sb.append(slot.getName());
-                sb.append(":\n");
-                List<String> keys = new ArrayList<String>(values.keySet());
-                keys.sort((s1, s2) -> s1.compareTo(s2));
-                for ( String key : keys ) {
-                    sb.append("#  ");
-                    sb.append(key);
-                    sb.append(": \"");
-                    sb.append(values.get(key));
-                    sb.append("\"\n");
-                }
-                return sb.toString();
+            if ( !values.isEmpty() && (!isExtraMetadata || extraPolicy != ExtraMetadataPolicy.NONE) ) {
+                return mapToString(name, values, isExtraMetadata && extraPolicy == ExtraMetadataPolicy.ALL);
             }
 
             return null;
@@ -304,6 +308,32 @@ public class TSVWriter {
         @Override
         public String visit(Slot<MappingSet> slot, MappingSet set, Object value) {
             return value != null ? value.toString() : "";
+        }
+
+        /*
+         * Format a dictionary into a commented YAML block. If flat is true, the
+         * contents of the dictionary is written as if its keys were first-level slots.
+         */
+        private String mapToString(String name, Map<String, String> map, boolean flat) {
+            StringBuilder sb = new StringBuilder();
+            if ( !flat ) {
+                sb.append("#");
+                sb.append(name);
+                sb.append(":\n");
+            }
+            List<String> keys = new ArrayList<String>(map.keySet());
+            keys.sort((s1, s2) -> s1.compareTo(s2));
+            for ( String key : keys ) {
+                sb.append("#");
+                if ( !flat ) {
+                    sb.append("  ");
+                }
+                sb.append(key);
+                sb.append(": \"");
+                sb.append(map.get(key));
+                sb.append("\"\n");
+            }
+            return sb.toString();
         }
     }
 

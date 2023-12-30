@@ -42,7 +42,9 @@ public class YAMLConverter {
     private List<IYAMLPreprocessor> preprocessors;
     private Map<String, Slot<MappingSet>> setSlotMaps;
     private Map<String, Slot<Mapping>> mappingSlotMaps;
-    private Set<String> extraSlots;
+    private Set<String> declaredExtraSlots = new HashSet<String>();
+    private Set<String> usedExtraSlots = new HashSet<String>();
+    private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
 
     /**
      * Creates a new YAML converter.
@@ -69,6 +71,17 @@ public class YAMLConverter {
                 mappingSlotMaps.put(slotName, slot);
             }
         }
+    }
+
+    /**
+     * Sets the policy to deal with non-standard metadata in the input file.
+     * 
+     * @param policy The policy instructing the parser about what to do when
+     *               encountering non-standard metadata. The default policy is
+     *               {@link ExtraMetadataPolicy#NONE}.
+     */
+    public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
+        extraPolicy = policy;
     }
 
     /**
@@ -156,6 +169,12 @@ public class YAMLConverter {
             preprocessor.process(rawMap);
         }
 
+        // Don't bother processing those fields if we are to ignore all extra metadata
+        if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
+            rawMap.remove("extra_metadata");
+            rawMap.remove("extra_columns");
+        }
+
         // Process the bulk of the metadata slots
         ArrayList<String> unknownSlots = new ArrayList<String>();
         for ( String key : rawMap.keySet() ) {
@@ -166,9 +185,28 @@ public class YAMLConverter {
             }
         }
 
+        // Store all non-standard top-level slots to the extraMetadata field
+        if ( extraPolicy == ExtraMetadataPolicy.ALL ) {
+            Map<String, String> extraSlotMaps = ms.getExtraMetadata();
+            if ( extraSlotMaps == null ) {
+                extraSlotMaps = new HashMap<String, String>();
+            }
+
+            for ( String extraSlot : unknownSlots ) {
+                Object extraValue = rawMap.get(extraSlot);
+                if ( String.class.isInstance(extraValue) ) {
+                    extraSlotMaps.put(extraSlot, String.class.cast(extraValue));
+                }
+            }
+
+            if ( !extraSlotMaps.isEmpty() ) {
+                ms.setExtraMetadata(extraSlotMaps);
+            }
+        }
+
         // Keep aside the list of declared mapping-level extra slots
         if ( ms.getExtraColumns() != null && !ms.getExtraColumns().isEmpty() ) {
-            extraSlots = new HashSet<String>(ms.getExtraColumns());
+            declaredExtraSlots.addAll(ms.getExtraColumns());
         }
 
         // Process the mappings themselves, if we have them
@@ -185,6 +223,9 @@ public class YAMLConverter {
             } else {
                 onTypingError("mappings");
             }
+
+            // Finalise the set now that mappings are processed
+            postMappings(ms);
         }
 
         return ms;
@@ -211,7 +252,8 @@ public class YAMLConverter {
         for ( String key : rawMap.keySet() ) {
             if ( mappingSlotMaps.containsKey(key) ) {
                 setSlotValue(mappingSlotMaps.get(key), m, rawMap.get(key));
-            } else if ( extraSlots != null && extraSlots.contains(key) ) {
+            } else if ( (extraPolicy == ExtraMetadataPolicy.ALL)
+                    || (extraPolicy == ExtraMetadataPolicy.DECLARATION_REQUIRED && declaredExtraSlots.contains(key)) ) {
                 Object rawValue = rawMap.get(key);
                 if ( String.class.isInstance(rawValue) ) {
                     if ( extraSlotMap == null ) {
@@ -219,12 +261,30 @@ public class YAMLConverter {
                         m.setExtraMetadata(extraSlotMap);
                     }
                     extraSlotMap.put(key, String.class.cast(rawValue));
+                    usedExtraSlots.add(key);
                 }
                 // TODO: Warn and/or reject if the extra value is not a string?
             }
         }
 
         return m;
+    }
+
+    /**
+     * Finalise the conversion of a set. This method should be called once all
+     * individual mappings have been converted through calls to
+     * {@link #convertMapping(Map)}. There is no need to call this method if the
+     * mappings were already present in the raw map passed to
+     * {@link #convertMappingSet(Map)}.
+     * 
+     * @param ms The mapping set to finalise.
+     */
+    public void postMappings(MappingSet ms) {
+        if ( !usedExtraSlots.isEmpty() ) {
+            ms.setExtraColumns(new ArrayList<String>(usedExtraSlots));
+        } else {
+            ms.setExtraColumns(null);
+        }
     }
 
     /*

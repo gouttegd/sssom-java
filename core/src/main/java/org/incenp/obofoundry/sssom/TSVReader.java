@@ -166,6 +166,17 @@ public class TSVReader {
     }
 
     /**
+     * Sets the policy to deal with non-standard metadata in the input file.
+     * 
+     * @param policy The policy instructing the parser about what to do when
+     *               encountering non-standard metadata. The default policy is
+     *               {@link ExtraMetadataPolicy#NONE}.
+     */
+    public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
+        converter.setExtraMetadataPolicy(policy);
+    }
+
+    /**
      * Reads a mapping set from the source file(s).
      * 
      * @return A complete SSSOM mapping set, unless no TSV file was provided to the
@@ -237,6 +248,8 @@ public class TSVReader {
                     throw new SSSOMFormatException("Error when parsing TSV table", e);
                 }
             }
+
+            converter.postMappings(ms);
 
             // Propagate values from set-level to mapping-level
             new SlotPropagator(PropagationPolicy.NeverReplace).propagate(ms);
