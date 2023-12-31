@@ -175,9 +175,11 @@ public class SimpleCLI implements Runnable {
                 } else {
                     MappingSet tmp = reader.read();
                     ms.getMappings().addAll(tmp.getMappings());
-                    ms.getCurieMap().putAll(tmp.getCurieMap());
                     if ( !inputOpts.noMetadataMerge ) {
                         merger.merge(ms, tmp);
+                    } else {
+                        // We always merge at least the curie maps
+                        ms.getCurieMap().putAll(tmp.getCurieMap());
                     }
                 }
             } catch ( IOException ioe ) {

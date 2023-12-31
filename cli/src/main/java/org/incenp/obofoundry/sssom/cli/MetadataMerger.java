@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.cli;
 
 import java.util.List;
+import java.util.Map;
 
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
@@ -52,6 +53,18 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
             slot.setValue(internal, values);
         } else {
             dstValues.addAll(values);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(Slot<MappingSet> slot, MappingSet object, Map<String, String> values) {
+        @SuppressWarnings("unchecked")
+        Map<String, String> dstValues = (Map<String, String>) slot.getValue(internal);
+        if ( dstValues == null ) {
+            slot.setValue(internal, values);
+        } else {
+            dstValues.putAll(values);
         }
         return null;
     }
