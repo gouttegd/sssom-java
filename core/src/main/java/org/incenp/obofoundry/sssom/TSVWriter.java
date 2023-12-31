@@ -165,7 +165,7 @@ public class TSVWriter {
                 }
             }
             if ( !extraColumnNameSet.isEmpty() ) {
-                if ( extraPolicy == ExtraMetadataPolicy.DECLARATION_REQUIRED ) {
+                if ( extraPolicy == ExtraMetadataPolicy.DECLARED ) {
                     mappingSet.setExtraColumns(new ArrayList<String>(extraColumnNameSet));
                 }
                 // Make sure extra columns will be written in predictable order

@@ -312,7 +312,7 @@ public class TSVReaderTest {
     @Test
     void testAcceptDeclaredExtraMetadata() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
-        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARATION_REQUIRED);
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARED);
         MappingSet ms = reader.read();
 
         Assertions.assertNotNull(ms.getExtraMetadata());

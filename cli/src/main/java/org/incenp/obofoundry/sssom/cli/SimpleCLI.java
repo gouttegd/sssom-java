@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
+import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
@@ -75,6 +76,11 @@ public class SimpleCLI implements Runnable {
         @Option(names = "--no-metadata-merge",
                 description = "Do not attempt to merge the set-level metadata of the input sets.")
         boolean noMetadataMerge;
+
+        @Option(names = "--accept-extra-metadata",
+                paramLabel = "POLICY",
+                description = "Whether to accept non-standard metadata in the input set(s). Allowed values: ${COMPLETION-CANDIDATES}.")
+        ExtraMetadataPolicy acceptExtraMetadata = ExtraMetadataPolicy.NONE;
     }
 
     @ArgGroup(validate = false, heading = "Output options:%n")
@@ -104,6 +110,11 @@ public class SimpleCLI implements Runnable {
                 paramLabel = "META",
                 description = "Use metadata from specified file.")
         String metadataFile;
+
+        @Option(names = "--write-extra-metadata",
+                paramLabel = "POLICY",
+                description = "How to write non-standard metadata in the output set. Allowed values: ${COMPLETION-CANDIDATES}.")
+        ExtraMetadataPolicy writeExtraMetadata = ExtraMetadataPolicy.NONE;
     }
 
     enum OutputMapSource {
@@ -170,6 +181,7 @@ public class SimpleCLI implements Runnable {
             try {
                 boolean stdin = tsvFile.equals("-");
                 TSVReader reader = stdin ? new TSVReader(System.in) : new TSVReader(tsvFile, metaFile);
+                reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
@@ -253,6 +265,7 @@ public class SimpleCLI implements Runnable {
         boolean stdout = outputOpts.file.equals("-");
         try {
             TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputOpts.file);
+            writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
@@ -285,6 +298,7 @@ public class SimpleCLI implements Runnable {
             File output = new File(dir, splitId + ".sssom.tsv");
             try {
                 TSVWriter writer = new TSVWriter(output);
+                writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
                 writer.write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());

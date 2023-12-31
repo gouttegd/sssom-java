@@ -253,7 +253,7 @@ public class YAMLConverter {
             if ( mappingSlotMaps.containsKey(key) ) {
                 setSlotValue(mappingSlotMaps.get(key), m, rawMap.get(key));
             } else if ( (extraPolicy == ExtraMetadataPolicy.ALL)
-                    || (extraPolicy == ExtraMetadataPolicy.DECLARATION_REQUIRED && declaredExtraSlots.contains(key)) ) {
+                    || (extraPolicy == ExtraMetadataPolicy.DECLARED && declaredExtraSlots.contains(key)) ) {
                 Object rawValue = rawMap.get(key);
                 if ( String.class.isInstance(rawValue) ) {
                     if ( extraSlotMap == null ) {

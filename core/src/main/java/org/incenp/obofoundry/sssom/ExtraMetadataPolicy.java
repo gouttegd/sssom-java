@@ -51,7 +51,7 @@ public enum ExtraMetadataPolicy {
      * non-standard columns in the set-level {@code extra_columns} slot.
      * </ul>
      */
-    DECLARATION_REQUIRED,
+    DECLARED,
 
     /**
      * Accepts all non-standard metadata without requiring a declaration.

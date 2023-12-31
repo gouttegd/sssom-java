@@ -175,7 +175,7 @@ public class TSVWriterTest {
         Assertions.assertTrue(checkExpectedFile("extra-slots-none"));
 
         writer = new TSVWriter("src/test/resources/extra-slots-declared.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARATION_REQUIRED);
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARED);
         writer.write(ms);
         Assertions.assertTrue(checkExpectedFile("extra-slots-declared"));
 
