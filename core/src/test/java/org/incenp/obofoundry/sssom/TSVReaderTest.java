@@ -367,4 +367,29 @@ public class TSVReaderTest {
         Assertions.assertTrue(m1.getExtraMetadata().containsKey("baz"));
         Assertions.assertEquals("Baz1", m1.getExtraMetadata().get("baz"));
     }
+
+    /*
+     * Test that the parser can handle escaped YAML strings.
+     */
+    @Test
+    void testEscapedYAML() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/escaping-yaml.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals("Title\u0009with\u00A0non-printable\u0080characters", ms.getMappingSetTitle());
+    }
+
+    /*
+     * Test that the parser can handle escaped TSV values.
+     */
+    @Test
+    void testEscapedTSV() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/escaping-tsv.sssom.tsv");
+        MappingSet ms = reader.read();
+        Mapping m = ms.getMappings().get(0);
+
+        Assertions.assertEquals("Value\u0009with\u0009tab\u0009characters", m.getComment());
+        Assertions.assertEquals("Value with \"quote\" characters", m.getObjectLabel());
+        Assertions.assertEquals("Value with\nnew line character", m.getIssueTrackerItem());
+    }
 }
