@@ -181,10 +181,9 @@ public class TSVWriter {
 
         // Write the metadata
         // FIXME: Support writing them in a separate file
-        for ( String meta : SlotHelper.getMappingSetHelper().visitSlots(mappingSet,
-                new MappingSetSlotVisitor(prefixManager)) ) {
-            writer.append(meta);
-        }
+        MappingSetSlotVisitor v = new MappingSetSlotVisitor(prefixManager);
+        SlotHelper.getMappingSetHelper().visitSlots(mappingSet, v);
+        writer.append(v.getMetadataBlock());
 
         // Find the used slots
         SlotHelper<Mapping> helper = SlotHelper.getMappingHelper(true);
@@ -247,38 +246,48 @@ public class TSVWriter {
      * Visits all slots in a MappingSet to get the lines that will make up the
      * metadata block.
      */
-    private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, String> {
+    private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, Void> {
         PrefixManager pm;
+        StringBuilder sb = new StringBuilder();
 
         MappingSetSlotVisitor(PrefixManager prefixManager) {
             pm = prefixManager;
         }
 
-        @Override
-        public String visit(Slot<MappingSet> slot, MappingSet set, String value) {
-            return String.format("#%s: \"%s\"\n", slot.getName(),
-                    slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+        /*
+         * Get the collected metadata as a single string.
+         */
+        public String getMetadataBlock() {
+            return sb.toString();
         }
 
         @Override
-        public String visit(Slot<MappingSet> slot, MappingSet set, List<String> values) {
+        public Void visit(Slot<MappingSet> slot, MappingSet set, String value) {
+            sb.append('#');
+            sb.append(slot.getName());
+            sb.append(": ");
+            escapeYAML(sb, slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+            sb.append('\n');
+            return null;
+        }
+
+        @Override
+        public Void visit(Slot<MappingSet> slot, MappingSet set, List<String> values) {
             if ( values.size() > 0 ) {
-                StringBuilder sb = new StringBuilder();
                 sb.append("#");
                 sb.append(slot.getName());
                 sb.append(":\n");
                 for ( String value : values ) {
-                    sb.append("#  - \"");
-                    sb.append(slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
-                    sb.append("\"\n");
+                    sb.append("#  - ");
+                    escapeYAML(sb, slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+                    sb.append("\n");
                 }
-                return sb.toString();
             }
             return null;
         }
 
         @Override
-        public String visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
+        public Void visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
             String name = slot.getName();
             boolean isExtraMetadata = false;
             if ( name.equals("curie_map") ) {
@@ -303,36 +312,38 @@ public class TSVWriter {
             }
 
             if ( !values.isEmpty() && (!isExtraMetadata || extraPolicy != ExtraMetadataPolicy.NONE) ) {
-                return mapToString(name, values, isExtraMetadata && extraPolicy == ExtraMetadataPolicy.ALL);
+                mapToString(name, values, isExtraMetadata && extraPolicy == ExtraMetadataPolicy.ALL);
             }
 
             return null;
         }
 
         @Override
-        public String visit(Slot<MappingSet> slot, MappingSet set, Double value) {
-            return String.format("%f", value);
+        public Void visit(Slot<MappingSet> slot, MappingSet set, Double value) {
+            sb.append(String.format("%f", value));
+            return null;
         }
 
         @Override
-        public String visit(Slot<MappingSet> slot, MappingSet set, LocalDate value) {
+        public Void visit(Slot<MappingSet> slot, MappingSet set, LocalDate value) {
             // The SSSOM specification says nothing on how to serialise dates, but LinkML
             // says “for xsd dates, datetimes, and times, AtomicValue must be a string
             // conforming to the relevant ISO type”. I assume this means ISO-8601.
-            return String.format("#%s: \"%s\"\n", slot.getName(), value.format(DateTimeFormatter.ISO_DATE));
+            sb.append(String.format("#%s: \"%s\"\n", slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
+            return null;
         }
 
         @Override
-        public String visit(Slot<MappingSet> slot, MappingSet set, Object value) {
-            return value != null ? value.toString() : "";
+        public Void visit(Slot<MappingSet> slot, MappingSet set, Object value) {
+            sb.append(value != null ? value.toString() : "");
+            return null;
         }
 
         /*
          * Format a dictionary into a commented YAML block. If flat is true, the
          * contents of the dictionary is written as if its keys were first-level slots.
          */
-        private String mapToString(String name, Map<String, String> map, boolean flat) {
-            StringBuilder sb = new StringBuilder();
+        private void mapToString(String name, Map<String, String> map, boolean flat) {
             if ( !flat ) {
                 sb.append("#");
                 sb.append(name);
@@ -346,11 +357,93 @@ public class TSVWriter {
                     sb.append("  ");
                 }
                 sb.append(key);
-                sb.append(": \"");
-                sb.append(map.get(key));
-                sb.append("\"\n");
+                sb.append(": ");
+                escapeYAML(sb, map.get(key));
+                sb.append("\n");
             }
-            return sb.toString();
+        }
+
+        /*
+         * Escape a string into YAML double-quotes.
+         * https://yaml.org/spec/1.2.2/#escaped-characters
+         */
+        private void escapeYAML(StringBuilder sb, String s) {
+            sb.append('"');
+            for ( int i = 0, n = s.length(); i < n; i++ ) {
+                int c = s.codePointAt(i);
+                switch ( c ) {
+                case 0x00: // Null
+                    sb.append("\\0");
+                    break;
+
+                case 0x07: // Bell
+                    sb.append("\\a");
+                    break;
+
+                case 0x08: // Backspace
+                    sb.append("\\b");
+                    break;
+
+                case 0x09: // Horizontal tab
+                    sb.append("\\t");
+                    break;
+
+                case 0x0A: // Line feed
+                    sb.append("\\n");
+                    break;
+
+                case 0x0B: // Vertical tab
+                    sb.append("\\v");
+                    break;
+
+                case 0x0C: // Form feed
+                    sb.append("\\f");
+                    break;
+
+                case 0x0D: // Carriage return
+                    sb.append("\\r");
+                    break;
+
+                case 0x1B: // Escape
+                    sb.append("\\e");
+                    break;
+
+                case 0x22: // Double quote
+                    sb.append("\\\"");
+                    break;
+
+                case 0x5C: // Backslash
+                    sb.append("\\\\");
+                    break;
+
+                case 0x85: // Unicode next line
+                    sb.append("\\N");
+                    break;
+
+                case 0xA0: // Non-breakable space
+                    sb.append("\\_");
+                    break;
+
+                case 0x2028: // Unicode line separator
+                    sb.append("\\L");
+                    break;
+
+                case 0x2029: // Unicode paragraph separator
+                    sb.append("\\N");
+                    break;
+
+                default:
+                    if ( c <= 0x1F || (c >= 0x7F && c <= 0x9F) ) {
+                        sb.append(String.format("\\x%02x", c));
+                    } else if ( (c >= 0xD800 && c <= 0xDFFF) || c == 0xFFFE || c == 0xFFFF ) {
+                        sb.append(String.format("\\u%04x", c));
+                    } else {
+                        sb.appendCodePoint(c);
+                    }
+                    break;
+                }
+            }
+            sb.append('"');
         }
     }
 

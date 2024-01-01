@@ -200,6 +200,20 @@ public class TSVWriterTest {
     }
 
     /*
+     * Test that strings in the YAML metadata block are escaped.
+     */
+    @Test
+    void testEscapingYAML() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.setMappingSetTitle("Title\twith\u00A0non-printable\u0080characters");
+
+        TSVWriter writer = new TSVWriter("src/test/resources/escaping.sssom.tsv.out");
+        writer.write(ms);
+
+        Assertions.assertTrue(checkExpectedFile("escaping"));
+    }
+
+    /*
      * Compare a written out set with a file containing the expected output.
      */
     private boolean checkExpectedFile(String expected, String actual) throws IOException, SSSOMFormatException {
