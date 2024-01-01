@@ -37,38 +37,18 @@ public class TSVWriterTest {
      * to disk, and check it comes out as expected.
      */
     @Test
-    void testTSVWriter() throws IOException {
-        // @formatter:off
-        MappingSet ms = MappingSet.builder()
-                .mappingSetTitle("Sample mapping set 2")
-                .mappingSetVersion("1.0")
-                .publicationDate(LocalDate.of(2023, 9, 13))
-                .mappings(new ArrayList<Mapping>())
-                .curieMap(new HashMap<String, String>())
-                .license("https://creativecommons.org/licenses/by/4.0/")
-                .mappingSetId("https://example.org/sssom/sample-mapping-set")
-                .build();
-        ms.getMappings().add(Mapping.builder()
-                .subjectId("http://purl.obolibrary.org/obo/FBbt_00000001")
-                .predicateId("https://w3id.org/semapv/vocab/crossSpeciesExactMatch")
-                .objectId("http://purl.obolibrary.org/obo/UBERON_0000468")
-                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
-                .build());
-        // @formatter:on
+    void testTSVWriter() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.setMappingSetTitle("Sample mapping set 2");
+        ms.setMappingSetVersion("1.0");
+        ms.setPublicationDate(LocalDate.of(2023, 9, 13));
+        ms.setLicense("https://creativecommons.org/licenses/by/4.0/");
+        ms.setMappingSetId("https://example.org/sssom/sample-mapping-set");
 
-        ms.getCurieMap().put("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
-        ms.getCurieMap().put("UBERON", "http://purl.obolibrary.org/obo/UBERON_");
-
-        File expected = new File("src/test/resources/sample2.sssom.tsv");
-        File written = new File("src/test/resources/sample2.sssom.tsv.out");
-        TSVWriter writer = new TSVWriter(written);
+        TSVWriter writer = new TSVWriter("src/test/resources/sample2.sssom.tsv.out");
         writer.write(ms);
 
-        boolean same = FileUtils.contentEquals(expected, written);
-        Assertions.assertTrue(same);
-        if ( same ) {
-            written.delete();
-        }
+        Assertions.assertTrue(checkExpectedFile("sample2"));
     }
 
     /*
@@ -105,29 +85,22 @@ public class TSVWriterTest {
      */
     @Test
     void testStripUnusedPrefix() throws IOException, SSSOMFormatException {
-        File source = new File("src/test/resources/sample1.sssom.tsv");
-        TSVReader reader = new TSVReader(source);
+        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv");
         MappingSet ms = reader.read();
 
         // Add unused prefixes to the Curie map
         ms.getCurieMap().put("UNUSED1", "http://purl.obolibrary.org/obo/");
         ms.getCurieMap().put("UNUSED2", "https://example.org/");
 
-        File target = new File("src/test/resources/unused-prefixes.sssom.tsv.out");
-        TSVWriter writer = new TSVWriter(target);
+        TSVWriter writer = new TSVWriter("src/test/resources/unused-prefixes.sssom.tsv.out");
         writer.write(ms);
 
-        boolean same = FileUtils.contentEquals(source, target);
-        Assertions.assertTrue(same);
-        if ( same ) {
-            target.delete();
-        }
+        Assertions.assertTrue(checkExpectedFile("sample1", "unused-prefixes"));
     }
 
     @Test
     void testCustomCurieMap() throws IOException, SSSOMFormatException {
-        File source = new File("src/test/resources/sample1.sssom.tsv");
-        TSVReader reader = new TSVReader(source);
+        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv");
         MappingSet ms = reader.read();
 
         // Build a custom map from the existing one...
@@ -138,16 +111,11 @@ public class TSVWriterTest {
         ms.getCurieMap().clear();
 
         // and write the set with the custom map
-        File target = new File("src/test/resources/custom-map.sssom.tsv.out");
-        TSVWriter writer = new TSVWriter(target);
+        TSVWriter writer = new TSVWriter("src/test/resources/custom-map.sssom.tsv.out");
         writer.setCurieMap(customMap);
         writer.write(ms);
 
-        boolean same = FileUtils.contentEquals(source, target);
-        Assertions.assertTrue(same);
-        if ( same ) {
-            target.delete();
-        }
+        Assertions.assertTrue(checkExpectedFile("sample1", "custom-map"));
     }
 
     /*
@@ -186,25 +154,34 @@ public class TSVWriterTest {
     }
 
     /*
+     * Check that the writer rejects extra slot names containing invalid characters.
+     */
+    @Test
+    void testInvalidExtraSlotNames() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+
+        ms.setExtraMetadata(new HashMap<String, String>());
+        ms.getExtraMetadata().put("foo", "ABC");
+        ms.getExtraMetadata().put("/invalid", "DEF");
+
+        ms.getMappings().get(0).setExtraMetadata(new HashMap<String, String>());
+        ms.getMappings().get(0).getExtraMetadata().put("bar", "BarA");
+        ms.getMappings().get(0).getExtraMetadata().put("invalid?", "InvalidA");
+
+        TSVWriter writer = new TSVWriter("src/test/resources/invalid-extra-slot-names.sssom.tsv.out");
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARED);
+        writer.write(ms);
+
+        Assertions.assertTrue(checkExpectedFile("invalid-extra-slot-names"));
+    }
+
+    /*
      * Test license and mapping set ID slots are forcefully generated if absent.
      */
     @Test
     void testWritingDefaultSlots() throws IOException, SSSOMFormatException {
-        // @formatter:off
-        MappingSet ms = MappingSet.builder()
-                .mappings(new ArrayList<Mapping>())
-                .curieMap(new HashMap<String, String>())
-                .build();
-        ms.getMappings().add(Mapping.builder()
-                .subjectId("http://purl.obolibrary.org/obo/FBbt_00000001")
-                .predicateId("https://w3id.org/semapv/vocab/crossSpeciesExactMatch")
-                .objectId("http://purl.obolibrary.org/obo/UBERON_0000468")
-                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
-                .build());
-        // @formatter:on
-
-        ms.getCurieMap().put("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
-        ms.getCurieMap().put("UBERON", "http://purl.obolibrary.org/obo/UBERON_");
+        MappingSet ms = getTestSet();
+        ms.setMappingSetId(null);
 
         File written = new File("src/test/resources/default-slots.sssom.tsv.out");
         TSVWriter writer = new TSVWriter(written);
@@ -225,14 +202,23 @@ public class TSVWriterTest {
     /*
      * Compare a written out set with a file containing the expected output.
      */
-    private boolean checkExpectedFile(String basename) throws IOException, SSSOMFormatException {
-        File expected = new File(String.format("src/test/resources/%s.sssom.tsv", basename));
-        File target = new File(String.format("src/test/resources/%s.sssom.tsv.out", basename));
-        boolean same = FileUtils.contentEquals(expected, target);
+    private boolean checkExpectedFile(String expected, String actual) throws IOException, SSSOMFormatException {
+        String basedir = "src/test/resources/";
+        File expectedFile = new File(basedir + expected);
+        File actualFile = new File(basedir + actual);
+        boolean same = FileUtils.contentEquals(expectedFile, actualFile);
         if ( same ) {
-            target.delete();
+            actualFile.delete();
         }
         return same;
+    }
+
+    /*
+     * Compare a written out set with a file containing the expected output, where
+     * the name of the actual file is derived from the name of the theoretical file.
+     */
+    private boolean checkExpectedFile(String basename) throws IOException, SSSOMFormatException {
+        return checkExpectedFile(basename + ".sssom.tsv", basename + ".sssom.tsv.out");
     }
 
     /*
@@ -253,5 +239,30 @@ public class TSVWriterTest {
         }
 
         return same;
+    }
+
+    /*
+     * Get a common set to be used in the tests above.
+     */
+    private MappingSet getTestSet() {
+        // @formatter:off
+        MappingSet ms = MappingSet.builder()
+                .mappings(new ArrayList<Mapping>())
+                .curieMap(new HashMap<String,String>())
+                .mappingSetId("https://example.org/sssom/sample-mapping-set")
+                .build();
+        ms.getMappings().add(Mapping.builder()
+                .subjectId("http://purl.obolibrary.org/obo/FBbt_00000001")
+                .predicateId("https://w3id.org/semapv/vocab/crossSpeciesExactMatch")
+                .objectId("http://purl.obolibrary.org/obo/UBERON_0000468")
+                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
+                .extraMetadata(new HashMap<String,String>())
+                .build());
+        // @formatter:off
+
+        ms.getCurieMap().put("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
+        ms.getCurieMap().put("UBERON", "http://purl.obolibrary.org/obo/UBERON_");
+
+        return ms;
     }
 }
