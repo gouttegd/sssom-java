@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -58,6 +59,8 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  * </pre>
  */
 public class TSVWriter {
+
+    private static final Pattern extraSlotName = Pattern.compile("^\\p{Alnum}[\\p{Alnum}._-]*$");
 
     private BufferedWriter writer;
     private PrefixManager prefixManager = new PrefixManager();
@@ -160,7 +163,9 @@ public class TSVWriter {
             for ( Mapping mapping : mappingSet.getMappings() ) {
                 if ( mapping.getExtraMetadata() != null ) {
                     for ( String key : mapping.getExtraMetadata().keySet() ) {
-                        extraColumnNameSet.add(key);
+                        if ( isExtraSlotNameValid(key) ) {
+                            extraColumnNameSet.add(key);
+                        }
                     }
                 }
             }
@@ -234,6 +239,10 @@ public class TSVWriter {
         writer.close();
     }
 
+    private boolean isExtraSlotNameValid(String name) {
+        return extraSlotName.matcher(name).matches();
+    }
+
     /*
      * Visits all slots in a MappingSet to get the lines that will make up the
      * metadata block.
@@ -283,6 +292,14 @@ public class TSVWriter {
                 }
             } else if ( name.equals("extra_metadata") ) {
                 isExtraMetadata = true;
+                // We check that none of the keys violate the self-imposed name constraints.
+                HashMap<String, String> tmp = new HashMap<String, String>();
+                for ( String key : values.keySet() ) {
+                    if ( isExtraSlotNameValid(key) ) {
+                        tmp.put(key, values.get(key));
+                    }
+                }
+                values = tmp;
             }
 
             if ( !values.isEmpty() && (!isExtraMetadata || extraPolicy != ExtraMetadataPolicy.NONE) ) {
