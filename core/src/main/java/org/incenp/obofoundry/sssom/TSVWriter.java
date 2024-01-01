@@ -61,6 +61,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 public class TSVWriter {
 
     private static final Pattern extraSlotName = Pattern.compile("^\\p{Alnum}[\\p{Alnum}._-]*$");
+    private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
 
     private BufferedWriter writer;
     private PrefixManager prefixManager = new PrefixManager();
@@ -464,9 +465,9 @@ public class TSVWriter {
             if ( value == null ) {
                 return "";
             } else if ( slot.isEntityReference() ) {
-                return pm.shortenIdentifier(value);
+                return escapeTSV(pm.shortenIdentifier(value));
             } else {
-                return value;
+                return escapeTSV(value);
             }
         }
 
@@ -484,7 +485,7 @@ public class TSVWriter {
                     sb.append('|');
                 }
             }
-            return sb.toString();
+            return escapeTSV(sb.toString());
         }
 
         @Override
@@ -514,9 +515,26 @@ public class TSVWriter {
         public String visit(Slot<Mapping> slot, Mapping object, Map<String, String> values) {
             List<String> items = new ArrayList<String>();
             for ( String key : extraSlots ) {
-                items.add(values.getOrDefault(key, ""));
+                String value = values.get(key);
+                if ( value != null ) {
+                    items.add(escapeTSV(value));
+                } else {
+                    items.add("");
+                }
             }
             return String.join("\t", items);
+        }
+
+        /*
+         * Apply CSV-style escaping rules
+         * https://datatracker.ietf.org/doc/html/rfc4180#section-2
+         */
+        private String escapeTSV(String value) {
+            if ( tsvSpecialChars.matcher(value).find() ) {
+                return "\"" + value.replace("\"", "\"\"") + "\"";
+            } else {
+                return value;
+            }
         }
     }
 

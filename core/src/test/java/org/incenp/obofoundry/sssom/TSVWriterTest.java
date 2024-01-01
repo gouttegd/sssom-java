@@ -207,10 +207,23 @@ public class TSVWriterTest {
         MappingSet ms = getTestSet();
         ms.setMappingSetTitle("Title\twith\u00A0non-printable\u0080characters");
 
-        TSVWriter writer = new TSVWriter("src/test/resources/escaping.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter("src/test/resources/escaping-yaml.sssom.tsv.out");
         writer.write(ms);
 
-        Assertions.assertTrue(checkExpectedFile("escaping"));
+        Assertions.assertTrue(checkExpectedFile("escaping-yaml"));
+    }
+
+    @Test
+    void testEscapingTSV() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.getMappings().get(0).setComment("Value\twith\ttab\tcharacters");
+        ms.getMappings().get(0).setObjectLabel("Value with \"quote\" characters");
+        ms.getMappings().get(0).setIssueTrackerItem("Value with\nnew line character");
+
+        TSVWriter writer = new TSVWriter("src/test/resources/escaping-tsv.sssom.tsv.out");
+        writer.write(ms);
+
+        Assertions.assertTrue(checkExpectedFile("escaping-tsv"));
     }
 
     /*
