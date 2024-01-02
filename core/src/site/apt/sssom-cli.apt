@@ -54,7 +54,7 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
 
   Once a mapping set has been read, any IRI it contains may be
   “reconciled” against an
-  {{{Extended Prefix Map}https://github.com/cthoyt/curies/blob/main/docs/source/struct.rst#extended-prefix-maps}},
+  {{{https://github.com/cthoyt/curies/blob/main/docs/source/struct.rst#extended-prefix-maps}Extended Prefix Map}},
   by specifying the extended prefix map to use with the
   <<<--mangle-iris>>> option.
   
