@@ -22,6 +22,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
+
 /**
  * A default implementation of the {@link SlotVisitor} interface that returns
  * {@code null} for every slot. Client code can extend this class and override
@@ -35,6 +38,10 @@ public class SlotVisitorBase<T, V> implements SlotVisitor<T, V> {
 
     /**
      * Gets a default value for non-implemented visitor methods.
+     * <p>
+     * Note that the {@link #visitExtensionDefinitions(Object, List)} and
+     * {@link #visitExtensions(Object, Map)} methods of this object do <em>not</em>
+     * call this method.
      * 
      * @param slot   The slot that is being visited.
      * @param object The object to which the slot is attached.
@@ -73,5 +80,15 @@ public class SlotVisitorBase<T, V> implements SlotVisitor<T, V> {
     @Override
     public V visit(Slot<T> slot, T object, Object value) {
         return getDefault(slot, object, value);
+    }
+
+    @Override
+    public V visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
+        return null;
+    }
+
+    @Override
+    public V visitExtensions(T object, Map<String, ExtensionValue> values) {
+        return null;
     }
 }

@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
@@ -41,7 +43,7 @@ public class YAMLConverter {
     private List<IYAMLPreprocessor> preprocessors;
     private Map<String, Slot<MappingSet>> setSlotMaps;
     private Map<String, Slot<Mapping>> mappingSlotMaps;
-    private ExtensionHelper extensionHelper;
+    private ExtensionSlotManager extensionManager;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
 
     /**
@@ -166,8 +168,8 @@ public class YAMLConverter {
         }
 
         // Process extension definitions
-        extensionHelper = new ExtensionHelper(extraPolicy, prefixManager);
-        extensionHelper.processDefinitions(rawMap);
+        extensionManager = new ExtensionSlotManager(extraPolicy, prefixManager);
+        processDefinitions(rawMap);
 
         // Process the bulk of the metadata slots
         Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
@@ -175,7 +177,7 @@ public class YAMLConverter {
             if ( setSlotMaps.containsKey(key) ) {
                 setSlotValue(setSlotMaps.get(key), ms, rawMap.get(key));
             } else {
-                extensionHelper.processUnknownSlot(extensionSlots, key, rawMap.get(key));
+                processUnknownSlot(extensionSlots, key, rawMap.get(key));
             }
         }
         if ( !extensionSlots.isEmpty() ) {
@@ -226,7 +228,7 @@ public class YAMLConverter {
             if ( mappingSlotMaps.containsKey(key) ) {
                 setSlotValue(mappingSlotMaps.get(key), m, rawMap.get(key));
             } else {
-                extensionHelper.processUnknownSlot(extensionSlots, key, rawMap.get(key));
+                processUnknownSlot(extensionSlots, key, rawMap.get(key));
             }
         }
         if ( !extensionSlots.isEmpty() ) {
@@ -246,8 +248,9 @@ public class YAMLConverter {
      * @param ms The mapping set to finalise.
      */
     public void postMappings(MappingSet ms) {
-        if ( extensionHelper.hasDefinitions() ) {
-            ms.setExtensionDefinitions(extensionHelper.getDefinitions());
+        if ( !extensionManager.isEmpty() ) {
+            // Sets the effective list of defined extensions
+            ms.setExtensionDefinitions(extensionManager.getDefinitions(false, false));
         }
     }
 
@@ -340,6 +343,119 @@ public class YAMLConverter {
             slot.setValue(object, null);
         } else {
             onTypingError(slot.getName());
+        }
+    }
+
+    /*
+     * Parses the "extension_definitions" key.
+     */
+    private void processDefinitions(Map<String, Object> rawMap) throws SSSOMFormatException {
+        Object rawDefinitions = rawMap.get("extension_definitions");
+        rawMap.remove("extension_definitions");
+
+        if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
+            return;
+        }
+
+        if ( List.class.isInstance(rawDefinitions) ) {
+            @SuppressWarnings("unchecked")
+            List<Object> rawDefinitionsList = List.class.cast(rawDefinitions);
+
+            for ( Object rawDefinition : rawDefinitionsList ) {
+                if ( YAMLConverter.isMapOf(rawDefinition, String.class) ) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> definition = Map.class.cast(rawDefinition);
+
+                    String slotName = definition.get("slot_name");
+                    String property = definition.get("property");
+                    String typeHint = definition.get("type_hint");
+
+                    if ( slotName != null && property != null ) {
+                        // Pass the definition to the extension slot manager. We'll assign all the
+                        // collected definitions to the mapping set later.
+                        extensionManager.addDefinition(slotName, property, typeHint);
+                    }
+                } else {
+                    onTypingError("extension_definitions");
+                }
+            }
+        } else {
+            onTypingError("extension_definitions");
+        }
+    }
+
+    /*
+     * Parses any non-standard metadata slot.
+     */
+    private void processUnknownSlot(Map<String, ExtensionValue> extensions, String slotName, Object rawValue)
+            throws SSSOMFormatException {
+        // Look up the definition for the unknown slot. If we accept undefined slots,
+        // we'll get an auto-generated definition.
+        ExtensionDefinition definition = extensionManager.getDefinitionForSlot(slotName);
+        if ( definition != null ) {
+            if ( !String.class.isInstance(rawValue) ) {
+                onTypingError(slotName);
+            }
+            String value = String.class.cast(rawValue);
+
+            ExtensionValue parsedValue = null;
+            switch ( definition.getEffectiveType() ) {
+            case STRING:
+                parsedValue = new ExtensionValue(value);
+                break;
+
+            case INTEGER:
+                try {
+                    parsedValue = new ExtensionValue(Integer.parseInt(value));
+                } catch ( NumberFormatException nfe ) {
+                    onTypingError(slotName, nfe);
+                }
+                break;
+
+            case DOUBLE:
+                try {
+                    parsedValue = new ExtensionValue(Double.parseDouble(value));
+                } catch ( NumberFormatException nfe ) {
+                    onTypingError(slotName, nfe);
+                }
+                break;
+
+            case BOOLEAN:
+                if ( value.equals("true") ) {
+                    parsedValue = new ExtensionValue(true);
+                } else if ( value.equals("false") ) {
+                    parsedValue = new ExtensionValue(false);
+                } else {
+                    onTypingError(slotName);
+                }
+                break;
+
+            case DATE:
+                try {
+                    parsedValue = new ExtensionValue(LocalDate.parse(value));
+                } catch ( DateTimeParseException dtpe ) {
+                    onTypingError(slotName, dtpe);
+                }
+                break;
+
+            case DATETIME:
+                try {
+                    parsedValue = new ExtensionValue(ZonedDateTime.parse(value));
+                } catch ( DateTimeParseException dtpe ) {
+                    onTypingError(slotName, dtpe);
+                }
+                break;
+
+            case IDENTIFIER:
+                parsedValue = new ExtensionValue(prefixManager.expandIdentifier(value), true);
+                break;
+
+            case OTHER:
+                parsedValue = new ExtensionValue((Object) value);
+                break;
+            }
+
+            extensions.put(definition.getProperty(), parsedValue);
         }
     }
 }

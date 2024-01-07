@@ -374,18 +374,15 @@ public class TSVReaderTest {
                 "http://www.w3.org/2001/XMLSchema#date"), definitions.get("baz"));
         compare(new ExtensionDefinition("foo", "https://example.org/fooProperty", "https://w3id.org/linkml/uriOrCurie"),
                 definitions.get("foo"));
-        compare(new ExtensionDefinition("bat", "https://w3id.org/sssom/undefined_extensions/bat"),
-                definitions.get("bat"));
-        compare(new ExtensionDefinition("notfoo", "https://w3id.org/sssom/undefined_extensions/notfoo"),
-                definitions.get("notfoo"));
+        compare(new ExtensionDefinition("bat", "http://sssom.invalid/bat"), definitions.get("bat"));
+        compare(new ExtensionDefinition("notfoo", "http://sssom.invalid/notfoo"), definitions.get("notfoo"));
 
         // Check the set-level extensions
         Assertions.assertNotNull(ms.getExtensions());
         Assertions.assertEquals(2, ms.getExtensions().size());
         compare(new ExtensionValue("https://example.org/ABC", true),
                 ms.getExtensions().get("https://example.org/fooProperty"));
-        compare(new ExtensionValue("DEF"),
-                ms.getExtensions().get("https://w3id.org/sssom/undefined_extensions/notfoo"));
+        compare(new ExtensionValue("DEF"), ms.getExtensions().get("http://sssom.invalid/notfoo"));
 
         // Check the mapping-level extensions
         Mapping m1 = ms.getMappings().get(0);
@@ -394,7 +391,7 @@ public class TSVReaderTest {
         compare(new ExtensionValue("Bar1"), m1.getExtensions().get("https://example.org/barProperty"));
         compare(new ExtensionValue(LocalDate.of(2024, 1, 1)),
                 m1.getExtensions().get("https://example.org/bazProperty"));
-        compare(new ExtensionValue("Bat1"), m1.getExtensions().get("https://w3id.org/sssom/undefined_extensions/bat"));
+        compare(new ExtensionValue("Bat1"), m1.getExtensions().get("http://sssom.invalid/bat"));
     }
 
     /*

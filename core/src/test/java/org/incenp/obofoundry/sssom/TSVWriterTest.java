@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.io.FileUtils;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
@@ -139,12 +141,12 @@ public class TSVWriterTest {
 
         TSVWriter writer = new TSVWriter("src/test/resources/extra-slots-none.sssom.tsv.out");
         writer.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE);
-        writer.write(ms);
+        writer.write(ms.toBuilder().build());
         Assertions.assertTrue(checkExpectedFile("extra-slots-none"));
 
         writer = new TSVWriter("src/test/resources/extra-slots-declared.sssom.tsv.out");
         writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
-        writer.write(ms);
+        writer.write(ms.toBuilder().build());
         Assertions.assertTrue(checkExpectedFile("extra-slots-declared"));
 
         writer = new TSVWriter("src/test/resources/extra-slots-all.sssom.tsv.out");
@@ -160,13 +162,20 @@ public class TSVWriterTest {
     void testInvalidExtraSlotNames() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
 
-        ms.setExtraMetadata(new HashMap<String, String>());
-        ms.getExtraMetadata().put("foo", "ABC");
-        ms.getExtraMetadata().put("/invalid", "DEF");
+        ms.setExtensionDefinitions(new ArrayList<ExtensionDefinition>());
+        ms.getExtensionDefinitions().add(new ExtensionDefinition("foo", "https://example.org/fooProperty"));
+        ms.getExtensionDefinitions().add(new ExtensionDefinition("bar", "https://example.org/barProperty"));
+        ms.getExtensionDefinitions().add(new ExtensionDefinition("/invalid", "https://example.org/invalidSlotName1"));
+        ms.getExtensionDefinitions().add(new ExtensionDefinition("invalid?", "https://example.org/invalidSlotName2"));
 
-        ms.getMappings().get(0).setExtraMetadata(new HashMap<String, String>());
-        ms.getMappings().get(0).getExtraMetadata().put("bar", "BarA");
-        ms.getMappings().get(0).getExtraMetadata().put("invalid?", "InvalidA");
+        ms.setExtensions(new HashMap<String, ExtensionValue>());
+        ms.getExtensions().put("https://example.org/fooProperty", new ExtensionValue("ABC"));
+        ms.getExtensions().put("https://example.org/invalidSlotName1", new ExtensionValue("DEF"));
+
+        ms.getMappings().get(0).setExtensions(new HashMap<String, ExtensionValue>());
+        ms.getMappings().get(0).getExtensions().put("https://example.org/barProperty", new ExtensionValue("BarA"));
+        ms.getMappings().get(0).getExtensions().put("https://example.org/invalidSlotName2",
+                new ExtensionValue("InvalidA"));
 
         TSVWriter writer = new TSVWriter("src/test/resources/invalid-extra-slot-names.sssom.tsv.out");
         writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
@@ -283,7 +292,6 @@ public class TSVWriterTest {
                 .predicateId("https://w3id.org/semapv/vocab/crossSpeciesExactMatch")
                 .objectId("http://purl.obolibrary.org/obo/UBERON_0000468")
                 .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
-                .extraMetadata(new HashMap<String,String>())
                 .build());
         // @formatter:off
 

@@ -106,12 +106,6 @@ public class MappingSet  {
     private String other;
 
     private String comment;
-
-    @JsonProperty("extra_columns")
-    private List<String> extraColumns;
-
-    @JsonProperty("extra_metadata")
-    private Map<String,String> extraMetadata;
     
     @JsonProperty("extension_definitions")
     private List<ExtensionDefinition> extensionDefinitions;

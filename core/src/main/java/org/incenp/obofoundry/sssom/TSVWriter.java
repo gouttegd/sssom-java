@@ -36,8 +36,11 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.ValueType;
 
 /**
  * A writer to serialise a SSSOM mapping set into the TSV format. For now, only
@@ -60,7 +63,6 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  */
 public class TSVWriter {
 
-    private static final Pattern extraSlotName = Pattern.compile("^\\p{Alnum}[\\p{Alnum}._-]*$");
     private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
 
     private BufferedWriter writer;
@@ -68,6 +70,7 @@ public class TSVWriter {
     private Set<String> usedPrefixes = new HashSet<String>();
     private boolean customMap = false;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
+    private ExtensionSlotManager extensionManager;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -145,10 +148,16 @@ public class TSVWriter {
             mappingSet.setMappingSetId("http://sssom.invalid/" + UUID.randomUUID().toString());
         }
 
+        // Compute effective definitions for non-standard slots
+        extensionManager = new ExtensionSlotManager(extraPolicy, prefixManager);
+        extensionManager.fillFromExistingExtensions(mappingSet);
+        mappingSet.setExtensionDefinitions(extensionManager.getDefinitions(true, false));
+
         // Find out which prefixes are actually needed
         SlotHelper.getMappingSetHelper().visitSlots(mappingSet, new MappingSetPrefixVisitor());
         MappingPrefixVisitor prefixVisitor = new MappingPrefixVisitor();
         mappingSet.getMappings().forEach(m -> SlotHelper.getMappingHelper().visitSlots(m, prefixVisitor));
+        usedPrefixes.addAll(extensionManager.getUsedPrefixes());
         for ( BuiltinPrefix bp : BuiltinPrefix.values() ) {
             usedPrefixes.remove(bp.getPrefixName());
         }
@@ -156,33 +165,9 @@ public class TSVWriter {
         // Condense the set
         Set<String> condensedSlots = new SlotPropagator(PropagationPolicy.NeverReplace).condense(mappingSet, true);
 
-        // Figure out if we need to write extra columns
-        List<String> extraColumnNames = new ArrayList<String>();
-        Set<String> extraColumnNameSet = new HashSet<String>();
-        mappingSet.setExtraColumns(null); // Ignore the provided list
-        if ( extraPolicy != ExtraMetadataPolicy.NONE ) {
-            for ( Mapping mapping : mappingSet.getMappings() ) {
-                if ( mapping.getExtraMetadata() != null ) {
-                    for ( String key : mapping.getExtraMetadata().keySet() ) {
-                        if ( isExtraSlotNameValid(key) ) {
-                            extraColumnNameSet.add(key);
-                        }
-                    }
-                }
-            }
-            if ( !extraColumnNameSet.isEmpty() ) {
-                if ( extraPolicy == ExtraMetadataPolicy.DEFINED ) {
-                    mappingSet.setExtraColumns(new ArrayList<String>(extraColumnNameSet));
-                }
-                // Make sure extra columns will be written in predictable order
-                extraColumnNames.addAll(extraColumnNameSet);
-                extraColumnNames.sort((s1, s2) -> s1.compareTo(s2));
-            }
-        }
-
         // Write the metadata
         // FIXME: Support writing them in a separate file
-        MappingSetSlotVisitor v = new MappingSetSlotVisitor(prefixManager);
+        MappingSetSlotVisitor v = new MappingSetSlotVisitor();
         SlotHelper.getMappingSetHelper().visitSlots(mappingSet, v);
         writer.append(v.getMetadataBlock());
 
@@ -192,15 +177,10 @@ public class TSVWriter {
         for ( Mapping mapping : mappingSet.getMappings() ) {
             usedSlotNames.addAll(helper.visitSlots(mapping, (slot, m, value) -> slot.getName()));
         }
+        List<ExtensionDefinition> extraSlots = extensionManager.getDefinitions(true, true);
 
         // Remove the slots that have been condensed
         usedSlotNames.removeAll(condensedSlots);
-
-        // Don't bother visiting the extra metadata slot if there are no extra metadata
-        // to write
-        if ( extraColumnNameSet.isEmpty() ) {
-            usedSlotNames.remove("extra_metadata");
-        }
 
         // Only visit those slots. We need to explicitly set the list of slots to visit
         // in case some slots are empty in some mappings but not in others.
@@ -208,39 +188,29 @@ public class TSVWriter {
 
         // Write the column headers
         List<Slot<Mapping>> usedSlots = helper.getSlots();
-        for ( int i = 0, n = usedSlots.size(); i < n; i++ ) {
-            String name = usedSlots.get(i).getName();
-            if ( name.equals("extra_metadata") ) {
-                writer.append(String.join("\t", extraColumnNames));
+        ArrayList<String> headers = new ArrayList<String>();
+        for ( Slot<Mapping> slot : usedSlots ) {
+            if ( slot.getName().equals("extensions") ) {
+                for ( ExtensionDefinition definition : extraSlots ) {
+                    headers.add(definition.getSlotName());
+                }
             } else {
-                writer.append(name);
-            }
-            if ( i < n - 1 ) {
-                writer.append('\t');
+                headers.add(slot.getName());
             }
         }
+        writer.append(String.join("\t", headers));
         writer.append('\n');
 
         // Write the individual mappings
-        MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(prefixManager, extraColumnNames);
+        MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(extraSlots);
         mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
             List<String> values = helper.visitSlots(mapping, mappingVisitor, true);
-            for ( int i = 0, n = values.size(); i < n; i++ ) {
-                writer.append(values.get(i));
-                if ( i < n - 1 ) {
-                    writer.append('\t');
-                }
-            }
-
+            writer.append(String.join("\t", values));
             writer.append('\n');
         }
 
         writer.close();
-    }
-
-    private boolean isExtraSlotNameValid(String name) {
-        return extraSlotName.matcher(name).matches();
     }
 
     /*
@@ -248,12 +218,7 @@ public class TSVWriter {
      * metadata block.
      */
     private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, Void> {
-        PrefixManager pm;
         StringBuilder sb = new StringBuilder();
-
-        MappingSetSlotVisitor(PrefixManager prefixManager) {
-            pm = prefixManager;
-        }
 
         /*
          * Get the collected metadata as a single string.
@@ -267,7 +232,7 @@ public class TSVWriter {
             sb.append('#');
             sb.append(slot.getName());
             sb.append(": ");
-            escapeYAML(sb, slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+            escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
             sb.append('\n');
             return null;
         }
@@ -280,7 +245,7 @@ public class TSVWriter {
                 sb.append(":\n");
                 for ( String value : values ) {
                     sb.append("#  - ");
-                    escapeYAML(sb, slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+                    escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
                     sb.append("\n");
                 }
             }
@@ -290,7 +255,6 @@ public class TSVWriter {
         @Override
         public Void visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
             String name = slot.getName();
-            boolean isExtraMetadata = false;
             if ( name.equals("curie_map") ) {
                 // We ignore the Curie map provided in the mapping set to write the effective
                 // map instead.
@@ -300,20 +264,21 @@ public class TSVWriter {
                         values.put(prefixName, prefixManager.getPrefix(prefixName));
                     }
                 }
-            } else if ( name.equals("extra_metadata") ) {
-                isExtraMetadata = true;
-                // We check that none of the keys violate the self-imposed name constraints.
-                HashMap<String, String> tmp = new HashMap<String, String>();
-                for ( String key : values.keySet() ) {
-                    if ( isExtraSlotNameValid(key) ) {
-                        tmp.put(key, values.get(key));
-                    }
-                }
-                values = tmp;
             }
 
-            if ( !values.isEmpty() && (!isExtraMetadata || extraPolicy != ExtraMetadataPolicy.NONE) ) {
-                mapToString(name, values, isExtraMetadata && extraPolicy == ExtraMetadataPolicy.UNDEFINED);
+            if ( !values.isEmpty() ) {
+                sb.append("#");
+                sb.append(name);
+                sb.append(":\n");
+                List<String> keys = new ArrayList<String>(values.keySet());
+                keys.sort((s1, s2) -> s1.compareTo(s2));
+                for ( String key : keys ) {
+                    sb.append("#  ");
+                    sb.append(key);
+                    sb.append(": ");
+                    escapeYAML(sb, values.get(key));
+                    sb.append("\n");
+                }
             }
 
             return null;
@@ -340,28 +305,43 @@ public class TSVWriter {
             return null;
         }
 
-        /*
-         * Format a dictionary into a commented YAML block. If flat is true, the
-         * contents of the dictionary is written as if its keys were first-level slots.
-         */
-        private void mapToString(String name, Map<String, String> map, boolean flat) {
-            if ( !flat ) {
-                sb.append("#");
-                sb.append(name);
-                sb.append(":\n");
-            }
-            List<String> keys = new ArrayList<String>(map.keySet());
-            keys.sort((s1, s2) -> s1.compareTo(s2));
-            for ( String key : keys ) {
-                sb.append("#");
-                if ( !flat ) {
-                    sb.append("  ");
+        @Override
+        public Void visitExtensionDefinitions(MappingSet set, List<ExtensionDefinition> definitions) {
+            if ( extraPolicy == ExtraMetadataPolicy.DEFINED && !definitions.isEmpty() ) {
+                sb.append("#extension_definitions:\n");
+                for ( ExtensionDefinition definition : definitions ) {
+                    sb.append("#  - slot_name: ");
+                    sb.append(definition.getSlotName());
+                    sb.append("\n#    property: ");
+                    escapeYAML(sb, prefixManager.shortenIdentifier(definition.getProperty()));
+                    sb.append("\n");
+                    if ( definition.getEffectiveType() != ValueType.STRING ) {
+                        sb.append("#    type_hint: ");
+                        escapeYAML(sb, prefixManager.shortenIdentifier(definition.getTypeHint()));
+                        sb.append("\n");
+                    }
                 }
-                sb.append(key);
-                sb.append(": ");
-                escapeYAML(sb, map.get(key));
-                sb.append("\n");
             }
+            return null;
+        }
+
+        @Override
+        public Void visitExtensions(MappingSet set, Map<String, ExtensionValue> extensions) {
+            if (extraPolicy != ExtraMetadataPolicy.NONE &&  extensions != null) {
+                for ( ExtensionDefinition definition : extensionManager.getDefinitions(true, false) ) {
+                    ExtensionValue value = extensions.get(definition.getProperty());
+                    if ( value != null ) {
+                        sb.append("#");
+                        sb.append(definition.getSlotName());
+                        sb.append(": ");
+                        escapeYAML(sb, value.isIdentifier() ? prefixManager.shortenIdentifier(value.asString())
+                                : value.toString());
+                        sb.append("\n");
+                    }
+                }
+            }
+
+            return null;
         }
 
         /*
@@ -452,12 +432,10 @@ public class TSVWriter {
      * Visits all slots in a mapping to render their values as a TSV cell.
      */
     private class MappingSlotVisitor extends SlotVisitorBase<Mapping, String> {
-        private PrefixManager pm;
-        private List<String> extraSlots;
+        private List<ExtensionDefinition> definitions;
 
-        MappingSlotVisitor(PrefixManager prefixManager, List<String> extraSlots) {
-            pm = prefixManager;
-            this.extraSlots = extraSlots;
+        MappingSlotVisitor(List<ExtensionDefinition> extraSlots) {
+            definitions = extraSlots;
         }
 
         @Override
@@ -465,7 +443,7 @@ public class TSVWriter {
             if ( value == null ) {
                 return "";
             } else if ( slot.isEntityReference() ) {
-                return escapeTSV(pm.shortenIdentifier(value));
+                return escapeTSV(prefixManager.shortenIdentifier(value));
             } else {
                 return escapeTSV(value);
             }
@@ -480,7 +458,7 @@ public class TSVWriter {
             StringBuilder sb = new StringBuilder();
             for ( int i = 0, n = values.size(); i < n; i++ ) {
                 String value = values.get(i);
-                sb.append(slot.isEntityReference() ? pm.shortenIdentifier(value) : value);
+                sb.append(slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
                 if ( i < n - 1 ) {
                     sb.append('|');
                 }
@@ -512,16 +490,21 @@ public class TSVWriter {
         }
 
         @Override
-        public String visit(Slot<Mapping> slot, Mapping object, Map<String, String> values) {
-            List<String> items = new ArrayList<String>();
-            for ( String key : extraSlots ) {
-                String value = values.get(key);
-                if ( value != null ) {
-                    items.add(escapeTSV(value));
+        public String visitExtensions(Mapping object, Map<String, ExtensionValue> extensions) {
+            if ( extraPolicy == ExtraMetadataPolicy.NONE || extensions == null ) {
+                return null;
+            }
+
+            ArrayList<String> items = new ArrayList<String>();
+            for ( ExtensionDefinition definition : definitions ) {
+                ExtensionValue ev = extensions.get(definition.getProperty());
+                if ( ev != null ) {
+                    items.add(ev.isIdentifier() ? prefixManager.shortenIdentifier(ev.asString()) : ev.toString());
                 } else {
                     items.add("");
                 }
             }
+
             return String.join("\t", items);
         }
 

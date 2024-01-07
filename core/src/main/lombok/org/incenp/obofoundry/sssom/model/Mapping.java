@@ -160,9 +160,6 @@ public class Mapping  {
     private String other;
 
     private String comment;
-
-    @JsonProperty("extra_metadata")
-    private Map<String,String> extraMetadata;
     
     @JsonProperty("extensions")
     private Map<String,ExtensionValue> extensions;

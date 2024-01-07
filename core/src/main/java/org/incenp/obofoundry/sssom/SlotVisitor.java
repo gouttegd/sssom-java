@@ -22,6 +22,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
+
 /**
  * A pseudo-visitor interface to visit the different metadata slots of a SSSOM
  * Java object.
@@ -93,4 +96,27 @@ public interface SlotVisitor<T, V> {
      * @return Whatever value the visitor wishes to return.
      */
     public V visit(Slot<T> slot, T object, Object value);
+
+    /**
+     * Visits the {@code extension_definitions} slot, containing the definitions for
+     * any non-standard metadata slot.
+     * 
+     * @param object The object to which the slot is attached. Effectively, it can
+     *               only be a MappingSet object, since the Mapping object does not
+     *               have such a slot.
+     * @param values The definitions for extension slots.
+     * @return Whatever value the visitor wishes to return.
+     */
+    public V visitExtensionDefinitions(T object, List<ExtensionDefinition> values);
+
+    /**
+     * Visits the {@code extensions} slots, containing all the non-standard metadata
+     * slots, if any.
+     * 
+     * @param object The object to which the slot is attached.
+     * @param values The non-standard metadata, as a map where the keys are the
+     *               properties to which non-standard metadata are attached.
+     * @return Whatever value the visitor wishes to return.
+     */
+    public V visitExtensions(T object, Map<String, ExtensionValue> values);
 }

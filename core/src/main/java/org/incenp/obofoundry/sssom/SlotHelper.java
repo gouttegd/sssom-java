@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -65,7 +67,7 @@ public class SlotHelper<T> {
     private SlotHelper(Class<T> type) {
         for ( Field f : type.getDeclaredFields() ) {
             String name = f.getName();
-            if ( name.equals("mappings") || name.equals("extension_definitions") || name.equals("extensions") ) {
+            if ( name.equals("mappings") ) {
                 // We never visit these slots
                 continue;
             }
@@ -239,13 +241,25 @@ public class SlotHelper<T> {
                 String text = String.class.cast(slotValue);
                 value = visitor.visit(slot, object, text);
             } else if ( fieldType.equals(List.class) ) {
-                @SuppressWarnings("unchecked")
-                List<String> list = List.class.cast(slotValue);
-                value = visitor.visit(slot, object, list);
+                if ( slot.getName().equals("extension_definitions") ) {
+                    @SuppressWarnings("unchecked")
+                    List<ExtensionDefinition> list = List.class.cast(slotValue);
+                    value = visitor.visitExtensionDefinitions(object, list);
+                } else {
+                    @SuppressWarnings("unchecked")
+                    List<String> list = List.class.cast(slotValue);
+                    value = visitor.visit(slot, object, list);
+                }
             } else if ( fieldType.equals(Map.class) ) {
-                @SuppressWarnings("unchecked")
-                Map<String, String> map = Map.class.cast(slotValue);
-                value = visitor.visit(slot, object, map);
+                if ( slot.getName().equals("extensions") ) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, ExtensionValue> map = Map.class.cast(slotValue);
+                    value = visitor.visitExtensions(object, map);
+                } else {
+                    @SuppressWarnings("unchecked")
+                    Map<String, String> map = Map.class.cast(slotValue);
+                    value = visitor.visit(slot, object, map);
+                }
             } else if ( fieldType.equals(Double.class) ) {
                 Double dbl = Double.class.cast(slotValue);
                 value = visitor.visit(slot, object, dbl);
