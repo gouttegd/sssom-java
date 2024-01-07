@@ -33,7 +33,9 @@ public enum BuiltinPrefix {
     RDF("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
     RDFS("http://www.w3.org/2000/01/rdf-schema#"),
     SKOS("http://www.w3.org/2004/02/skos/core#"),
-    SEMAPV("https://w3id.org/semapv/vocab/");
+    SEMAPV("https://w3id.org/semapv/vocab/"),
+    XSD("http://www.w3.org/2001/XMLSchema#"),
+    LINKML("https://w3id.org/linkml/");
 
     private final static Map<String, BuiltinPrefix> MAP;
 
