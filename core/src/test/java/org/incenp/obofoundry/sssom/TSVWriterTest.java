@@ -134,7 +134,7 @@ public class TSVWriterTest {
     void testWritingExtraSlots() throws IOException, SSSOMFormatException {
         File source = new File("src/test/resources/extra-slots.sssom.tsv");
         TSVReader reader = new TSVReader(source);
-        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.ALL);
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
         TSVWriter writer = new TSVWriter("src/test/resources/extra-slots-none.sssom.tsv.out");
@@ -143,12 +143,12 @@ public class TSVWriterTest {
         Assertions.assertTrue(checkExpectedFile("extra-slots-none"));
 
         writer = new TSVWriter("src/test/resources/extra-slots-declared.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARED);
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
         writer.write(ms);
         Assertions.assertTrue(checkExpectedFile("extra-slots-declared"));
 
         writer = new TSVWriter("src/test/resources/extra-slots-all.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.ALL);
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         writer.write(ms);
         Assertions.assertTrue(checkExpectedFile("extra-slots-all"));
     }
@@ -169,7 +169,7 @@ public class TSVWriterTest {
         ms.getMappings().get(0).getExtraMetadata().put("invalid?", "InvalidA");
 
         TSVWriter writer = new TSVWriter("src/test/resources/invalid-extra-slot-names.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARED);
+        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
         writer.write(ms);
 
         Assertions.assertTrue(checkExpectedFile("invalid-extra-slot-names"));

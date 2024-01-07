@@ -112,4 +112,9 @@ public class MappingSet  {
 
     @JsonProperty("extra_metadata")
     private Map<String,String> extraMetadata;
+    
+    @JsonProperty("extension_definitions")
+    private List<ExtensionDefinition> extensionDefinitions;
+    
+    private Map<String,ExtensionValue> extensions;
 }

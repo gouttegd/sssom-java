@@ -64,10 +64,12 @@ public class SlotHelper<T> {
 
     private SlotHelper(Class<T> type) {
         for ( Field f : type.getDeclaredFields() ) {
-            if ( f.getName().equals("mappings") ) { // We never visit that slot.
+            String name = f.getName();
+            if ( name.equals("mappings") || name.equals("extension_definitions") || name.equals("extensions") ) {
+                // We never visit these slots
                 continue;
             }
-            Slot<T> slot = new Slot<T>(type, f.getName());
+            Slot<T> slot = new Slot<T>(type, name);
             slots.add(slot);
             slotsByName.put(slot.getName(), slot);
         }

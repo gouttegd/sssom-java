@@ -22,10 +22,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
@@ -291,81 +295,106 @@ public class TSVReaderTest {
      * NONE.
      */
     @Test
-    void testIgnoreExtraMetadata() throws IOException, SSSOMFormatException {
+    void testIgnoreExtensions() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE);
         MappingSet ms = reader.read();
 
-        Assertions.assertNull(ms.getExtraMetadata());
+        Assertions.assertNull(ms.getExtensionDefinitions());
 
-        Assertions.assertNull(ms.getExtraColumns());
+        Assertions.assertNull(ms.getExtensions());
 
-        Assertions.assertNull(ms.getMappings().get(0).getExtraMetadata());
+        Assertions.assertNull(ms.getMappings().get(0).getExtensions());
     }
 
     /*
-     * Only the extra slots that have been properly "declared" (by being located
-     * under the "extra_metadata" slot for set-level metadata, or by being declared
-     * in the "extra_columns" slot for mapping-level metadata) should be accepted
-     * when ExtraMetadataPolicy is set to DECLARATION_REQUIRED.
+     * Only the extra slots that have been properly defined should be accepted when
+     * ExtraMetadataPolicy is set to DEFINED.
      */
     @Test
-    void testAcceptDeclaredExtraMetadata() throws IOException, SSSOMFormatException {
+    void testAcceptDefinedExtensions() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
-        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DECLARED);
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
         MappingSet ms = reader.read();
 
-        Assertions.assertNotNull(ms.getExtraMetadata());
-        Assertions.assertTrue(ms.getExtraMetadata().containsKey("foo"));
-        Assertions.assertEquals("ABC", ms.getExtraMetadata().get("foo"));
-        Assertions.assertFalse(ms.getExtraMetadata().containsKey("notfoo"));
 
-        Assertions.assertNotNull(ms.getExtraColumns());
-        Assertions.assertTrue(ms.getExtraColumns().contains("bar"));
-        Assertions.assertFalse(ms.getExtraColumns().contains("bat"));
-        Assertions.assertFalse(ms.getExtraColumns().contains("bax"));
-        Assertions.assertTrue(ms.getExtraColumns().contains("baz"));
+        // Check the parsed definitions
+        Assertions.assertNotNull(ms.getExtensionDefinitions());
+        Map<String, ExtensionDefinition> definitions = new HashMap<String, ExtensionDefinition>();
+        for ( ExtensionDefinition definition : ms.getExtensionDefinitions() ) {
+            definitions.put(definition.getSlotName(), definition);
+        }
+        Assertions.assertEquals(4, definitions.size());
+        compare(new ExtensionDefinition("bar", "https://example.org/barProperty",
+                "http://www.w3.org/2001/XMLSchema#string"), definitions.get("bar"));
+        compare(new ExtensionDefinition("bax", "https://example.org/baxProperty", "https://example.org/someOtherType"),
+                definitions.get("bax"));
+        compare(new ExtensionDefinition("baz", "https://example.org/bazProperty",
+                "http://www.w3.org/2001/XMLSchema#date"), definitions.get("baz"));
+        compare(new ExtensionDefinition("foo", "https://example.org/fooProperty", "https://w3id.org/linkml/uriOrCurie"),
+                definitions.get("foo"));
 
+        // Check the set-level extensions
+        Assertions.assertNotNull(ms.getExtensions());
+        Assertions.assertEquals(1, ms.getExtensions().size());
+        compare(new ExtensionValue("https://example.org/ABC", true),
+                ms.getExtensions().get("https://example.org/fooProperty"));
+
+        // Check the mapping-level extensions
         Mapping m1 = ms.getMappings().get(0);
-        Assertions.assertNotNull(m1.getExtraMetadata());
-        Assertions.assertTrue(m1.getExtraMetadata().containsKey("bar"));
-        Assertions.assertEquals("Bar1", m1.getExtraMetadata().get("bar"));
-        Assertions.assertFalse(m1.getExtraMetadata().containsKey("bat"));
-        Assertions.assertTrue(m1.getExtraMetadata().containsKey("baz"));
-        Assertions.assertEquals("Baz1", m1.getExtraMetadata().get("baz"));
+        Assertions.assertNotNull(m1.getExtensions());
+        Assertions.assertEquals(2, m1.getExtensions().size());
+        compare(new ExtensionValue("Bar1"), m1.getExtensions().get("https://example.org/barProperty"));
+        compare(new ExtensionValue(LocalDate.of(2024, 1, 1)),
+                m1.getExtensions().get("https://example.org/bazProperty"));
     }
 
     /*
-     * All non-standard metadata should end up in the "extra_metadata" slots,
-     * regardless of whether they have been declared, when ExtraMetadataPolicy is
-     * set to ALL.
+     * All non-standard metadata should end up in the extension slots, regardless of
+     * whether they have been defined, when ExtraMetadataPolicy is set to UNDEFINED.
      */
     @Test
-    void testAcceptAllExtraMetadata() throws IOException, SSSOMFormatException {
+    void testAcceptAllExtensions() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
-        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.ALL);
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
-        Assertions.assertNotNull(ms.getExtraMetadata());
-        Assertions.assertTrue(ms.getExtraMetadata().containsKey("foo"));
-        Assertions.assertEquals("ABC", ms.getExtraMetadata().get("foo"));
-        Assertions.assertTrue(ms.getExtraMetadata().containsKey("notfoo"));
-        Assertions.assertEquals("DEF", ms.getExtraMetadata().get("notfoo"));
+        // Checked the parsed *and* auto-generated definitions
+        Assertions.assertNotNull(ms.getExtensionDefinitions());
+        Map<String, ExtensionDefinition> definitions = new HashMap<String, ExtensionDefinition>();
+        for ( ExtensionDefinition definition : ms.getExtensionDefinitions() ) {
+            definitions.put(definition.getSlotName(), definition);
+        }
+        Assertions.assertEquals(6, definitions.size());
+        compare(new ExtensionDefinition("bar", "https://example.org/barProperty",
+                "http://www.w3.org/2001/XMLSchema#string"), definitions.get("bar"));
+        compare(new ExtensionDefinition("bax", "https://example.org/baxProperty", "https://example.org/someOtherType"),
+                definitions.get("bax"));
+        compare(new ExtensionDefinition("baz", "https://example.org/bazProperty",
+                "http://www.w3.org/2001/XMLSchema#date"), definitions.get("baz"));
+        compare(new ExtensionDefinition("foo", "https://example.org/fooProperty", "https://w3id.org/linkml/uriOrCurie"),
+                definitions.get("foo"));
+        compare(new ExtensionDefinition("bat", "https://w3id.org/sssom/undefined_extensions/bat"),
+                definitions.get("bat"));
+        compare(new ExtensionDefinition("notfoo", "https://w3id.org/sssom/undefined_extensions/notfoo"),
+                definitions.get("notfoo"));
 
-        Assertions.assertNotNull(ms.getExtraColumns());
-        Assertions.assertTrue(ms.getExtraColumns().contains("bar"));
-        Assertions.assertTrue(ms.getExtraColumns().contains("bat"));
-        Assertions.assertFalse(ms.getExtraColumns().contains("bax"));
-        Assertions.assertTrue(ms.getExtraColumns().contains("baz"));
+        // Check the set-level extensions
+        Assertions.assertNotNull(ms.getExtensions());
+        Assertions.assertEquals(2, ms.getExtensions().size());
+        compare(new ExtensionValue("https://example.org/ABC", true),
+                ms.getExtensions().get("https://example.org/fooProperty"));
+        compare(new ExtensionValue("DEF"),
+                ms.getExtensions().get("https://w3id.org/sssom/undefined_extensions/notfoo"));
 
+        // Check the mapping-level extensions
         Mapping m1 = ms.getMappings().get(0);
-        Assertions.assertNotNull(m1.getExtraMetadata());
-        Assertions.assertTrue(m1.getExtraMetadata().containsKey("bar"));
-        Assertions.assertEquals("Bar1", m1.getExtraMetadata().get("bar"));
-        Assertions.assertTrue(m1.getExtraMetadata().containsKey("bat"));
-        Assertions.assertEquals("Bat1", m1.getExtraMetadata().get("bat"));
-        Assertions.assertTrue(m1.getExtraMetadata().containsKey("baz"));
-        Assertions.assertEquals("Baz1", m1.getExtraMetadata().get("baz"));
+        Assertions.assertNotNull(m1.getExtensions());
+        Assertions.assertEquals(3, m1.getExtensions().size());
+        compare(new ExtensionValue("Bar1"), m1.getExtensions().get("https://example.org/barProperty"));
+        compare(new ExtensionValue(LocalDate.of(2024, 1, 1)),
+                m1.getExtensions().get("https://example.org/bazProperty"));
+        compare(new ExtensionValue("Bat1"), m1.getExtensions().get("https://w3id.org/sssom/undefined_extensions/bat"));
     }
 
     /*
@@ -391,5 +420,17 @@ public class TSVReaderTest {
         Assertions.assertEquals("Value\u0009with\u0009tab\u0009characters", m.getComment());
         Assertions.assertEquals("Value with \"quote\" characters", m.getObjectLabel());
         Assertions.assertEquals("Value with\nnew line character", m.getIssueTrackerItem());
+    }
+
+    private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
+        Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
+        Assertions.assertEquals(expected.getProperty(), actual.getProperty());
+        Assertions.assertEquals(expected.getTypeHint(), actual.getTypeHint());
+        Assertions.assertEquals(expected.getEffectiveType(), actual.getEffectiveType());
+    }
+
+    private void compare(ExtensionValue expected, ExtensionValue actual) {
+        Assertions.assertEquals(expected.getType(), actual.getType());
+        Assertions.assertEquals(expected.getValue(), actual.getValue());
     }
 }

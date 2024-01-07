@@ -22,12 +22,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -42,8 +41,7 @@ public class YAMLConverter {
     private List<IYAMLPreprocessor> preprocessors;
     private Map<String, Slot<MappingSet>> setSlotMaps;
     private Map<String, Slot<Mapping>> mappingSlotMaps;
-    private Set<String> declaredExtraSlots = new HashSet<String>();
-    private Set<String> usedExtraSlots = new HashSet<String>();
+    private ExtensionHelper extensionHelper;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
 
     /**
@@ -66,10 +64,7 @@ public class YAMLConverter {
 
         mappingSlotMaps = new HashMap<String, Slot<Mapping>>();
         for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
-            String slotName = slot.getName();
-            if ( !slotName.equals("extra_metadata") ) {
-                mappingSlotMaps.put(slotName, slot);
-            }
+            mappingSlotMaps.put(slot.getName(), slot);
         }
     }
 
@@ -160,6 +155,7 @@ public class YAMLConverter {
             Map<String, String> curieMap = Map.class.cast(rawCurieMap);
             ms.setCurieMap(curieMap);
             prefixManager.add(curieMap);
+            rawMap.remove("curie_map");
         } else {
             onTypingError("curie_map");
         }
@@ -169,44 +165,21 @@ public class YAMLConverter {
             preprocessor.process(rawMap);
         }
 
-        // Don't bother processing those fields if we are to ignore all extra metadata
-        if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
-            rawMap.remove("extra_metadata");
-            rawMap.remove("extra_columns");
-        }
+        // Process extension definitions
+        extensionHelper = new ExtensionHelper(extraPolicy, prefixManager);
+        extensionHelper.processDefinitions(rawMap);
 
         // Process the bulk of the metadata slots
-        ArrayList<String> unknownSlots = new ArrayList<String>();
+        Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
         for ( String key : rawMap.keySet() ) {
             if ( setSlotMaps.containsKey(key) ) {
                 setSlotValue(setSlotMaps.get(key), ms, rawMap.get(key));
             } else {
-                unknownSlots.add(key);
+                extensionHelper.processUnknownSlot(extensionSlots, key, rawMap.get(key));
             }
         }
-
-        // Store all non-standard top-level slots to the extraMetadata field
-        if ( extraPolicy == ExtraMetadataPolicy.ALL ) {
-            Map<String, String> extraSlotMaps = ms.getExtraMetadata();
-            if ( extraSlotMaps == null ) {
-                extraSlotMaps = new HashMap<String, String>();
-            }
-
-            for ( String extraSlot : unknownSlots ) {
-                Object extraValue = rawMap.get(extraSlot);
-                if ( String.class.isInstance(extraValue) ) {
-                    extraSlotMaps.put(extraSlot, String.class.cast(extraValue));
-                }
-            }
-
-            if ( !extraSlotMaps.isEmpty() ) {
-                ms.setExtraMetadata(extraSlotMaps);
-            }
-        }
-
-        // Keep aside the list of declared mapping-level extra slots
-        if ( ms.getExtraColumns() != null && !ms.getExtraColumns().isEmpty() ) {
-            declaredExtraSlots.addAll(ms.getExtraColumns());
+        if ( !extensionSlots.isEmpty() ) {
+            ms.setExtensions(extensionSlots);
         }
 
         // Process the mappings themselves, if we have them
@@ -243,7 +216,7 @@ public class YAMLConverter {
      */
     public Mapping convertMapping(Map<String, Object> rawMap) throws SSSOMFormatException {
         Mapping m = new Mapping();
-        HashMap<String, String> extraSlotMap = null;
+        Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
 
         for ( IYAMLPreprocessor preprocessor : preprocessors ) {
             preprocessor.process(rawMap);
@@ -252,19 +225,12 @@ public class YAMLConverter {
         for ( String key : rawMap.keySet() ) {
             if ( mappingSlotMaps.containsKey(key) ) {
                 setSlotValue(mappingSlotMaps.get(key), m, rawMap.get(key));
-            } else if ( (extraPolicy == ExtraMetadataPolicy.ALL)
-                    || (extraPolicy == ExtraMetadataPolicy.DECLARED && declaredExtraSlots.contains(key)) ) {
-                Object rawValue = rawMap.get(key);
-                if ( String.class.isInstance(rawValue) ) {
-                    if ( extraSlotMap == null ) {
-                        extraSlotMap = new HashMap<String, String>();
-                        m.setExtraMetadata(extraSlotMap);
-                    }
-                    extraSlotMap.put(key, String.class.cast(rawValue));
-                    usedExtraSlots.add(key);
-                }
-                // TODO: Warn and/or reject if the extra value is not a string?
+            } else {
+                extensionHelper.processUnknownSlot(extensionSlots, key, rawMap.get(key));
             }
+        }
+        if ( !extensionSlots.isEmpty() ) {
+            m.setExtensions(extensionSlots);
         }
 
         return m;
@@ -280,10 +246,8 @@ public class YAMLConverter {
      * @param ms The mapping set to finalise.
      */
     public void postMappings(MappingSet ms) {
-        if ( !usedExtraSlots.isEmpty() ) {
-            ms.setExtraColumns(new ArrayList<String>(usedExtraSlots));
-        } else {
-            ms.setExtraColumns(null);
+        if ( extensionHelper.hasDefinitions() ) {
+            ms.setExtensionDefinitions(extensionHelper.getDefinitions());
         }
     }
 

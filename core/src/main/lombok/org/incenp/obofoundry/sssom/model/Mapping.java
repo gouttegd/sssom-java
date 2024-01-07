@@ -163,4 +163,7 @@ public class Mapping  {
 
     @JsonProperty("extra_metadata")
     private Map<String,String> extraMetadata;
+    
+    @JsonProperty("extensions")
+    private Map<String,ExtensionValue> extensions;
 }

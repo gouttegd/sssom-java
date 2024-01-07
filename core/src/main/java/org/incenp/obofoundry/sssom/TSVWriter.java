@@ -171,7 +171,7 @@ public class TSVWriter {
                 }
             }
             if ( !extraColumnNameSet.isEmpty() ) {
-                if ( extraPolicy == ExtraMetadataPolicy.DECLARED ) {
+                if ( extraPolicy == ExtraMetadataPolicy.DEFINED ) {
                     mappingSet.setExtraColumns(new ArrayList<String>(extraColumnNameSet));
                 }
                 // Make sure extra columns will be written in predictable order
@@ -313,7 +313,7 @@ public class TSVWriter {
             }
 
             if ( !values.isEmpty() && (!isExtraMetadata || extraPolicy != ExtraMetadataPolicy.NONE) ) {
-                mapToString(name, values, isExtraMetadata && extraPolicy == ExtraMetadataPolicy.ALL);
+                mapToString(name, values, isExtraMetadata && extraPolicy == ExtraMetadataPolicy.UNDEFINED);
             }
 
             return null;

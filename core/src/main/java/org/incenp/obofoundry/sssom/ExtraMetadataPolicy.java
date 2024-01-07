@@ -32,44 +32,26 @@ public enum ExtraMetadataPolicy {
     NONE,
 
     /**
-     * Requires that non-standard metadata slots be declared.
+     * Requires that non-standard metadata slots be defined.
      * <p>
-     * When reading a mapping set, this policy instructs the parser to discard:
-     * <ul>
-     * <li>any set-level non-standard metadata except those under the
-     * {@code extra_metadata} slot;
-     * <li>any mapping-level non-standard slot except those declared in the
-     * set-level {@code extra_columns} slot.
-     * </ul>
+     * When reading a mapping set, this policy instructs the parser to discard any
+     * non-standard metadata slot except those defined in the set-level
+     * {@code extension_definitions} slot.
+     * <p>
      * When writing, this policy instructs the writer to write all available
      * non-standard metadata and to make sure the non-standard metadata are
-     * <em>declared</em>:
-     * <ul>
-     * <li>for the set-level non-standard metadata, by writing them all under the
-     * {@code extra_metadata} slot (instead of the root of the YAML metadata block);
-     * <li>for the mapping-level non-standard metadata, by listing the names of the
-     * non-standard columns in the set-level {@code extra_columns} slot.
-     * </ul>
+     * <em>defined</em>.
      */
-    DECLARED,
+    DEFINED,
 
     /**
-     * Accepts all non-standard metadata without requiring a declaration.
+     * Accepts all non-standard metadata without requiring a definition.
      * <p>
-     * When reading a mapping set, this policy instructs the parser to:
-     * <ul>
-     * <li>accept any set-level non-standard metadata and store it into the
-     * {@code extra_metadata} slot;
-     * <li>likewise accept any mapping-level non-standard metadata (non-standard
-     * column) and store it into the mapping-level {@code extra_metadata} slot.
-     * </ul>
-     * When writing, this policy instructs the writer to:
-     * <ul>
-     * <li>write all set-level non-standard metadata as if they were standard
-     * metadata, under the root of the YAML metadata block;
-     * <li>write all mapping-level non-standard metadata as supplementary columns
-     * (without declaring them first).
-     * </ul>
+     * When reading a mapping set, this policy instructs the parser to accept any
+     * non-standard metadata slot whether it is defined or not.
+     * <p>
+     * When writing, this policy instructs the writer to write all non-standard
+     * metadata slots without defining them.
      */
-    ALL
+    UNDEFINED
 }
