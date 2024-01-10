@@ -22,15 +22,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotVisitorBase;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
+import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.vocab.XSDVocabulary;
@@ -117,6 +120,44 @@ public class AnnotationVisitor extends SlotVisitorBase<Mapping, Void> {
     public Void visit(Slot<Mapping> slot, Mapping mapping, Object value) {
         annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
                 factory.getOWLLiteral(value.toString())));
+        return null;
+    }
+
+    @Override
+    public Void visitExtensions(Mapping mapping, Map<String, ExtensionValue> values) {
+        for ( String property : values.keySet() ) {
+            ExtensionValue value = values.get(property);
+            OWLAnnotationValue annotValue = null;
+            switch ( value.getType() ) {
+            case BOOLEAN:
+                annotValue = factory.getOWLLiteral(value.asBoolean());
+                break;
+            case DATE:
+            case DATETIME:
+                annotValue = factory.getOWLLiteral(value.toString(),
+                        factory.getOWLDatatype(IRI.create(value.getType().toString())));
+                break;
+            case DOUBLE:
+                annotValue = factory.getOWLLiteral(value.asDouble());
+                break;
+            case IDENTIFIER:
+                annotValue = IRI.create(value.asString());
+                break;
+            case INTEGER:
+                annotValue = factory.getOWLLiteral(value.asInteger());
+                break;
+            case OTHER:
+                annotValue = factory.getOWLLiteral(value.toString());
+                break;
+            case STRING:
+                annotValue = factory.getOWLLiteral(value.asString());
+                break;
+            }
+            if ( annotValue != null ) {
+                annots.add(
+                        factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(property)), annotValue));
+            }
+        }
         return null;
     }
 }
