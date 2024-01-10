@@ -30,6 +30,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
@@ -253,6 +255,27 @@ public class ExtendedPrefixMap {
             if ( slot.isEntityReference() ) {
                 canonicalise(values, true);
             }
+            return null;
+        }
+
+        @Override
+        public Void visitExtensions(T object, Map<String, ExtensionValue> values) {
+            values.replaceAll((k, v) -> {
+                if ( v.isIdentifier() ) {
+                    return new ExtensionValue(canonicalise(v.asString()), true);
+                } else {
+                    return v;
+                }
+            });
+            return null;
+        }
+
+        @Override
+        public Void visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
+            values.replaceAll((def) -> {
+                return new ExtensionDefinition(def.getSlotName(), canonicalise(def.getProperty()),
+                        canonicalise(def.getTypeHint()));
+            });
             return null;
         }
     }
