@@ -102,6 +102,12 @@ public class ExtensionSlotManager {
             typeHint = DEFAULT_TYPE_HINT;
         }
 
+        ExtensionDefinition existingDef = definedExtensionsBySlotName.get(slotName);
+        if ( existingDef != null ) {
+            // Can't have two definitions with the same slot name, override the previous one
+            definedExtensionsByProperty.remove(existingDef.getSlotName());
+        }
+
         ExtensionDefinition def = new ExtensionDefinition(slotName, prefixManager.expandIdentifier(property),
                 prefixManager.expandIdentifier(typeHint));
         definedExtensionsBySlotName.put(slotName, def);
@@ -157,12 +163,16 @@ public class ExtensionSlotManager {
         }
 
         // Get the theoretical definitions from the set metadata
-        Map<String, ExtensionDefinition> setDefinitions = new HashMap<String, ExtensionDefinition>();
-        if ( ms.getExtensionDefinitions() != null ) {
+        Map<String, ExtensionDefinition> setDefinitionsBySlotName = new HashMap<String,ExtensionDefinition>();
+        if (ms.getExtensionDefinitions() != null) {
             for ( ExtensionDefinition def : ms.getExtensionDefinitions() ) {
-                setDefinitions.put(def.getProperty(), def);
+                // Ensure slot name unicity (any prior definition with same name is replaced)
+                setDefinitionsBySlotName.put(def.getSlotName(), def);
             }
         }
+        // Re-arrange to look up by property
+        Map<String, ExtensionDefinition> setDefinitionsByProperty = new HashMap<String, ExtensionDefinition>();
+        setDefinitionsBySlotName.forEach((k, v) -> setDefinitionsByProperty.put(v.getProperty(), v));
 
         // Iterate through the effectively used properties and reconcile when needed
         int noSlotNameCounter = 0;
@@ -175,7 +185,7 @@ public class ExtensionSlotManager {
             }
 
             // Do we have a definition in the set?
-            ExtensionDefinition definition = setDefinitions.get(property);
+            ExtensionDefinition definition = setDefinitionsByProperty.get(property);
             if ( definition == null ) {
                 // No definition, so we need to figure out a slot name
                 String slotName = null;
