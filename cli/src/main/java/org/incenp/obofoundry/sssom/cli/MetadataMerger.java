@@ -18,12 +18,17 @@
 
 package org.incenp.obofoundry.sssom.cli;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.SlotVisitorBase;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
 /**
@@ -52,6 +57,12 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
         if ( dstValues == null ) {
             slot.setValue(internal, values);
         } else {
+            // Avoid duplicated values (would going through a HashSet be more efficient?)
+            for ( String value : values ) {
+                if ( !dstValues.contains(value) ) {
+                    dstValues.add(value);
+                }
+            }
             dstValues.addAll(values);
         }
         return null;
@@ -64,6 +75,76 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
         if ( dstValues == null ) {
             slot.setValue(internal, values);
         } else {
+            // Values from the source set takes precedence
+            dstValues.putAll(values);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitExtensionDefinitions(MappingSet object, List<ExtensionDefinition> values) {
+        List<ExtensionDefinition> dstValues = internal.getExtensionDefinitions();
+        if ( dstValues == null ) {
+            internal.setExtensionDefinitions(values);
+        } else {
+            /*
+             * Merge definitions from both sets.
+             * 
+             * Possible clashes:
+             * 
+             * 1. Same slot name, different property: craft a new slot name for the second
+             * definition;
+             * 
+             * 2. Same property, different slot name: slot name from the second definition
+             * takes precedence;
+             * 
+             * 3. Same property, different type: coerce to xsd:string.
+             */
+            Map<String, ExtensionDefinition> definitionsByProperty = new HashMap<String, ExtensionDefinition>();
+            Set<String> names = new HashSet<String>();
+            for ( ExtensionDefinition def : dstValues ) {
+                definitionsByProperty.put(def.getProperty(), def);
+                names.add(def.getSlotName());
+            }
+
+            for ( ExtensionDefinition def : values ) {
+                ExtensionDefinition existingDef = definitionsByProperty.get(def.getProperty());
+                if ( existingDef != null ) {
+                    if ( !existingDef.getSlotName().equals(def.getSlotName()) ) {
+                        // 2. Same property, different slot name
+                        existingDef.setSlotName(def.getSlotName());
+                    }
+                    if ( !existingDef.getTypeHint().equals(def.getTypeHint()) ) {
+                        // 3. Same property, conflicting types
+                        existingDef.setTypeHint(null);
+                    }
+                } else {
+                    String name = def.getSlotName();
+                    if ( names.contains(name) ) {
+                        // 1. Slot name clash: prior definition with same slot name, different property
+                        int n = 1;
+                        String fixedName;
+                        do {
+                            fixedName = String.format("%s_%d", name, ++n);
+                        } while ( names.contains(fixedName) );
+
+                        def = new ExtensionDefinition(fixedName, def.getProperty(), def.getTypeHint());
+                        names.add(fixedName);
+                    }
+                    internal.getExtensionDefinitions().add(def);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitExtensions(MappingSet object, Map<String, ExtensionValue> values) {
+        Map<String, ExtensionValue> dstValues = internal.getExtensions();
+        if ( dstValues == null ) {
+            internal.setExtensions(values);
+        } else {
+            // Values from the source set take precedence
             dstValues.putAll(values);
         }
         return null;

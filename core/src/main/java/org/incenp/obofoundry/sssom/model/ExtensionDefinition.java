@@ -53,6 +53,10 @@ public class ExtensionDefinition {
     public ExtensionDefinition(String slotName, String property, String typeHint) {
         this.slotName = slotName;
         this.property = property;
+
+        if ( typeHint == null ) {
+            typeHint = ValueType.STRING.toString();
+        }
         this.typeHint = typeHint;
         this.realType = ValueType.fromIRI(typeHint);
     }
@@ -83,5 +87,30 @@ public class ExtensionDefinition {
      */
     public ValueType getEffectiveType() {
         return realType;
+    }
+
+    /**
+     * Sets the type hint.
+     * 
+     * @param hint The new type hint to assign (if {@code null}, defaults to
+     *             {@code xsd:string}).
+     */
+    public void setTypeHint(String hint) {
+        if ( hint == null ) {
+            typeHint = ValueType.STRING.toString();
+            realType = ValueType.STRING;
+        } else {
+            typeHint = hint;
+            realType = ValueType.fromIRI(hint);
+        }
+    }
+
+    /**
+     * Sets the slot name.
+     * 
+     * @param name The new slot name to assign.
+     */
+    public void setSlotName(String name) {
+        slotName = name;
     }
 }
