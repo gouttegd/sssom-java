@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.cli;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
@@ -33,6 +34,30 @@ public class SSSOMCLITest {
         // Let the CLI know it is running as part of the test suite, so that it does not
         // call System.exit (which would terminate the testing framework).
         System.setProperty("org.incenp.obofoundry.sssom.cli#inTest", "yes");
+    }
+
+    @Test
+    void testReadingExternalMetadata() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/sample-external-metadata.sssom.tsv:../core/src/test/resources/sample-external-metadata-2.sssom.yml",
+                      "--output", "src/test/resources/read-from-external-metadata.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("read-from-external-metadata");
+    }
+
+    @Test
+    void testReadingOneSetFromStdin() throws IOException {
+        FileInputStream input = new FileInputStream("../core/src/test/resources/sample1.sssom.tsv");
+        System.setIn(input);
+        runCommand(0, "--output", "src/test/resources/read-from-stdin.tsv.out");
+        checkOutput("read-from-stdin.tsv");
+        input.close();
+
+        input = new FileInputStream("../core/src/test/resources/sample1.sssom.tsv");
+        System.setIn(input);
+        runCommand(0, "--input", "-", "--output", "src/test/resources/read-from-stdin.tsv.out");
+        checkOutput("read-from-stdin.tsv");
+        input.close();
     }
 
     /*
