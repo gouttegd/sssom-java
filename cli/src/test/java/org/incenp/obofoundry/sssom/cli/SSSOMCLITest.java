@@ -52,6 +52,13 @@ public class SSSOMCLITest {
         input.close();
     }
 
+    @Test
+    void testReadingErrors() throws IOException {
+        runCommand(1, "--input", "inexisting-file.sssom.tsv");
+        runCommand(1, "--input", "../core/src/test/resources/ruleset1.sssomt");
+        runCommand(1, "--input", "../core/src/test/resources/sample1.sssom.tsv", "--mangle-iris", "inexisting-epm");
+    }
+
     /*
      * Check that we can apply a SSSOM/T ruleset.
      */
