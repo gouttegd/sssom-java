@@ -48,18 +48,6 @@ public class CommandHelper implements IVersionProvider, IExecutionExceptionHandl
     }
 
     /**
-     * Exits the application.
-     * 
-     * @param code The return code to pass to the calling shell.
-     */
-    public void exit(int code) {
-        // Do not call exit if we are running the tests
-        if ( System.getProperty("org.incenp.obofoundry.sssom.cli#inTest") == null ) {
-            System.exit(code);
-        }
-    }
-
-    /**
      * Prints an informative message on standard output.
      * 
      * @param format The message to print, as a format string.

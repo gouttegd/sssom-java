@@ -24,17 +24,9 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class SSSOMCLITest {
-
-    @BeforeEach
-    void setUp() {
-        // Let the CLI know it is running as part of the test suite, so that it does not
-        // call System.exit (which would terminate the testing framework).
-        System.setProperty("org.incenp.obofoundry.sssom.cli#inTest", "yes");
-    }
 
     @Test
     void testReadingExternalMetadata() throws IOException {
@@ -247,13 +239,8 @@ public class SSSOMCLITest {
     /*
      * Run a CLI command.
      */
-    private int runCommand(int code, String... strings) {
-        try {
-            SimpleCLI.main(strings);
-        } catch ( Exception e ) {
-            Assertions.assertEquals(String.valueOf(code), e.getMessage());
-        }
-        return code;
+    private void runCommand(int code, String... strings) {
+        Assertions.assertEquals(code, SimpleCLI.run(strings));
     }
 
     /*

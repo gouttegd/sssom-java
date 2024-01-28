@@ -153,10 +153,18 @@ public class SimpleCLI implements Runnable {
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
+        System.exit(run(args));
+    }
+
+    /*
+     * The real entry point. It is separate from the main method so that it can be
+     * called from the test suite.
+     */
+    public static int run(String[] args) {
         SimpleCLI cli = new SimpleCLI();
         int rc = new picocli.CommandLine(cli).setExecutionExceptionHandler(cli.helper)
                 .setUsageHelpLongOptionsMaxWidth(23).setUsageHelpAutoWidth(true).execute(args);
-        cli.helper.exit(rc);
+        return rc;
     }
 
     @Override
