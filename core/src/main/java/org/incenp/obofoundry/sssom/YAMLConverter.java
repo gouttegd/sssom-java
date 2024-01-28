@@ -353,7 +353,7 @@ public class YAMLConverter {
         Object rawDefinitions = rawMap.get("extension_definitions");
         rawMap.remove("extension_definitions");
 
-        if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
+        if ( extraPolicy == ExtraMetadataPolicy.NONE || rawDefinitions == null ) {
             return;
         }
 
