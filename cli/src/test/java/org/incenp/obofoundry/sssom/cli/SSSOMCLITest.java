@@ -34,21 +34,21 @@ public class SSSOMCLITest {
         runCommand(0, "--input", "../core/src/test/resources/sample-external-metadata.sssom.tsv:../core/src/test/resources/sample-external-metadata-2.sssom.yml",
                       "--output", "src/test/resources/read-from-external-metadata.sssom.tsv.out");
         // @formatter:on
-        checkOutput("read-from-external-metadata");
+        checkOutput("read-from-external-metadata.sssom.tsv");
     }
 
     @Test
     void testReadingOneSetFromStdin() throws IOException {
         FileInputStream input = new FileInputStream("../core/src/test/resources/sample1.sssom.tsv");
         System.setIn(input);
-        runCommand(0, "--output", "src/test/resources/read-from-stdin.tsv.out");
-        checkOutput("read-from-stdin.tsv");
+        runCommand(0, "--output", "src/test/resources/read-from-stdin.sssom.tsv.out");
+        checkOutput("read-from-stdin.sssom.tsv");
         input.close();
 
         input = new FileInputStream("../core/src/test/resources/sample1.sssom.tsv");
         System.setIn(input);
-        runCommand(0, "--input", "-", "--output", "src/test/resources/read-from-stdin.tsv.out");
-        checkOutput("read-from-stdin.tsv");
+        runCommand(0, "--input", "-", "--output", "src/test/resources/read-from-stdin.sssom.tsv.out");
+        checkOutput("read-from-stdin.sssom.tsv");
         input.close();
     }
 
