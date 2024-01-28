@@ -63,7 +63,6 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
                     dstValues.add(value);
                 }
             }
-            dstValues.addAll(values);
         }
         return null;
     }

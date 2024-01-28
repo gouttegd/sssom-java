@@ -164,26 +164,29 @@ public class SSSOMCLITest {
     @Test
     void testMergingMetadata() throws IOException {
     	// @formatter:off
-    	runCommand(0, "--input", "../core/src/test/resources/sample1.sssom.tsv",
-    	        "--input",       "../core/src/test/resources/sample2.sssom.tsv",
-    	        "--output",      "src/test/resources/merged1+2.sssom.tsv.out");
+        runCommand(0, "--input", "src/test/resources/merge-input-1.sssom.tsv",
+                "--input",       "src/test/resources/merge-input-2.sssom.tsv",
+                "--input",       "src/test/resources/merge-input-3.sssom.tsv",
+                "--output",      "src/test/resources/merged1+2+3.sssom.tsv.out");
     	// @formatter:on
-    	checkOutput("merged1+2.sssom.tsv");
+        checkOutput("merged1+2+3.sssom.tsv");
     	
     	// @formatter:off
-    	runCommand(0, "--input", "../core/src/test/resources/sample2.sssom.tsv",
-    	        "--input",       "../core/src/test/resources/sample1.sssom.tsv",
-    	        "--output",      "src/test/resources/merged2+1.sssom.tsv.out");
+        runCommand(0, "--input", "src/test/resources/merge-input-3.sssom.tsv",
+                "--input",       "src/test/resources/merge-input-2.sssom.tsv",
+                "--input",       "src/test/resources/merge-input-1.sssom.tsv",
+                "--output",      "src/test/resources/merged3+2+1.sssom.tsv.out");
     	// @formatter:on
-    	checkOutput("merged2+1.sssom.tsv");
+        checkOutput("merged3+2+1.sssom.tsv");
     	
     	// @formatter:off
-    	runCommand(0, "--input", "../core/src/test/resources/sample2.sssom.tsv",
-    	        "--input",       "../core/src/test/resources/sample1.sssom.tsv",
-    	        "--no-metadata-merge",
-    	        "--output",      "src/test/resources/merged2+1-no-metadata-merge.sssom.tsv.out");
+        runCommand(0, "--input", "src/test/resources/merge-input-1.sssom.tsv",
+                "--input",       "src/test/resources/merge-input-2.sssom.tsv",
+                "--input",       "src/test/resources/merge-input-3.sssom.tsv",
+                "--no-metadata-merge",
+                "--output",      "src/test/resources/merged1+2+3-no-metadata-merge.sssom.tsv.out");
     	// @formatter:on
-    	checkOutput("merged2+1-no-metadata-merge.sssom.tsv");
+        checkOutput("merged1+2+3-no-metadata-merge.sssom.tsv");
     }
     
     @Test

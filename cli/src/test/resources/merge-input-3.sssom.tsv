@@ -1,0 +1,8 @@
+#curie_map:
+#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
+#  ORCID: "https://orcid.org/"
+#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
+#mapping_set_id: "https://example.org/sssom/sample-mapping-set"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+FBbt:00000003	segment	semapv:crossSpeciesExactMatch	UBERON:0000914	semapv:ManualMappingCuration
