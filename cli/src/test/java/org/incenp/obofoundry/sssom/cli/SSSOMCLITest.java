@@ -167,7 +167,9 @@ public class SSSOMCLITest {
         runCommand(0, "--input", "src/test/resources/merge-input-1.sssom.tsv",
                 "--input",       "src/test/resources/merge-input-2.sssom.tsv",
                 "--input",       "src/test/resources/merge-input-3.sssom.tsv",
-                "--output",      "src/test/resources/merged1+2+3.sssom.tsv.out");
+                "--output",      "src/test/resources/merged1+2+3.sssom.tsv.out",
+                "--accept-extra-metadata=DEFINED",
+                "--write-extra-metadata=DEFINED");
     	// @formatter:on
         checkOutput("merged1+2+3.sssom.tsv");
     	
@@ -175,7 +177,9 @@ public class SSSOMCLITest {
         runCommand(0, "--input", "src/test/resources/merge-input-3.sssom.tsv",
                 "--input",       "src/test/resources/merge-input-2.sssom.tsv",
                 "--input",       "src/test/resources/merge-input-1.sssom.tsv",
-                "--output",      "src/test/resources/merged3+2+1.sssom.tsv.out");
+                "--output",      "src/test/resources/merged3+2+1.sssom.tsv.out",
+                "--accept-extra-metadata=DEFINED",
+                "--write-extra-metadata=DEFINED");
     	// @formatter:on
         checkOutput("merged3+2+1.sssom.tsv");
     	

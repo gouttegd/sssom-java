@@ -1,4 +1,5 @@
 #curie_map:
+#  EX: "http://example.org/"
 #  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
 #  ORCID: "https://orcid.org/"
 #  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
@@ -6,5 +7,16 @@
 #creator_id:
 #  - "ORCID:0000-0002-6095-8718"
 #license: "https://creativecommons.org/licenses/by/4.0/"
+#extension_definitions:
+#  - slot_name: bar
+#    property: "EX:barProperty"
+#  - slot_name: baz
+#    property: "EX:bazProperty"
+#    type_hint: "EX:type1"
+#  - slot_name: foo
+#    property: "EX:fooProperty"
+#bar: "bar_value_ABC"
+#baz: "baz_value_ABC"
+#foo: "foo_value_ABC"
 subject_id	subject_label	predicate_id	object_id	mapping_justification
 FBbt:00000001		semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration
