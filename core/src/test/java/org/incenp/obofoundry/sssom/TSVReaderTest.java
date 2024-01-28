@@ -67,6 +67,12 @@ public class TSVReaderTest {
                 mapping.getMappingJustification());
     }
 
+    @Test
+    void testReadingNonSSSOM() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/ruleset1.sssomt");
+        Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
+    }
+
     /*
      * Check that we can read a file where not all mappings have values in all
      * columns. Missing values should result in the corresponding slots being set to

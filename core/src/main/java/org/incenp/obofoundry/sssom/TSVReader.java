@@ -34,6 +34,8 @@ import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
@@ -353,12 +355,17 @@ public class TSVReader {
      * Parse a metadata YAML block into a MappingSet object.
      */
     private MappingSet readMetadata(Reader reader) throws SSSOMFormatException, IOException {
+        MappingSet ms;
+
         // Parse the metadata block into a generic map
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        @SuppressWarnings("unchecked")
-        Map<String, Object> rawSet = mapper.readValue(reader, Map.class);
-
-        MappingSet ms = converter.convertMappingSet(rawSet);
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> rawSet = mapper.readValue(reader, Map.class);
+            ms = converter.convertMappingSet(rawSet);
+        } catch ( JsonParseException | JsonMappingException e ) {
+            throw new SSSOMFormatException("Invalid YAML metadata", e);
+        }
 
         // Check the CURIE map for re-defined prefixes
         Map<String, String> curieMap = ms.getCurieMap();
