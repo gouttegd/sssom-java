@@ -73,6 +73,17 @@ public class SSSOMCLITest {
     }
 
     /*
+     * Check that we error out on unknown SSSOM/T functions.
+     */
+    @Test
+    void testInvalidSSSOMTFunction() throws IOException {
+        // @formatter:off
+        runCommand(1, "--input", "../core/src/test/resources/sample1.sssom.tsv",
+                      "--rule", "predicate==* -> foo()");
+        // @formatter:on
+    }
+
+    /*
      * Check that we can apply single SSSOM/T rules.
      */
     @Test
