@@ -6,11 +6,7 @@
 #mapping_set_title: "Sample mapping set with external metadata"
 #creator_id:
 #  - "ORCID:0000-0002-6095-8718"
-#  - "ORCID:AAAA-BBBB-CCCC-0001"
-#  - "ORCID:AAAA-BBBB-CCCC-0002"
 #license: "https://creativecommons.org/licenses/by/4.0/"
 #publication_date: "2023-09-13"
-#see_also:
-#  - "https://example.org/seealso1"
 subject_id	predicate_id	object_id	mapping_justification	author_id	see_also
 FBbt:00000001	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration	ORCID:AAAA-BBBB-CCCC-0003|ORCID:AAAA-BBBB-CCCC-0004	https://example.org/seealso2

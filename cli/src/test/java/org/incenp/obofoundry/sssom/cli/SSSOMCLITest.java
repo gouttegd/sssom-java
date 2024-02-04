@@ -171,7 +171,17 @@ public class SSSOMCLITest {
         // @formatter:on
         checkOutput("canonicalised.sssom.tsv");
     }
-    
+
+    @Test
+    void testManglingWithInternalEPM() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/uncanonical.sssom.tsv",
+                "--mangle-iris",  "obo",
+                "--output",       "src/test/resources/canonicalised.sssom.tsv.out");
+        // @formatter:off
+        checkOutput("canonicalised.sssom.tsv");
+    }
+
     @Test
     void testMergingMetadata() throws IOException {
     	// @formatter:off
@@ -207,11 +217,31 @@ public class SSSOMCLITest {
     @Test
     void testMergingExternalMetadata() throws IOException {
     	// @formatter:off
-    	runCommand(0, "--input",     "../core/src/test/resources/sample2.sssom.tsv",
+        runCommand(0, "--input",     "../core/src/test/resources/list-values.sssom.tsv",
     	        "--output-metadata", "../core/src/test/resources/sample-external-metadata.sssom.yml",
     	        "--output",      "src/test/resources/merged-external-metadata.sssom.tsv.out");
     	// @formatter:on
     	checkOutput("merged-external-metadata.sssom.tsv");
+
+        // @formatter:off
+        runCommand(0, "--input",     "../core/src/test/resources/list-values.sssom.tsv",
+                "--output-metadata", "../core/src/test/resources/sample-external-metadata.sssom.yml",
+                "--output",      "src/test/resources/merged-external-metadata-prefix-map-only.sssom.tsv.out",
+                "--no-metadata-merge");
+        // @formatter:on
+        checkOutput("merged-external-metadata-prefix-map-only.sssom.tsv");
+
+        // @formatter:off
+        runCommand(1, "--input",     "../core/src/test/resources/list-values.sssom.tsv",
+                "--output-metadata", "../core/src/test/resources/inexisting-file.sssom.yml",
+                "--output",      "src/test/resources/merged-external-metadata.sssom.tsv.out");
+        // @formatter:on
+
+        // @formatter:off
+        runCommand(1, "--input",     "../core/src/test/resources/list-values.sssom.tsv",
+                "--output-metadata", "../core/src/test/resources/ruleset1.sssomt",
+                "--output",      "src/test/resources/merged-external-metadata.sssom.tsv.out");
+        // @formatter:on
     }
     
     @Test
@@ -259,6 +289,47 @@ public class SSSOMCLITest {
     			"--prefix-map-from-input");
     	// @formatter:on
     	checkOutput("transform-map-2.sssom.tsv");
+    }
+
+    @Test
+    void testSSOMTReadingErrors() throws IOException {
+        // @formatter:off
+        runCommand(1, "--input", "../core/src/test/resources/sample1.sssom.tsv",
+                "--ruleset",     "inexisting-sssom-ruleset",
+                "--output",      "src/test/resources/sssomt-reading-errors.sssom.tsv.out");
+        // @formatter:on
+    }
+
+    @Test
+    void testCombiningRulesetAndIndividualRules() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input", "../core/src/test/resources/sample1.sssom.tsv",
+                "--ruleset",     "src/test/resources/ruleset1.sssomt",
+                "--rule",        "predicate==* -> include()",
+                "--output",      "src/test/resources/mixed-rule-ruleset.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("mixed-rule-ruleset.sssom.tsv");
+    }
+
+    @Test
+    void testIncludeAll() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input",     "../core/src/test/resources/sample1.sssom.tsv",
+                "--ruleset",     "src/test/resources/ruleset1.sssomt",
+                "--include-all",
+                "--output",      "src/test/resources/include-all.sssom.tsv.out");
+        // @formatter:on
+        checkOutput("include-all.sssom.tsv");
+    }
+
+    @Test
+    void testOutputCardinality() throws IOException {
+        // @formatter:off
+        runCommand(0, "--input",     "../core/src/test/resources/sample1.sssom.tsv",
+                "--output",      "src/test/resources/output-cardinality.sssom.tsv.out",
+                "--force-cardinality");
+        // @formatter:on
+        checkOutput("output-cardinality.sssom.tsv");
     }
 
     /*
