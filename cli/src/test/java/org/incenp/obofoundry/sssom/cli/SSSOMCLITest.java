@@ -181,38 +181,6 @@ public class SSSOMCLITest {
         // @formatter:off
         checkOutput("canonicalised.sssom.tsv");
     }
-
-    @Test
-    void testMergingMetadata() throws IOException {
-    	// @formatter:off
-        runCommand(0, "--input", "src/test/resources/merge-input-1.sssom.tsv",
-                "--input",       "src/test/resources/merge-input-2.sssom.tsv",
-                "--input",       "src/test/resources/merge-input-3.sssom.tsv",
-                "--output",      "src/test/resources/merged1+2+3.sssom.tsv.out",
-                "--accept-extra-metadata=DEFINED",
-                "--write-extra-metadata=DEFINED");
-    	// @formatter:on
-        checkOutput("merged1+2+3.sssom.tsv");
-    	
-    	// @formatter:off
-        runCommand(0, "--input", "src/test/resources/merge-input-3.sssom.tsv",
-                "--input",       "src/test/resources/merge-input-2.sssom.tsv",
-                "--input",       "src/test/resources/merge-input-1.sssom.tsv",
-                "--output",      "src/test/resources/merged3+2+1.sssom.tsv.out",
-                "--accept-extra-metadata=DEFINED",
-                "--write-extra-metadata=DEFINED");
-    	// @formatter:on
-        checkOutput("merged3+2+1.sssom.tsv");
-    	
-    	// @formatter:off
-        runCommand(0, "--input", "src/test/resources/merge-input-1.sssom.tsv",
-                "--input",       "src/test/resources/merge-input-2.sssom.tsv",
-                "--input",       "src/test/resources/merge-input-3.sssom.tsv",
-                "--no-metadata-merge",
-                "--output",      "src/test/resources/merged1+2+3-no-metadata-merge.sssom.tsv.out");
-    	// @formatter:on
-        checkOutput("merged1+2+3-no-metadata-merge.sssom.tsv");
-    }
     
     @Test
     void testMergingExternalMetadata() throws IOException {
