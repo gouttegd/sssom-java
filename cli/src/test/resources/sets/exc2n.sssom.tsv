@@ -1,0 +1,19 @@
+#curie_map:
+#  COMENT: "https://example.com/entities/"
+#  COMPID: "https://example.com/people/"
+#  NETENT: "https://example.net/entities/"
+#  NETPID: "https://example.net/people/"
+#mapping_set_id: "https://example.org/sets/exoc2n"
+#mapping_set_title: "C2N set"
+#creator_id:
+#  - "COMPID:0000-0000-0002-1234"
+#  - "NETPID:0000-0000-0003-1234"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
+COMENT:0011	alpha	skos:exactMatch	NETENT:0111	alpha	semapv:ManualMappingCuration
+COMENT:0012	beta	skos:closeMatch	NETENT:0112	bravo	semapv:ManualMappingCuration
+COMENT:0013	gamma	skos:closeMatch	NETENT:0117	golf	semapv:ManualMappingCuration
+COMENT:0014	delta	skos:exactMatch	NETENT:0114	delta	semapv:ManualMappingCuration
+COMENT:0015	epsilon	skos:closeMatch	NETENT:0115	echo	semapv:ManualMappingCuration
+COMENT:0017	eta	skos:closeMatch	NETENT:0118	hotel	semapv:ManualMappingCuration
+COMENT:0019	iota	skos:closeMatch	NETENT:0119	india	semapv:ManualMappingCuration

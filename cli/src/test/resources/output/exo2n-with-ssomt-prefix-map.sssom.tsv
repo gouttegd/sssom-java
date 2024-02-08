@@ -1,0 +1,19 @@
+#curie_map:
+#  NET: "https://example.net/entities/"
+#  ORG: "https://example.org/entities/"
+#mapping_set_id: "https://example.org/sets/exo2n"
+#mapping_set_title: "O2N set"
+#creator_id:
+#  - "https://example.org/people/0000-0000-0001-1234"
+#  - "https://example.org/people/0000-0000-0001-5678"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
+ORG:0001	alice	skos:closeMatch	NET:0111	alpha	semapv:ManualMappingCuration
+ORG:0002	bob	skos:closeMatch	NET:0112	bravo	semapv:ManualMappingCuration
+ORG:0003	charlie	skos:exactMatch	NET:0113	charlie	semapv:ManualMappingCuration
+ORG:0004	daphne	skos:closeMatch	NET:0114	delta	semapv:ManualMappingCuration
+ORG:0005	eve	skos:closeMatch	NET:0115	echo	semapv:ManualMappingCuration
+ORG:0006	fanny	skos:closeMatch	NET:0116	foxtrot	semapv:ManualMappingCuration
+ORG:0007	gavin	skos:closeMatch	NET:0117	golf	semapv:ManualMappingCuration
+ORG:0008	hector	skos:exactMatch	NET:0118	hotel	semapv:ManualMappingCuration
+ORG:0009	ivan	skos:exactMatch	NET:0119	india	semapv:ManualMappingCuration

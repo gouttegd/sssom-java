@@ -1,0 +1,18 @@
+#curie_map:
+#  COMENT: "https://example.com/entities/"
+#  NETENT: "https://example.net/entities/"
+#  ORGPID: "https://example.org/people/"
+#mapping_set_id: "https://example.org/sets/exo2n"
+#mapping_set_title: "O2N set"
+#creator_id:
+#  - "ORGPID:0000-0000-0001-1234"
+#  - "ORGPID:0000-0000-0001-5678"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
+COMENT:0011	alpha	skos:exactMatch	NETENT:0111	alpha	semapv:ManualMappingCuration
+COMENT:0012	beta	skos:closeMatch	NETENT:0112	bravo	semapv:ManualMappingCuration
+COMENT:0013	gamma	skos:closeMatch	NETENT:0117	golf	semapv:ManualMappingCuration
+COMENT:0014	delta	skos:exactMatch	NETENT:0114	delta	semapv:ManualMappingCuration
+COMENT:0015	epsilon	skos:closeMatch	NETENT:0115	echo	semapv:ManualMappingCuration
+COMENT:0017	eta	skos:closeMatch	NETENT:0118	hotel	semapv:ManualMappingCuration
+COMENT:0019	iota	skos:closeMatch	NETENT:0119	india	semapv:ManualMappingCuration

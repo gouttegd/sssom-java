@@ -1,0 +1,3 @@
+prefix ORG: <https://example.org/entities/>
+
+subject==ORG:* && predicate==skos:exactMatch -> include();

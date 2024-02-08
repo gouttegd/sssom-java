@@ -1,0 +1,10 @@
+#curie_map:
+#  COMPID: "https://example.com/people/"
+#  ORGPID: "https://example.org/people/"
+#mapping_set_id: "https://example.org/sets/exo2c"
+#mapping_set_title: "O2C set"
+#creator_id:
+#  - "ORGPID:0000-0000-0001-1234"
+#  - "COMPID:0000-0000-0002-5678"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+

@@ -1,3 +1,0 @@
-prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_>
-
-object==UBERON:6* -> stop();

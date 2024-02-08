@@ -1,0 +1,14 @@
+#curie_map:
+#  COMENT: "https://example.com/entities/"
+#  COMPID: "https://example.com/people/"
+#  ORG: "https://example.org/entities/"
+#  ORGPID: "https://example.org/people/"
+#mapping_set_id: "https://example.org/sets/exo2c"
+#mapping_set_title: "O2C set"
+#creator_id:
+#  - "ORGPID:0000-0000-0001-1234"
+#  - "COMPID:0000-0000-0002-5678"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
+ORG:0007	gavin	skos:exactMatch	COMENT:0013	gamma	semapv:ManualMappingCuration
+ORG:0009	ivan	skos:exactMatch	COMENT:0019	iota	semapv:ManualMappingCuration
