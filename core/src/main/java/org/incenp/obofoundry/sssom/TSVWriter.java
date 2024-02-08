@@ -198,6 +198,14 @@ public class TSVWriter {
                 headers.add(slot.getName());
             }
         }
+        if ( headers.isEmpty() ) {
+            // May happen if the set is itself empty (no mappings). In that case, we write
+            // default headers so that the TSV file can be read back without errors.
+            headers.add("subject_id");
+            headers.add("predicate_id");
+            headers.add("object_id");
+            headers.add("mapping_justification");
+        }
         writer.append(String.join("\t", headers));
         writer.append('\n');
 

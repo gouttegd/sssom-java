@@ -64,6 +64,14 @@ public class TSVWriterTest {
     }
 
     /*
+     * Test that we can write an empty file.
+     */
+    @Test
+    void testEmptySet() throws IOException, SSSOMFormatException {
+        Assertions.assertTrue(roundtrip("empty"));
+    }
+
+    /*
      * Same, but with a set where not all mappings have values in all columns. This
      * checks that the writer correctly determines the columns to write based on
      * which slots are used in the set.
