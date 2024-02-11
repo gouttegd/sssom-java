@@ -52,14 +52,14 @@ public class MatchTermTypeConverter implements IYAMLPreprocessor {
                         value = "owl object property";
                         break;
                     case "IndividualMatch":
-                        value = "owl named indivdual";
+                        value = "owl named individual";
                         break;
                     case "DataPropertyMatch":
                         value = "owl data property";
                         break;
                     case "TermMatch":
                         // FIXME: It's unclear what is the equivalent of TermMatch in the new enum.
-                        value = "rdf literal";
+                        value = "rdfs literal";
                         break;
                     }
                 }
