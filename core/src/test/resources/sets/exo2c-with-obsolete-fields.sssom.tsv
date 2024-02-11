@@ -1,0 +1,21 @@
+#curie_map:
+#  COMENT: "https://example.com/entities/"
+#  COMPID: "https://example.com/people/"
+#  ORGENT: "https://example.org/entities/"
+#  ORGPID: "https://example.org/people/"
+#mapping_set_id: "https://example.org/sets/exo2c-with-obsolete-fields"
+#mapping_set_title: "O2C set with obsolete fields"
+#creator_id:
+#  - "ORGPID:0000-0000-0001-1234"
+#  - "COMPID:0000-0000-0002-5678"
+#license: "https://creativecommons.org/licenses/by/4.0/"
+#publication_date: "2023-09-13"
+subject_id	subject_label	predicate_id	object_id	object_label	match_type	match_term_type
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	Lexical	ConceptMatch
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	Logical	ClassMatch
+ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	HumanCurated	ObjectPropertyMatch
+ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	Complex	IndividualMatch
+ORGENT:0006	fanny	skos:closeMatch	COMENT:0016	zeta	HumanCurated	DataPropertyMatch
+ORGENT:0007	gavin	skos:exactMatch	COMENT:0013	gamma	SemanticSimilarity	TermMatch
+ORGENT:0008	hector	skos:closeMatch	COMENT:0017	eta	Unspecified	
+ORGENT:0009	ivan	skos:exactMatch	COMENT:0019	iota			

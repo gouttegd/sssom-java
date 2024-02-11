@@ -1,8 +1,0 @@
-#curie_map:
-#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
-#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
-#mapping_set_id: "https://example.org/sssom/sample-mapping-set"
-#license: "https://w3id.org/sssom/license/all-rights-reserved"
-subject_id	predicate_id	object_id	object_label	mapping_justification	issue_tracker_item	comment
-FBbt:00000001	semapv:crossSpeciesExactMatch	UBERON:0000468	"Value with ""quote"" characters"	semapv:ManualMappingCuration	"Value with
-new line character"	"Value	with	tab	characters"

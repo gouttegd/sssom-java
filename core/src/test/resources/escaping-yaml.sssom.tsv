@@ -1,8 +1,0 @@
-#curie_map:
-#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
-#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
-#mapping_set_id: "https://example.org/sssom/sample-mapping-set"
-#mapping_set_title: "Title\twith\_non-printable\x80characters"
-#license: "https://w3id.org/sssom/license/all-rights-reserved"
-subject_id	predicate_id	object_id	mapping_justification
-FBbt:00000001	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration

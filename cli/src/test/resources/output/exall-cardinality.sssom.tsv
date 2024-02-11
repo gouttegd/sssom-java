@@ -14,6 +14,7 @@
 #  - "COMPID:0000-0000-0002-1234"
 #  - "NETPID:0000-0000-0003-1234"
 #license: "https://creativecommons.org/licenses/by/4.0/"
+#publication_date: "2023-09-13"
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	mapping_cardinality
 COMENT:0011	alpha	skos:exactMatch	NETENT:0111	alpha	semapv:ManualMappingCuration	n:1
 COMENT:0012	beta	skos:closeMatch	NETENT:0112	bravo	semapv:ManualMappingCuration	n:1

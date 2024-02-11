@@ -53,13 +53,12 @@ public class ExtendedPrefixMapTest {
 
     @Test
     void testMappingSetCanonicalisation() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/uncanonical.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/fbbt-uncanonical-urls.sssom.tsv");
         MappingSet ms = reader.read();
 
         ExtendedPrefixMap epm = new ExtendedPrefixMap("src/main/resources/obo.epm.json");
         epm.canonicalise(ms);
 
-        assertEquals("https://orcid.org/0000-0002-6095-8718", ms.getCreatorId().get(0));
         assertEquals("http://purl.obolibrary.org/obo/FBbt_00000001", ms.getMappings().get(0).getSubjectId());
     }
 }

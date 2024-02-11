@@ -1,8 +1,0 @@
-#curie_map:
-#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
-#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
-#mapping_set_id: "https://example.org/sssom/sample-mapping-set"
-#license: "https://creativecommons.org/licenses/by/4.0/"
-subject_id	subject_label	predicate_id	object_id	match_type	match_term_type
-FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	Lexical	
-FBbt:00000002	tagma	semapv:crossSpeciesExactMatch	UBERON:6000002		ClassMatch

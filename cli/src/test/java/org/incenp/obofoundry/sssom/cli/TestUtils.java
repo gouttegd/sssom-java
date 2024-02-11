@@ -56,7 +56,10 @@ public class TestUtils {
 
         if ( inputs != null ) {
             for ( String input : inputs ) {
-                File f = new File("src/test/resources/sets/" + input);
+                File f = new File("../core/src/test/resources/sets/" + input);
+                if ( !f.exists() ) {
+                    f = new File("src/test/resources/sets/" + input);
+                }
                 args.add("--input");
                 args.add(f.exists() ? f.getPath() : input);
             }

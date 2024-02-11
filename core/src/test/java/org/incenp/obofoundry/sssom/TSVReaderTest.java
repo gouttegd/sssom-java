@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -26,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -43,15 +41,16 @@ public class TSVReaderTest {
      */
     @Test
     void testRead() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv");
         MappingSet ms = reader.read();
 
         Assertions.assertNotNull(ms);
 
         Assertions.assertNotNull(ms.getCreatorId());
-        Assertions.assertEquals(1, ms.getCreatorId().size());
-        Assertions.assertEquals("https://orcid.org/0000-0002-6095-8718", ms.getCreatorId().get(0));
-        Assertions.assertEquals("Sample mapping set 1", ms.getMappingSetTitle());
+        Assertions.assertEquals(2, ms.getCreatorId().size());
+        Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", ms.getCreatorId().get(0));
+        Assertions.assertEquals("https://example.com/people/0000-0000-0002-5678", ms.getCreatorId().get(1));
+        Assertions.assertEquals("O2C set", ms.getMappingSetTitle());
         Assertions.assertEquals(LocalDate.of(2023, 9, 13), ms.getPublicationDate());
 
         List<Mapping> mappings = ms.getMappings();
@@ -59,17 +58,17 @@ public class TSVReaderTest {
         Assertions.assertEquals(8, mappings.size());
 
         Mapping mapping = mappings.get(0);
-        Assertions.assertEquals("http://purl.obolibrary.org/obo/FBbt_00000001", mapping.getSubjectId());
-        Assertions.assertEquals("organism", mapping.getSubjectLabel());
-        Assertions.assertEquals("https://w3id.org/semapv/vocab/crossSpeciesExactMatch", mapping.getPredicateId());
-        Assertions.assertEquals("http://purl.obolibrary.org/obo/UBERON_0000468", mapping.getObjectId());
+        Assertions.assertEquals("https://example.org/entities/0001", mapping.getSubjectId());
+        Assertions.assertEquals("alice", mapping.getSubjectLabel());
+        Assertions.assertEquals("http://www.w3.org/2004/02/skos/core#closeMatch", mapping.getPredicateId());
+        Assertions.assertEquals("https://example.com/entities/0011", mapping.getObjectId());
         Assertions.assertEquals("https://w3id.org/semapv/vocab/ManualMappingCuration",
                 mapping.getMappingJustification());
     }
 
     @Test
     void testReadingNonSSSOM() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/ruleset1.sssomt");
+        TSVReader reader = new TSVReader("pom.xml");
         Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
     }
 
@@ -80,7 +79,7 @@ public class TSVReaderTest {
      */
     @Test
     void testMissingValues() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/missing-values.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-values.sssom.tsv");
         List<Mapping> mappings = reader.read().getMappings();
 
         Assertions.assertNull(mappings.get(0).getSubjectLabel());
@@ -101,24 +100,16 @@ public class TSVReaderTest {
      */
     @Test
     void testListValues() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/list-values.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-mapping-list-values.sssom.tsv");
         MappingSet ms = reader.read();
-
-        Assertions.assertEquals(2, ms.getCreatorId().size());
-        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0001", ms.getCreatorId().get(0));
-        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0002", ms.getCreatorId().get(1));
-
-        Assertions.assertEquals(1, ms.getSeeAlso().size());
-        Assertions.assertEquals("https://example.org/seealso1", ms.getSeeAlso().get(0));
-
         Mapping m = ms.getMappings().get(0);
 
         Assertions.assertEquals(2, m.getAuthorId().size());
-        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0003", m.getAuthorId().get(0));
-        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0004", m.getAuthorId().get(1));
+        Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", m.getAuthorId().get(0));
+        Assertions.assertEquals("https://example.com/people/0000-0000-0002-5678", m.getAuthorId().get(1));
 
         Assertions.assertEquals(1, m.getSeeAlso().size());
-        Assertions.assertEquals("https://example.org/seealso2", m.getSeeAlso().get(0));
+        Assertions.assertEquals("https://example.org/misc/seeAlso1", m.getSeeAlso().get(0));
     }
 
     /*
@@ -128,14 +119,11 @@ public class TSVReaderTest {
      */
     @Test
     void testPseudoListValues() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/pseudo-list-values.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-pseudo-list-values.sssom.tsv");
         MappingSet ms = reader.read();
 
         Assertions.assertEquals(1, ms.getCreatorId().size());
-        Assertions.assertEquals("https://orcid.org/AAAA-BBBB-CCCC-0001", ms.getCreatorId().get(0));
-
-        Assertions.assertEquals(1, ms.getSeeAlso().size());
-        Assertions.assertEquals("https://example.org/seealso1", ms.getSeeAlso().get(0));
+        Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", ms.getCreatorId().get(0));
     }
 
     /*
@@ -144,9 +132,9 @@ public class TSVReaderTest {
      */
     @Test
     void testReadExternalMetadataAuto() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sample-external-metadata.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-external-metadata.sssom.tsv");
         MappingSet ms = reader.read();
-        Assertions.assertEquals("Sample mapping set with external metadata", ms.getMappingSetTitle());
+        Assertions.assertEquals("https://example.org/sets/test-external-metadata", ms.getMappingSetId());
     }
 
     /*
@@ -156,10 +144,10 @@ public class TSVReaderTest {
      */
     @Test
     void testReadExternalMetadataExplicit() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sample-external-metadata.sssom.tsv",
-                "src/test/resources/sample-external-metadata-2.sssom.yml");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-external-metadata.sssom.tsv",
+                "src/test/resources/sets/test-explicit-external-metadata.sssom.yml");
         MappingSet ms = reader.read();
-        Assertions.assertEquals("Sample mapping set with external metadata 2", ms.getMappingSetTitle());
+        Assertions.assertEquals("https://example.org/sets/test-explicit-external-metadata", ms.getMappingSetId());
     }
 
     /*
@@ -167,18 +155,12 @@ public class TSVReaderTest {
      */
     @Test
     void testFailIfNoMetadata() throws IOException {
-        File tsvFile = new File("src/test/resources/sample-external-metadata.sssom.tsv");
-        File renamedFile = new File("src/test/resources/sample-without-metadata.sssom.tsv");
-        FileUtils.copyFile(tsvFile, renamedFile);
-
-        TSVReader reader = new TSVReader(renamedFile);
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-metadata.sssom.tsv");
         try {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown for missing metadata");
         } catch ( SSSOMFormatException sfe ) {
             Assertions.assertEquals("External metadata file not found", sfe.getMessage());
-        } finally {
-            renamedFile.delete();
         }
     }
 
@@ -188,8 +170,8 @@ public class TSVReaderTest {
      */
     @Test
     void testFailOnEmbeddedMetadataIfExternalFileSpecified() throws IOException {
-        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv",
-                "src/test/resources/sample-external-metadata.sssom.yml");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv",
+                "src/test/resources/sets/test-external-metadata.sssom.yml");
         try {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown for spurious embedded metadata block");
@@ -203,14 +185,14 @@ public class TSVReaderTest {
      */
     @Test
     void testReadingMetadataOnly() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv");
         MappingSet ms = reader.read(true);
-        Assertions.assertEquals("Sample mapping set 1", ms.getMappingSetTitle());
+        Assertions.assertEquals("https://example.org/sets/exo2c", ms.getMappingSetId());
         Assertions.assertEquals(0, ms.getMappings().size());
 
-        reader = new TSVReader(null, "src/test/resources/sample-external-metadata.sssom.yml");
+        reader = new TSVReader(null, "src/test/resources/sets/test-external-metadata.sssom.yml");
         ms = reader.read(false);
-        Assertions.assertEquals("Sample mapping set with external metadata", ms.getMappingSetTitle());
+        Assertions.assertEquals("https://example.org/sets/test-external-metadata", ms.getMappingSetId());
         Assertions.assertEquals(0, ms.getMappings().size());
     }
 
@@ -219,12 +201,12 @@ public class TSVReaderTest {
      */
     @Test
     void testReadingFromStream() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader(new FileInputStream("src/test/resources/sample1.sssom.tsv"));
+        TSVReader reader = new TSVReader(new FileInputStream("src/test/resources/sets/exo2c.sssom.tsv"));
         MappingSet ms = reader.read();
-        Assertions.assertEquals("Sample mapping set 1", ms.getMappingSetTitle());
+        Assertions.assertEquals("https://example.org/sets/exo2c", ms.getMappingSetId());
         Assertions.assertEquals(8, ms.getMappings().size());
 
-        reader = new TSVReader(new FileInputStream("src/test/resources/sample-external-metadata.sssom.tsv"));
+        reader = new TSVReader(new FileInputStream("src/test/resources/sets/test-external-metadata.sssom.tsv"));
         try {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown for missing metadata when reading from stream");
@@ -238,12 +220,12 @@ public class TSVReaderTest {
      */
     @Test
     void testFailOnUndeclaredPrefixes() throws IOException {
-        TSVReader reader = new TSVReader("src/test/resources/incomplete-curie-map.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-undeclared-prefixes.sssom.tsv");
         try {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown for undeclared prefixes");
         } catch ( SSSOMFormatException sfe ) {
-            Assertions.assertEquals("Some prefixes are undeclared: ORCID", sfe.getMessage());
+            Assertions.assertEquals("Some prefixes are undeclared: ORGPID", sfe.getMessage());
         }
     }
 
@@ -252,7 +234,7 @@ public class TSVReaderTest {
      */
     @Test
     void testFailOnRedefinedBuiltinPrefix() throws IOException {
-        TSVReader reader = new TSVReader("src/test/resources/redefined-builtin-prefix.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-redefined-builtin-prefix.sssom.tsv");
         try {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown for a redefined built-in prefix");
@@ -267,14 +249,20 @@ public class TSVReaderTest {
      */
     @Test
     void testSlotPropagation() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/propagated-slots.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-propagatable-slots.sssom.tsv");
         MappingSet ms = reader.read();
 
         for ( Mapping m : ms.getMappings() ) {
-            Assertions.assertEquals("http://example.org/provider", m.getMappingProvider());
-            Assertions.assertNotEquals("sample mapping tool", m.getMappingTool());
+            // Set-level mapping provider should be propagated to all mappings
+            Assertions.assertEquals("https://example.org/provider", m.getMappingProvider());
+
+            // Set-level mapping tool should NOT be propagated down to mappings, because the
+            // set has a mapping_tool column
+            Assertions.assertNotEquals("foo mapper", m.getMappingTool());
         }
-        Assertions.assertEquals("another mapping tool", ms.getMappings().get(2).getMappingTool());
+
+        // Second mapping has its own mapping tool value
+        Assertions.assertEquals("bar mapper", ms.getMappings().get(1).getMappingTool());
     }
 
     /*
@@ -282,18 +270,29 @@ public class TSVReaderTest {
      */
     @Test
     void testObsoleteFields() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/obsolete-fields.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-obsolete-fields.sssom.tsv");
         MappingSet ms = reader.read();
-        Mapping m1 = ms.getMappings().get(0);
-        Mapping m2 = ms.getMappings().get(1);
 
-        Assertions.assertEquals("https://w3id.org/semapv/vocab/LexicalMatching", m1.getMappingJustification());
-        Assertions.assertNull(m2.getMappingJustification());
-        
-        Assertions.assertNull(m1.getSubjectType());
-        Assertions.assertNull(m1.getObjectType());
-        Assertions.assertEquals(EntityType.OWL_CLASS, m2.getSubjectType());
-        Assertions.assertEquals(EntityType.OWL_CLASS, m2.getObjectType());
+        String[] expectedJustifications = { "LexicalMatching", "LogicalMatching", "ManualMappingCuration",
+                "CompositeMatching", "ManualMappingCuration", "SemanticSimilarityThresholdMatching",
+                "UnspecifiedMatching", null };
+        EntityType[] expectedEntityTypes = { EntityType.SKOS_CONCEPT, EntityType.OWL_CLASS,
+                EntityType.OWL_OBJECT_PROPERTY, EntityType.OWL_NAMED_INDIVIDUAL, EntityType.OWL_DATA_PROPERTY,
+                EntityType.RDFS_LITERAL, null, null };
+
+        for ( int i = 0, len = ms.getMappings().size(); i < len; i++ ) {
+            Mapping m = ms.getMappings().get(i);
+
+            if ( expectedJustifications[i] != null ) {
+                Assertions.assertEquals("https://w3id.org/semapv/vocab/" + expectedJustifications[i],
+                        m.getMappingJustification());
+            } else {
+                Assertions.assertNull(m.getMappingJustification());
+            }
+
+            Assertions.assertEquals(expectedEntityTypes[i], m.getSubjectType());
+            Assertions.assertEquals(expectedEntityTypes[i], m.getObjectType());
+        }
     }
 
     /*
@@ -302,7 +301,7 @@ public class TSVReaderTest {
      */
     @Test
     void testIgnoreExtensions() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE);
         MappingSet ms = reader.read();
 
@@ -319,7 +318,7 @@ public class TSVReaderTest {
      */
     @Test
     void testAcceptDefinedExtensions() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
         MappingSet ms = reader.read();
 
@@ -330,29 +329,27 @@ public class TSVReaderTest {
         for ( ExtensionDefinition definition : ms.getExtensionDefinitions() ) {
             definitions.put(definition.getSlotName(), definition);
         }
-        Assertions.assertEquals(4, definitions.size());
-        compare(new ExtensionDefinition("bar", "https://example.org/barProperty",
-                "http://www.w3.org/2001/XMLSchema#string"), definitions.get("bar"));
-        compare(new ExtensionDefinition("bax", "https://example.org/baxProperty", "https://example.org/someOtherType"),
-                definitions.get("bax"));
-        compare(new ExtensionDefinition("baz", "https://example.org/bazProperty",
-                "http://www.w3.org/2001/XMLSchema#date"), definitions.get("baz"));
-        compare(new ExtensionDefinition("foo", "https://example.org/fooProperty", "https://w3id.org/linkml/uriOrCurie"),
-                definitions.get("foo"));
+        Assertions.assertEquals(3, definitions.size());
+        compare(new ExtensionDefinition("ext_bar", "https://example.org/properties/barProperty",
+                "http://www.w3.org/2001/XMLSchema#integer"), definitions.get("ext_bar"));
+        compare(new ExtensionDefinition("ext_baz", "https://example.org/properties/bazProperty",
+                "https://w3id.org/linkml/uriOrCurie"), definitions.get("ext_baz"));
+        compare(new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"),
+                definitions.get("ext_foo"));
 
         // Check the set-level extensions
         Assertions.assertNotNull(ms.getExtensions());
         Assertions.assertEquals(1, ms.getExtensions().size());
-        compare(new ExtensionValue("https://example.org/ABC", true),
-                ms.getExtensions().get("https://example.org/fooProperty"));
+        compare(new ExtensionValue("Foo A", false),
+                ms.getExtensions().get("https://example.org/properties/fooProperty"));
 
         // Check the mapping-level extensions
         Mapping m1 = ms.getMappings().get(0);
         Assertions.assertNotNull(m1.getExtensions());
         Assertions.assertEquals(2, m1.getExtensions().size());
-        compare(new ExtensionValue("Bar1"), m1.getExtensions().get("https://example.org/barProperty"));
-        compare(new ExtensionValue(LocalDate.of(2024, 1, 1)),
-                m1.getExtensions().get("https://example.org/bazProperty"));
+        compare(new ExtensionValue(111), m1.getExtensions().get("https://example.org/properties/barProperty"));
+        compare(new ExtensionValue("https://example.org/entities/BAZ_0001", true),
+                m1.getExtensions().get("https://example.org/properties/bazProperty"));
     }
 
     /*
@@ -361,7 +358,7 @@ public class TSVReaderTest {
      */
     @Test
     void testAcceptAllExtensions() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/extra-slots.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
@@ -371,33 +368,34 @@ public class TSVReaderTest {
         for ( ExtensionDefinition definition : ms.getExtensionDefinitions() ) {
             definitions.put(definition.getSlotName(), definition);
         }
-        Assertions.assertEquals(6, definitions.size());
-        compare(new ExtensionDefinition("bar", "https://example.org/barProperty",
-                "http://www.w3.org/2001/XMLSchema#string"), definitions.get("bar"));
-        compare(new ExtensionDefinition("bax", "https://example.org/baxProperty", "https://example.org/someOtherType"),
-                definitions.get("bax"));
-        compare(new ExtensionDefinition("baz", "https://example.org/bazProperty",
-                "http://www.w3.org/2001/XMLSchema#date"), definitions.get("baz"));
-        compare(new ExtensionDefinition("foo", "https://example.org/fooProperty", "https://w3id.org/linkml/uriOrCurie"),
-                definitions.get("foo"));
-        compare(new ExtensionDefinition("bat", "http://sssom.invalid/bat"), definitions.get("bat"));
-        compare(new ExtensionDefinition("notfoo", "http://sssom.invalid/notfoo"), definitions.get("notfoo"));
+        Assertions.assertEquals(5, definitions.size());
+        compare(new ExtensionDefinition("ext_bar", "https://example.org/properties/barProperty",
+                "http://www.w3.org/2001/XMLSchema#integer"), definitions.get("ext_bar"));
+        compare(new ExtensionDefinition("ext_baz", "https://example.org/properties/bazProperty",
+                "https://w3id.org/linkml/uriOrCurie"), definitions.get("ext_baz"));
+        compare(new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"),
+                definitions.get("ext_foo"));
+        compare(new ExtensionDefinition("ext_undeclared_baz", "http://sssom.invalid/ext_undeclared_baz"),
+                definitions.get("ext_undeclared_baz"));
+        compare(new ExtensionDefinition("ext_undeclared_foo", "http://sssom.invalid/ext_undeclared_foo"),
+                definitions.get("ext_undeclared_foo"));
+
 
         // Check the set-level extensions
         Assertions.assertNotNull(ms.getExtensions());
         Assertions.assertEquals(2, ms.getExtensions().size());
-        compare(new ExtensionValue("https://example.org/ABC", true),
-                ms.getExtensions().get("https://example.org/fooProperty"));
-        compare(new ExtensionValue("DEF"), ms.getExtensions().get("http://sssom.invalid/notfoo"));
+        compare(new ExtensionValue("Foo A", false),
+                ms.getExtensions().get("https://example.org/properties/fooProperty"));
+        compare(new ExtensionValue("Foo B", false), ms.getExtensions().get("http://sssom.invalid/ext_undeclared_foo"));
 
         // Check the mapping-level extensions
         Mapping m1 = ms.getMappings().get(0);
         Assertions.assertNotNull(m1.getExtensions());
         Assertions.assertEquals(3, m1.getExtensions().size());
-        compare(new ExtensionValue("Bar1"), m1.getExtensions().get("https://example.org/barProperty"));
-        compare(new ExtensionValue(LocalDate.of(2024, 1, 1)),
-                m1.getExtensions().get("https://example.org/bazProperty"));
-        compare(new ExtensionValue("Bat1"), m1.getExtensions().get("http://sssom.invalid/bat"));
+        compare(new ExtensionValue(111), m1.getExtensions().get("https://example.org/properties/barProperty"));
+        compare(new ExtensionValue("https://example.org/entities/BAZ_0001", true),
+                m1.getExtensions().get("https://example.org/properties/bazProperty"));
+        compare(new ExtensionValue("BAZ A", false), m1.getExtensions().get("http://sssom.invalid/ext_undeclared_baz"));
     }
 
     /*
@@ -405,10 +403,10 @@ public class TSVReaderTest {
      */
     @Test
     void testEscapedYAML() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/escaping-yaml.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-escaping-yaml.sssom.tsv");
         MappingSet ms = reader.read();
 
-        Assertions.assertEquals("Title\u0009with\u00A0non-printable\u0080characters", ms.getMappingSetTitle());
+        Assertions.assertEquals("O2C set\u0009with\u00A0non-printable\u0080characters", ms.getMappingSetTitle());
     }
 
     /*
@@ -416,7 +414,7 @@ public class TSVReaderTest {
      */
     @Test
     void testEscapedTSV() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/escaping-tsv.sssom.tsv");
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-escaping-tsv.sssom.tsv");
         MappingSet ms = reader.read();
         Mapping m = ms.getMappings().get(0);
 

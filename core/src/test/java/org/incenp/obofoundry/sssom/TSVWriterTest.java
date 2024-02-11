@@ -20,9 +20,9 @@ package org.incenp.obofoundry.sssom;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
@@ -41,16 +41,7 @@ public class TSVWriterTest {
     @Test
     void testTSVWriter() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
-        ms.setMappingSetTitle("Sample mapping set 2");
-        ms.setMappingSetVersion("1.0");
-        ms.setPublicationDate(LocalDate.of(2023, 9, 13));
-        ms.setLicense("https://creativecommons.org/licenses/by/4.0/");
-        ms.setMappingSetId("https://example.org/sssom/sample-mapping-set");
-
-        TSVWriter writer = new TSVWriter("src/test/resources/sample2.sssom.tsv.out");
-        writer.write(ms);
-
-        Assertions.assertTrue(checkExpectedFile("sample2"));
+        assertWrittenAsExpected(ms, "exo2c-minimal", null, null, null);
     }
 
     /*
@@ -60,15 +51,7 @@ public class TSVWriterTest {
      */
     @Test
     void testRoundtrip() throws IOException, SSSOMFormatException {
-        Assertions.assertTrue(roundtrip("sample1"));
-    }
-
-    /*
-     * Test that we can write an empty file.
-     */
-    @Test
-    void testEmptySet() throws IOException, SSSOMFormatException {
-        Assertions.assertTrue(roundtrip("empty"));
+        assertRoundtrip("exo2c");
     }
 
     /*
@@ -78,16 +61,23 @@ public class TSVWriterTest {
      */
     @Test
     void testWriteMappingsWithMissingValues() throws IOException, SSSOMFormatException {
-        Assertions.assertTrue(roundtrip("missing-values"));
+        assertRoundtrip("test-missing-values");
     }
 
     /*
-     * Same, but with a set that contains (both at the set level and at the mapping
-     * level) list-valued slots.
+     * Same, but with a set that contains list-valued slots.
      */
     @Test
     void testWriteListValues() throws IOException, SSSOMFormatException {
-        Assertions.assertTrue(roundtrip("list-values"));
+        assertRoundtrip("test-mapping-list-values");
+    }
+
+    /*
+     * Test that we can write an empty file.
+     */
+    @Test
+    void testEmptySet() throws IOException, SSSOMFormatException {
+        assertRoundtrip("exo2c-empty");
     }
 
     /*
@@ -95,23 +85,17 @@ public class TSVWriterTest {
      */
     @Test
     void testStripUnusedPrefix() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv");
-        MappingSet ms = reader.read();
+        MappingSet ms = getTestSet();
 
-        // Add unused prefixes to the Curie map
-        ms.getCurieMap().put("UNUSED1", "http://purl.obolibrary.org/obo/");
-        ms.getCurieMap().put("UNUSED2", "https://example.org/");
+        // Add unused prefix to the Curie map
+        ms.getCurieMap().put("NETENT", "https://example.net/entities/");
 
-        TSVWriter writer = new TSVWriter("src/test/resources/unused-prefixes.sssom.tsv.out");
-        writer.write(ms);
-
-        Assertions.assertTrue(checkExpectedFile("sample1", "unused-prefixes"));
+        assertWrittenAsExpected(ms, "exo2c-minimal", "test-stripping-unused-prefix", null, null);
     }
 
     @Test
     void testCustomCurieMap() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sample1.sssom.tsv");
-        MappingSet ms = reader.read();
+        MappingSet ms = getTestSet();
 
         // Build a custom map from the existing one...
         HashMap<String, String> customMap = new HashMap<String, String>();
@@ -121,11 +105,7 @@ public class TSVWriterTest {
         ms.getCurieMap().clear();
 
         // and write the set with the custom map
-        TSVWriter writer = new TSVWriter("src/test/resources/custom-map.sssom.tsv.out");
-        writer.setCurieMap(customMap);
-        writer.write(ms);
-
-        Assertions.assertTrue(checkExpectedFile("sample1", "custom-map"));
+        assertWrittenAsExpected(ms, "exo2c-minimal", "test-custom-map", customMap, null);
     }
 
     /*
@@ -133,7 +113,7 @@ public class TSVWriterTest {
      */
     @Test
     void testSlotCondensation() throws IOException, SSSOMFormatException {
-        Assertions.assertTrue(roundtrip("propagated-slots"));
+        assertRoundtrip("exo2c-with-propagatable-slots");
     }
 
     /*
@@ -142,25 +122,16 @@ public class TSVWriterTest {
      */
     @Test
     void testWritingExtraSlots() throws IOException, SSSOMFormatException {
-        File source = new File("src/test/resources/extra-slots.sssom.tsv");
+        File source = new File("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         TSVReader reader = new TSVReader(source);
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
-        TSVWriter writer = new TSVWriter("src/test/resources/extra-slots-none.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE);
-        writer.write(ms.toBuilder().build());
-        Assertions.assertTrue(checkExpectedFile("extra-slots-none"));
+        assertWrittenAsExpected(ms, "test-extensions-none", null, null, ExtraMetadataPolicy.NONE);
 
-        writer = new TSVWriter("src/test/resources/extra-slots-declared.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
-        writer.write(ms.toBuilder().build());
-        Assertions.assertTrue(checkExpectedFile("extra-slots-declared"));
+        assertWrittenAsExpected(ms, "test-extensions-defined", null, null, ExtraMetadataPolicy.DEFINED);
 
-        writer = new TSVWriter("src/test/resources/extra-slots-all.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
-        writer.write(ms);
-        Assertions.assertTrue(checkExpectedFile("extra-slots-all"));
+        assertWrittenAsExpected(ms, "test-extensions-undefined", null, null, ExtraMetadataPolicy.UNDEFINED);
     }
 
     /*
@@ -171,25 +142,26 @@ public class TSVWriterTest {
         MappingSet ms = getTestSet();
 
         ms.setExtensionDefinitions(new ArrayList<ExtensionDefinition>());
-        ms.getExtensionDefinitions().add(new ExtensionDefinition("foo", "https://example.org/fooProperty"));
-        ms.getExtensionDefinitions().add(new ExtensionDefinition("bar", "https://example.org/barProperty"));
-        ms.getExtensionDefinitions().add(new ExtensionDefinition("/invalid", "https://example.org/invalidSlotName1"));
-        ms.getExtensionDefinitions().add(new ExtensionDefinition("invalid?", "https://example.org/invalidSlotName2"));
+        ms.getExtensionDefinitions()
+                .add(new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"));
+        ms.getExtensionDefinitions().add(new ExtensionDefinition("ext_bar",
+                "https://example.org/properties/barProperty", "http://www.w3.org/2001/XMLSchema#integer"));
+        ms.getExtensionDefinitions()
+                .add(new ExtensionDefinition("/ext_invalid", "https://example.org/properties/invalidSlotName1"));
+        ms.getExtensionDefinitions()
+                .add(new ExtensionDefinition("ext_invalid?", "https://example.org/properties/invalidSlotName2"));
 
         ms.setExtensions(new HashMap<String, ExtensionValue>());
-        ms.getExtensions().put("https://example.org/fooProperty", new ExtensionValue("ABC"));
-        ms.getExtensions().put("https://example.org/invalidSlotName1", new ExtensionValue("DEF"));
+        ms.getExtensions().put("https://example.org/properties/fooProperty", new ExtensionValue("Foo A"));
+        ms.getExtensions().put("https://example.org/properties/invalidSlotName1", new ExtensionValue("Invalid A"));
 
         ms.getMappings().get(0).setExtensions(new HashMap<String, ExtensionValue>());
-        ms.getMappings().get(0).getExtensions().put("https://example.org/barProperty", new ExtensionValue("BarA"));
-        ms.getMappings().get(0).getExtensions().put("https://example.org/invalidSlotName2",
-                new ExtensionValue("InvalidA"));
+        ms.getMappings().get(0).getExtensions().put("https://example.org/properties/barProperty",
+                new ExtensionValue("111"));
+        ms.getMappings().get(0).getExtensions().put("https://example.org/properties/invalidSlotName2",
+                new ExtensionValue("Invalid B"));
 
-        TSVWriter writer = new TSVWriter("src/test/resources/invalid-extra-slot-names.sssom.tsv.out");
-        writer.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
-        writer.write(ms);
-
-        Assertions.assertTrue(checkExpectedFile("invalid-extra-slot-names"));
+        assertWrittenAsExpected(ms, "test-invalid-extension-slot-names", null, null, ExtraMetadataPolicy.DEFINED);
     }
 
     /*
@@ -199,8 +171,9 @@ public class TSVWriterTest {
     void testWritingDefaultSlots() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
         ms.setMappingSetId(null);
+        ms.setLicense(null);
 
-        File written = new File("src/test/resources/default-slots.sssom.tsv.out");
+        File written = new File("src/test/resources/output/test-default-slots.sssom.tsv.out");
         TSVWriter writer = new TSVWriter(written);
         writer.write(ms);
 
@@ -222,67 +195,81 @@ public class TSVWriterTest {
     @Test
     void testEscapingYAML() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
-        ms.setMappingSetTitle("Title\twith\u00A0non-printable\u0080characters");
+        ms.setMappingSetId("https://example.org/sets/test-escaping-yaml");
+        ms.setMappingSetTitle("O2C set\twith\u00A0non-printable\u0080characters");
 
-        TSVWriter writer = new TSVWriter("src/test/resources/escaping-yaml.sssom.tsv.out");
-        writer.write(ms);
-
-        Assertions.assertTrue(checkExpectedFile("escaping-yaml"));
+        assertWrittenAsExpected(ms, "test-escaping-yaml", null, null, null);
     }
 
     @Test
     void testEscapingTSV() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
+        ms.setMappingSetId("https://example.org/sets/test-escaping-tsv");
         ms.getMappings().get(0).setComment("Value\twith\ttab\tcharacters");
         ms.getMappings().get(0).setObjectLabel("Value with \"quote\" characters");
         ms.getMappings().get(0).setIssueTrackerItem("Value with\nnew line character");
 
-        TSVWriter writer = new TSVWriter("src/test/resources/escaping-tsv.sssom.tsv.out");
-        writer.write(ms);
-
-        Assertions.assertTrue(checkExpectedFile("escaping-tsv"));
+        assertWrittenAsExpected(ms, "test-escaping-tsv", null, null, null);
     }
 
     /*
-     * Compare a written out set with a file containing the expected output.
+     * Checks that a mapping set is written exactly as we expect. This method will
+     * write the provided set to a temporary file and compares the written file with
+     * a theoretical file, and raises an assertion failure if the two files do not
+     * have exactly the same contents.
+     * 
+     * The theoretical file should be either in src/test/resources/output/ or in
+     * src/test/resources/sets/, with a .sssom.tsv extension.
+     * 
+     * The temporary file will be written in src/test/resources/output/, with a
+     * .sssom.tsv.out extension. If actualBasename is null, the basename of the
+     * theoretical file will be used. The temporary file will be automatically
+     * deleted if it is found to be identical to the theoretical file.
      */
-    private boolean checkExpectedFile(String expected, String actual) throws IOException, SSSOMFormatException {
-        String basedir = "src/test/resources/";
-        File expectedFile = new File(basedir + expected);
-        File actualFile = new File(basedir + actual);
-        boolean same = FileUtils.contentEquals(expectedFile, actualFile);
-        if ( same ) {
-            actualFile.delete();
+    private void assertWrittenAsExpected(MappingSet ms, String expectedBasename, String actualBasename,
+            Map<String, String> curieMap, ExtraMetadataPolicy extraPolicy) throws IOException {
+        if ( actualBasename == null ) {
+            actualBasename = expectedBasename;
         }
-        return same;
+
+        File written = new File("src/test/resources/output/" + actualBasename + ".sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        if ( curieMap != null ) {
+            writer.setCurieMap(curieMap);
+        }
+        if ( extraPolicy != null ) {
+            writer.setExtraMetadataPolicy(extraPolicy);
+        }
+        writer.write(ms.toBuilder().build());
+
+        File expected = new File("src/test/resources/output/" + expectedBasename + ".sssom.tsv");
+        if ( !expected.exists() ) {
+            expected = new File("src/test/resources/sets/" + expectedBasename + ".sssom.tsv");
+        }
+
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
     }
 
     /*
-     * Compare a written out set with a file containing the expected output, where
-     * the name of the actual file is derived from the name of the theoretical file.
+     * Checks that a set can be written back to yield exactly the same file as the
+     * file from which it was read.
+     * 
+     * The input set should be in the src/test/resources/sets/ directory with a
+     * .sssom.tsv extension. The set will be written back to a file with the same
+     * basename and a .sssom.tsv.out extension in the src/test/resources/output/
+     * directory. It will be automatically deleted if it is identical to the
+     * original file.
      */
-    private boolean checkExpectedFile(String basename) throws IOException, SSSOMFormatException {
-        return checkExpectedFile(basename + ".sssom.tsv", basename + ".sssom.tsv.out");
-    }
-
-    /*
-     * Read a mapping set, write it out, and compare.
-     */
-    private boolean roundtrip(String name) throws IOException, SSSOMFormatException {
-        File source = new File(String.format("src/test/resources/%s.sssom.tsv", name));
+    private void assertRoundtrip(String basename) throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/sets/" + basename + ".sssom.tsv");
         TSVReader reader = new TSVReader(source);
         MappingSet ms = reader.read();
 
-        File target = new File(String.format("src/test/resources/%s.sssom.tsv.out", name));
-        TSVWriter writer = new TSVWriter(target);
-        writer.write(ms);
-
-        boolean same = FileUtils.contentEquals(source, target);
-        if ( same ) {
-            target.delete();
-        }
-
-        return same;
+        assertWrittenAsExpected(ms, basename, null, null, null);
     }
 
     /*
@@ -293,18 +280,21 @@ public class TSVWriterTest {
         MappingSet ms = MappingSet.builder()
                 .mappings(new ArrayList<Mapping>())
                 .curieMap(new HashMap<String,String>())
-                .mappingSetId("https://example.org/sssom/sample-mapping-set")
+                .mappingSetId("https://example.org/sets/exo2c")
+                .license("https://creativecommons.org/licenses/by/4.0/")
                 .build();
         ms.getMappings().add(Mapping.builder()
-                .subjectId("http://purl.obolibrary.org/obo/FBbt_00000001")
-                .predicateId("https://w3id.org/semapv/vocab/crossSpeciesExactMatch")
-                .objectId("http://purl.obolibrary.org/obo/UBERON_0000468")
+                .subjectId("https://example.org/entities/0001")
+                .subjectLabel("alice")
+                .predicateId("http://www.w3.org/2004/02/skos/core#closeMatch")
+                .objectId("https://example.com/entities/0011")
+                .objectLabel("alpha")
                 .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
                 .build());
         // @formatter:off
 
-        ms.getCurieMap().put("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
-        ms.getCurieMap().put("UBERON", "http://purl.obolibrary.org/obo/UBERON_");
+        ms.getCurieMap().put("ORGENT", "https://example.org/entities/");
+        ms.getCurieMap().put("COMENT", "https://example.com/entities/");
 
         return ms;
     }

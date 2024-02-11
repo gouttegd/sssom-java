@@ -1,16 +1,3 @@
-#curie_map:
-#  COMPID: "https://example.com/people/"
-#  NETENT: "https://example.net/entities/"
-#  ORGENT: "https://example.org/entities/"
-#  ORGPID: "https://example.org/people/"
-#mapping_set_id: "https://example.org/sets/exo2c"
-#mapping_set_title: "O2C set"
-#creator_id:
-#  - "ORGPID:0000-0000-0001-1234"
-#  - "COMPID:0000-0000-0002-5678"
-#  - "ORGPID:0000-0000-0001-5678"
-#license: "https://creativecommons.org/licenses/by/4.0/"
-#publication_date: "2023-09-13"
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
 ORGENT:0001	alice	skos:closeMatch	NETENT:0111	alpha	semapv:ManualMappingCuration
 ORGENT:0002	bob	skos:closeMatch	NETENT:0112	bravo	semapv:ManualMappingCuration
