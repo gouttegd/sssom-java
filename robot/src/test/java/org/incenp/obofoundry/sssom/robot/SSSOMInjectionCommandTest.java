@@ -37,14 +37,14 @@ public class SSSOMInjectionCommandTest {
         // @formatter:off
         runCommand("sssom-inject",
                 "--create",
-                "--sssom", "../core/src/test/resources/sample3.sssom.tsv",
-                "--ruleset", "../core/src/test/resources/ruleset1.sssomt",
+                "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
+                "--ruleset", "../core/src/test/resources/rules/fbbt-bridge.rules",
                 "--exclude-rule", "xrefs",
                 "convert",
                 "--format", "ofn",
-                "--output", "src/test/resources/sample-bridge1.ofn.out");
+                "--output", "src/test/resources/output/fbbt-bridge.ofn.out");
         // @formatter:on
-        checkOutput("sample-bridge1.ofn");
+        checkOutput("fbbt-bridge.ofn");
     }
 
     /*
@@ -55,14 +55,14 @@ public class SSSOMInjectionCommandTest {
         // @formatter:off
         runCommand("sssom-inject",
                 "--create",
-                "--sssom", "../core/src/test/resources/sample3.sssom.tsv",
-                "--ruleset", "../core/src/test/resources/ruleset1.sssomt",
-                "--include-rule", "xrefs",
+                "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
+                "--ruleset", "../core/src/test/resources/rules/fbbt-bridge.rules",
+                "--exclude-rule", "fbbt",
                 "convert",
                 "--format", "ofn",
-                "--output", "src/test/resources/sample-xrefs1.ofn.out");
+                "--output", "src/test/resources/output/fbbt-xrefs.ofn.out");
         // @formatter:on
-        checkOutput("sample-xrefs1.ofn");
+        checkOutput("fbbt-xrefs.ofn");
     }
 
     /*
@@ -79,8 +79,8 @@ public class SSSOMInjectionCommandTest {
      * Compare a file with its expected contents.
      */
     private void checkOutput(String filename) throws IOException {
-        File expected = new File("src/test/resources/" + filename);
-        File written = new File("src/test/resources/" + filename + ".out");
+        File expected = new File("src/test/resources/output/" + filename);
+        File written = new File("src/test/resources/output/" + filename + ".out");
         boolean same = FileUtils.contentEquals(expected, written);
         Assertions.assertTrue(same);
         if ( same ) {

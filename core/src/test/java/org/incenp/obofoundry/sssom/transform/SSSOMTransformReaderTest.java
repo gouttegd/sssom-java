@@ -38,7 +38,7 @@ public class SSSOMTransformReaderTest {
         app = new DummyApplication();
         if ( !info.getTags().contains("no-common-reader") ) {
             reader = new SSSOMTransformReader<Void>(app);
-            reader.addPrefix("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
+            reader.addPrefix("ORGENT", "https://example.org/entities/");
         }
     }
 
@@ -114,18 +114,18 @@ public class SSSOMTransformReaderTest {
         parseRule("justification==semapv:ManualMappingCuration -> action();\n",
                 "(justification==https://w3id.org/semapv/vocab/ManualMappingCuration) -> action()");
         
-        parseRule("!subject==FBbt:* -> action();\n", "(!subject==http://purl.obolibrary.org/obo/FBbt_*) -> action()");
+        parseRule("!subject==ORGENT:* -> action();\n", "(!subject==https://example.org/entities/*) -> action()");
 
-        parseRule("subject==FBbt:* && predicate==skos:exactMatch -> action();\n",
-                "(subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
+        parseRule("subject==ORGENT:* && predicate==skos:exactMatch -> action();\n",
+                "(subject==https://example.org/entities/* && predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
 
-        parseRule("subject==FBbt:* predicate==skos:exactMatch -> action();\n",
-                "(subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
+        parseRule("subject==ORGENT:* predicate==skos:exactMatch -> action();\n",
+                "(subject==https://example.org/entities/* && predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
 
-        parseRule("subject==FBbt:* || predicate==skos:exactMatch -> action();\n",
-                "(subject==http://purl.obolibrary.org/obo/FBbt_* || predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
+        parseRule("subject==ORGENT:* || predicate==skos:exactMatch -> action();\n",
+                "(subject==https://example.org/entities/* || predicate==http://www.w3.org/2004/02/skos/core#exactMatch) -> action()");
 
-        parseRule("mapping_provider=='a provider' -> action();\n", "(mapping_provider==a provider) -> action()");
+        parseRule("mapping_tool=='foo mapper' -> action();\n", "(mapping_tool==foo mapper) -> action()");
 
         parseRule("see_also==\"check this*\" -> action();\n", "(see_also==check this*) -> action()");
 
@@ -137,8 +137,8 @@ public class SSSOMTransformReaderTest {
      */
     @Test
     void testParseRuleWithUndeclaredPrefix() {
-        parseRule("subject==CL:* -> action();\n", null);
-        Assertions.assertEquals("Undeclared prefix: CL", reader.getErrors().get(0).getMessage());
+        parseRule("subject==COMENT:* -> action();\n", null);
+        Assertions.assertEquals("Undeclared prefix: COMENT", reader.getErrors().get(0).getMessage());
     }
 
     /*
@@ -148,8 +148,7 @@ public class SSSOMTransformReaderTest {
     void testCurieExpansionInStringArguments() {
         app.curieExpansionFormat = "<%s>";
         parseRule(
-                "subject==* -> action('FBbt:12345678');\n",
-                "(*) -> action(<http://purl.obolibrary.org/obo/FBbt_12345678>)");
+                "subject==* -> action('ORGENT:0001');\n", "(*) -> action(<https://example.org/entities/0001>)");
     }
 
     /*
@@ -159,7 +158,7 @@ public class SSSOMTransformReaderTest {
     @Test
     @Tag("no-common-reader")
     void testParseFile() throws IOException {
-        reader = new SSSOMTransformReader<Void>(app, "src/test/resources/ruleset1.sssomt");
+        reader = new SSSOMTransformReader<Void>(app, "src/test/resources/rules/fbbt-bridge.rules");
         reader.read();
 
         Assertions.assertFalse(reader.hasErrors());
