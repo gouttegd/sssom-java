@@ -114,7 +114,7 @@ public class SimpleCLI implements Runnable {
         @Option(names = "--write-extra-metadata",
                 paramLabel = "POLICY",
                 description = "How to write non-standard metadata in the output set. Allowed values: ${COMPLETION-CANDIDATES}.")
-        ExtraMetadataPolicy writeExtraMetadata = ExtraMetadataPolicy.NONE;
+        ExtraMetadataPolicy writeExtraMetadata = ExtraMetadataPolicy.DEFINED;
     }
 
     enum OutputMapSource {
