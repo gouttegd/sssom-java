@@ -141,8 +141,8 @@ public class SimpleCLI implements Runnable {
                 description = "Use the prefix map from specified metadata file for SSSOM/T.")
         String externalPrefixMap;
 
-        @Option(names = "--prefix-map-from-input",
-                description = "Use the prefix map of the input set(s) for SSSOM/T (not recommended).")
+        @Option(names = { "-p", "--prefix-map-from-input" },
+                description = "Use the prefix map of the input set(s) for SSSOM/T.")
         boolean useInputPrefixMap;
 
         @Option(names = { "-a", "--include-all" },
