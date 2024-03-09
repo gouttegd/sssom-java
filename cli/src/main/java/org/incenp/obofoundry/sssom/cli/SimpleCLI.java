@@ -127,11 +127,27 @@ public class SimpleCLI implements Runnable {
     private TransformOptions transOpts = new TransformOptions();
 
     private static class TransformOptions {
+        private ArrayList<String> rules = new ArrayList<String>();
+
         @Option(names = { "-r", "--ruleset" }, paramLabel = "RULESET", description = "Apply a SSSOM/T ruleset.")
         String rulesetFile;
 
         @Option(names = { "-R", "--rule" }, paramLabel = "RULE", description = "Apply a single SSSOM/T rule.")
-        String[] rules = new String[] {};
+        private void addRule(String[] args) {
+            // Picocli provides us with the accumulated list of values for all occurences of
+            // the option, we only want the last one each time.
+            rules.add(args[args.length - 1]);
+        }
+
+        @Option(names = { "-I", "--include" }, paramLabel = "FILTER", description = "Apply a SSSOM/T inclusion filter.")
+        private void addIncludeRule(String[] args) {
+            rules.add(args[args.length - 1] + " -> include()");
+        }
+
+        @Option(names = { "-E", "--exclude" }, paramLabel = "FILTER", description = "Apply a SSSOM/T exclusion filter.")
+        private void addExcludeRule(String[] args) {
+            rules.add(args[args.length - 1] + " -> stop()");
+        }
 
         @Option(names = "--prefix", paramLabel = "NAME=PREFIX", description = "Declare a prefix for use in SSSOM/T.")
         Map<String, String> prefixMap = new HashMap<String, String>();
@@ -331,7 +347,7 @@ public class SimpleCLI implements Runnable {
             }
         }
 
-        if ( transOpts.rules.length > 0 ) {
+        if ( !transOpts.rules.isEmpty() ) {
             if ( reader == null ) {
                 reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping());
                 reader.addPrefixMap(transOpts.prefixMap);

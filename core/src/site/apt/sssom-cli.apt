@@ -132,6 +132,15 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
   <<<--rule>>> option. If both a <<<--ruleset>>> option and one or
   several <<<--rule>>> option(s) are used, the rules defined by the
   <<<--rule>>> options are added after the rules from the ruleset file.
+  
+  For convenience, rules that are intended to exclude or include
+  mappings can be specified with the <<<--exclude>>> or <<<--include>>>
+  options, respectively. With these options, only the filter part of the
+  rule needs to be specified. For example,
+  <<<--exclude subject==UBERON:*>>> is equivalent to
+  <<<--rule "subject==UBERON:* -> stop()">>>, and
+  <<<--include subject==UBERON:*>>> is equivalent to
+  <<<--rule "subject==UBERON:* -> include()">>>.
 
 ** Prefix map for SSSOM/T rules
 

@@ -226,6 +226,13 @@ public class SSSOMCLITest {
     }
 
     @Test
+    void testApplyIncludeAndExcludeRules() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-exact-match.sssom.tsv",
+                new String[] { "--prefix=ORG=https://example.org/entities/", "--exclude=!predicate==skos:exactMatch",
+                        "--include=subject==ORG:*" });
+    }
+
+    @Test
     void testApplyRuleAndRuleset() throws IOException {
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-exact-match-plus-org1.sssom.tsv",
                 new String[] { "--ruleset=src/test/resources/rules/org-exact-matches.rules",
