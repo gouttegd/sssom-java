@@ -423,6 +423,20 @@ public class TSVReaderTest {
         Assertions.assertEquals("Value with\nnew line character", m.getIssueTrackerItem());
     }
 
+    /*
+     * Test that empty lines in the TSV section are ignored.
+     */
+    @Test
+    void testSkippingEmptyLines() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-empty-lines.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(3, ms.getMappings().size());
+        Assertions.assertEquals("alice", ms.getMappings().get(0).getSubjectLabel());
+        Assertions.assertEquals("bob", ms.getMappings().get(1).getSubjectLabel());
+        Assertions.assertEquals("daphne", ms.getMappings().get(2).getSubjectLabel());
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());

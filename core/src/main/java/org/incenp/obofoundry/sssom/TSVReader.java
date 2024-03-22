@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -241,7 +242,8 @@ public class TSVReader {
             // Read the mappings as generic Map objects
             ObjectMapper mapper = new CsvMapper();
             CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t').withNullValue("");
-            MappingIterator<Map<String, Object>> it = mapper.readerFor(Map.class).with(schema).readValues(tsvReader);
+            MappingIterator<Map<String, Object>> it = mapper.readerFor(Map.class)
+                    .with(CsvParser.Feature.SKIP_EMPTY_LINES).with(schema).readValues(tsvReader);
             while ( it.hasNext() ) {
                 try {
                     Map<String, Object> rawMapping = it.next();
