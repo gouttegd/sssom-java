@@ -1,3 +1,13 @@
+Changes in sssom-java-0.7.6
+---------------------------
+
+    * sssom-core:
+      * Ignore empty lines when reading a SSSOM/TSV file.
+    * sssom-cli:
+      * Added convenience --include and --exclude options.
+      * Write non-standard metadata by default.
+
+
 Changes in sssom-java-0.7.5
 ---------------------------
 
