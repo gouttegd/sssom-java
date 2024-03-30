@@ -39,12 +39,7 @@
     </dependency>
     <dependency>
       <groupId>net.sourceforge.owlapi</groupId>
-      <artifactId>owlapi-apibinding</artifactId>
-      <version>4.5.26</version>
-    </dependency>
-    <dependency>
-      <groupId>net.sourceforge.owlapi</groupId>
-      <artifactId>owlapi-parsers</artifactId>
+      <artifactId>owlapi-distribution</artifactId>
       <version>4.5.26</version>
     </dependency>
   </dependencies>
