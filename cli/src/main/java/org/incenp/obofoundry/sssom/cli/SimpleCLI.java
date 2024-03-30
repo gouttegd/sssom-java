@@ -34,10 +34,15 @@ import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -59,7 +64,7 @@ public class SimpleCLI implements Runnable {
      * Command line options
      */
 
-    @ArgGroup(validate = false, heading = "Input options:%n")
+    @ArgGroup(validate = false, heading = "%nInput options:%n")
     private InputOptions inputOpts = new InputOptions();
 
     private static class InputOptions {
@@ -83,7 +88,7 @@ public class SimpleCLI implements Runnable {
         ExtraMetadataPolicy acceptExtraMetadata = ExtraMetadataPolicy.NONE;
     }
 
-    @ArgGroup(validate = false, heading = "Output options:%n")
+    @ArgGroup(validate = false, heading = "%nOutput options:%n")
     private OutputOptions outputOpts = new OutputOptions();
 
     private static class OutputOptions {
@@ -123,7 +128,7 @@ public class SimpleCLI implements Runnable {
         BOTH;
     }
 
-    @ArgGroup(validate = false, heading = "SSSOM/transform options:%n")
+    @ArgGroup(validate = false, heading = "%nSSSOM/transform options:%n")
     private TransformOptions transOpts = new TransformOptions();
 
     private static class TransformOptions {
@@ -164,6 +169,17 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "-a", "--include-all" },
                 description = "Add a default include rule at the end of the processing set.")
         boolean includeAll;
+    }
+
+    @ArgGroup(validate = false, heading = "%nOntology-related options:%n")
+    private OntologyOptions ontOptions = new OntologyOptions();
+
+    private static class OntologyOptions {
+
+        @Option(names = "--update-from-ontology",
+                paramLabel = "ONTOLOGY",
+                description = "Update the subject and object labels and sources from the specified ontology.")
+        String[] ontologiesForUpdate;
     }
 
     private CommandHelper helper = new CommandHelper();
@@ -270,6 +286,19 @@ public class SimpleCLI implements Runnable {
             MappingCardinality.inferCardinality(ms.getMappings());
         } else {
             ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
+        }
+
+        if ( ontOptions.ontologiesForUpdate != null ) {
+            OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
+            for ( String ontFile : ontOptions.ontologiesForUpdate ) {
+                System.err.printf("Updating set with %s\n", ontFile);
+                try {
+                    OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(ontFile));
+                    OWLHelper.updateMappingSet(ms, ont, null, false);
+                } catch ( OWLOntologyCreationException e ) {
+                    helper.error("cannot read ontology %s: %s", ontFile, e.getMessage());
+                }
+            }
         }
     }
 
