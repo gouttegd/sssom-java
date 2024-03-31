@@ -182,6 +182,11 @@ public class XrefExtractor {
         MappingSet ms = MappingSet.builder().curieMap(new HashMap<String, String>()).mappings(new ArrayList<Mapping>())
                 .build();
 
+        String ontologyIRI = null;
+        if ( ontology.getOntologyID().getOntologyIRI().isPresent() ) {
+            ontologyIRI = ontology.getOntologyID().getOntologyIRI().get().toString();
+        }
+
         if ( includeGeneric ) {
             prefixManager.add("oboInOwl", OBO_IN_OWL);
             usedPrefixNames.add("oboInOwl");
@@ -225,7 +230,8 @@ public class XrefExtractor {
                     }
 
                     Mapping m = Mapping.builder().subjectId(subjectId).subjectLabel(label).objectId(objectId)
-                            .predicateId(predicateId).mappingJustification(SEMAPV + "UnspecifiedMatching").build();
+                            .predicateId(predicateId).mappingJustification(SEMAPV + "UnspecifiedMatching")
+                            .subjectSource(ontologyIRI).build();
 
                     ms.getMappings().add(m);
                 }
