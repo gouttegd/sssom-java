@@ -118,13 +118,26 @@ public class SlotPropagator {
     }
 
     /**
-     * Propagate the values of slots from the mapping set level to the individual
+     * Propagates the values of slots from the mapping set level to the individual
      * mappings.
      * 
      * @param mappingSet The mapping set whose slot values should be propagated.
      * @return A set containing the names of slots that were effectively propagated.
      */
     public Set<String> propagate(MappingSet mappingSet) {
+        return propagate(mappingSet, false);
+    }
+
+    /**
+     * Propagates the values of slots the mapping set level to the individual
+     * mappings.
+     * 
+     * @param mappingSet The mapping set whose slot values should be propagated.
+     * @param preserve   If {@code true}, set-level values will not be removed after
+     *                   propagation.
+     * @return A set containing the names of slots that were effectively propagated.
+     */
+    public Set<String> propagate(MappingSet mappingSet, boolean preserve) {
         // We must first determine which of the propagatable slots have values at the
         // set level.
         Map<String, Object> values = new HashMap<String, Object>();
@@ -136,6 +149,8 @@ public class SlotPropagator {
         // the propagatable slots that do have a value at the set level.
         SlotHelper<Mapping> mappingHelper = SlotHelper.getMappingHelper(true);
         mappingHelper.setSlots(new ArrayList<String>(values.keySet()), false);
+
+        NullifyVisitor<MappingSet> nullify = new NullifyVisitor<MappingSet>();
 
         if ( policy == PropagationPolicy.NeverReplace ) {
             // We must iterate over all the mappings a first time to check whether they have
@@ -163,6 +178,12 @@ public class SlotPropagator {
                 }
                 return null;
             }, true);
+        }
+
+        if ( !preserve ) {
+            // Remove the values of propagated slots from the set
+            setHelper.setSlots(values.keySet());
+            setHelper.visitSlots(mappingSet, nullify);
         }
 
         return values.keySet();
@@ -230,14 +251,22 @@ public class SlotPropagator {
         if ( !preserve ) {
             // Remove the values of condensed slots from the individual mappings.
             mappingHelper.setSlots(new ArrayList<String>(condensedSlots), false);
+            NullifyVisitor<Mapping> nullify = new NullifyVisitor<Mapping>();
             for ( Mapping mapping : mappingSet.getMappings() ) {
-                mappingHelper.visitSlots(mapping, (slot, m, value) -> {
-                    slot.setValue(m, null);
-                    return null;
-                }, true);
+                mappingHelper.visitSlots(mapping, nullify, true);
             }
         }
 
         return condensedSlots;
+    }
+
+    private class NullifyVisitor<T> implements SimpleSlotVisitor<T, Void> {
+
+        @Override
+        public Void visit(Slot<T> slot, T object, Object value) {
+            slot.setValue(object, null);
+            return null;
+        }
+
     }
 }

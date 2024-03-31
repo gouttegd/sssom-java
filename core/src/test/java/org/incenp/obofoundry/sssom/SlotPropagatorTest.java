@@ -44,6 +44,8 @@ public class SlotPropagatorTest {
         for ( Mapping mapping : ms.getMappings() ) {
             Assertions.assertEquals("sample mapping tool", mapping.getMappingTool());
         }
+
+        Assertions.assertNull(ms.getMappingTool());
     }
 
     @Test
@@ -62,6 +64,8 @@ public class SlotPropagatorTest {
         Assertions.assertEquals("another mapping tool", ms.getMappings().get(1).getMappingTool());
         Assertions.assertEquals("sample mapping tool", ms.getMappings().get(2).getMappingTool());
         Assertions.assertEquals("sample mapping tool", ms.getMappings().get(3).getMappingTool());
+
+        Assertions.assertNull(ms.getMappingTool());
     }
 
     @Test
@@ -79,6 +83,27 @@ public class SlotPropagatorTest {
         Assertions.assertEquals("another mapping tool", ms.getMappings().get(1).getMappingTool());
         Assertions.assertNull(ms.getMappings().get(2).getMappingTool());
         Assertions.assertNull(ms.getMappings().get(3).getMappingTool());
+
+        Assertions.assertEquals("sample mapping tool", ms.getMappingTool());
+    }
+
+    @Test
+    void testPreserveValuesUponPropagating() {
+        MappingSet ms = getSampleSet();
+        ms.setMappingTool("sample mapping tool");
+        ms.getMappings().get(1).setMappingTool("another mapping tool");
+
+        SlotPropagator sp = new SlotPropagator(PropagationPolicy.AlwaysReplace);
+        Set<String> propagated = sp.propagate(ms, true);
+
+        Assertions.assertEquals(1, propagated.size());
+        Assertions.assertTrue(propagated.contains("mapping_tool"));
+
+        for ( Mapping mapping : ms.getMappings() ) {
+            Assertions.assertEquals("sample mapping tool", mapping.getMappingTool());
+        }
+
+        Assertions.assertEquals("sample mapping tool", ms.getMappingTool());
     }
 
     @Test
