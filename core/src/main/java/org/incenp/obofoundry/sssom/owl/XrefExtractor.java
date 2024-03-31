@@ -221,7 +221,7 @@ public class XrefExtractor {
 
                     String predicateId = prefixToPredicateMap.getOrDefault(parts[0], HAS_DB_XREF);
                     if ( label == null ) {
-                        label = getLabel(ontology, c);
+                        label = OWLHelper.getLabel(ontology, c.getIRI(), null, false);
                     }
 
                     Mapping m = Mapping.builder().subjectId(subjectId).subjectLabel(label).objectId(objectId)
@@ -247,16 +247,6 @@ public class XrefExtractor {
      */
     public Set<String> getUnknownPrefixNames() {
         return prefixManager.getUnresolvedPrefixNames();
-    }
-
-    private String getLabel(OWLOntology ontology, OWLClass c) {
-        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
-            if ( ax.getProperty().isLabel() ) {
-                return ax.getValue().asLiteral().get().getLiteral();
-            }
-        }
-
-        return null;
     }
 
     private boolean isObsolete(OWLOntology ontology, OWLClass c) {
