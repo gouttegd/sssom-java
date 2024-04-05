@@ -57,7 +57,7 @@ public class AnnotationAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      * 
      *                 <pre>
      *                 AnnotationAxiomGenerator g = new AnnotationAxiomGenerator(ontology, property,
-     *                         (mapping) -> mapping.getSubjectLabel());
+     *                         (mapping) -&gt; mapping.getSubjectLabel());
      *                 </pre>
      */
     public AnnotationAxiomGenerator(OWLOntology ontology, IRI property, IMappingTransformer<String> texter) {

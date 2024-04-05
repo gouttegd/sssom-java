@@ -62,7 +62,7 @@ public enum MappingCardinality {
     }
 
     /**
-     * Gets the inverse of this cardinality (i.e., "1:n" -> "n:1").
+     * Gets the inverse of this cardinality (i.e., "1:n" -&gt; "n:1").
      * 
      * @return The inverse cardinality (may be identical, e.g. for "1:1").
      */

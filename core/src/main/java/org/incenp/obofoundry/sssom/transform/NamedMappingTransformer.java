@@ -31,7 +31,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * 
  * <pre>
  * IMappingTransformer&lt;String&gt; myTransformer = new NamedMappingTransformer&lt;String&gt;("mapping-to-string",
- *         (mapping) -&gt; String.format("%s -[%s]-> %s", mapping.getSubjectId(), mapping.getPredicateId(),
+ *         (mapping) -&gt; String.format("%s -[%s]-&gt; %s", mapping.getSubjectId(), mapping.getPredicateId(),
  *                 mapping.getObjectId()));
  * </pre>
  *

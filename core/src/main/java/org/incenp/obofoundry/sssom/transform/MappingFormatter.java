@@ -35,8 +35,8 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * 
  * <pre>
  * MappingFormatter formatter = new MappingFormatter();
- * formatter.addSubstitution("$predicate", (mapping) -> mapping.getPredicateId());
- * formatter.addSubstitution("$justification", (mapping) -> mapping.getMappingJustification());
+ * formatter.addSubstitution("$predicate", (mapping) -&gt; mapping.getPredicateId());
+ * formatter.addSubstitution("$justification", (mapping) -$gt; mapping.getMappingJustification());
  * </pre>
  * <p>
  * That formatter may then be used as follows:
