@@ -5,5 +5,5 @@
 #license: "https://creativecommons.org/licenses/by/4.0/"
 subject_id	subject_label	predicate_id	predicate_modifier	object_id	object_label	mapping_justification	confidence
 ORGENT:0001		skos:closeMatch		COMENT:0011	alpha	semapv:ManualMappingCuration	
-ORGENT:0002		skos:closeMatch		COMENT:0012	beta	semapv:ManualMappingCuration	0.800000
+ORGENT:0002		skos:closeMatch		COMENT:0012	beta	semapv:ManualMappingCuration	0.8
 ORGENT:0004	daphne	skos:closeMatch	Not	COMENT:0014	delta	semapv:ManualMappingCuration	

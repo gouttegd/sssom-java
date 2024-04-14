@@ -24,6 +24,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -227,6 +229,12 @@ public class TSVWriter {
      */
     private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, Void> {
         StringBuilder sb = new StringBuilder();
+        DecimalFormat floatFormatter;
+
+        MappingSetSlotVisitor() {
+            floatFormatter = new DecimalFormat("#.###");
+            floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
+        }
 
         /*
          * Get the collected metadata as a single string.
@@ -294,7 +302,7 @@ public class TSVWriter {
 
         @Override
         public Void visit(Slot<MappingSet> slot, MappingSet set, Double value) {
-            sb.append(String.format("%f", value));
+            sb.append(floatFormatter.format(value));
             return null;
         }
 
@@ -441,9 +449,12 @@ public class TSVWriter {
      */
     private class MappingSlotVisitor extends SlotVisitorBase<Mapping, String> {
         private List<ExtensionDefinition> definitions;
+        private DecimalFormat floatFormatter;
 
         MappingSlotVisitor(List<ExtensionDefinition> extraSlots) {
             definitions = extraSlots;
+            floatFormatter = new DecimalFormat("#.###");
+            floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
         }
 
         @Override
@@ -479,7 +490,7 @@ public class TSVWriter {
             if ( value == null ) {
                 return "";
             } else {
-                return String.format("%f", value);
+                return floatFormatter.format(value);
             }
         }
 
