@@ -152,7 +152,7 @@ public class XrefExtractCommand implements Command {
         }
         if ( line.hasOption("map-prefix-to-predicate") ) {
             for ( String ppMapping : line.getOptionValues("map-prefix-to-predicate") ) {
-                String[] parts = ppMapping.split(" ", 2);
+                String[] parts = ppMapping.split(" +", 2);
                 if ( parts.length != 2 ) {
                     throw new IllegalArgumentException("Invalid argument for --map-prefix-to-predicate: " + ppMapping);
                 }
