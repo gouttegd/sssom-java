@@ -19,9 +19,11 @@
 package org.incenp.obofoundry.sssom.owl;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -136,6 +138,78 @@ public class OWLHelperTest {
         Assertions.assertEquals(m.getObjectLabel(), "english label");
         Assertions.assertEquals(m.getSubjectSource(), IRI_BASE + "test.owl");
         Assertions.assertEquals(m.getObjectSource(), IRI_BASE + "test.owl");
+    }
+
+    @Test
+    void testDeleteMissingSubject() {
+        MappingSet ms = MappingSet.builder().mappings(new ArrayList<Mapping>()).build();
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "no_label").objectId(IRI_BASE + "0001").build());
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "missing").objectId(IRI_BASE + "0002").build());
+
+        // Do not remove anything if no DELETE_* mode is selected
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.noneOf(UpdateMode.class));
+        Assertions.assertEquals(2, ms.getMappings().size());
+
+        // Likewise if we select to remove OBSOLETE subjects
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_SUBJECT));
+        Assertions.assertEquals(2, ms.getMappings().size());
+
+        // Delete the second mapping
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_MISSING_SUBJECT));
+        Assertions.assertEquals(1, ms.getMappings().size());
+        Assertions.assertEquals(IRI_BASE + "no_label", ms.getMappings().get(0).getSubjectId());
+    }
+
+    @Test
+    void testDeleteMissingObject() {
+        MappingSet ms = MappingSet.builder().mappings(new ArrayList<Mapping>()).build();
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "0001").objectId(IRI_BASE + "no_label").build());
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "0002").objectId(IRI_BASE + "missing").build());
+
+        // Do not remove anything if no DELETE_* mode is selected
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.noneOf(UpdateMode.class));
+        Assertions.assertEquals(2, ms.getMappings().size());
+
+        // Likewise if we select to remove OBSOLETE objects
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_OBJECT));
+        Assertions.assertEquals(2, ms.getMappings().size());
+
+        // Delete the second mapping
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_MISSING_OBJECT));
+        Assertions.assertEquals(1, ms.getMappings().size());
+        Assertions.assertEquals(IRI_BASE + "no_label", ms.getMappings().get(0).getObjectId());
+    }
+
+    @Test
+    void testDeleteObsoleteSubject() {
+        MappingSet ms = MappingSet.builder().mappings(new ArrayList<Mapping>()).build();
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "no_label").objectId(IRI_BASE + "0001").build());
+
+        // Obsolete the "no_label" class
+        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        ontology.getOWLOntologyManager().addAxiom(ontology,
+                factory.getOWLAnnotationAssertionAxiom(
+                        factory.getOWLAnnotationProperty(OWLRDFVocabulary.OWL_DEPRECATED.getIRI()),
+                        IRI.create(IRI_BASE + "no_label"), factory.getOWLLiteral(true)));
+
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_SUBJECT));
+        Assertions.assertTrue(ms.getMappings().isEmpty());
+    }
+
+    @Test
+    void testDeleteObsoleteObject() {
+        MappingSet ms = MappingSet.builder().mappings(new ArrayList<Mapping>()).build();
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "0001").objectId(IRI_BASE + "no_label").build());
+
+        // Obsolete the "no_label" class
+        OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
+        ontology.getOWLOntologyManager().addAxiom(ontology,
+                factory.getOWLAnnotationAssertionAxiom(
+                        factory.getOWLAnnotationProperty(OWLRDFVocabulary.OWL_DEPRECATED.getIRI()),
+                        IRI.create(IRI_BASE + "no_label"), factory.getOWLLiteral(true)));
+
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_OBJECT));
+        Assertions.assertTrue(ms.getMappings().isEmpty());
     }
 
     private void testGetLabel(String id, String language, boolean strict, String expected) {

@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.cli;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.OWLHelper;
+import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
@@ -175,10 +177,9 @@ public class SimpleCLI implements Runnable {
     private OntologyOptions ontOptions = new OntologyOptions();
 
     private static class OntologyOptions {
-
         @Option(names = "--update-from-ontology",
-                paramLabel = "ONTOLOGY",
-                description = "Update the subject and object labels and sources from the specified ontology.")
+                paramLabel = "ONTOLOGY[:subject,object]",
+                description = "Update the set using data from the specified ontology.")
         String[] ontologiesForUpdate;
     }
 
@@ -291,10 +292,29 @@ public class SimpleCLI implements Runnable {
         if ( ontOptions.ontologiesForUpdate != null ) {
             OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
             for ( String ontFile : ontOptions.ontologiesForUpdate ) {
-                System.err.printf("Updating set with %s\n", ontFile);
+                EnumSet<UpdateMode> mode = EnumSet.of(UpdateMode.UPDATE_LABEL, UpdateMode.UPDATE_SOURCE);
+
+                String[] parts = ontFile.split(":", 2);
+                if ( parts.length == 2 ) {
+                    for ( String flag : parts[1].split(",") ) {
+                        switch ( flag ) {
+                        case "subject":
+                            mode.add(UpdateMode.DELETE_MISSING_SUBJECT);
+                            mode.add(UpdateMode.DELETE_OBSOLETE_SUBJECT);
+                            break;
+
+                        case "object":
+                            mode.add(UpdateMode.DELETE_MISSING_OBJECT);
+                            mode.add(UpdateMode.DELETE_OBSOLETE_OBJECT);
+                            break;
+                        }
+                    }
+                }
+
+                System.err.printf("Updating set with %s\n", parts[0]);
                 try {
-                    OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(ontFile));
-                    OWLHelper.updateMappingSet(ms, ont, null, false);
+                    OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(parts[0]));
+                    OWLHelper.updateMappingSet(ms, ont, null, false, mode);
                 } catch ( OWLOntologyCreationException e ) {
                     helper.error("cannot read ontology %s: %s", ontFile, e.getMessage());
                 }

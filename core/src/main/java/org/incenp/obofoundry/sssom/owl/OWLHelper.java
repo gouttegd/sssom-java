@@ -18,6 +18,9 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.semanticweb.owlapi.model.IRI;
@@ -74,6 +77,25 @@ public class OWLHelper {
     }
 
     /**
+     * Checks whether an entity is marked as obsolete in the specified ontology. Of
+     * note, this method does not check for <em>existence</em>; if the entity does
+     * not exist in the ontology, it will return {@code false}, as if the entity
+     * existed and was not obsolete.
+     * 
+     * @param ontology The ontology in which to look up the entity.
+     * @param entity   The entity to look up.
+     * @return {@code true} if the entity is obsolete, otherwise {@code false}.
+     */
+    public static boolean isObsolete(OWLOntology ontology, IRI entity) {
+        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(entity) ) {
+            if ( ax.isDeprecatedIRIAssertion() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Updates the subject label, object label, subject source, and object source in
      * the mapping set using informations from the specified ontology.
      * 
@@ -86,30 +108,115 @@ public class OWLHelper {
      *                 labels.
      */
     public static void updateMappingSet(MappingSet ms, OWLOntology ontology, String language, boolean strict) {
+        updateMappingSet(ms, ontology, language, strict, EnumSet.of(UpdateMode.UPDATE_LABEL, UpdateMode.UPDATE_SOURCE));
+    }
+
+    /**
+     * Generic helper method to update a mapping set from a specified ontology. What
+     * exactly is updated is specified by the {@link UpdateMode} flag values.
+     * 
+     * @param ms         The mapping set to update.
+     * @param ontology   The ontology against which to update the mapping set.
+     * @param language   If non-{@code null}, when updating labels, use labels in
+     *                   the ontology that have a matching language tag, or no
+     *                   language tag at all.
+     * @param langStrict If {@code true}, do not fall back to using language-neutral
+     *                   labels.
+     * @param mode       What to update in the mapping set.
+     */
+    public static void updateMappingSet(MappingSet ms, OWLOntology ontology, String language, boolean langStrict, EnumSet<UpdateMode> mode) {
         IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orNull();
+        ArrayList<Mapping> mappings = new ArrayList<Mapping>();
+
         for ( Mapping m : ms.getMappings() ) {
             IRI subject = IRI.create(m.getSubjectId());
             IRI object = IRI.create(m.getObjectId());
+            boolean keep = true;
 
             if ( ontology.containsEntityInSignature(subject) ) {
-                String label = getLabel(ontology, subject, language, strict);
-                if ( label != null ) {
-                    m.setSubjectLabel(label);
-                    if ( ontologyIRI != null && m.getSubjectSource() == null ) {
-                        m.setSubjectSource(ontologyIRI.toString());
+                if ( isObsolete(ontology, subject) && mode.contains(UpdateMode.DELETE_OBSOLETE_SUBJECT) ) {
+                    keep = false;
+                }
+                if ( mode.contains(UpdateMode.UPDATE_LABEL) ) {
+                    String label = getLabel(ontology, subject, language, langStrict);
+                    if ( label != null ) {
+                        m.setSubjectLabel(label);
                     }
                 }
+                if ( mode.contains(UpdateMode.UPDATE_SOURCE) && ontologyIRI != null ) {
+                    m.setSubjectSource(ontologyIRI.toString());
+                }
+            }
+            else if ( mode.contains(UpdateMode.DELETE_MISSING_SUBJECT) ) {
+                keep = false;
             }
 
             if ( ontology.containsEntityInSignature(object) ) {
-                String label = getLabel(ontology, object, language, strict);
-                if ( label != null ) {
-                    m.setObjectLabel(label);
-                    if ( ontologyIRI != null && m.getObjectSource() == null ) {
-                        m.setObjectSource(ontologyIRI.toString());
+                if ( isObsolete(ontology, object) && mode.contains(UpdateMode.DELETE_OBSOLETE_OBJECT) ) {
+                    keep = false;
+                }
+                if ( mode.contains(UpdateMode.UPDATE_LABEL) ) {
+                    String label = getLabel(ontology, object, language, langStrict);
+                    if ( label != null ) {
+                        m.setObjectLabel(label);
                     }
                 }
+                if ( mode.contains(UpdateMode.UPDATE_SOURCE) && ontologyIRI != null ) {
+                    m.setObjectSource(ontologyIRI.toString());
+                }
+            } else if ( mode.contains(UpdateMode.DELETE_MISSING_OBJECT) ) {
+                keep = false;
+            }
+
+            if ( keep ) {
+                mappings.add(m);
             }
         }
+
+        ms.setMappings(mappings);
+    }
+
+    /**
+     * Modes of operation for the
+     * {@link OWLHelper#updateMappingSet(MappingSet, OWLOntology, String, boolean, EnumSet)}
+     * method.
+     */
+    public enum UpdateMode {
+        /**
+         * Updates the object and subject labels from the labels of the corresponding
+         * entities in the ontology.
+         */
+        UPDATE_LABEL,
+
+        /**
+         * If the subject (respectively the object) exists in the ontology, sets the
+         * {@code subject_source} (respectively the {@code object_source}) field to the
+         * ontology IRI.
+         */
+        UPDATE_SOURCE,
+
+        /**
+         * Removes any mapping whose subject does not exist in the ontology.
+         */
+        DELETE_MISSING_SUBJECT,
+
+        /**
+         * Removes any mapping whose subject exists in the ontology but is marked as
+         * obsolete.
+         */
+        DELETE_OBSOLETE_SUBJECT,
+
+        /**
+         * Removes any mapping whose object does not exist in the ontology.
+         */
+        DELETE_MISSING_OBJECT,
+
+        /**
+         * Removes any mapping whose object exists in the ontology but is marked as
+         * obsolete.
+         */
+        DELETE_OBSOLETE_OBJECT;
+
+        public static final EnumSet<UpdateMode> ALL = EnumSet.allOf(UpdateMode.class);
     }
 }

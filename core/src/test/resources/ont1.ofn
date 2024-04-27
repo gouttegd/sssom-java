@@ -1,0 +1,28 @@
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+Prefix(COMENT:=<https://example.com/entities/>)
+Prefix(ORGENT:=<https://example.org/entities/>)
+
+
+Ontology(
+Declaration(Class(<https://example.com/entities/0012>))
+Declaration(Class(<https://example.org/entities/0001>))
+
+
+############################
+#   Classes
+############################
+
+# Class: <https://example.com/entities/0012> (Beta)
+
+AnnotationAssertion(rdfs:label <https://example.com/entities/0012> "Beta")
+
+# Class: <https://example.org/entities/0001> (Alice)
+
+AnnotationAssertion(rdfs:label <https://example.org/entities/0001> "Alice")
+
+
+)

@@ -304,4 +304,19 @@ public class SSSOMCLITest {
         TestUtils.runCommand(1, new String[] { "test-sssomt-prefix-map.sssom.tsv" }, null,
                 new String[] { "--prefix-map=pom.xml" });
     }
+
+    @Test
+    void testUpdateFromOntology() throws IOException {
+        // Simply updating the labels
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-updated-from-ont1.sssom.tsv",
+                new String[] { "--update-from-ontology", "../core/src/test/resources/ont1.ofn" });
+
+        // Deleting missing subjects
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-subject-checked-against-ont1.sssom.tsv",
+                new String[] { "--update-from-ontology", "../core/src/test/resources/ont1.ofn:subject" });
+
+        // Deleting missing objects
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-object-checked-against-ont1.sssom.tsv",
+                new String[] { "--update-from-ontology", "../core/src/test/resources/ont1.ofn:object" });
+    }
 }
