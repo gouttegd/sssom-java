@@ -348,7 +348,6 @@ public class SimpleCLI implements Runnable {
                     }
                 }
 
-                System.err.printf("Updating set with %s\n", parts[0]);
                 try {
                     OWLOntology ont = mgr.loadOntologyFromOntologyDocument(new File(parts[0]));
                     OWLHelper.updateMappingSet(ms, ont, null, false, mode);
