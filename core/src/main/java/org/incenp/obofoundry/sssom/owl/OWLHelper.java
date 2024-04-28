@@ -27,6 +27,8 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.parameters.Imports;
+import org.semanticweb.owlapi.model.parameters.Navigation;
 
 /**
  * A class of helper methods to work with OWL ontologies.
@@ -52,8 +54,9 @@ public class OWLHelper {
         String preferredLabel = null;
         String otherLabel = null;
 
-        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(entity) ) {
-            if ( ax.getProperty().isLabel() && ax.getValue().isLiteral() ) {
+        for ( OWLAnnotationAssertionAxiom ax : ontology.getAxioms(OWLAnnotationAssertionAxiom.class, entity,
+                Imports.INCLUDED, Navigation.IN_SUB_POSITION) ) {
+            if ( ax.getSubject().equals(entity) && ax.getProperty().isLabel() && ax.getValue().isLiteral() ) {
                 OWLLiteral value = ax.getValue().asLiteral().get();
                 if ( language != null && value.getLang().equalsIgnoreCase(language) ) {
                     preferredLabel = value.getLiteral();
@@ -87,8 +90,9 @@ public class OWLHelper {
      * @return {@code true} if the entity is obsolete, otherwise {@code false}.
      */
     public static boolean isObsolete(OWLOntology ontology, IRI entity) {
-        for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(entity) ) {
-            if ( ax.isDeprecatedIRIAssertion() ) {
+        for ( OWLAnnotationAssertionAxiom ax : ontology.getAxioms(OWLAnnotationAssertionAxiom.class, entity,
+                Imports.INCLUDED, Navigation.IN_SUB_POSITION) ) {
+            if ( ax.getSubject().equals(entity) && ax.isDeprecatedIRIAssertion() ) {
                 return true;
             }
         }
@@ -133,7 +137,7 @@ public class OWLHelper {
             IRI object = IRI.create(m.getObjectId());
             boolean keep = true;
 
-            if ( ontology.containsEntityInSignature(subject) ) {
+            if ( ontology.containsEntityInSignature(subject, Imports.INCLUDED) ) {
                 if ( isObsolete(ontology, subject) && mode.contains(UpdateMode.DELETE_OBSOLETE_SUBJECT) ) {
                     keep = false;
                 }
@@ -151,7 +155,7 @@ public class OWLHelper {
                 keep = false;
             }
 
-            if ( ontology.containsEntityInSignature(object) ) {
+            if ( ontology.containsEntityInSignature(object, Imports.INCLUDED) ) {
                 if ( isObsolete(ontology, object) && mode.contains(UpdateMode.DELETE_OBSOLETE_OBJECT) ) {
                     keep = false;
                 }
