@@ -121,15 +121,22 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
   two available flags, which enable additional behaviours:
   
   [subject] Remove any mapping whose subject does not correspond to
-  			an existing and non-deprecated entity in the ontology.
+            an existing and non-deprecated entity in the ontology.
   
   [object] Remove any mapping whose object does not correspond to an
-  		   existing and non-deprecated entity in the ontology.
+           existing and non-deprecated entity in the ontology.
   		   
   []
   
   The <<<--update-from-ontology>>> option may be specified several times
   to check a mapping set against several ontologies consecutively.
+  
+  If the ontology uses imports, SSSOM-CLI will try to resolve them using
+  a default catalog file named <<<catalog-v001.xml>>>, if such a file
+  exists in the current directory. Use the <<<--catalog>>> option to
+  explicitly specify another catalog file (that option accepts a special
+  value <<<none>>> to disable using the default <<<catalog-v001.xml>>>
+  file).
   
 * Transformations
 

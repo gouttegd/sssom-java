@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.catalog.CatalogException;
+
 import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
@@ -181,6 +183,11 @@ public class SimpleCLI implements Runnable {
                 paramLabel = "ONTOLOGY[:subject,object]",
                 description = "Update the set using data from the specified ontology.")
         String[] ontologiesForUpdate;
+
+        @Option(names = "--catalog",
+                paramLabel = "CATALOG",
+                description = "Use the specified catalog to resolve imports when reading the ontology.")
+        String xmlCatalog;
     }
 
     private CommandHelper helper = new CommandHelper();
@@ -282,6 +289,26 @@ public class SimpleCLI implements Runnable {
      * Output
      */
 
+    private File getCatalogFile(String userSpecified, String defaultFile) {
+        File catalog = null;
+
+        if ( userSpecified != null ) {
+            if ( !userSpecified.equals("none") ) {
+                catalog = new File(userSpecified);
+                if ( !catalog.exists() ) {
+                    helper.error("Specified catalog %s not found", userSpecified);
+                }
+            }
+        } else {
+            catalog = new File(defaultFile);
+            if ( !catalog.exists() ) {
+                catalog = null;
+            }
+        }
+
+        return catalog;
+    }
+
     private void postProcess(MappingSet ms) {
         if ( outputOpts.forceCardinality ) {
             MappingCardinality.inferCardinality(ms.getMappings());
@@ -291,6 +318,16 @@ public class SimpleCLI implements Runnable {
 
         if ( ontOptions.ontologiesForUpdate != null ) {
             OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
+
+            File catalog = getCatalogFile(ontOptions.xmlCatalog, "catalog-v001.xml");
+            if ( catalog != null ) {
+                try {
+                    mgr.getIRIMappers().add(new XMLCatalogIRIMapper(catalog));
+                } catch ( CatalogException | IllegalArgumentException e ) {
+                    helper.error("Cannot parse catalog: %s", e.getMessage());
+                }
+            }
+
             for ( String ontFile : ontOptions.ontologiesForUpdate ) {
                 EnumSet<UpdateMode> mode = EnumSet.of(UpdateMode.UPDATE_LABEL, UpdateMode.UPDATE_SOURCE);
 

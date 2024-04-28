@@ -309,14 +309,33 @@ public class SSSOMCLITest {
     void testUpdateFromOntology() throws IOException {
         // Simply updating the labels
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-updated-from-ont1.sssom.tsv",
-                new String[] { "--update-from-ontology", "../core/src/test/resources/ont1.ofn" });
+                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont1.ofn" });
 
         // Deleting missing subjects
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-subject-checked-against-ont1.sssom.tsv",
-                new String[] { "--update-from-ontology", "../core/src/test/resources/ont1.ofn:subject" });
+                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont1.ofn:subject" });
 
         // Deleting missing objects
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-object-checked-against-ont1.sssom.tsv",
-                new String[] { "--update-from-ontology", "../core/src/test/resources/ont1.ofn:object" });
+                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont1.ofn:object" });
+    }
+
+    @Test
+    void testUpdateFromOntologyCatalogOption() throws IOException {
+        // Explicitly specified catalog
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-updated-from-ont1.sssom.tsv",
+                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont2.ofn", "--catalog",
+                        "../core/src/test/resources/owl/catalog-v001.xml" });
+
+        // Default catalog; system URIs are relative to the location of the catalog, so
+        // we need to put the referenced ont3.ofn ontology in the current directory.
+        File tmpCatalog = new File("catalog-v001.xml");
+        File tmpOnt3 = new File("ont3.ofn");
+        FileUtils.copyFile(new File("../core/src/test/resources/owl/catalog-v001.xml"), tmpCatalog);
+        FileUtils.copyFile(new File("../core/src/test/resources/owl/ont3.ofn"), tmpOnt3);
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-updated-from-ont1.sssom.tsv",
+                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont2.ofn" });
+        tmpCatalog.delete();
+        tmpOnt3.delete();
     }
 }
