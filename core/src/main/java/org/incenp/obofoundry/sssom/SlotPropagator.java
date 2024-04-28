@@ -21,7 +21,6 @@ package org.incenp.obofoundry.sssom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -142,7 +141,7 @@ public class SlotPropagator {
         // set level.
         Map<String, Object> values = new HashMap<String, Object>();
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setSlots(new ArrayList<String>(slots), false); // Visit only propagatable slots
+        setHelper.setSlots(slots); // Visit only propagatable slots
         setHelper.visitSlots(mappingSet, (slot, m, value) -> values.put(slot.getName(), value));
 
         // Prepare to visit the slots on the individual mappings. We only need to visit
@@ -215,34 +214,33 @@ public class SlotPropagator {
                     .computeIfAbsent(slot.getName(), (s) -> new HashSet<Object>()).add(value), true);
         }
 
-        // Find out which slots have only one value across all mappings. They are the
-        // slots we can condense to the set level.
-        List<String> condensableSlots = new ArrayList<String>();
-        for ( String slotName : values.keySet() ) {
-            if ( values.get(slotName).size() == 1 && !values.get(slotName).contains(null) ) {
-                condensableSlots.add(slotName);
-            }
-        }
-
-        // Visit the condensable slots on the mapping level and set them to the
+        // Visit the condensable slots on the mapping set level and set them to the
         // corresponding collected value.
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setSlots(condensableSlots, false);
+        setHelper.setSlots(slots);
         Set<String> condensedSlots = new HashSet<String>();
         SimpleSlotVisitor<MappingSet, Void> v = (slot, ms, value) -> {
-            Object newValue = values.get(slot.getName()).iterator().next();
-            if ( value == null ) {
-                // No value at the set level so we can condense.
-                slot.setValue(ms, newValue);
-                condensedSlots.add(slot.getName());
-            } else if ( value.equals(newValue) ) {
-                // The set value is already the same as the value in all mappings, so we can
-                // just mark the slot as being condensed without having to do anything.
-                condensedSlots.add(slot.getName());
+            String slotName = slot.getName();
+            if ( values.containsKey(slotName) && values.get(slotName).size() == 1
+                    && !values.get(slotName).contains(null) ) {
+                // Slot is condensable
+                Object newValue = values.get(slot.getName()).iterator().next();
+                if ( value == null ) {
+                    // No value at the set level so we can condense.
+                    slot.setValue(ms, newValue);
+                    condensedSlots.add(slot.getName());
+                } else if ( value.equals(newValue) ) {
+                    // The set value is already the same as the value in all mappings, so we can
+                    // just mark the slot as being condensed without having to do anything.
+                    condensedSlots.add(slot.getName());
+                } else if ( policy == PropagationPolicy.AlwaysReplace ) {
+                    // Policy says to condense regardless of what may already exist.
+                    slot.setValue(ms, newValue);
+                    condensedSlots.add(slot.getName());
+                }
             } else if ( policy == PropagationPolicy.AlwaysReplace ) {
-                // Policy says to condense regardless of what may already exist.
-                slot.setValue(ms, newValue);
-                condensedSlots.add(slot.getName());
+                // Slot is not condensable, remove useless conflicting value at the set level
+                slot.setValue(ms, null);
             }
             return null;
         };

@@ -156,6 +156,53 @@ public class SlotPropagatorTest {
     }
 
     @Test
+    void testCondenseAlwaysReplacePolicyUponSuccessulCondensation() {
+        MappingSet ms = getSampleSet();
+        ms.setMappingTool("another mapping tool");
+        for ( Mapping m : ms.getMappings() ) {
+            m.setMappingTool("sample mapping tool");
+        }
+
+        SlotPropagator sp = new SlotPropagator();
+        Set<String> condensed = sp.condense(ms, false);
+
+        Assertions.assertEquals(1, condensed.size());
+        Assertions.assertEquals("sample mapping tool", ms.getMappingTool());
+        Assertions.assertNull(ms.getMappings().get(0).getMappingTool());
+    }
+
+    @Test
+    void testCondenseAlwaysReplacePolicyUponFailedCondensation() {
+        MappingSet ms = getSampleSet();
+        ms.setMappingTool("another mapping tool");
+        ms.getMappings().get(1).setMappingTool("sample mapping tool");
+
+        SlotPropagator sp = new SlotPropagator();
+        Set<String> condensed = sp.condense(ms, false);
+
+        Assertions.assertTrue(condensed.isEmpty());
+        Assertions.assertNull(ms.getMappingTool());
+        Assertions.assertNull(ms.getMappings().get(0).getMappingTool());
+        Assertions.assertEquals("sample mapping tool", ms.getMappings().get(1).getMappingTool());
+    }
+
+    @Test
+    void testCondenseAlwaysReplacePolicyUponFailedCondensationForAllNullValues() {
+        MappingSet ms = getSampleSet();
+        ms.setMappingTool("another mapping tool");
+        for ( Mapping m : ms.getMappings() ) {
+            m.setMappingTool(null);
+        }
+
+        SlotPropagator sp = new SlotPropagator();
+        Set<String> condensed = sp.condense(ms, false);
+
+        Assertions.assertTrue(condensed.isEmpty());
+        Assertions.assertNull(ms.getMappingTool());
+        Assertions.assertNull(ms.getMappings().get(0).getMappingTool());
+    }
+
+    @Test
     void testCondenseListValue() {
         MappingSet ms = getSampleSet();
         for ( Mapping m : ms.getMappings() ) {
