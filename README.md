@@ -10,9 +10,10 @@ Ontology Mappings
 for the Java language – just a hobby, won’t be big and professional like
 `sssom-py`.
 
-The project provides both a Java library that can be used to support
-the SSSOM standard in a Java application, and a pluggable command for
-the [ROBOT](http://robot.obolibrary.org/) ontology manipulation tool.
+The project provides a Java library that can be used to support the
+SSSOM standard in a Java application, a program to manipulate mapping
+sets from the command line, and a pluggable command for the
+[ROBOT](http://robot.obolibrary.org/) ontology manipulation tool.
 
 Features
 --------

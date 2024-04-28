@@ -1,3 +1,15 @@
+Changes in sssom-java-0.7.7
+---------------------------
+
+    * SSSOM/TSV writer:
+      * Align the format of floating numbers with SSSOM-Py.
+      * Remove propagated values from set-level metadata.
+    * xref-extract:
+      * Fill the subject_source field with the ontology IRI.
+      * Accept multiple spaces in the --map-prefix-to-predicate option.
+    * sssom-cli:
+      * New --update-from-ontology option.
+
 Changes in sssom-java-0.7.6
 ---------------------------
 
