@@ -407,14 +407,19 @@ public class TSVWriter {
                     quote = true;
                     break;
 
+                // Initial white space would not be preserved in plain style
+                case ' ':
+                    quote = true;
+                    break;
+
                 // Allowed as the first character if followed by a non-white space character
                 case ':':
                 case '?':
                 case '-':
                     if ( s.length() >= 2 ) {
                         int c2 = s.codePointAt(1);
-                        if ( c2 != 0xFEFF && c2 != '\n' && c2 != '\r' && c2 != ' ' && c2 != '\t' ) {
-                            quote = false;
+                        if ( c2 == 0xFEFF || c2 == '\n' || c2 == '\r' || c2 == ' ' || c2 == '\t' ) {
+                            quote = true;
                         }
                     } else {
                         quote = true;

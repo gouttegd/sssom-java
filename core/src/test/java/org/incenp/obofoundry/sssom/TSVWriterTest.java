@@ -190,13 +190,30 @@ public class TSVWriterTest {
     }
 
     /*
-     * Test that strings in the YAML metadata block are escaped.
+     * Test that strings in the YAML metadata block are escaped when needed.
      */
     @Test
     void testEscapingYAML() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
         ms.setMappingSetId("https://example.org/sets/test-escaping-yaml");
         ms.setMappingSetTitle("O2C set\twith\u00A0non-printable\u0080characters");
+        ArrayList<String> other = new ArrayList<String>();
+        other.add("> A value starting with an indicator");
+        other.add(": Initial colon followed by space");
+        other.add(":\tInitial colon followed by tab");
+        other.add(":Initial colon not followed by space");
+        other.add("? Initial question mark followed by space");
+        other.add("?Initial question mark not followed by space");
+        other.add("- Initial dash followed by space");
+        other.add("-Initial dash not followed by space");
+        other.add("Final colon:");
+        other.add("Final question mark?");
+        other.add("Final dash-");
+        other.add(" Initial space");
+        other.add("Trailing space ");
+        other.add("Internal : sequence");
+        other.add("Internal #sequence");
+        ms.setSeeAlso(other);
 
         assertWrittenAsExpected(ms, "test-escaping-yaml", null, null, null);
     }

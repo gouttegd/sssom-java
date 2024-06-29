@@ -4,5 +4,21 @@
 #mapping_set_id: https://example.org/sets/test-escaping-yaml
 #mapping_set_title: "O2C set\twith\_non-printable\x80characters"
 #license: https://creativecommons.org/licenses/by/4.0/
+#see_also:
+#  - "> A value starting with an indicator"
+#  - ": Initial colon followed by space"
+#  - ":\tInitial colon followed by tab"
+#  - :Initial colon not followed by space
+#  - "? Initial question mark followed by space"
+#  - ?Initial question mark not followed by space
+#  - "- Initial dash followed by space"
+#  - -Initial dash not followed by space
+#  - "Final colon:"
+#  - Final question mark?
+#  - Final dash-
+#  - " Initial space"
+#  - "Trailing space "
+#  - "Internal : sequence"
+#  - "Internal #sequence"
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
 ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration
