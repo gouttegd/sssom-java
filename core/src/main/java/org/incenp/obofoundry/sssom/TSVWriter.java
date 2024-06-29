@@ -311,7 +311,7 @@ public class TSVWriter {
             // The SSSOM specification says nothing on how to serialise dates, but LinkML
             // says “for xsd dates, datetimes, and times, AtomicValue must be a string
             // conforming to the relevant ISO type”. I assume this means ISO-8601.
-            sb.append(String.format("#%s: \"%s\"\n", slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
+            sb.append(String.format("#%s: %s\n", slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
             return null;
         }
 
@@ -361,86 +361,186 @@ public class TSVWriter {
         }
 
         /*
-         * Escape a string into YAML double-quotes.
-         * https://yaml.org/spec/1.2.2/#escaped-characters
+         * Maybe escape a string into YAML double-quotes.
+         *
+         * We try to always write strings in YAML plain (unquoted) style
+         * (https://yaml.org/spec/1.2.2/#733-plain-style), and fallback to double-quoted
+         * style (https://yaml.org/spec/1.2.2/#double-quoted-style) if:
+         *
+         * - the string is empty;
+         *
+         * - the string starts with a white space or a YAML indicator character;
+         *
+         * - the string ends with a white space;
+         *
+         * - the string contains a ": "or a " #" sequence;
+         *
+         * - the string contain any character that needs to be escaped.
          */
         private void escapeYAML(StringBuilder sb, String s) {
-            sb.append('"');
+            int start = sb.length();
+            boolean quote = false;
+
+            if ( s.isEmpty() ) {
+                quote = true;
+            } else {
+                // Check if first character is allowed in plain style
+                int c = s.codePointAt(0);
+                switch ( c ) {
+                // YAML indicator characters (https://yaml.org/spec/1.2.2/#rule-c-indicator)
+                case ',':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '#':
+                case '&':
+                case '*':
+                case '!':
+                case '|':
+                case '>':
+                case '\'':
+                case '"':
+                case '%':
+                case '@':
+                case '`':
+                    quote = true;
+                    break;
+
+                // Allowed as the first character if followed by a non-white space character
+                case ':':
+                case '?':
+                case '-':
+                    if ( s.length() >= 2 ) {
+                        int c2 = s.codePointAt(1);
+                        if ( c2 != 0xFEFF && c2 != '\n' && c2 != '\r' && c2 != ' ' && c2 != '\t' ) {
+                            quote = false;
+                        }
+                    } else {
+                        quote = true;
+                    }
+                    break;
+                }
+            }
+
             for ( int i = 0, n = s.length(); i < n; i++ ) {
                 int c = s.codePointAt(i);
                 switch ( c ) {
                 case 0x00: // Null
                     sb.append("\\0");
+                    quote = true;
                     break;
 
                 case 0x07: // Bell
                     sb.append("\\a");
+                    quote = true;
                     break;
 
                 case 0x08: // Backspace
                     sb.append("\\b");
+                    quote = true;
                     break;
 
                 case 0x09: // Horizontal tab
                     sb.append("\\t");
+                    quote = true;
                     break;
 
                 case 0x0A: // Line feed
                     sb.append("\\n");
+                    quote = true;
                     break;
 
                 case 0x0B: // Vertical tab
                     sb.append("\\v");
+                    quote = true;
                     break;
 
                 case 0x0C: // Form feed
                     sb.append("\\f");
+                    quote = true;
                     break;
 
                 case 0x0D: // Carriage return
                     sb.append("\\r");
+                    quote = true;
                     break;
 
                 case 0x1B: // Escape
                     sb.append("\\e");
+                    quote = true;
                     break;
 
                 case 0x22: // Double quote
                     sb.append("\\\"");
+                    quote = true;
                     break;
 
                 case 0x5C: // Backslash
                     sb.append("\\\\");
+                    quote = true;
                     break;
 
                 case 0x85: // Unicode next line
                     sb.append("\\N");
+                    quote = true;
                     break;
 
                 case 0xA0: // Non-breakable space
                     sb.append("\\_");
+                    quote = true;
                     break;
 
                 case 0x2028: // Unicode line separator
                     sb.append("\\L");
+                    quote = true;
                     break;
 
                 case 0x2029: // Unicode paragraph separator
                     sb.append("\\N");
+                    quote = true;
+                    break;
+
+                case ':': // Forbidden in plain style if at the end the string, or followed by spaces
+                    if ( i < n - 1 ) {
+                        if ( s.codePointAt(i + 1) == ' ' ) {
+                            quote = true;
+                        }
+                    } else {
+                        quote = true;
+                    }
+                    sb.append(':');
+                    break;
+
+                case ' ': // Forbidden in plain style if followed by '#' or at the end of the string
+                    if ( i < n - 1 ) {
+                        if ( s.codePointAt(i + 1) == '#' ) {
+                            quote = true;
+                        }
+                    } else {
+                        quote = true;
+                    }
+                    sb.append(' ');
                     break;
 
                 default:
                     if ( c <= 0x1F || (c >= 0x7F && c <= 0x9F) ) {
                         sb.append(String.format("\\x%02x", c));
+                        quote = true;
                     } else if ( (c >= 0xD800 && c <= 0xDFFF) || c == 0xFFFE || c == 0xFFFF ) {
                         sb.append(String.format("\\u%04x", c));
+                        quote = true;
                     } else {
                         sb.appendCodePoint(c);
                     }
                     break;
                 }
             }
-            sb.append('"');
+
+            if ( quote ) {
+                sb.insert(start, '"');
+                sb.append('"');
+            }
         }
     }
 
