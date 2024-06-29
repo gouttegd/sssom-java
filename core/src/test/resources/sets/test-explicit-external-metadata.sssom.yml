@@ -1,5 +1,5 @@
 curie_map:
-  NETENT: "https://example.net/entities/"
-  ORGENT: "https://example.org/entities/"
-mapping_set_id: "https://example.org/sets/test-explicit-external-metadata"
-license: "https://creativecommons.org/licenses/by/4.0/"
+  NETENT: https://example.net/entities/
+  ORGENT: https://example.org/entities/
+mapping_set_id: https://example.org/sets/test-explicit-external-metadata
+license: https://creativecommons.org/licenses/by/4.0/

@@ -1,7 +1,7 @@
 #curie_map:
-#  COMENT: "https://example.com/entities/"
-#  ORGA: "https://example.org/entities/A/"
-#mapping_set_id: "https://example.org/sets/test-sssomt-prefix-map"
-#license: "https://creativecommons.org/licenses/by/4.0/"
+#  COMENT: https://example.com/entities/
+#  ORGA: https://example.org/entities/A/
+#mapping_set_id: https://example.org/sets/test-sssomt-prefix-map
+#license: https://creativecommons.org/licenses/by/4.0/
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
 ORGA:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration

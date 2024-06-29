@@ -1,8 +1,8 @@
 #curie_map:
-#  COMENT: "https://example.com/entities/"
-#  ORGENT: "https://example.org/entities/"
-#mapping_set_id: "https://example.org/sets/test-missing-values"
-#license: "https://creativecommons.org/licenses/by/4.0/"
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/test-missing-values
+#license: https://creativecommons.org/licenses/by/4.0/
 subject_id	subject_label	predicate_id	predicate_modifier	object_id	object_label	mapping_justification	confidence
 ORGENT:0001		skos:closeMatch		COMENT:0011	alpha	semapv:ManualMappingCuration	
 ORGENT:0002		skos:closeMatch		COMENT:0012	beta	semapv:ManualMappingCuration	0.8

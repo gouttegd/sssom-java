@@ -1,13 +1,13 @@
 #curie_map:
-#  NETENT: "https://example.net/entities/"
-#  ORGENT: "https://example.org/entities/"
-#  ORGPID: "https://example.org/people/"
-#mapping_set_id: "https://example.org/sets/exo2n"
-#mapping_set_title: "O2N set"
+#  NETENT: https://example.net/entities/
+#  ORGENT: https://example.org/entities/
+#  ORGPID: https://example.org/people/
+#mapping_set_id: https://example.org/sets/exo2n
+#mapping_set_title: O2N set
 #creator_id:
-#  - "ORGPID:0000-0000-0001-1234"
-#  - "ORGPID:0000-0000-0001-5678"
-#license: "https://creativecommons.org/licenses/by/4.0/"
+#  - ORGPID:0000-0000-0001-1234
+#  - ORGPID:0000-0000-0001-5678
+#license: https://creativecommons.org/licenses/by/4.0/
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
 ORGENT:0001	alice	skos:closeMatch	NETENT:0111	alpha	semapv:ManualMappingCuration
 ORGENT:0002	bob	skos:closeMatch	NETENT:0112	bravo	semapv:ManualMappingCuration

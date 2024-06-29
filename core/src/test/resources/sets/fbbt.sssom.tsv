@@ -1,11 +1,11 @@
 #curie_map:
-#  CL: "http://purl.obolibrary.org/obo/CL_"
-#  FBbt: "http://purl.obolibrary.org/obo/FBbt_"
-#  UBERON: "http://purl.obolibrary.org/obo/UBERON_"
-#  WBbt: "http://purl.obolibrary.org/obo/WBbt_"
-#mapping_set_id: "https://example.org/sets/fbbt"
-#mapping_set_title: "Excerpts from FBbt mappings"
-#license: "https://creativecommons.org/licenses/by/4.0/"
+#  CL: http://purl.obolibrary.org/obo/CL_
+#  FBbt: http://purl.obolibrary.org/obo/FBbt_
+#  UBERON: http://purl.obolibrary.org/obo/UBERON_
+#  WBbt: http://purl.obolibrary.org/obo/WBbt_
+#mapping_set_id: https://example.org/sets/fbbt
+#mapping_set_title: Excerpts from FBbt mappings
+#license: https://creativecommons.org/licenses/by/4.0/
 subject_id	subject_label	predicate_id	object_id	mapping_justification
 FBbt:00000001	organism	semapv:crossSpeciesExactMatch	UBERON:0000468	semapv:ManualMappingCuration
 FBbt:00000001	organism	semapv:crossSpeciesExactMatch	WBbt:0007833	semapv:ManualMappingCuration

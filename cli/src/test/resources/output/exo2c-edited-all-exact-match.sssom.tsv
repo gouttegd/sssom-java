@@ -1,15 +1,15 @@
 #curie_map:
-#  COMENT: "https://example.com/entities/"
-#  COMPID: "https://example.com/people/"
-#  ORGENT: "https://example.org/entities/"
-#  ORGPID: "https://example.org/people/"
-#mapping_set_id: "https://example.org/sets/exo2c"
-#mapping_set_title: "O2C set"
+#  COMENT: https://example.com/entities/
+#  COMPID: https://example.com/people/
+#  ORGENT: https://example.org/entities/
+#  ORGPID: https://example.org/people/
+#mapping_set_id: https://example.org/sets/exo2c
+#mapping_set_title: O2C set
 #creator_id:
-#  - "ORGPID:0000-0000-0001-1234"
-#  - "COMPID:0000-0000-0002-5678"
-#license: "https://creativecommons.org/licenses/by/4.0/"
-#publication_date: "2023-09-13"
+#  - ORGPID:0000-0000-0001-1234
+#  - COMPID:0000-0000-0002-5678
+#license: https://creativecommons.org/licenses/by/4.0/
+#publication_date: 2023-09-13
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
 ORGENT:0001	alice	skos:exactMatch	COMENT:0011	alpha	semapv:ManualMappingCuration
 ORGENT:0002	bob	skos:exactMatch	COMENT:0012	beta	semapv:ManualMappingCuration

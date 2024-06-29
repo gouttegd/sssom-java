@@ -1,17 +1,17 @@
 #curie_map:
-#  COMENT: "https://example.com/entities/"
-#  COMPID: "https://example.com/people/"
-#  ORGENT: "https://example.org/entities/"
-#  ORGPID: "https://example.org/people/"
-#mapping_set_id: "https://example.org/sets/exo2c-with-propagatable-slots"
-#mapping_set_title: "O2C set with propagatable slots"
+#  COMENT: https://example.com/entities/
+#  COMPID: https://example.com/people/
+#  ORGENT: https://example.org/entities/
+#  ORGPID: https://example.org/people/
+#mapping_set_id: https://example.org/sets/exo2c-with-propagatable-slots
+#mapping_set_title: O2C set with propagatable slots
 #creator_id:
-#  - "ORGPID:0000-0000-0001-1234"
-#  - "COMPID:0000-0000-0002-5678"
-#license: "https://creativecommons.org/licenses/by/4.0/"
-#mapping_provider: "https://example.org/provider"
-#mapping_tool: "foo mapper"
-#publication_date: "2023-09-13"
+#  - ORGPID:0000-0000-0001-1234
+#  - COMPID:0000-0000-0002-5678
+#license: https://creativecommons.org/licenses/by/4.0/
+#mapping_provider: https://example.org/provider
+#mapping_tool: foo mapper
+#publication_date: 2023-09-13
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	mapping_tool
 ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	
 ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration	bar mapper

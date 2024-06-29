@@ -1,20 +1,20 @@
 #curie_map:
-#  COMENT: "https://example.com/entities/"
-#  COMPID: "https://example.com/people/"
-#  NETENT: "https://example.net/entities/"
-#  NETPID: "https://example.net/people/"
-#  ORGENT: "https://example.org/entities/"
-#  ORGPID: "https://example.org/people/"
-#mapping_set_id: "https://example.org/sets/exo2c"
-#mapping_set_title: "O2C set"
+#  COMENT: https://example.com/entities/
+#  COMPID: https://example.com/people/
+#  NETENT: https://example.net/entities/
+#  NETPID: https://example.net/people/
+#  ORGENT: https://example.org/entities/
+#  ORGPID: https://example.org/people/
+#mapping_set_id: https://example.org/sets/exo2c
+#mapping_set_title: O2C set
 #creator_id:
-#  - "ORGPID:0000-0000-0001-1234"
-#  - "COMPID:0000-0000-0002-5678"
-#  - "ORGPID:0000-0000-0001-5678"
-#  - "COMPID:0000-0000-0002-1234"
-#  - "NETPID:0000-0000-0003-1234"
-#license: "https://creativecommons.org/licenses/by/4.0/"
-#publication_date: "2023-09-13"
+#  - ORGPID:0000-0000-0001-1234
+#  - COMPID:0000-0000-0002-5678
+#  - ORGPID:0000-0000-0001-5678
+#  - COMPID:0000-0000-0002-1234
+#  - NETPID:0000-0000-0003-1234
+#license: https://creativecommons.org/licenses/by/4.0/
+#publication_date: 2023-09-13
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	mapping_cardinality
 COMENT:0011	alpha	skos:exactMatch	NETENT:0111	alpha	semapv:ManualMappingCuration	n:1
 COMENT:0012	beta	skos:closeMatch	NETENT:0112	bravo	semapv:ManualMappingCuration	n:1
