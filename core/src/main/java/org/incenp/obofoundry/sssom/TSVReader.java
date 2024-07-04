@@ -142,6 +142,33 @@ public class TSVReader {
     }
 
     /**
+     * Creates a new instance that will read data from the specified reader. Note
+     * that when reading from a reader object, the metadata either needs to be
+     * embedded with the TSV or an explicit reader for the metadata must be
+     * specified; the reader cannot automatically locate an external metadata file.
+     * 
+     * @param tsvReader  The main reader, containing the TSV data. May be
+     *                   {@code null} if one only wants to read the metadata (in
+     *                   which case the second argument cannot also be
+     *                   {@code null}).
+     * @param metaReader The accompagnying metadata reader. If {@code null}, the
+     *                   metadata must be embedded with the TSV section.
+     */
+    public TSVReader(Reader tsvReader, Reader metaReader) {
+        if ( tsvReader == null && metaReader == null ) {
+            throw new IllegalArgumentException("tsvReader and metaReader cannot both be null");
+        }
+        if ( tsvReader != null ) {
+            this.tsvReader = new BufferedReader(tsvReader);
+        }
+        this.metaReader = metaReader;
+    }
+
+    public TSVReader(Reader tsvReader) {
+        this(tsvReader, null);
+    }
+
+    /**
      * Creates a new instance that will read data from the specified files.
      * 
      * @param tsvFile  The name of the main TSV file. May be {@code null} if one
