@@ -213,6 +213,9 @@ public class TSVWriterTest {
         other.add("Trailing space ");
         other.add("Internal : sequence");
         other.add("Internal #sequence");
+        other.add("\"Initial\" quotes");
+        other.add("Internal \"quotes\"");
+        other.add("> Internal \"quotes\"");
         ms.setSeeAlso(other);
 
         assertWrittenAsExpected(ms, "test-escaping-yaml", null, null, null);

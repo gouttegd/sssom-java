@@ -20,5 +20,8 @@
 #  - "Trailing space "
 #  - "Internal : sequence"
 #  - "Internal #sequence"
+#  - "\"Initial\" quotes"
+#  - Internal "quotes"
+#  - "> Internal \"quotes\""
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
 ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration

@@ -380,6 +380,7 @@ public class TSVWriter {
         private void escapeYAML(StringBuilder sb, String s) {
             int start = sb.length();
             boolean quote = false;
+            ArrayList<Integer> delayedEscapes = new ArrayList<Integer>();
 
             if ( s.isEmpty() ) {
                 quote = true;
@@ -476,9 +477,10 @@ public class TSVWriter {
                     quote = true;
                     break;
 
-                case 0x22: // Double quote
-                    sb.append("\\\"");
-                    quote = true;
+                case 0x22: // Double quote (only needs escaping if we are quoting, but does not, in itself,
+                           // trigger quoting)
+                    sb.append('"');
+                    delayedEscapes.add(i);
                     break;
 
                 case 0x5C: // Backslash
@@ -543,7 +545,10 @@ public class TSVWriter {
             }
 
             if ( quote ) {
-                sb.insert(start, '"');
+                sb.insert(start++, '"');
+                for ( Integer i : delayedEscapes ) {
+                    sb.insert(start++ + i.intValue(), '\\');
+                }
                 sb.append('"');
             }
         }
