@@ -137,6 +137,10 @@ public class SlotPropagator {
      * @return A set containing the names of slots that were effectively propagated.
      */
     public Set<String> propagate(MappingSet mappingSet, boolean preserve) {
+        if ( policy == PropagationPolicy.Disabled ) {
+            return new HashSet<String>();
+        }
+
         // We must first determine which of the propagatable slots have values at the
         // set level.
         Map<String, Object> values = new HashMap<String, Object>();
@@ -204,6 +208,10 @@ public class SlotPropagator {
      *         moved (or copied) to the set level.
      */
     public Set<String> condense(MappingSet mappingSet, boolean preserve) {
+        if ( policy == PropagationPolicy.Disabled ) {
+            return new HashSet<String>();
+        }
+
         // Iterate over all the mappings to collect all the values in the condensable
         // slots.
         Map<String, Set<Object>> values = new HashMap<String, Set<Object>>();

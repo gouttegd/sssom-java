@@ -69,6 +69,7 @@ public class TSVReader {
     private BufferedReader tsvReader;
     private Reader metaReader;
     private YAMLConverter converter = new YAMLConverter();
+    private PropagationPolicy propagationPolicy = PropagationPolicy.NeverReplace;
 
     /**
      * Creates a new instance that will read data from the specified files.
@@ -207,6 +208,16 @@ public class TSVReader {
     }
 
     /**
+     * Enables or disables the propagation of "propagatable slots".
+     * 
+     * @param enabled {@code False} to disable propagation; it is enabled by
+     *                default.
+     */
+    public void setPropagationEnabled(boolean enabled) {
+        propagationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
+    }
+
+    /**
      * Reads a mapping set from the source file(s).
      * 
      * @return A complete SSSOM mapping set, unless no TSV file was provided to the
@@ -283,7 +294,7 @@ public class TSVReader {
             converter.postMappings(ms);
 
             // Propagate values from set-level to mapping-level
-            new SlotPropagator(PropagationPolicy.NeverReplace).propagate(ms);
+            new SlotPropagator(propagationPolicy).propagate(ms);
         } else {
             ms.setMappings(new ArrayList<Mapping>());
             converter.postMappings(ms);

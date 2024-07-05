@@ -268,6 +268,20 @@ public class TSVReaderTest {
         Assertions.assertEquals("bar mapper", ms.getMappings().get(1).getMappingTool());
     }
 
+    @Test
+    void testDisablePropagation() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-propagatable-slots.sssom.tsv");
+        reader.setPropagationEnabled(false);
+        MappingSet ms = reader.read();
+
+        // "provider" is progatable but should not be propagated, so it should still be
+        // present at the set-level
+        Assertions.assertEquals("https://example.org/provider", ms.getMappingProvider());
+
+        // And it should be absent from the mappings
+        Assertions.assertNull(ms.getMappings().get(0).getMappingProvider());
+    }
+
     /*
      * Obsolete fields should be translated to their standard equivalents.
      */

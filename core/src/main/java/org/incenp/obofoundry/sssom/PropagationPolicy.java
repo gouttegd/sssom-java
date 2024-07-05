@@ -40,5 +40,10 @@ public enum PropagationPolicy {
      * If any of the destination objects already has a value for the slot being
      * propagated, do not propagate anything.
      */
-    NeverReplace
+    NeverReplace,
+
+    /**
+     * Never propagate values between mapping set level and individual mappings.
+     */
+    Disabled
 }

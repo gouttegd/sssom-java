@@ -72,6 +72,7 @@ public class TSVWriter {
     private Set<String> usedPrefixes = new HashSet<String>();
     private boolean customMap = false;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
+    private PropagationPolicy condensationPolicy = PropagationPolicy.NeverReplace;
     private ExtensionSlotManager extensionManager;
 
     /**
@@ -130,6 +131,16 @@ public class TSVWriter {
     }
 
     /**
+     * Enables or disables the condensation of "propagatable slots".
+     * 
+     * @param enabled {@code False} to disable condensation; it is enabled by
+     *                default.
+     */
+    public void setCondensationEnabled(boolean enabled) {
+        condensationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
+    }
+
+    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
@@ -165,7 +176,7 @@ public class TSVWriter {
         }
 
         // Condense the set
-        Set<String> condensedSlots = new SlotPropagator(PropagationPolicy.NeverReplace).condense(mappingSet, true);
+        Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
 
         // Write the metadata
         // FIXME: Support writing them in a separate file

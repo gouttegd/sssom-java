@@ -117,6 +117,28 @@ public class TSVWriterTest {
     }
 
     /*
+     * Check that we can disable condensation of "propagatable" slots
+     */
+    @Test
+    void testDisabledSlotCondensation() throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/sets/exo2c-with-propagatable-slots.sssom.tsv");
+        TSVReader reader = new TSVReader(source);
+        MappingSet ms = reader.read();
+
+        File written = new File("src/test/resources/output/test-disabled-propagation.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.setCondensationEnabled(false);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/output/test-disabled-propagation.sssom.tsv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
+    }
+
+    /*
      * Check that extra slots are either not written, written in "declared" form, or
      * written as if they were standard slots, depending on the ExtraMetadataPolicy.
      */

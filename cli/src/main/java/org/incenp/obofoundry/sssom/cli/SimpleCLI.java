@@ -90,6 +90,9 @@ public class SimpleCLI implements Runnable {
                 paramLabel = "POLICY",
                 description = "Whether to accept non-standard metadata in the input set(s). Allowed values: ${COMPLETION-CANDIDATES}.")
         ExtraMetadataPolicy acceptExtraMetadata = ExtraMetadataPolicy.NONE;
+
+        @Option(names = { "--no-propagation" }, description = "Disable propagation of propagatable slots.")
+        boolean disablePropagation;
     }
 
     @ArgGroup(validate = false, heading = "%nOutput options:%n")
@@ -124,6 +127,9 @@ public class SimpleCLI implements Runnable {
                 paramLabel = "POLICY",
                 description = "How to write non-standard metadata in the output set. Allowed values: ${COMPLETION-CANDIDATES}.")
         ExtraMetadataPolicy writeExtraMetadata = ExtraMetadataPolicy.DEFINED;
+
+        @Option(names = { "--no-condensation" }, description = "Disable condensation of propagatable slots.")
+        boolean disableCondensation;
     }
 
     enum OutputMapSource {
@@ -230,6 +236,7 @@ public class SimpleCLI implements Runnable {
                 boolean stdin = tsvFile.equals("-");
                 TSVReader reader = stdin ? new TSVReader(System.in) : new TSVReader(tsvFile, metaFile);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
+                reader.setPropagationEnabled(!inputOpts.disablePropagation);
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
@@ -375,6 +382,7 @@ public class SimpleCLI implements Runnable {
         try {
             TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputOpts.file);
             writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
+            writer.setCondensationEnabled(!outputOpts.disableCondensation);
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
@@ -408,6 +416,7 @@ public class SimpleCLI implements Runnable {
             try {
                 TSVWriter writer = new TSVWriter(output);
                 writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
+                writer.setCondensationEnabled(!outputOpts.disableCondensation);
                 writer.write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());

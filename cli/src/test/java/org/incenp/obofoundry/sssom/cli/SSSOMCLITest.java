@@ -203,6 +203,23 @@ public class SSSOMCLITest {
     }
 
     /*
+     * Playing with propagation/condensation
+     */
+
+    @Test
+    void testDisablingPropagation() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c-with-propagatable-slots.sssom.tsv" },
+                "test-disabled-propagation.sssom.tsv",
+                new String[] { "--no-propagation" });
+    }
+
+    @Test
+    void testDisablingCondensation() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c-with-propagatable-slots.sssom.tsv" },
+                "test-disabled-condensation.sssom.tsv", new String[] { "--no-condensation" });
+    }
+
+    /*
      * SSSOM/Transform tests
      */
 
