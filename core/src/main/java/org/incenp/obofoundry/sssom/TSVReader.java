@@ -286,6 +286,7 @@ public class TSVReader {
             new SlotPropagator(PropagationPolicy.NeverReplace).propagate(ms);
         } else {
             ms.setMappings(new ArrayList<Mapping>());
+            converter.postMappings(ms);
         }
 
         if ( converter.getPrefixManager().getUnresolvedPrefixNames().size() > 0 ) {
