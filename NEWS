@@ -1,3 +1,17 @@
+Changes in sssom-java-0.7.8
+---------------------------
+
+    * SSSOM/TSV writer
+      * Use YAML plain-style for scalar values whenever possible.
+      * Fix incorrect handling of missing extension values.
+      * Allow disabling condensation of propagatable slots.
+    * SSSOM/TSV parser
+      * Fix parsing of unquoted scalar values.
+      * Allow disabling propagation of propagatable slots.
+    * sssom-cli:
+      * New options --no-condensation and --no-propagation.
+
+
 Changes in sssom-java-0.7.7
 ---------------------------
 
