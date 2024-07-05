@@ -424,7 +424,9 @@ public class YAMLConverter {
             ExtensionValue parsedValue = null;
             switch ( definition.getEffectiveType() ) {
             case STRING:
-                parsedValue = new ExtensionValue(stringify(rawValue, slotName));
+                if ( rawValue != null ) {
+                    parsedValue = new ExtensionValue(stringify(rawValue, slotName));
+                }
                 break;
 
             case INTEGER:

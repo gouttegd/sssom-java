@@ -28,8 +28,8 @@
 #ext_foo: Foo A
 subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	ext_undeclared_baz	ext_bar	ext_baz
 ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	BAZ A	111	ORGENT:BAZ_0001
-ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration	Baz B	112	ORGENT:BAZ_0002
-ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	semapv:ManualMappingCuration	Baz C	114	ORGENT:BAZ_0003
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration		112	ORGENT:BAZ_0002
+ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	semapv:ManualMappingCuration	Baz C	114	
 ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	semapv:ManualMappingCuration	Baz E	115	ORGENT:BAZ_0005
 ORGENT:0006	fanny	skos:closeMatch	COMENT:0016	zeta	semapv:ManualMappingCuration	Baz F	116	ORGENT:BAZ_0006
 ORGENT:0007	gavin	skos:exactMatch	COMENT:0013	gamma	semapv:ManualMappingCuration	Baz G	117	ORGENT:BAZ_0007

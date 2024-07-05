@@ -296,12 +296,14 @@ public class ExtensionSlotManager {
         if ( extensions != null ) {
             for ( String property : extensions.keySet() ) {
                 ExtensionValue value = extensions.get(property);
-                if ( value.isIdentifier() ) {
-                    usedPrefixes.add(prefixManager.getPrefixName(value.asString()));
-                }
-                typesByProperty.computeIfAbsent(property, k -> new HashSet<ValueType>()).add(value.getType());
-                if ( mappingLevel ) {
-                    mappingLevelProperties.add(property);
+                if ( value != null ) {
+                    if ( value.isIdentifier() ) {
+                        usedPrefixes.add(prefixManager.getPrefixName(value.asString()));
+                    }
+                    typesByProperty.computeIfAbsent(property, k -> new HashSet<ValueType>()).add(value.getType());
+                    if ( mappingLevel ) {
+                        mappingLevelProperties.add(property);
+                    }
                 }
             }
         }
