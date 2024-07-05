@@ -270,36 +270,66 @@ public class YAMLConverter {
     }
 
     /*
+     * Make sure the given object is a String. If it is a YAML collection instead
+     * (list or dictionary), we throw a SSSOMFormatException. `name` is the name of
+     * the slot we are currently converting (will be used in the error message).
+     */
+    private String stringify(Object o, String name) throws SSSOMFormatException {
+        if ( o == null ) {
+            return null;
+        } else if ( String.class.isInstance(o) ) {
+            return String.class.cast(o);
+        } else if ( !List.class.isInstance(o) && !Map.class.isInstance(o) ) {
+            return o.toString();
+        } else {
+            onTypingError(name);
+            return null;
+        }
+    }
+
+    /*
      * Assigns a value to a SSSOM metadata slot.
      */
     private <T> void setSlotValue(Slot<T> slot, T object, Object rawValue) throws SSSOMFormatException {
+        if ( rawValue == null ) {
+            slot.setValue(object, rawValue);
+            return;
+        }
+
         Class<?> type = slot.getType();
-        if ( type == String.class && String.class.isInstance(rawValue) ) {
-            String value = String.class.cast(rawValue);
+        if ( type == String.class ) {
+            String value = stringify(rawValue, slot.getName());
             if ( slot.isEntityReference() ) {
                 value = prefixManager.expandIdentifier(value);
             }
             slot.setValue(object, value);
-        } else if ( type == List.class && isListOf(rawValue, String.class) ) {
-            @SuppressWarnings("unchecked")
-            List<String> value = List.class.cast(rawValue);
+        } else if ( type == List.class ) {
+            List<String> value = new ArrayList<String>();
+            if ( List.class.isInstance(rawValue) ) {
+                @SuppressWarnings("unchecked")
+                List<Object> rawList = List.class.cast(rawValue);
+                for ( Object rawItem : rawList ) {
+                    value.add(stringify(rawItem, slot.getName()));
+                }
+            } else if ( !Map.class.isInstance(rawValue) ) {
+                /*
+                 * The TSV serialisation format stores list values as a single string, from
+                 * which list values must be extracted by splitting the string around '|'
+                 * characters.
+                 * 
+                 * This has the side effect of allowing list-valued slots to be (mis)used as if
+                 * they were single-valued, which is strictly speaking but happens in the wild
+                 * (including in the examples shown in the SSSOM documentation!).
+                 */
+                for ( String item : rawValue.toString().split("\\|") ) {
+                    value.add(item);
+                }
+            } else {
+                onTypingError(slot.getName());
+            }
+
             if ( slot.isEntityReference() ) {
                 prefixManager.expandIdentifiers(value, true);
-            }
-            slot.setValue(object, value);
-        } else if ( type == List.class && String.class.isInstance(rawValue) ) {
-            /*
-             * The TSV serialisation format stores list values as a single string, from
-             * which list values must be extracted by splitting the string around '|'
-             * characters.
-             * 
-             * This has the side effect of allowing list-valued slots to be (mis)used as if
-             * they were single-valued, which is strictly speaking invalid but happens in
-             * the wild (including in the examples shown in the SSSOM documentation!).
-             */
-            List<String> value = new ArrayList<String>();
-            for ( String item : String.class.cast(rawValue).split("\\|") ) {
-                value.add(slot.isEntityReference() ? prefixManager.expandIdentifier(item) : item);
             }
             slot.setValue(object, value);
         } else if ( type == Map.class && isMapOf(rawValue, String.class) ) {
@@ -339,8 +369,6 @@ public class YAMLConverter {
             } else {
                 onTypingError(slot.getName());
             }
-        } else if ( rawValue == null ) {
-            slot.setValue(object, null);
         } else {
             onTypingError(slot.getName());
         }
@@ -393,65 +421,91 @@ public class YAMLConverter {
         // we'll get an auto-generated definition.
         ExtensionDefinition definition = extensionManager.getDefinitionForSlot(slotName);
         if ( definition != null ) {
-            if ( !String.class.isInstance(rawValue) ) {
-                onTypingError(slotName);
-            }
-            String value = String.class.cast(rawValue);
-
             ExtensionValue parsedValue = null;
             switch ( definition.getEffectiveType() ) {
             case STRING:
-                parsedValue = new ExtensionValue(value);
+                parsedValue = new ExtensionValue(stringify(rawValue, slotName));
                 break;
 
             case INTEGER:
-                try {
-                    parsedValue = new ExtensionValue(Integer.parseInt(value));
-                } catch ( NumberFormatException nfe ) {
-                    onTypingError(slotName, nfe);
+                if ( Integer.class.isInstance(rawValue) ) {
+                    parsedValue = new ExtensionValue(Integer.class.cast(rawValue).intValue());
+                } else if ( String.class.isInstance(rawValue) ) {
+                    try {
+                        parsedValue = new ExtensionValue(Integer.parseInt(String.class.cast(rawValue)));
+                    } catch ( NumberFormatException nfe ) {
+                        onTypingError(slotName, nfe);
+                    }
+                } else if ( rawValue != null ) {
+                    onTypingError(slotName);
                 }
                 break;
 
             case DOUBLE:
-                try {
-                    parsedValue = new ExtensionValue(Double.parseDouble(value));
-                } catch ( NumberFormatException nfe ) {
-                    onTypingError(slotName, nfe);
+                if ( Double.class.isInstance(rawValue) ) {
+                    parsedValue = new ExtensionValue(Double.class.cast(rawValue).doubleValue());
+                } else if ( String.class.isInstance(rawValue) ) {
+                    try {
+                        parsedValue = new ExtensionValue(Double.parseDouble(String.class.cast(rawValue)));
+                    } catch ( NumberFormatException nfe ) {
+                        onTypingError(slotName, nfe);
+                    }
+                } else if ( rawValue != null ) {
+                    onTypingError(slotName);
                 }
                 break;
 
             case BOOLEAN:
-                if ( value.equals("true") ) {
-                    parsedValue = new ExtensionValue(true);
-                } else if ( value.equals("false") ) {
-                    parsedValue = new ExtensionValue(false);
-                } else {
+                if ( Boolean.class.isInstance(rawValue) ) {
+                    parsedValue = new ExtensionValue(Boolean.class.cast(rawValue).booleanValue());
+                } else if ( String.class.isInstance(rawValue) ) {
+                    String value = String.class.cast(rawValue);
+                    if ( value.equals("true") ) {
+                        parsedValue = new ExtensionValue(true);
+                    } else if ( value.equals("false") ) {
+                        parsedValue = new ExtensionValue(false);
+                    } else {
+                        onTypingError(slotName);
+                    }
+                } else if ( rawValue != null ) {
                     onTypingError(slotName);
                 }
                 break;
 
             case DATE:
-                try {
-                    parsedValue = new ExtensionValue(LocalDate.parse(value));
-                } catch ( DateTimeParseException dtpe ) {
-                    onTypingError(slotName, dtpe);
+                if ( String.class.isInstance(rawValue) ) {
+                    try {
+                        parsedValue = new ExtensionValue(LocalDate.parse(String.class.cast(rawValue)));
+                    } catch ( DateTimeParseException dtpe ) {
+                        onTypingError(slotName, dtpe);
+                    }
+                } else if ( rawValue != null ) {
+                    onTypingError(slotName);
                 }
                 break;
 
             case DATETIME:
-                try {
-                    parsedValue = new ExtensionValue(ZonedDateTime.parse(value));
-                } catch ( DateTimeParseException dtpe ) {
-                    onTypingError(slotName, dtpe);
+                if ( String.class.isInstance(rawValue) ) {
+                    try {
+                        parsedValue = new ExtensionValue(ZonedDateTime.parse(String.class.cast(rawValue)));
+                    } catch ( DateTimeParseException dtpe ) {
+                        onTypingError(slotName, dtpe);
+                    }
+                } else if ( rawValue != null ) {
+                    onTypingError(slotName);
                 }
                 break;
 
             case IDENTIFIER:
-                parsedValue = new ExtensionValue(prefixManager.expandIdentifier(value), true);
+                if ( String.class.isInstance(rawValue) ) {
+                    parsedValue = new ExtensionValue(prefixManager.expandIdentifier(String.class.cast(rawValue)), true);
+                } else if ( rawValue != null ) {
+                    onTypingError(slotName);
+                }
                 break;
 
             case OTHER:
-                parsedValue = new ExtensionValue((Object) value);
+                parsedValue = new ExtensionValue(rawValue);
                 break;
             }
 

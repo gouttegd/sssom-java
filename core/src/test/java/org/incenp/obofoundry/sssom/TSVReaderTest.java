@@ -20,7 +20,10 @@ package org.incenp.obofoundry.sssom;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -437,6 +440,50 @@ public class TSVReaderTest {
         Assertions.assertEquals("daphne", ms.getMappings().get(2).getSubjectLabel());
     }
 
+    @Test
+    void testStringsAreCorrectlyTyped() throws IOException, SSSOMFormatException {
+        String[] correctValues = { "123", "123.456", "2024-01-01", "true" };
+        for ( String value : correctValues ) {
+            String scalarTest = "comment: " + value;
+            Assertions.assertEquals(value, parseMetadataString(scalarTest, false).getComment());
+
+            String listTest = "see_also: \n  - " + value;
+            Assertions.assertEquals(value, parseMetadataString(listTest, false).getSeeAlso().get(0));
+        }
+
+        String[] invalidValues = { "[ list ]", "{ key: value }", "\n - list", "\n key: value" };
+        for ( String value : invalidValues ) {
+            String scalarTest = "comment: " + value;
+            Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString(scalarTest, false),
+                    "typing error when parsing 'comment'");
+
+            String listTest = "see_also:\n  - " + value;
+            Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString(listTest, false),
+                    "typing error when parsing 'see_also'");
+        }
+    }
+
+    @Test
+    void testDatesAreCorrectlyTyped() throws IOException, SSSOMFormatException {
+        Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString("mapping_date: 123", false),
+                "Typing error when parsing 'mapping_date'");
+    }
+
+    @Test
+    void testExtensionValuesAreCorrectlyTyped() throws IOException, SSSOMFormatException {
+        Assertions.assertEquals("123", parseExtensionValue("123", "xsd:string").getValue());
+        Assertions.assertEquals("123", parseExtensionValue("\"123\"", "xsd:string").getValue());
+        Assertions.assertEquals(123, parseExtensionValue("123", "xsd:integer").getValue());
+        Assertions.assertEquals(123, parseExtensionValue("\"123\"", "xsd:integer").getValue());
+        Assertions.assertEquals(123.456, parseExtensionValue("123.456", "xsd:double").getValue());
+        Assertions.assertEquals(123.456, parseExtensionValue("\"123.456\"", "xsd:double").getValue());
+        Assertions.assertEquals(true, parseExtensionValue("true", "xsd:boolean").getValue());
+        Assertions.assertEquals(true, parseExtensionValue("\"true\"", "xsd:boolean").getValue());
+        Assertions.assertEquals(LocalDate.of(2024, 1, 1), parseExtensionValue("2024-01-01", "xsd:date").getValue());
+        Assertions.assertEquals(ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.of("Z")),
+                parseExtensionValue("2024-01-01T12:00:00Z", "xsd:datetime").getValue());
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());
@@ -447,5 +494,23 @@ public class TSVReaderTest {
     private void compare(ExtensionValue expected, ExtensionValue actual) {
         Assertions.assertEquals(expected.getType(), actual.getType());
         Assertions.assertEquals(expected.getValue(), actual.getValue());
+    }
+
+    private MappingSet parseMetadataString(String test, boolean with_extensions)
+            throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader(null, new StringReader(test));
+        if ( with_extensions ) {
+            reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        }
+        return reader.read();
+    }
+
+    private ExtensionValue parseExtensionValue(String value, String typeHint) throws SSSOMFormatException, IOException {
+        String test = String.format(
+                "extension: %s\nextension_definitions:\n  - slot_name: extension\n    property: test\n    type_hint: %s",
+                value, typeHint);
+        TSVReader reader = new TSVReader(null, new StringReader(test));
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
+        return reader.read().getExtensions().get("test");
     }
 }
