@@ -44,6 +44,30 @@ public class TSVWriterTest {
         assertWrittenAsExpected(ms, "exo2c-minimal", null, null, null);
     }
 
+    @Test
+    void testExternalMetadata() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+
+        File expectedTsvFile = new File("src/test/resources/output/test-external-mode.sssom.tsv");
+        File writtenTsvFile = new File(expectedTsvFile.getPath() + ".out");
+        File expectedMetaFile = new File("src/test/resources/output/test-external-mode.sssom.yml");
+        File writtenMetaFile = new File(expectedMetaFile.getPath() + ".out");
+
+        TSVWriter writer = new TSVWriter(writtenTsvFile, writtenMetaFile);
+        writer.write(ms);
+
+        boolean tsvSame = FileUtils.contentEquals(expectedTsvFile, writtenTsvFile);
+        boolean metaSame = FileUtils.contentEquals(expectedMetaFile, expectedMetaFile);
+        Assertions.assertTrue(tsvSame && metaSame);
+
+        if ( tsvSame ) {
+            writtenTsvFile.delete();
+        }
+        if ( metaSame ) {
+            writtenMetaFile.delete();
+        }
+    }
+
     /*
      * Basic round-trip test. We read a small SSSOM file (in "canonical" format,
      * with proper ordering), write it out, and check it comes out identical to the

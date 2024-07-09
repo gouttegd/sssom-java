@@ -67,7 +67,7 @@ public class TSVWriter {
 
     private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
 
-    private BufferedWriter writer;
+    private BufferedWriter tsvWriter, metaWriter;
     private PrefixManager prefixManager = new PrefixManager();
     private Set<String> usedPrefixes = new HashSet<String>();
     private boolean customMap = false;
@@ -76,27 +76,77 @@ public class TSVWriter {
     private ExtensionSlotManager extensionManager;
 
     /**
-     * Creates a new instance that will write data to the specified file.
+     * Creates a new instance that will write data to the specified files.
+     * 
+     * @param tsvFile  The file to write the TSV section to.
+     * @param metaFile The file to write the metadata block to. If {@code null}, the
+     *                 metadata block will be embedded in the same file as the TSV
+     *                 section.
+     * @throws IOException If any of the files cannot be opened for any reason.
+     */
+    public TSVWriter(File tsvFile, File metaFile) throws IOException {
+        tsvWriter = new BufferedWriter(new FileWriter(tsvFile));
+        if ( metaFile != null ) {
+            metaWriter = new BufferedWriter(new FileWriter(metaFile));
+        }
+    }
+
+    /**
+     * Creates a new instance that will write data to the specified file in embedded
+     * mode (metadata block and TSV section in the same file).
      * 
      * @param file The file to write to.
      * @throws IOException If the file cannot be opened for any reason.
      */
     public TSVWriter(File file) throws IOException {
-        writer = new BufferedWriter(new FileWriter(file));
+        this(file, null);
     }
 
     /**
-     * Creates a new instance that will write data to the specified stream.
+     * Creates a new instance that will write data to the specified streams.
+     * 
+     * @param tsvStream  The stream to write the TSV section to.
+     * @param metaStream The stream to write the metadata block to. If {@code null},
+     *                   the metadata block will be embedded in the same stream as
+     *                   the TSV section.
+     */
+    public TSVWriter(OutputStream tsvStream, OutputStream metaStream) {
+        tsvWriter = new BufferedWriter(new OutputStreamWriter(tsvStream));
+        if ( metaStream != null ) {
+            metaWriter = new BufferedWriter(new OutputStreamWriter(metaStream));
+        }
+    }
+
+    /**
+     * Creates a new instance that will write data to the specified stream in
+     * embedded mode.
      * 
      * @param stream The stream to write to.
      */
     public TSVWriter(OutputStream stream) {
-        writer = new BufferedWriter(new OutputStreamWriter(stream));
+        this(stream, null);
+    }
+
+    /**
+     * Creates a new instance that will write data to files with the specified
+     * filenames.
+     * 
+     * @param tsvFilename  The name of the file to write the TSV section to.
+     * @param metaFilename The name of the file to write the metadata block to. If
+     *                     {@code null}, the metadata block will be embedded in the
+     *                     same file as the TSV section.
+     * @throws IOException If any of the files cannot be opened for any reason.
+     */
+    public TSVWriter(String tsvFilename, String metaFilename) throws IOException {
+        tsvWriter = new BufferedWriter(new FileWriter(new File(tsvFilename)));
+        if ( metaFilename != null ) {
+            metaWriter = new BufferedWriter(new FileWriter(new File(metaFilename)));
+        }
     }
 
     /**
      * Creates a new instance that will write data to a file with the specified
-     * filename.
+     * filename, in embedded mode.
      * 
      * @param filename The name of the file to write to.
      * @throws IOException If the file cannot be opened for any reason.
@@ -179,10 +229,14 @@ public class TSVWriter {
         Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
 
         // Write the metadata
-        // FIXME: Support writing them in a separate file
-        MappingSetSlotVisitor v = new MappingSetSlotVisitor();
+        MappingSetSlotVisitor v = new MappingSetSlotVisitor(metaWriter == null ? "#" : "");
         SlotHelper.getMappingSetHelper().visitSlots(mappingSet, v);
-        writer.append(v.getMetadataBlock());
+        if ( metaWriter != null ) {
+            metaWriter.append(v.getMetadataBlock());
+            metaWriter.close();
+        } else {
+            tsvWriter.append(v.getMetadataBlock());
+        }
 
         // Find the used slots
         SlotHelper<Mapping> helper = SlotHelper.getMappingHelper(true);
@@ -219,19 +273,19 @@ public class TSVWriter {
             headers.add("object_id");
             headers.add("mapping_justification");
         }
-        writer.append(String.join("\t", headers));
-        writer.append('\n');
+        tsvWriter.append(String.join("\t", headers));
+        tsvWriter.append('\n');
 
         // Write the individual mappings
         MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(extraSlots);
         mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
             List<String> values = helper.visitSlots(mapping, mappingVisitor, true);
-            writer.append(String.join("\t", values));
-            writer.append('\n');
+            tsvWriter.append(String.join("\t", values));
+            tsvWriter.append('\n');
         }
 
-        writer.close();
+        tsvWriter.close();
     }
 
     /*
@@ -241,10 +295,12 @@ public class TSVWriter {
     private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, Void> {
         StringBuilder sb = new StringBuilder();
         DecimalFormat floatFormatter;
+        String linePrefix;
 
-        MappingSetSlotVisitor() {
-            floatFormatter = new DecimalFormat("#.###");
+        MappingSetSlotVisitor(String linePrefix) {
+            floatFormatter = new DecimalFormat("#.##");
             floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
+            this.linePrefix = linePrefix;
         }
 
         /*
@@ -256,7 +312,7 @@ public class TSVWriter {
 
         @Override
         public Void visit(Slot<MappingSet> slot, MappingSet set, String value) {
-            sb.append('#');
+            sb.append(linePrefix);
             sb.append(slot.getName());
             sb.append(": ");
             escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
@@ -267,11 +323,12 @@ public class TSVWriter {
         @Override
         public Void visit(Slot<MappingSet> slot, MappingSet set, List<String> values) {
             if ( values.size() > 0 ) {
-                sb.append("#");
+                sb.append(linePrefix);
                 sb.append(slot.getName());
                 sb.append(":\n");
                 for ( String value : values ) {
-                    sb.append("#  - ");
+                    sb.append(linePrefix);
+                    sb.append("  - ");
                     escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
                     sb.append("\n");
                 }
@@ -294,13 +351,14 @@ public class TSVWriter {
             }
 
             if ( !values.isEmpty() ) {
-                sb.append("#");
+                sb.append(linePrefix);
                 sb.append(name);
                 sb.append(":\n");
                 List<String> keys = new ArrayList<String>(values.keySet());
                 keys.sort((s1, s2) -> s1.compareTo(s2));
                 for ( String key : keys ) {
-                    sb.append("#  ");
+                    sb.append(linePrefix);
+                    sb.append("  ");
                     sb.append(key);
                     sb.append(": ");
                     escapeYAML(sb, values.get(key));
@@ -322,7 +380,8 @@ public class TSVWriter {
             // The SSSOM specification says nothing on how to serialise dates, but LinkML
             // says “for xsd dates, datetimes, and times, AtomicValue must be a string
             // conforming to the relevant ISO type”. I assume this means ISO-8601.
-            sb.append(String.format("#%s: %s\n", slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
+            sb.append(
+                    String.format("%s%s: %s\n", linePrefix, slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
             return null;
         }
 
@@ -335,15 +394,20 @@ public class TSVWriter {
         @Override
         public Void visitExtensionDefinitions(MappingSet set, List<ExtensionDefinition> definitions) {
             if ( extraPolicy == ExtraMetadataPolicy.DEFINED && !definitions.isEmpty() ) {
-                sb.append("#extension_definitions:\n");
+                sb.append(linePrefix);
+                sb.append("extension_definitions:\n");
                 for ( ExtensionDefinition definition : definitions ) {
-                    sb.append("#  - slot_name: ");
+                    sb.append(linePrefix);
+                    sb.append("  - slot_name: ");
                     sb.append(definition.getSlotName());
-                    sb.append("\n#    property: ");
+                    sb.append('\n');
+                    sb.append(linePrefix);
+                    sb.append("    property: ");
                     escapeYAML(sb, prefixManager.shortenIdentifier(definition.getProperty()));
                     sb.append("\n");
                     if ( definition.getEffectiveType() != ValueType.STRING ) {
-                        sb.append("#    type_hint: ");
+                        sb.append(linePrefix);
+                        sb.append("    type_hint: ");
                         escapeYAML(sb, prefixManager.shortenIdentifier(definition.getTypeHint()));
                         sb.append("\n");
                     }
@@ -358,7 +422,7 @@ public class TSVWriter {
                 for ( ExtensionDefinition definition : extensionManager.getDefinitions(true, false) ) {
                     ExtensionValue value = extensions.get(definition.getProperty());
                     if ( value != null ) {
-                        sb.append("#");
+                        sb.append(linePrefix);
                         sb.append(definition.getSlotName());
                         sb.append(": ");
                         escapeYAML(sb, value.isIdentifier() ? prefixManager.shortenIdentifier(value.asString())

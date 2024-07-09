@@ -64,6 +64,14 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
   output. Use the <<<--output>>> option to specify an output file
   instead.
   
+  Also by default, the resulting mapping set is written in “embedded
+  mode”, with the metadata block in the same file as the TSV section.
+  Use the <<<--metadata-output>>> option to specify the name of a
+  separate file where the metadata block should be written instead. If
+  that option is used without the <<<--output>>> option, SSSOM-CLI will
+  write the TSV section to its standard output and the metadata block to
+  the file specified by <<<--metadata-output>>>.
+  
 ** Output prefix map
 
   The <<<--output-prefix-map>>> option allows to control which prefix

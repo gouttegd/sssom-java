@@ -121,6 +121,21 @@ public class SSSOMCLITest {
     }
 
     @Test
+    void testWriteExternalMetadata() throws IOException {
+        File expectedMetaFile = new File("src/test/resources/output/test-external-mode.sssom.yml");
+        File writtenMetaFile = new File(expectedMetaFile.getPath() + ".out");
+
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-external-mode.sssom.tsv",
+                new String[] { "--metadata-output", writtenMetaFile.getPath() });
+
+        boolean metaSame = FileUtils.contentEquals(expectedMetaFile, writtenMetaFile);
+        Assertions.assertTrue(metaSame);
+        if ( metaSame ) {
+            writtenMetaFile.delete();
+        }
+    }
+
+    @Test
     void testWritingOutCardinality() throws IOException {
         // We merge the three O2C, O2N, and C2N sets to have a range of cardinalities
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv", "exo2n.sssom.tsv", "exc2n.sssom.tsv" },

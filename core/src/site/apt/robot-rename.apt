@@ -25,7 +25,7 @@ ROBOT rename command
   will be considered.
   
   To explicitly specify another mapping predicate, use the
-  <<<-predicate>>> option. That option may be repeated as many times as
+  <<<--predicate>>> option. That option may be repeated as many times as
   desired to select mappings based on several predicates.
   
   To use all mappings regardless of their mapping predicate, use the

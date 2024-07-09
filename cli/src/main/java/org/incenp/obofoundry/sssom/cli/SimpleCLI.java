@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.cli;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -105,6 +106,11 @@ public class SimpleCLI implements Runnable {
                 defaultValue = "-")
         String file;
 
+        @Option(names = { "-O", "--metadata-output" },
+                paramLabel = "FILE",
+                description = "Write the metadata block to separate FILE.")
+        String metaFile;
+
         @Option(names = "--split",
                 paramLabel = "DIRECTORY",
                 description = "Split the set along subject and object prefix names and write the split sets in the specified directory.")
@@ -121,7 +127,7 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "-m", "--output-metadata" },
                 paramLabel = "META",
                 description = "Use metadata from specified file.")
-        String metadataFile;
+        String extraMetadataFile;
 
         @Option(names = "--write-extra-metadata",
                 paramLabel = "POLICY",
@@ -270,11 +276,11 @@ public class SimpleCLI implements Runnable {
             epm.canonicalise(ms);
         }
 
-        if ( outputOpts.metadataFile != null ) {
+        if ( outputOpts.extraMetadataFile != null ) {
             try {
                 // Read the metadata as a new mapping set and exchange it with the real combined
                 // input set.
-                TSVReader reader = new TSVReader(null, outputOpts.metadataFile);
+                TSVReader reader = new TSVReader(null, outputOpts.extraMetadataFile);
                 MappingSet tmpSet = reader.read(true);
                 tmpSet.setMappings(ms.getMappings());
                 ms.getCurieMap().forEach((k, v) -> tmpSet.getCurieMap().putIfAbsent(k, v));
@@ -283,9 +289,9 @@ public class SimpleCLI implements Runnable {
                 }
                 ms = tmpSet;
             } catch ( IOException ioe ) {
-                helper.error("Cannot read file %s: %s", outputOpts.metadataFile, ioe.getMessage());
+                helper.error("Cannot read file %s: %s", outputOpts.extraMetadataFile, ioe.getMessage());
             } catch ( SSSOMFormatException sfe ) {
-                helper.error("Invalid SSSOM data in file %s: %s", outputOpts.metadataFile, sfe.getMessage());
+                helper.error("Invalid SSSOM data in file %s: %s", outputOpts.extraMetadataFile, sfe.getMessage());
             }
         }
 
@@ -380,7 +386,16 @@ public class SimpleCLI implements Runnable {
         }
         boolean stdout = outputOpts.file.equals("-");
         try {
-            TSVWriter writer = stdout ? new TSVWriter(System.out) : new TSVWriter(outputOpts.file);
+            TSVWriter writer;
+            if ( stdout ) {
+                FileOutputStream metaStream = null;
+                if ( outputOpts.metaFile != null ) {
+                    metaStream = new FileOutputStream(outputOpts.metaFile);
+                }
+                writer = new TSVWriter(System.out, metaStream);
+            } else {
+                writer = new TSVWriter(outputOpts.file, outputOpts.metaFile);
+            }
             writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
             writer.setCondensationEnabled(!outputOpts.disableCondensation);
             writer.write(set);
