@@ -1,8 +1,8 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
-import java.util.Map;
 import java.time.LocalDate;
+import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -160,7 +160,6 @@ public class Mapping  {
     private String other;
 
     private String comment;
-    
-    @JsonProperty("extensions")
+
     private Map<String,ExtensionValue> extensions;
 }
