@@ -57,34 +57,17 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  * set have the same value for a given ”propagatable” slot, that value is
  * assigned to the corresponding slot on the mapping set.
  * </ul>
- * <p>
- * Of note, the exact details and semantics of propagatable slots, and even the
- * list of slots that should be considered as propagatable, have not been fully
- * ironed out yet by the authors of the SSSOM specification, and therefore may
- * change a little bit in the future.
  */
 public class SlotPropagator {
     private static Set<String> slots = new HashSet<String>();
 
     static {
-        /*
-         * Prepare the list of propagatable slots. In the future, we'll get this from an
-         * annotation in the LinkML-derived model.
-         */
-        slots.add("mapping_date");
-        slots.add("mapping_provider");
-        slots.add("mapping_tool");
-        slots.add("mapping_tool_version");
-        slots.add("object_match_field");
-        slots.add("object_preprocessing");
-        slots.add("object_source");
-        slots.add("object_source_version");
-        slots.add("object_type");
-        slots.add("subject_match_field");
-        slots.add("subject_preprocessing");
-        slots.add("subject_source");
-        slots.add("subject_source_version");
-        slots.add("subject_type");
+        // Prepare the list of propagatable slots.
+        for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
+            if ( slot.isPropagatable() ) {
+                slots.add(slot.getName());
+            }
+        }
     }
 
     private PropagationPolicy policy;

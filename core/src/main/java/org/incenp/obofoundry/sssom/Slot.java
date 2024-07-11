@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.incenp.obofoundry.sssom.model.EntityReference;
+import org.incenp.obofoundry.sssom.model.Propagatable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -76,6 +77,15 @@ public class Slot<T> {
      */
     public boolean isEntityReference() {
         return entity;
+    }
+
+    /**
+     * Indicates whether the slot is a "propagatable slot".
+     * 
+     * @return {@code true} if the slot can be propagated, otherwise {@code false}.
+     */
+    public boolean isPropagatable() {
+        return field.isAnnotationPresent(Propagatable.class);
     }
 
     /**
