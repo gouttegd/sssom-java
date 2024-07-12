@@ -402,7 +402,7 @@ set_var("RELATION", BFO:0000066, "%object_id is_a UBERON:00000105");
   The variable may then be used in a subsequent SSSOM/T rule:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (%REL some NCBITaxon:7227)');
+subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (%RELATION some NCBITaxon:7227)');
 +-----------------------------------------------------------------------
 
   Currently, the only condition it is possible to use as the third

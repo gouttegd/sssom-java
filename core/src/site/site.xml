@@ -24,6 +24,6 @@
       <item name="API Documentation" href="apidocs/index.html" />
     </menu>
     <menu ref="reports" />
-    <footer><![CDATA[Copyright © 2023 Damien Goutte-Gattat]]></footer>
+    <footer><![CDATA[Copyright © 2024 Damien Goutte-Gattat]]></footer>
   </body>
 </project>

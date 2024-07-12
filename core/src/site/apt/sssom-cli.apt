@@ -171,8 +171,8 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
   
   The SSSOM/T dialect used by SSSOM-CLI is currently very simple and
   comprises, in addition to the generic <<<stop()>>>, <<<invert()>>>,
-  and <<<edit>>> functions, only one dialect-specific function called
-  <<<include()>>>.
+  <<<assign>>>, and <<<replace>>> functions, only one dialect-specific
+  function called <<<include()>>>.
   
   Use <<<include()>>> in a SSSOM/T rule to indicate that the mappings
   the rule is applied to should be included in the resulting mapping
@@ -251,8 +251,8 @@ subject==CL:* || subject==UBERON:* -> invert();
 !(object==CL:* || object==UBERON:*) -> stop();
 
 # Forcibly set the object source to CL or UBERON
-object==CL:* -> edit("object_source=http://purl.obolibrary.org/obo/cl.owl");
-object==UBERON:* -> edit("object_source=http://purl.obolibrary.org/obo/uberon.owl");
+object==CL:* -> assign("object_source", "http://purl.obolibrary.org/obo/cl.owl");
+object==UBERON:* -> assign("object_source", "http://purl.obolibrary.org/obo/uberon.owl");
 
 # Include all remaining mappings
 subject==* -> include();

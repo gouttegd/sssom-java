@@ -58,11 +58,7 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   not know about.
   
   The parser automatically propagates metadata from the mapping set down
-  to the individual mappings. Of note, this propagation is currently
-  only partially imeplemented, since the details of which metadata slots
-  should be propagated and how that propagation should happen exactly
-  have not been fully ironed out yet by the authors of the SSSOM
-  specification.
+  to the individual mappings.
   
   The parser has a liberal behaviour, in that: a) slots that it does not
   recognise are silently ignored and do not cause a parsing failure; b)
@@ -113,9 +109,7 @@ TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv", "my-meta.yml");
   all the mappings in the set have the same value for a given slot, the
   value is written once in the mapping set metadata instead of being
   written for all mappings. This ”condensation” is the opposite
-  operation of the “propagation” that happens upon parsing. As for
-  propagation, it is only partially implemented as this feature is not
-  fully specified yet.
+  operation of the “propagation” that happens upon parsing.
   
 * Manipulating the mapping set and the mappings
 
