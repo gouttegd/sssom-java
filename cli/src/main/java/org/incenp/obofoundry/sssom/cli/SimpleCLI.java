@@ -192,7 +192,7 @@ public class SimpleCLI implements Runnable {
 
     private static class OntologyOptions {
         @Option(names = "--update-from-ontology",
-                paramLabel = "ONTOLOGY[:subject,object]",
+                paramLabel = "ONTOLOGY[:subject,object,label,source,existence]",
                 description = "Update the set using data from the specified ontology.")
         String[] ontologiesForUpdate;
 
@@ -346,18 +346,46 @@ public class SimpleCLI implements Runnable {
 
                 String[] parts = ontFile.split(":", 2);
                 if ( parts.length == 2 ) {
+                    boolean replace = false;
+                    EnumSet<UpdateMode> setMode = EnumSet.noneOf(UpdateMode.class);
                     for ( String flag : parts[1].split(",") ) {
                         switch ( flag ) {
                         case "subject":
-                            mode.add(UpdateMode.DELETE_MISSING_SUBJECT);
-                            mode.add(UpdateMode.DELETE_OBSOLETE_SUBJECT);
+                            setMode.add(UpdateMode.ONLY_SUBJECT);
                             break;
 
                         case "object":
-                            mode.add(UpdateMode.DELETE_MISSING_OBJECT);
-                            mode.add(UpdateMode.DELETE_OBSOLETE_OBJECT);
+                            setMode.add(UpdateMode.ONLY_OBJECT);
+                            break;
+
+                        case "label":
+                            replace = true;
+                            setMode.add(UpdateMode.UPDATE_LABEL);
+                            break;
+
+                        case "source":
+                            replace = true;
+                            setMode.add(UpdateMode.UPDATE_SOURCE);
+                            break;
+
+                        case "existence":
+                            replace = true;
+                            setMode.add(UpdateMode.DELETE_MISSING);
+                            setMode.add(UpdateMode.DELETE_OBSOLETE);
                             break;
                         }
+                    }
+
+                    if ( setMode.contains(UpdateMode.ONLY_SUBJECT) && setMode.contains(UpdateMode.ONLY_OBJECT) ) {
+                        // Accept "subject,object" as meaning that we want to check both sides
+                        setMode.remove(UpdateMode.ONLY_SUBJECT);
+                        setMode.remove(UpdateMode.ONLY_OBJECT);
+                    }
+
+                    if ( replace ) {
+                        mode = setMode;
+                    } else {
+                        mode.addAll(setMode);
                     }
                 }
 

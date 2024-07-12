@@ -20,6 +20,7 @@ package org.incenp.obofoundry.sssom.owl;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.function.Consumer;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -129,47 +130,24 @@ public class OWLHelper {
      * @param mode       What to update in the mapping set.
      */
     public static void updateMappingSet(MappingSet ms, OWLOntology ontology, String language, boolean langStrict, EnumSet<UpdateMode> mode) {
-        IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orNull();
         ArrayList<Mapping> mappings = new ArrayList<Mapping>();
 
         for ( Mapping m : ms.getMappings() ) {
-            IRI subject = IRI.create(m.getSubjectId());
-            IRI object = IRI.create(m.getObjectId());
             boolean keep = true;
 
-            if ( ontology.containsEntityInSignature(subject, Imports.INCLUDED) ) {
-                if ( isObsolete(ontology, subject) && mode.contains(UpdateMode.DELETE_OBSOLETE_SUBJECT) ) {
+            if ( !mode.contains(UpdateMode.ONLY_OBJECT) ) {
+                if ( !updateForEntity(m, IRI.create(m.getSubjectId()), ontology, language, langStrict, mode,
+                        (s) -> m.setSubjectLabel(s),
+                        (s) -> m.setSubjectSource(s)) ) {
                     keep = false;
                 }
-                if ( mode.contains(UpdateMode.UPDATE_LABEL) ) {
-                    String label = getLabel(ontology, subject, language, langStrict);
-                    if ( label != null ) {
-                        m.setSubjectLabel(label);
-                    }
-                }
-                if ( mode.contains(UpdateMode.UPDATE_SOURCE) && ontologyIRI != null ) {
-                    m.setSubjectSource(ontologyIRI.toString());
-                }
-            }
-            else if ( mode.contains(UpdateMode.DELETE_MISSING_SUBJECT) ) {
-                keep = false;
             }
 
-            if ( ontology.containsEntityInSignature(object, Imports.INCLUDED) ) {
-                if ( isObsolete(ontology, object) && mode.contains(UpdateMode.DELETE_OBSOLETE_OBJECT) ) {
+            if ( !mode.contains(UpdateMode.ONLY_SUBJECT) ) {
+                if ( !updateForEntity(m, IRI.create(m.getObjectId()), ontology, language, langStrict, mode,
+                        (s) -> m.setObjectLabel(s), (s) -> m.setObjectSource(s)) ) {
                     keep = false;
                 }
-                if ( mode.contains(UpdateMode.UPDATE_LABEL) ) {
-                    String label = getLabel(ontology, object, language, langStrict);
-                    if ( label != null ) {
-                        m.setObjectLabel(label);
-                    }
-                }
-                if ( mode.contains(UpdateMode.UPDATE_SOURCE) && ontologyIRI != null ) {
-                    m.setObjectSource(ontologyIRI.toString());
-                }
-            } else if ( mode.contains(UpdateMode.DELETE_MISSING_OBJECT) ) {
-                keep = false;
             }
 
             if ( keep ) {
@@ -178,6 +156,35 @@ public class OWLHelper {
         }
 
         ms.setMappings(mappings);
+    }
+
+    /*
+     * Helper method to update a single mapping against a given entity.
+     */
+    private static boolean updateForEntity(Mapping mapping, IRI entity, OWLOntology ontology, String language,
+            boolean langStrict, EnumSet<UpdateMode> mode, Consumer<String> labelUpdater,
+            Consumer<String> sourceUpdater) {
+        boolean keep = true;
+        if ( ontology.containsEntityInSignature(entity, Imports.INCLUDED) ) {
+            if ( isObsolete(ontology, entity) && mode.contains(UpdateMode.DELETE_OBSOLETE) ) {
+                keep = false;
+            }
+            if ( mode.contains(UpdateMode.UPDATE_LABEL) ) {
+                String label = getLabel(ontology, entity, language, langStrict);
+                if ( label != null ) {
+                    labelUpdater.accept(label);
+                }
+            }
+            if ( mode.contains(UpdateMode.UPDATE_SOURCE) ) {
+                IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orNull();
+                if ( ontologyIRI != null ) {
+                    sourceUpdater.accept(ontologyIRI.toString());
+                }
+            }
+        } else if ( mode.contains(UpdateMode.DELETE_MISSING) ) {
+            keep = false;
+        }
+        return keep;
     }
 
     /**
@@ -200,26 +207,24 @@ public class OWLHelper {
         UPDATE_SOURCE,
 
         /**
-         * Removes any mapping whose subject does not exist in the ontology.
+         * Removes any mapping whose subject or object does not exist in the ontology.
          */
-        DELETE_MISSING_SUBJECT,
+        DELETE_MISSING,
 
         /**
-         * Removes any mapping whose subject exists in the ontology but is marked as
-         * obsolete.
+         * Removes any mapping whose subject or object is marked as obsolete.
          */
-        DELETE_OBSOLETE_SUBJECT,
+        DELETE_OBSOLETE,
 
         /**
-         * Removes any mapping whose object does not exist in the ontology.
+         * Only consider the subject side of a mapping.
          */
-        DELETE_MISSING_OBJECT,
+        ONLY_SUBJECT,
 
         /**
-         * Removes any mapping whose object exists in the ontology but is marked as
-         * obsolete.
+         * Only consider the object side of a mapping.
          */
-        DELETE_OBSOLETE_OBJECT;
+        ONLY_OBJECT;
 
         public static final EnumSet<UpdateMode> ALL = EnumSet.allOf(UpdateMode.class);
     }

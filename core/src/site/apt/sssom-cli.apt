@@ -116,25 +116,42 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
 
   The <<<--update-from-ontology>>> option allows checking and updating
   the mapping set against an OWL ontology. It expects the filename of an
-  ontology in any format supported by the OWL API. If the subject
-  (respectively the object) of a mapping exists in the ontology, the
-  mapping’s <<<subject_label>>> (respectively <<<object_label>>>) field
-  will be updated if necessary to match the <<<rdfs:label>>> of the
-  corresponding entity in the ontology, and the <<<subject_source>>>
-  (respectively <<<object_source>>>) field will be set to the ontology’s
-  IRI.
+  ontology in any format supported by the OWL API.
   
   The filename may be followed by a semi-colon and a list of
-  comma-separated flags (<<<:flag1,flag2,...>>>). There are currently
-  two available flags, which enable additional behaviours:
+  comma-separated flags (<<<:flag1,flag2,...>>>) which will control the
+  exact behaviour of the option.
   
-  [subject] Remove any mapping whose subject does not correspond to
-            an existing and non-deprecated entity in the ontology.
+  Available flags are:
   
-  [object] Remove any mapping whose object does not correspond to an
-           existing and non-deprecated entity in the ontology.
-  		   
+  [label] If the subject (respectively the object) of a mapping exists
+          in the ontology, the mapping’s <<<subject_label>>> (resp.
+          <<<object_label>>>) will be updated to match the
+          <<<rdfs:label>>> of the corresponding entity in the ontology.
+  
+  [source] If the subject (respectively the object) of a mapping exists
+           in the ontology, the mapping’s <<<subject_source>>> (resp.
+           <<<object_source>>>) will be set to the ontology’s IRI.
+  
+  [existence] If the subject or the object of a mapping does not exist
+              in the ontology or is deprecated, the mapping is removed
+              from the set.
+  
+  [subject] Only consider the subject side of mappings when updating the
+            labels, the sources, and/or checking for existence.
+
+  [object] Only consider the object side of mappings when updating the
+           labels, the sources, and/or checking for existence.
+  
   []
+  
+  If no flags are specified, the default flags are <<<label,source>>>.
+  If only a <<<subject>>> or <<<object>>> flag is specified, it is added
+  to the default flags (so, <<<:subject>>> is equivalent to
+  <<<:subject,label,source>>>). Any other flag resets the default flags;
+  so to check for existence in addition to updating the labels and the
+  sources, all corresponding flags must be explicitly specified
+  (<<<:existence,label,source>>>).
   
   The <<<--update-from-ontology>>> option may be specified several times
   to check a mapping set against several ontologies consecutively.

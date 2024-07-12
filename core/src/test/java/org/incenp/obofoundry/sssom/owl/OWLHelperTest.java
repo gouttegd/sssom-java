@@ -151,11 +151,13 @@ public class OWLHelperTest {
         Assertions.assertEquals(2, ms.getMappings().size());
 
         // Likewise if we select to remove OBSOLETE subjects
-        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_SUBJECT));
+        OWLHelper.updateMappingSet(ms, ontology, null, false,
+                EnumSet.of(UpdateMode.DELETE_OBSOLETE, UpdateMode.ONLY_SUBJECT));
         Assertions.assertEquals(2, ms.getMappings().size());
 
         // Delete the second mapping
-        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_MISSING_SUBJECT));
+        OWLHelper.updateMappingSet(ms, ontology, null, false,
+                EnumSet.of(UpdateMode.DELETE_MISSING, UpdateMode.ONLY_SUBJECT));
         Assertions.assertEquals(1, ms.getMappings().size());
         Assertions.assertEquals(IRI_BASE + "no_label", ms.getMappings().get(0).getSubjectId());
     }
@@ -171,11 +173,13 @@ public class OWLHelperTest {
         Assertions.assertEquals(2, ms.getMappings().size());
 
         // Likewise if we select to remove OBSOLETE objects
-        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_OBJECT));
+        OWLHelper.updateMappingSet(ms, ontology, null, false,
+                EnumSet.of(UpdateMode.DELETE_OBSOLETE, UpdateMode.ONLY_OBJECT));
         Assertions.assertEquals(2, ms.getMappings().size());
 
         // Delete the second mapping
-        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_MISSING_OBJECT));
+        OWLHelper.updateMappingSet(ms, ontology, null, false,
+                EnumSet.of(UpdateMode.DELETE_MISSING, UpdateMode.ONLY_OBJECT));
         Assertions.assertEquals(1, ms.getMappings().size());
         Assertions.assertEquals(IRI_BASE + "no_label", ms.getMappings().get(0).getObjectId());
     }
@@ -192,7 +196,7 @@ public class OWLHelperTest {
                         factory.getOWLAnnotationProperty(OWLRDFVocabulary.OWL_DEPRECATED.getIRI()),
                         IRI.create(IRI_BASE + "no_label"), factory.getOWLLiteral(true)));
 
-        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_SUBJECT));
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE));
         Assertions.assertTrue(ms.getMappings().isEmpty());
     }
 
@@ -208,7 +212,7 @@ public class OWLHelperTest {
                         factory.getOWLAnnotationProperty(OWLRDFVocabulary.OWL_DEPRECATED.getIRI()),
                         IRI.create(IRI_BASE + "no_label"), factory.getOWLLiteral(true)));
 
-        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE_OBJECT));
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE));
         Assertions.assertTrue(ms.getMappings().isEmpty());
     }
 

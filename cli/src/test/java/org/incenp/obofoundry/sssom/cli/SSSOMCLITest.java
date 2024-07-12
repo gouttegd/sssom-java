@@ -345,11 +345,13 @@ public class SSSOMCLITest {
 
         // Deleting missing subjects
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-subject-checked-against-ont1.sssom.tsv",
-                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont1.ofn:subject" });
+                new String[] { "--update-from-ontology",
+                        "../core/src/test/resources/owl/ont1.ofn:subject,existence,label" });
 
         // Deleting missing objects
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-object-checked-against-ont1.sssom.tsv",
-                new String[] { "--update-from-ontology", "../core/src/test/resources/owl/ont1.ofn:object" });
+                new String[] { "--update-from-ontology",
+                        "../core/src/test/resources/owl/ont1.ofn:object,existence,label" });
     }
 
     @Test
