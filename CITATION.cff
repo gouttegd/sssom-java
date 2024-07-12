@@ -8,9 +8,9 @@ authors:
 license: GPL-3.0-or-later
 url: "https://incenp.org/dvlpt/sssom-java/"
 repository-code: "https://github.com/gouttegd/sssom-java"
-version: 0.7.8
-date-released: "2024-07-05"
-doi: 10.5281/zenodo.12668387
+version: 0.7.9
+date-released: "2024-07-12"
+doi: 10.5281/zenodo.12735269
 references:
   - authors:
       - family-names: "Matentzoglu"
