@@ -468,19 +468,22 @@ public class TSVReaderTest {
         String[] invalidValues = { "[ list ]", "{ key: value }", "\n - list", "\n key: value" };
         for ( String value : invalidValues ) {
             String scalarTest = "comment: " + value;
-            Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString(scalarTest, false),
-                    "typing error when parsing 'comment'");
+            SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class,
+                    () -> parseMetadataString(scalarTest, false));
+            Assertions.assertEquals("Typing error when parsing 'comment'", sfe.getMessage());
 
             String listTest = "see_also:\n  - " + value;
-            Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString(listTest, false),
-                    "typing error when parsing 'see_also'");
+            sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString(listTest, false));
+            Assertions.assertTrue(sfe.getMessage().equals("Invalid YAML metadata")
+                    || sfe.getMessage().equals("Typing error when parsing 'see_also'"));
         }
     }
 
     @Test
     void testDatesAreCorrectlyTyped() throws IOException, SSSOMFormatException {
-        Assertions.assertThrows(SSSOMFormatException.class, () -> parseMetadataString("mapping_date: 123", false),
-                "Typing error when parsing 'mapping_date'");
+        SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class,
+                () -> parseMetadataString("mapping_date: 123", false));
+        Assertions.assertEquals("Typing error when parsing 'mapping_date'", sfe.getMessage());
     }
 
     @Test
