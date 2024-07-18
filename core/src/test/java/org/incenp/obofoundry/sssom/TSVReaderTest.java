@@ -498,6 +498,13 @@ public class TSVReaderTest {
                 parseExtensionValue("2024-01-01T12:00:00Z", "xsd:datetime").getValue());
     }
 
+    @Test
+    void testFailOnOutOfRangeDoubleValues() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-out-of-range-double-values.sssom.tsv");
+        SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
+        Assertions.assertEquals("Out-of-range value for 'confidence'", sfe.getMessage());
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());
