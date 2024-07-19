@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @NoArgsConstructor
@@ -104,6 +105,7 @@ public class LiteralMapping  {
     @JsonProperty("mapping_date")
     private LocalDate mappingDate;
 
+    @Setter(AccessLevel.NONE)
     private Double confidence;
 
     @JsonProperty("object_match_field")
@@ -122,6 +124,7 @@ public class LiteralMapping  {
     private List<String> objectPreprocessing;
 
     @JsonProperty("similarity_score")
+    @Setter(AccessLevel.NONE)
     private Double similarityScore;
 
     @JsonProperty("similarity_measure")
@@ -133,4 +136,24 @@ public class LiteralMapping  {
     private String other;
 
     private String comment;
+
+    public void setConfidence(Double value) {
+        if ( value > 1.0 ) {
+            throw new IllegalArgumentException("Invalid value for confidence");
+        }
+        if ( value < 0.0 ) {
+            throw new IllegalArgumentException("Invalid value for confidence");
+        }
+        confidence = value;
+    }
+
+    public void setSimilarityScore(Double value) {
+        if ( value > 1.0 ) {
+            throw new IllegalArgumentException("Invalid value for similarity_score");
+        }
+        if ( value < 0.0 ) {
+            throw new IllegalArgumentException("Invalid value for similarity_score");
+        }
+        similarityScore = value;
+    }
 }

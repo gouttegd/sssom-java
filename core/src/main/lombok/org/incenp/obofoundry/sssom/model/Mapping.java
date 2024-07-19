@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @NoArgsConstructor
@@ -116,6 +117,7 @@ public class Mapping  {
     @JsonProperty("publication_date")
     private LocalDate publicationDate;
 
+    @Setter(AccessLevel.NONE)
     private Double confidence;
 
     @JsonProperty("curation_rule")
@@ -145,6 +147,7 @@ public class Mapping  {
     private List<String> objectPreprocessing;
 
     @JsonProperty("semantic_similarity_score")
+    @Setter(AccessLevel.NONE)
     private Double semanticSimilarityScore;
 
     @JsonProperty("semantic_similarity_measure")
@@ -160,6 +163,26 @@ public class Mapping  {
     private String other;
 
     private String comment;
+
+    public void setConfidence(Double value) {
+        if ( value > 1.0 ) {
+            throw new IllegalArgumentException("Invalid value for confidence");
+        }
+        if ( value < 0.0 ) {
+            throw new IllegalArgumentException("Invalid value for confidence");
+        }
+        confidence = value;
+    }
+
+    public void setSemanticSimilarityScore(Double value) {
+        if ( value > 1.0 ) {
+            throw new IllegalArgumentException("Invalid value for semantic_similarity_score");
+        }
+        if ( value < 0.0 ) {
+            throw new IllegalArgumentException("Invalid value for semantic_similarity_score");
+        }
+        semanticSimilarityScore = value;
+    }
 
     private Map<String,ExtensionValue> extensions;
 }

@@ -20,6 +20,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+{% if gen.get_constrained_slots(cls) -%}
+import lombok.Setter;
+{% endif -%}
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @NoArgsConstructor
@@ -42,11 +45,29 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     {%- if cls.name == 'MappingSet' and gen.is_propagatable(f.source_slot.name) %}
     @Propagatable
     {%- endif %}
+    {%- if gen.is_slot_constrained(f) %}
+    @Setter(AccessLevel.NONE)
+    {%- endif %}
     private {% if f.source_slot.range == 'date' %}LocalDate
             {%- elif f.source_slot.range == 'mapping_cardinality_enum' %}MappingCardinality
             {%- elif f.source_slot.range == 'entity_type_enum' %}EntityType
             {%- elif f.source_slot.range == 'predicate_modifier_enum' %}PredicateModifier
             {%- else %}{{ f.range }}{% endif %} {{ f.name }};
+{% endfor -%}
+{%- for f in gen.get_constrained_slots(cls) %}
+    public void set{{ f.name[0].upper() }}{{ f.name[1:] }}({{ f.range }} value) {
+        {%- if f.source_slot.maximum_value %}
+        if ( value > {{ f.source_slot.maximum_value }} ) {
+            throw new IllegalArgumentException("Invalid value for {{ f.source_slot.name }}");
+        }
+        {%- endif %}
+        {%- if f.source_slot.minimum_value is not none %}
+        if ( value < {{ f.source_slot.minimum_value }} ) {
+            throw new IllegalArgumentException("Invalid value for {{ f.source_slot.name }}");
+        }
+        {%- endif %}
+        {{ f.name }} = value;
+    }
 {% endfor -%}
 {%- if cls.name == 'MappingSet' %}
     @JsonProperty("extension_definitions")
@@ -93,6 +114,22 @@ class CustomJavaGenerator(JavaGenerator):
         if d is not None:
             return "propagated" in d
         return False
+
+    def is_slot_constrained(self, slot):
+        """Check if the slot has special constraints.
+
+        :param slot: the slot to check for constraints
+        """
+
+        return slot.source_slot.minimum_value is not None or slot.source_slot.maximum_value is not None
+
+    def get_constrained_slots(self, cls):
+        """Get all slots in a class that have special constraints.
+
+        :param cls: the class to query for constrained slots
+        """
+
+        return [f for f in cls.fields if self.is_slot_constrained(f)];
 
 
 @click.argument("yamlfile", type=click.Path(exists=True, dir_okay=False))
