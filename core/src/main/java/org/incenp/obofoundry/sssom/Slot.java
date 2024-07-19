@@ -132,9 +132,13 @@ public class Slot<T> {
         try {
             Method accessor = object.getClass().getDeclaredMethod(accessorName, new Class<?>[] { field.getType() });
             accessor.invoke(object, new Object[] { field.getType().cast(value) });
-        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e ) {
+        } catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException e ) {
             // Should never happen
+        } catch ( InvocationTargetException e ) {
+            if ( e.getCause() instanceof IllegalArgumentException ) {
+                throw IllegalArgumentException.class.cast(e.getCause());
+            }
+            // Should never happen (IAE is the only exception thrown by setters)
         }
     }
 }

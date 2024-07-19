@@ -344,16 +344,11 @@ public class YAMLConverter {
             }
         } else if ( type == Double.class && String.class.isInstance(rawValue) ) {
             try {
-                Double v = Double.valueOf(String.class.cast(rawValue));
-                // HACK(ish): We are using the fact that all Double-ranged slots in SSSOM are
-                // limited to the [0.0,1.0] range. If that changes in the future, we'll need to
-                // use the minimal/maximal value constraints from the LinkML model.
-                if ( v < 0.0 || v > 1.0 ) {
-                    throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
-                }
-                slot.setValue(object, v);
+                slot.setValue(object, Double.valueOf(String.class.cast(rawValue)));
             } catch ( NumberFormatException e ) {
                 onTypingError(slot.getName(), e);
+            } catch ( IllegalArgumentException e ) {
+                throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
             }
         } else if ( type == EntityType.class && String.class.isInstance(rawValue) ) {
             EntityType value = EntityType.fromString(String.class.cast(rawValue));
