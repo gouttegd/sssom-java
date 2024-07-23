@@ -350,7 +350,7 @@ public class TSVReaderTest {
         compare(new ExtensionDefinition("ext_bar", "https://example.org/properties/barProperty",
                 "http://www.w3.org/2001/XMLSchema#integer"), definitions.get("ext_bar"));
         compare(new ExtensionDefinition("ext_baz", "https://example.org/properties/bazProperty",
-                "https://w3id.org/linkml/uriOrCurie"), definitions.get("ext_baz"));
+                "https://w3id.org/linkml/Uriorcurie"), definitions.get("ext_baz"));
         compare(new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"),
                 definitions.get("ext_foo"));
 
@@ -389,7 +389,7 @@ public class TSVReaderTest {
         compare(new ExtensionDefinition("ext_bar", "https://example.org/properties/barProperty",
                 "http://www.w3.org/2001/XMLSchema#integer"), definitions.get("ext_bar"));
         compare(new ExtensionDefinition("ext_baz", "https://example.org/properties/bazProperty",
-                "https://w3id.org/linkml/uriOrCurie"), definitions.get("ext_baz"));
+                "https://w3id.org/linkml/Uriorcurie"), definitions.get("ext_baz"));
         compare(new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"),
                 definitions.get("ext_foo"));
         compare(new ExtensionDefinition("ext_undeclared_baz", "http://sssom.invalid/ext_undeclared_baz"),

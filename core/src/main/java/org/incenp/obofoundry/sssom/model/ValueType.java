@@ -32,7 +32,7 @@ public enum ValueType {
     BOOLEAN("http://www.w3.org/2001/XMLSchema#boolean"),
     DATE("http://www.w3.org/2001/XMLSchema#date"),
     DATETIME("http://www.w3.org/2001/XMLSchema#datetime"),
-    IDENTIFIER("https://w3id.org/linkml/uriOrCurie"),
+    IDENTIFIER("https://w3id.org/linkml/Uriorcurie", "https://w3id.org/linkml/uriOrCurie"),
     OTHER(null);
 
     private final static Map<String, ValueType> MAP;
@@ -42,6 +42,9 @@ public enum ValueType {
         for ( ValueType vt : ValueType.values() ) {
             if ( vt != ValueType.OTHER ) {
                 map.put(vt.iri, vt);
+                if ( vt.alias != null ) {
+                    map.put(vt.alias, vt);
+                }
             }
         }
 
@@ -49,9 +52,16 @@ public enum ValueType {
     }
 
     private final String iri;
+    private final String alias;
 
     ValueType(String iri) {
         this.iri = iri;
+        this.alias = null;
+    }
+
+    ValueType(String iri, String alias) {
+        this.iri = iri;
+        this.alias = alias;
     }
 
     @Override
