@@ -1,0 +1,124 @@
+{
+  "mapping_set_id": "https://example.org/sets/exo2c-with-extensions",
+  "mapping_set_title": "O2C set with extensions",
+  "creator_id": [
+    "https://example.org/people/0000-0000-0001-1234",
+    "https://example.com/people/0000-0000-0002-5678"
+  ],
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "publication_date": "2023-09-13",
+  "extension_definitions": [
+    {
+      "slot_name": "ext_undeclared_baz",
+      "property": "http://sssom.invalid/ext_undeclared_baz"
+    },
+    {
+      "slot_name": "ext_undeclared_foo",
+      "property": "http://sssom.invalid/ext_undeclared_foo"
+    },
+    {
+      "slot_name": "ext_bar",
+      "property": "https://example.org/properties/barProperty",
+      "type_hint": "http://www.w3.org/2001/XMLSchema#integer"
+    },
+    {
+      "slot_name": "ext_baz",
+      "property": "https://example.org/properties/bazProperty",
+      "type_hint": "https://w3id.org/linkml/Uriorcurie"
+    },
+    {
+      "slot_name": "ext_foo",
+      "property": "https://example.org/properties/fooProperty"
+    }
+  ],
+  "ext_undeclared_foo": "Foo B",
+  "ext_foo": "Foo A",
+  "mappings": [
+    {
+      "subject_id": "https://example.org/entities/0001",
+      "subject_label": "alice",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0011",
+      "object_label": "alpha",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "BAZ A",
+      "ext_bar": 111,
+      "ext_baz": "https://example.org/entities/BAZ_0001"
+    },
+    {
+      "subject_id": "https://example.org/entities/0002",
+      "subject_label": "bob",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0012",
+      "object_label": "beta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_bar": 112,
+      "ext_baz": "https://example.org/entities/BAZ_0002"
+    },
+    {
+      "subject_id": "https://example.org/entities/0004",
+      "subject_label": "daphne",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0014",
+      "object_label": "delta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "Baz C",
+      "ext_bar": 114
+    },
+    {
+      "subject_id": "https://example.org/entities/0005",
+      "subject_label": "eve",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0015",
+      "object_label": "epsilon",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "Baz E",
+      "ext_bar": 115,
+      "ext_baz": "https://example.org/entities/BAZ_0005"
+    },
+    {
+      "subject_id": "https://example.org/entities/0006",
+      "subject_label": "fanny",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0016",
+      "object_label": "zeta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "Baz F",
+      "ext_bar": 116,
+      "ext_baz": "https://example.org/entities/BAZ_0006"
+    },
+    {
+      "subject_id": "https://example.org/entities/0007",
+      "subject_label": "gavin",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#exactMatch",
+      "object_id": "https://example.com/entities/0013",
+      "object_label": "gamma",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "Baz G",
+      "ext_bar": 117,
+      "ext_baz": "https://example.org/entities/BAZ_0007"
+    },
+    {
+      "subject_id": "https://example.org/entities/0008",
+      "subject_label": "hector",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0017",
+      "object_label": "eta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "Baz H",
+      "ext_bar": 118,
+      "ext_baz": "https://example.org/entities/BAZ_0008"
+    },
+    {
+      "subject_id": "https://example.org/entities/0009",
+      "subject_label": "ivan",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#exactMatch",
+      "object_id": "https://example.com/entities/0019",
+      "object_label": "iota",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "ext_undeclared_baz": "Baz I",
+      "ext_bar": 119,
+      "ext_baz": "https://example.org/entities/BAZ_0009"
+    }
+  ]
+}

@@ -177,7 +177,7 @@ public class SlotHelper<T> {
      * 
      * @param slotNames The names of the slots that this object should not visit.
      */
-    public void excludeSlots(List<String> slotNames) {
+    public void excludeSlots(Collection<String> slotNames) {
         slots.removeIf(slot -> slotNames.contains(slot.getName()));
     }
 
