@@ -50,6 +50,7 @@ public class JSONWriter extends BaseWriter {
     private StringBuilder buffer = new StringBuilder();
     private int indentLevel = 0;
     private boolean firstItem = false;
+    private boolean shortenIRIs = false;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -82,6 +83,18 @@ public class JSONWriter extends BaseWriter {
     }
 
     /**
+     * Enables or disables shortening of identifiers. If enabled, all identifiers
+     * will be written as CURIEs and a <em>curie_map</em> will be included in the
+     * output.
+     * 
+     * @param shorten {@code True} to enable shortening of all identifiers. It is
+     *                disabled by default.
+     */
+    public void setShortenIRIs(boolean shorten) {
+        shortenIRIs = shorten;
+    }
+
+    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
@@ -92,8 +105,25 @@ public class JSONWriter extends BaseWriter {
         // Condense the set
         Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
 
-        // Write the metadata
         startDict();
+
+        if ( shortenIRIs ) {
+            // Write the CURIE map
+            Set<String> usedPrefixes = getUsedPrefixes(mappingSet);
+            if ( !usedPrefixes.isEmpty() ) {
+                addKey("curie_map");
+                startDict();
+                for ( String prefixName : getUsedPrefixes(mappingSet) ) {
+                    if ( prefixName != null ) {
+                        addKey(prefixName);
+                        addValue(prefixManager.getPrefix(prefixName));
+                    }
+                }
+                endDict();
+            }
+        }
+
+        // Write the rest of the set metadata
         SlotVisitor<MappingSet> visitor = new SlotVisitor<MappingSet>();
         SlotHelper.getMappingSetHelper().visitSlots(mappingSet, visitor);
         writer.append(buffer.toString());
@@ -234,7 +264,7 @@ public class JSONWriter extends BaseWriter {
         @Override
         public Void visit(Slot<T> slot, T object, String value) {
             addKey(slot.getName());
-            addValue(value);
+            addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
             return null;
         }
 
@@ -245,7 +275,7 @@ public class JSONWriter extends BaseWriter {
                 startList();
                 for ( String value : values ) {
                     addItem();
-                    addValue(value);
+                    addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
                 }
                 endList();
             }
@@ -285,10 +315,12 @@ public class JSONWriter extends BaseWriter {
                     addKey("slot_name");
                     addValue(definition.getSlotName());
                     addKey("property");
-                    addValue(definition.getProperty());
+                    addValue(shortenIRIs ? prefixManager.shortenIdentifier(definition.getProperty())
+                            : definition.getProperty());
                     if ( definition.getEffectiveType() != ValueType.STRING ) {
                         addKey("type_hint");
-                        addValue(definition.getTypeHint());
+                        addValue(shortenIRIs ? prefixManager.shortenIdentifier(definition.getTypeHint())
+                                : definition.getTypeHint());
                     }
                     endDict();
                 }
@@ -319,6 +351,10 @@ public class JSONWriter extends BaseWriter {
                             break;
                         case INTEGER:
                             addValue(value.asInteger());
+                            break;
+                        case IDENTIFIER:
+                            addValue(
+                                    shortenIRIs ? prefixManager.shortenIdentifier(value.asString()) : value.asString());
                             break;
                         default:
                             addValue(value.toString());

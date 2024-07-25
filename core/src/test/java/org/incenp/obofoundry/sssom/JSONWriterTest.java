@@ -36,7 +36,7 @@ public class JSONWriterTest {
         TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv");
         MappingSet ms = reader.read();
 
-        assertWrittenAsExpected(ms, "exo2c", null, null);
+        assertWrittenAsExpected(ms, "exo2c", null, null, false);
     }
 
     /*
@@ -48,9 +48,21 @@ public class JSONWriterTest {
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
-        assertWrittenAsExpected(ms, "test-extensions-defined", null, ExtraMetadataPolicy.DEFINED);
-        assertWrittenAsExpected(ms, "test-extensions-undefined", null, ExtraMetadataPolicy.UNDEFINED);
-        assertWrittenAsExpected(ms, "test-extensions-none", null, ExtraMetadataPolicy.NONE);
+        assertWrittenAsExpected(ms, "test-extensions-defined", null, ExtraMetadataPolicy.DEFINED, false);
+        assertWrittenAsExpected(ms, "test-extensions-undefined", null, ExtraMetadataPolicy.UNDEFINED, false);
+        assertWrittenAsExpected(ms, "test-extensions-none", null, ExtraMetadataPolicy.NONE, false);
+    }
+
+    /*
+     * Test that we can shorten identifiers with a CURIE map.
+     */
+    @Test
+    void testWriteShortIRIs() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
+        MappingSet ms = reader.read();
+
+        assertWrittenAsExpected(ms, "test-short-iris", null, ExtraMetadataPolicy.DEFINED, true);
     }
 
     /*
@@ -68,7 +80,7 @@ public class JSONWriterTest {
      * automatically deleted if it is found to be identical to the theoretical file.
      */
     private void assertWrittenAsExpected(MappingSet ms, String expectedBasename, String actualBasename,
-            ExtraMetadataPolicy extraPolicy) throws IOException {
+            ExtraMetadataPolicy extraPolicy, boolean shortIRIs) throws IOException {
         if ( actualBasename == null ) {
             actualBasename = expectedBasename;
         }
@@ -78,6 +90,7 @@ public class JSONWriterTest {
         if ( extraPolicy != null ) {
             writer.setExtraMetadataPolicy(extraPolicy);
         }
+        writer.setShortenIRIs(shortIRIs);
         writer.write(ms.toBuilder().build());
 
         File expected = new File("src/test/resources/output/" + expectedBasename + ".sssom.json");
