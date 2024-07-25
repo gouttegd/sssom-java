@@ -63,13 +63,12 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * }
  * </pre>
  */
-public class TSVReader {
+public class TSVReader extends BaseReader {
 
     private File tsvFile;
     private BufferedReader tsvReader;
     private Reader metaReader;
     private YAMLConverter converter = new YAMLConverter();
-    private PropagationPolicy propagationPolicy = PropagationPolicy.NeverReplace;
 
     /**
      * Creates a new instance that will read data from the specified files.
@@ -197,27 +196,6 @@ public class TSVReader {
     }
 
     /**
-     * Sets the policy to deal with non-standard metadata in the input file.
-     * 
-     * @param policy The policy instructing the parser about what to do when
-     *               encountering non-standard metadata. The default policy is
-     *               {@link ExtraMetadataPolicy#NONE}.
-     */
-    public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
-        converter.setExtraMetadataPolicy(policy);
-    }
-
-    /**
-     * Enables or disables the propagation of "propagatable slots".
-     * 
-     * @param enabled {@code False} to disable propagation; it is enabled by
-     *                default.
-     */
-    public void setPropagationEnabled(boolean enabled) {
-        propagationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
-    }
-
-    /**
      * Reads a mapping set from the source file(s).
      * 
      * @return A complete SSSOM mapping set, unless no TSV file was provided to the
@@ -229,6 +207,7 @@ public class TSVReader {
      * @throws IOException          If any kind of non-SSSOM-related I/O error
      *                              occurs.
      */
+    @Override
     public MappingSet read() throws SSSOMFormatException, IOException {
         return read(tsvReader == null);
     }
@@ -262,7 +241,7 @@ public class TSVReader {
                 throw new SSSOMFormatException("No embedded metadata and external metadata not specified");
             }
         }
-
+        converter.setExtraMetadataPolicy(extraPolicy);
         return read(metaReader, metadataOnly || tsvReader == null);
     }
 
