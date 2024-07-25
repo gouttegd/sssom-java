@@ -44,15 +44,12 @@ import org.incenp.obofoundry.sssom.model.ValueType;
  * unspecified. Instead, this writer produces a “pure” JSON format that is
  * merely a direct JSON rendering of the internal SSSOM data model.
  */
-public class JSONWriter {
+public class JSONWriter extends BaseWriter {
 
     private Writer writer;
     private StringBuilder buffer = new StringBuilder();
     private int indentLevel = 0;
     private boolean firstItem = false;
-    private ExtensionSlotManager extensionManager;
-    private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
-    private PropagationPolicy condensationPolicy = PropagationPolicy.Disabled;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -85,40 +82,13 @@ public class JSONWriter {
     }
 
     /**
-     * Sets the policy to deal with non-standard metadata in the mapping set to
-     * write.
-     * 
-     * @param policy The policy instructing the writer about what to do with any
-     *               non-standard metadata. The default policy is
-     *               {@link ExtraMetadataPolicy#NONE}, meaning that no non-standard
-     *               metadata is ever written.
-     */
-    public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
-        extraPolicy = policy;
-    }
-
-    /**
-     * Enables or disables the condensation of "propagatable slots".
-     * 
-     * @param enabled {@code True} to enable condensation; it is enabled by default.
-     */
-    public void setCondensationEnabled(boolean enabled) {
-        condensationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
-    }
-
-    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
      * @throws IOException If an I/O error occurs.
      */
-    public void write(MappingSet mappingSet) throws IOException {
-
-        // Compute effective definitions for non-standard slots
-        extensionManager = new ExtensionSlotManager(ExtraMetadataPolicy.DEFINED, new PrefixManager());
-        extensionManager.fillFromExistingExtensions(mappingSet);
-        mappingSet.setExtensionDefinitions(extensionManager.getDefinitions(true, false));
-
+    @Override
+    protected void doWrite(MappingSet mappingSet) throws IOException {
         // Condense the set
         Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
 

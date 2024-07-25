@@ -34,10 +34,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -63,17 +61,12 @@ import org.incenp.obofoundry.sssom.model.ValueType;
  * }
  * </pre>
  */
-public class TSVWriter {
+public class TSVWriter extends BaseWriter {
 
     private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
 
     private BufferedWriter tsvWriter, metaWriter;
-    private PrefixManager prefixManager = new PrefixManager();
     private Set<String> usedPrefixes = new HashSet<String>();
-    private boolean customMap = false;
-    private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
-    private PropagationPolicy condensationPolicy = PropagationPolicy.NeverReplace;
-    private ExtensionSlotManager extensionManager;
 
     /**
      * Creates a new instance that will write data to the specified files.
@@ -155,78 +148,13 @@ public class TSVWriter {
         this(new File(filename));
     }
 
-    /**
-     * Sets the Curie map to use to shorten identifiers. The Curie map associated
-     * with the mapping set ({@link MappingSet#getCurieMap()}) will then be
-     * completely ignored in favour of the specified map.
-     * 
-     * @param map A map associating prefix names to prefixes.
-     */
-    public void setCurieMap(Map<String, String> map) {
-        prefixManager.add(map);
-        customMap = true;
-    }
-
-    /**
-     * Sets the policy to deal with non-standard metadata in the mapping set to
-     * write.
-     * 
-     * @param policy The policy instructing the writer about what to do with any
-     *               non-standard metadata. The default policy is
-     *               {@link ExtraMetadataPolicy#NONE}, meaning that no non-standard
-     *               metadata is ever written.
-     */
-    public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
-        extraPolicy = policy;
-    }
-
-    /**
-     * Enables or disables the condensation of "propagatable slots".
-     * 
-     * @param enabled {@code False} to disable condensation; it is enabled by
-     *                default.
-     */
-    public void setCondensationEnabled(boolean enabled) {
-        condensationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
-    }
-
-    /**
-     * Serialises a mapping set into the underlying file.
-     * 
-     * @param mappingSet The mapping set to serialise.
-     * @throws IOException If an I/O error occurs.
-     */
-    public void write(MappingSet mappingSet) throws IOException {
-        if ( !customMap ) {
-            prefixManager.add(mappingSet.getCurieMap());
-        }
-
-        // The "license" slot MUST be present.
-        if ( mappingSet.getLicense() == null || mappingSet.getLicense().isEmpty() ) {
-            mappingSet.setLicense("https://w3id.org/sssom/license/all-rights-reserved");
-        }
-
-        // Ditto for the mapping set ID.
-        if ( mappingSet.getMappingSetId() == null || mappingSet.getMappingSetId().isEmpty() ) {
-            mappingSet.setMappingSetId("http://sssom.invalid/" + UUID.randomUUID().toString());
-        }
-
-        // Compute effective definitions for non-standard slots
-        extensionManager = new ExtensionSlotManager(extraPolicy, prefixManager);
-        extensionManager.fillFromExistingExtensions(mappingSet);
-        mappingSet.setExtensionDefinitions(extensionManager.getDefinitions(true, false));
-
+    @Override
+    protected void doWrite(MappingSet mappingSet) throws IOException {
         // Find out which prefixes are actually needed
-        SlotHelper.getMappingSetHelper().visitSlots(mappingSet, new MappingSetPrefixVisitor());
-        MappingPrefixVisitor prefixVisitor = new MappingPrefixVisitor();
-        mappingSet.getMappings().forEach(m -> SlotHelper.getMappingHelper().visitSlots(m, prefixVisitor));
-        usedPrefixes.addAll(extensionManager.getUsedPrefixes());
-        for ( BuiltinPrefix bp : BuiltinPrefix.values() ) {
-            usedPrefixes.remove(bp.getPrefixName());
-        }
+        usedPrefixes = getUsedPrefixes(mappingSet);
 
         // Condense the set
-        Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
+        Set<String> condensedSlots = condenseSet(mappingSet);
 
         // Write the metadata
         MappingSetSlotVisitor v = new MappingSetSlotVisitor(metaWriter == null ? "#" : "");
@@ -722,54 +650,6 @@ public class TSVWriter {
             } else {
                 return value;
             }
-        }
-    }
-
-    /*
-     * Visits all string slots in a mapping set to compile a list of used prefix
-     * names.
-     */
-    private class MappingSetPrefixVisitor extends SlotVisitorBase<MappingSet, Void> {
-        @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet object, String value) {
-            if ( slot.isEntityReference() ) {
-                usedPrefixes.add(prefixManager.getPrefixName(value));
-            }
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet object, List<String> values) {
-            if ( slot.isEntityReference() ) {
-                for ( String value : values ) {
-                    usedPrefixes.add(prefixManager.getPrefixName(value));
-                }
-            }
-            return null;
-        }
-    }
-
-    /*
-     * Visits all string slots in a mapping to compile a list of used prefix names.
-     */
-    private class MappingPrefixVisitor extends SlotVisitorBase<Mapping, Void> {
-
-        @Override
-        public Void visit(Slot<Mapping> slot, Mapping object, String value) {
-            if ( slot.isEntityReference() ) {
-                usedPrefixes.add(prefixManager.getPrefixName(value));
-            }
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<Mapping> slot, Mapping object, List<String> values) {
-            if ( slot.isEntityReference() ) {
-                for ( String value : values ) {
-                    usedPrefixes.add(prefixManager.getPrefixName(value));
-                }
-            }
-            return null;
         }
     }
 }
