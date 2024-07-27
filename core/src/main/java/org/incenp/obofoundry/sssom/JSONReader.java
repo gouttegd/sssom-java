@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class JSONReader extends BaseReader {
 
-    private BufferedReader reader;
+    private Reader reader;
     private YAMLConverter converter = new YAMLConverter();
 
     /**
@@ -74,7 +74,7 @@ public class JSONReader extends BaseReader {
      * @param reader The reader object to read the mapping set from.
      */
     public JSONReader(Reader reader) {
-        this.reader = new BufferedReader(reader);
+        this.reader = reader;
     }
 
     /**

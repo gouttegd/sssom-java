@@ -50,6 +50,11 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * external metadata. Use one of the two-arguments constructors to explicitly
  * specify the name of the external metadata file.
  * <p>
+ * That parser can also be indirectly used to parse a JSON file: if it detects
+ * that the first byte of the file is a <code>{</code> character, it will assume
+ * the file is a JSON file (no valid SSSOM/TSV file can start with a
+ * <code>{</code>) and will automatically invoke a {@link JSONReader}.
+ * <p>
  * Usage:
  * 
  * <pre>
@@ -232,7 +237,14 @@ public class TSVReader extends BaseReader {
      */
     public MappingSet read(boolean metadataOnly) throws SSSOMFormatException, IOException {
         if ( metaReader == null ) {
-            if ( hasEmbeddedMetadata(tsvReader) ) {
+            GuessedFileType t = peek(tsvReader);
+            if ( t == GuessedFileType.JSON ) {
+                // Divert to the JSON reader; this will ignore the metadataOnly argument
+                JSONReader jr = new JSONReader(tsvReader);
+                jr.setExtraMetadataPolicy(extraPolicy);
+                jr.setPropagationEnabled(propagationPolicy != PropagationPolicy.Disabled);
+                return jr.read();
+            } else if ( t == GuessedFileType.TSV_WITH_EMBEDDED_METADATA ) {
                 metaReader = new StringReader(extractMetadata(tsvReader));
             } else if ( tsvFile != null ) {
                 File metaFile = findMetadata(tsvFile);
@@ -293,19 +305,24 @@ public class TSVReader extends BaseReader {
     }
 
     /*
-     * Peek into a file to check for an embedded metadata block.
+     * Peek into a file to guess what it contains (pure TSV, TSV with embedded
+     * metadata block, or JSON).
      */
-    private boolean hasEmbeddedMetadata(BufferedReader reader) throws IOException {
-        boolean ret = false;
+    private GuessedFileType peek(BufferedReader reader) throws IOException {
+        GuessedFileType t = GuessedFileType.TSV_ONLY;
 
         reader.mark(1);
         int c = reader.read();
-        if ( c != -1 && ((char) c) == '#' ) {
-            ret = true;
+        if ( c != -1 ) {
+            if ( ((char) c) == '#' ) {
+                t = GuessedFileType.TSV_WITH_EMBEDDED_METADATA;
+            } else if ( ((char) c) == '{' ) {
+                t = GuessedFileType.JSON;
+            }
         }
         reader.reset();
 
-        return ret;
+        return t;
     }
 
     /*
@@ -397,5 +414,11 @@ public class TSVReader extends BaseReader {
         }
 
         return ms;
+    }
+
+    private enum GuessedFileType {
+        TSV_WITH_EMBEDDED_METADATA,
+        TSV_ONLY,
+        JSON
     }
 }
