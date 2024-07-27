@@ -1,5 +1,5 @@
 {
-  "curie_map": {
+  "@context": {
     "COMENT": "https://example.com/entities",
     "COMPID": "https://example.com/people/",
     "ORGENT": "https://example.org/entities",

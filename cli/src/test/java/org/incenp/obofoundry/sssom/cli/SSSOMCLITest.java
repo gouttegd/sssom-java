@@ -217,6 +217,21 @@ public class SSSOMCLITest {
                 new String[] { "--split=pom.xml" });
     }
 
+    @Test
+    void testJSONOutputModes() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output.sssom.json",
+                new String[] { "--json-output" });
+
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output-short-iris.sssom.json",
+                new String[] { "--json-output", "--json-short-iris" });
+
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output-with-context.sssom.json",
+                new String[] { "--json-output", "--json-short-iris", "--json-write-ld-context" });
+
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output-with-context.sssom.json",
+                new String[] { "--sssompy-json" });
+    }
+
     /*
      * Playing with propagation/condensation
      */

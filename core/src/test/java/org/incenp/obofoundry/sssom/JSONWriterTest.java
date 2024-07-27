@@ -20,8 +20,12 @@ package org.incenp.obofoundry.sssom;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
+import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,40 +33,54 @@ import org.junit.jupiter.api.Test;
 public class JSONWriterTest {
 
     /*
-     * Basic test of the JSON writer, using the "exo2c" sample set.
+     * Basic test of the JSON writer, using a made up minimal mapping set.
      */
     @Test
     void testSimpleWrite() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv");
-        MappingSet ms = reader.read();
+        MappingSet ms = getTestSet();
 
-        assertWrittenAsExpected(ms, "exo2c", null, null, false);
+        assertWrittenAsExpected(ms, "exo2c-minimal", null, null);
     }
 
     /*
-     * Likewise, but testing that we can correctly serialise non-standard metadata.
+     * Likewise, but with shortened IRIs.
      */
     @Test
-    void testSimpleWriteWithExtensions() throws IOException, SSSOMFormatException {
+    void testWriteShortIRIs() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+
+        assertWrittenAsExpected(ms, "test-short-iris", null, (w) -> w.setShortenIRIs(true));
+    }
+
+    /*
+     * Likewise, but with the CURIE map written in a @context key (SSSOM-Py
+     * compatibility).
+     */
+    @Test
+    void testWriteLDContext() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+
+        assertWrittenAsExpected(ms, "test-ld-context", null, (w) -> {
+            w.setShortenIRIs(true);
+            w.setWriteCurieMapInContext(true);
+        });
+    }
+
+    /*
+     * Test that we can serialise non-standard slots.
+     */
+    @Test
+    void testWriteExtraSlots() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
-        assertWrittenAsExpected(ms, "test-extensions-defined", null, ExtraMetadataPolicy.DEFINED, false);
-        assertWrittenAsExpected(ms, "test-extensions-undefined", null, ExtraMetadataPolicy.UNDEFINED, false);
-        assertWrittenAsExpected(ms, "test-extensions-none", null, ExtraMetadataPolicy.NONE, false);
-    }
-
-    /*
-     * Test that we can shorten identifiers with a CURIE map.
-     */
-    @Test
-    void testWriteShortIRIs() throws IOException, SSSOMFormatException {
-        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
-        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
-        MappingSet ms = reader.read();
-
-        assertWrittenAsExpected(ms, "test-short-iris", null, ExtraMetadataPolicy.DEFINED, true);
+        assertWrittenAsExpected(ms, "test-extensions-defined", null,
+                (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED));
+        assertWrittenAsExpected(ms, "test-extensions-undefined", null,
+                (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED));
+        assertWrittenAsExpected(ms, "test-extensions-none", null,
+                (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE));
     }
 
     /*
@@ -80,17 +98,16 @@ public class JSONWriterTest {
      * automatically deleted if it is found to be identical to the theoretical file.
      */
     private void assertWrittenAsExpected(MappingSet ms, String expectedBasename, String actualBasename,
-            ExtraMetadataPolicy extraPolicy, boolean shortIRIs) throws IOException {
+            Consumer<JSONWriter> consumer) throws IOException {
         if ( actualBasename == null ) {
             actualBasename = expectedBasename;
         }
 
         File written = new File("src/test/resources/output/" + actualBasename + ".sssom.json.out");
         JSONWriter writer = new JSONWriter(written);
-        if ( extraPolicy != null ) {
-            writer.setExtraMetadataPolicy(extraPolicy);
+        if ( consumer != null ) {
+            consumer.accept(writer);
         }
-        writer.setShortenIRIs(shortIRIs);
         writer.write(ms.toBuilder().build());
 
         File expected = new File("src/test/resources/output/" + expectedBasename + ".sssom.json");
@@ -103,5 +120,43 @@ public class JSONWriterTest {
         if ( same ) {
             written.delete();
         }
+    }
+
+    private MappingSet getTestSet() {
+        // @formatter:off
+        MappingSet ms = MappingSet.builder()
+                .mappings(new ArrayList<Mapping>())
+                .curieMap(new HashMap<String,String>())
+                .mappingSetId("https://example.org/sets/exo2c")
+                .license("https://creativecommons.org/licenses/by/4.0/")
+                .creatorId(new ArrayList<String>())
+                .build();
+        ms.getMappings().add(Mapping.builder()
+                .subjectId("https://example.org/entities/0001")
+                .subjectLabel("alice")
+                .predicateId("http://www.w3.org/2004/02/skos#closeMatch")
+                .objectId("https://example.com/entities/0011")
+                .objectLabel("alpha")
+                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
+                .build());
+        ms.getMappings().add(Mapping.builder()
+                .subjectId("https://example.org/entities/0002")
+                .subjectLabel("bob")
+                .predicateId("http://www.w3.org/2004/02/skos#closeMatch")
+                .objectId("https://example.com/entities/0012")
+                .objectLabel("beta")
+                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
+                .build());
+        // @formatter:on
+
+        ms.getCurieMap().put("ORGENT", "https://example.org/entities");
+        ms.getCurieMap().put("COMENT", "https://example.com/entities");
+        ms.getCurieMap().put("ORGPID", "https://example.org/people/");
+        ms.getCurieMap().put("COMPID", "https://example.com/people/");
+
+        ms.getCreatorId().add("https://example.org/people/0000-0000-0001-1234");
+        ms.getCreatorId().add("https://example.com/people/0000-0000-0002-5678");
+
+        return ms;
     }
 }
