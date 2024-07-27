@@ -1,0 +1,82 @@
+{
+  "curie_map": {
+    "COMENT": "https://example.com/entities/",
+    "COMPID": "https://example.com/people/",
+    "ORGENT": "https://example.org/entities/",
+    "ORGPID": "https://example.org/people/"
+  },
+  "mapping_set_id": "https://example.org/sets/exo2c",
+  "mapping_set_title": "O2C set",
+  "creator_id": [
+    "ORGPID:0000-0000-0001-1234",
+    "COMPID:0000-0000-0002-5678"
+  ],
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "publication_date": "2023-09-13",
+  "mappings": [
+    {
+      "subject_id": "ORGENT:0001",
+      "subject_label": "alice",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0011",
+      "object_label": "alpha",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0002",
+      "subject_label": "bob",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0012",
+      "object_label": "beta",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0004",
+      "subject_label": "daphne",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0014",
+      "object_label": "delta",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0005",
+      "subject_label": "eve",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0015",
+      "object_label": "epsilon",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0006",
+      "subject_label": "fanny",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0016",
+      "object_label": "zeta",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0007",
+      "subject_label": "gavin",
+      "predicate_id": "skos:exactMatch",
+      "object_id": "COMENT:0013",
+      "object_label": "gamma",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0008",
+      "subject_label": "hector",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0017",
+      "object_label": "eta",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    },
+    {
+      "subject_id": "ORGENT:0009",
+      "subject_label": "ivan",
+      "predicate_id": "skos:exactMatch",
+      "object_id": "COMENT:0019",
+      "object_label": "iota",
+      "mapping_justification": "semapv:ManualMappingCuration"
+    }
+  ]
+}

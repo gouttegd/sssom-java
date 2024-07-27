@@ -29,8 +29,10 @@ import java.util.Map;
 
 import javax.xml.catalog.CatalogException;
 
+import org.incenp.obofoundry.sssom.BaseWriter;
 import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
+import org.incenp.obofoundry.sssom.JSONWriter;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
@@ -136,6 +138,24 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = { "--no-condensation" }, description = "Disable condensation of propagatable slots.")
         boolean disableCondensation;
+
+        @Option(names = { "-j", "--json-output" }, description = "Write the mapping set in SSSOM/JSON format.")
+        boolean useJSON;
+
+        @Option(names = { "--json-short-iris" }, description = "Shorten IRIs when writing in JSON format.")
+        boolean jsonShortenIRIs;
+
+        @Option(names = { "--json-write-ld-context" },
+                description = "Store the CURIE map in a JSON-LD @context key when writing in JSON format.")
+        boolean jsonWriteContext;
+
+        @Option(names = { "--sssompy-json" },
+                description = "Write the mapping set in the JSON-LD format expected by SSSOM-Py.")
+        private void enableSSSOMPyJSON(boolean arg) {
+            useJSON = arg;
+            jsonShortenIRIs = arg;
+            jsonWriteContext = arg;
+        }
     }
 
     enum OutputMapSource {
@@ -414,16 +434,7 @@ public class SimpleCLI implements Runnable {
         }
         boolean stdout = outputOpts.file.equals("-");
         try {
-            TSVWriter writer;
-            if ( stdout ) {
-                FileOutputStream metaStream = null;
-                if ( outputOpts.metaFile != null ) {
-                    metaStream = new FileOutputStream(outputOpts.metaFile);
-                }
-                writer = new TSVWriter(System.out, metaStream);
-            } else {
-                writer = new TSVWriter(outputOpts.file, outputOpts.metaFile);
-            }
+            BaseWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
             writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
             writer.setCondensationEnabled(!outputOpts.disableCondensation);
             writer.write(set);
@@ -455,15 +466,44 @@ public class SimpleCLI implements Runnable {
             MappingSet splitSet = ms.toBuilder().mappings(null).build();
             splitSet.setMappings(mappingsBySplit.get(splitId));
 
-            File output = new File(dir, splitId + ".sssom.tsv");
+            String extension = outputOpts.useJSON ? ".sssom.json" : ".sssom.tsv";
+            File output = new File(dir, splitId + extension);
             try {
-                TSVWriter writer = new TSVWriter(output);
+                BaseWriter writer = getWriter(output.getPath(), null);
                 writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
                 writer.setCondensationEnabled(!outputOpts.disableCondensation);
                 writer.write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());
             }
+        }
+    }
+
+    private BaseWriter getWriter(String filename, String metaFilename) throws IOException {
+        boolean stdout = filename.equals("-");
+        if ( outputOpts.useJSON ) {
+            JSONWriter writer = null;
+            if ( stdout ) {
+                writer = new JSONWriter(System.out);
+            } else {
+                writer = new JSONWriter(filename);
+            }
+            writer.setShortenIRIs(outputOpts.jsonShortenIRIs);
+            writer.setWriteCurieMapInContext(outputOpts.jsonWriteContext);
+
+            return writer;
+        } else {
+            TSVWriter writer = null;
+            if ( stdout ) {
+                FileOutputStream metaStream = null;
+                if ( metaFilename != null ) {
+                    metaStream = new FileOutputStream(metaFilename);
+                }
+                writer = new TSVWriter(System.out, metaStream);
+            } else {
+                writer = new TSVWriter(filename, metaFilename);
+            }
+            return writer;
         }
     }
 
