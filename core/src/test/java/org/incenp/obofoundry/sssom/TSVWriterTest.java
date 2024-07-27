@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -276,6 +277,14 @@ public class TSVWriterTest {
         ms.getMappings().get(0).setIssueTrackerItem("Value with\nnew line character");
 
         assertWrittenAsExpected(ms, "test-escaping-tsv", null, null, null);
+    }
+
+    @Test
+    void testWritingEnumValuesInYAML() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.getMappings().get(0).setSubjectType(EntityType.OWL_CLASS);
+
+        assertWrittenAsExpected(ms, "test-enum-values-in-yaml", null, null, null);
     }
 
     /*

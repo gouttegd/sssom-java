@@ -312,7 +312,7 @@ public class TSVWriter extends BaseWriter {
 
         @Override
         public Void visit(Slot<MappingSet> slot, MappingSet set, Object value) {
-            sb.append(value != null ? value.toString() : "");
+            sb.append(String.format("%s%s: %s\n", linePrefix, slot.getName(), value.toString()));
             return null;
         }
 
