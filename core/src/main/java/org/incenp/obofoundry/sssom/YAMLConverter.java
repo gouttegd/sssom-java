@@ -55,6 +55,7 @@ public class YAMLConverter {
         preprocessors = new ArrayList<IYAMLPreprocessor>();
         preprocessors.add(new MatchTypeConverter());
         preprocessors.add(new MatchTermTypeConverter());
+        preprocessors.add(new JsonLDConverter());
 
         setSlotMaps = new HashMap<String, Slot<MappingSet>>();
         for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
@@ -150,6 +151,11 @@ public class YAMLConverter {
     public MappingSet convertMappingSet(Map<String, Object> rawMap) throws SSSOMFormatException {
         MappingSet ms = new MappingSet();
 
+        // Deal with variations from older versions of the specification
+        for ( IYAMLPreprocessor preprocessor : preprocessors ) {
+            preprocessor.process(rawMap);
+        }
+
         // Process the CURIE map first, so that we can expand CURIEs as soon as possible
         Object rawCurieMap = rawMap.getOrDefault("curie_map", new HashMap<String, String>());
         if ( isMapOf(rawCurieMap, String.class) ) {
@@ -160,11 +166,6 @@ public class YAMLConverter {
             rawMap.remove("curie_map");
         } else {
             onTypingError("curie_map");
-        }
-
-        // Deal with variations from older versions of the specification
-        for ( IYAMLPreprocessor preprocessor : preprocessors ) {
-            preprocessor.process(rawMap);
         }
 
         // Process extension definitions

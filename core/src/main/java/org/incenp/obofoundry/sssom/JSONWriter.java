@@ -51,6 +51,7 @@ public class JSONWriter extends BaseWriter {
     private int indentLevel = 0;
     private boolean firstItem = false;
     private boolean shortenIRIs = false;
+    private boolean curieMapInContext = false;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -95,6 +96,22 @@ public class JSONWriter extends BaseWriter {
     }
 
     /**
+     * Enables writing the curie map in a JSON-LD-like "@context" object.
+     * <p>
+     * SSSOM-Py expects the prefix names to be declared in the <em>@context</em>
+     * dictionary, so this option enables that behaviour. Note that it only has
+     * effect is shortening of IRIs (see {@link #setShortenIRIs(boolean)}) is also
+     * enabled, because there is no curie map to write otherwise.
+     * 
+     * @param enabled {@code True} to write the curie map as a <em>@context<em>
+     *                dictionary. The default is to write it as a normal
+     *                <em>curie_map</em> slot.
+     */
+    public void setWriteCurieMapInContext(boolean enabled) {
+        curieMapInContext = enabled;
+    }
+
+    /**
      * Serialises a mapping set into the underlying file.
      * 
      * @param mappingSet The mapping set to serialise.
@@ -111,7 +128,7 @@ public class JSONWriter extends BaseWriter {
             // Write the CURIE map
             Set<String> usedPrefixes = getUsedPrefixes(mappingSet);
             if ( !usedPrefixes.isEmpty() ) {
-                addKey("curie_map");
+                addKey(curieMapInContext ? "@context" : "curie_map");
                 startDict();
                 for ( String prefixName : getUsedPrefixes(mappingSet) ) {
                     if ( prefixName != null ) {
