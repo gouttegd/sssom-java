@@ -2,12 +2,13 @@ Basic library operations
 
 * Reading mappings
 
-  Currently, the only supported format to read mappings from is the
-  {{{https://mapping-commons.github.io/sssom/spec/#tsv}TSV format}}.
-  Both the “internal metadata” variant (where the metadata are included
-  directly within the TSV file, as a commented header) and the
-  ”external” variant (where the metadata are in a distinct file) are
-  supported.
+** TSV format
+
+  The {{{https://mapping-commons.github.io/sssom/spec-formats-tsv/}TSV format}}
+  is the main supported format. Both the “internal metadata” variant
+  (where the metadata are included directly within the TSV file, as a
+  commented header) and the ”external” variant (where the metadata are in a
+  distinct file) are supported.
   
   Use the {{{./apidocs/org/incenp/obofoundry/sssom/TSVReader.html}TSVReader}}
   class to read a mapping set from a TSV file:
@@ -58,7 +59,8 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   not know about.
   
   The parser automatically propagates metadata from the mapping set down
-  to the individual mappings.
+  to the individual mappings, unless that behaviour is explicitly
+  disabled with <<<setEnablePropagation(false)>>>.
   
   The parser has a liberal behaviour, in that: a) slots that it does not
   recognise are silently ignored and do not cause a parsing failure; b)
@@ -68,10 +70,71 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   regardless of which version of the specification the file is
   conformant to.
   
+  As a convenience, the TSV parser will automatically detect if the
+  input file could be a file in the JSON format (if the first byte is a
+  <<<\{>>> character), and in that case will delegate the parsing to the
+  JSON parser. This allows using the TSV parser in any case if you don’t
+  know in advance whether the input file is a TSV file or a JSON file.
+  
+** JSON format
+
+  The {{{https://mapping-commons.github.io/sssom/spec-formats-json/}JSON format}}
+  is mostly a direct JSON rendering of the SSSOM data model. It is
+  supported by the {{{./apidocs/org/incenp/obofoundry/sssom/JSONReader.html}JSONReader}}
+  class.
+  
+  Note that the JSON format is currently not precisely defined by the
+  SSSOM specification. Therefore, the behaviour of the reader may change
+  in the future.
+  
+  In particular, the specification says nothing about how the CURIE map
+  (which may be needed to resolve CURIEs if the file makes use of them)
+  should be stored in the JSON format. The parser supports two different
+  ways:
+  
+  * The CURIE map is in a <<<curie_map>>> key in the top-level
+    dictionary. Presumably, this is intended to become the standard way
+    of storing the map.
+    
+  * The CURIE map is stored in a JSON-LD-like <<<@context>>> in the
+    top-level dictionary. This is what SSSOM-Py produces, at least for
+    now.
+    
+  []
+  
+  The parser is used in a similar fashion as the TSV parser:
+  
++-----------------------------------------------------------------------
+import org.incenp.obofoundry.sssom.JSONReader;
+import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.model.MappingSet;
+
+try {
+    JSONReader reader = new JSONReader("my-mappings.sssom.json");
+    MappingSet ms = reader.read();
+} catch (IOException ioe) {
+    // A non-SSSOM I/O error occured
+} catch (SSSOMFormatException sfe) {
+    // Invalid SSSOM data
+}
++-----------------------------------------------------------------------
+
+  It also behaves mostly in the same fashion. Notably:
+  
+  * CURIEs are automatically expanded.
+  
+  * Propagatable slots are automatically propagated, again propagation
+    is explicitly disabled.
+    
+  * Obsolete slots are silently converted to their newer equivalents
+    when possible.
+    
+  []
+  
   
 * Writing mappings
 
-  Again, only the TSV format is supported.
+** TSV format
   
   Use the {{{./apidocs/org/incenp/obofoundry/sssom/TSVWriter.html}TSVWriter}}
   class to write a mapping set to a file:
@@ -109,7 +172,43 @@ TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv", "my-meta.yml");
   all the mappings in the set have the same value for a given slot, the
   value is written once in the mapping set metadata instead of being
   written for all mappings. This ”condensation” is the opposite
-  operation of the “propagation” that happens upon parsing.
+  operation of the “propagation” that happens upon parsing. Condensation
+  may be disabled by calling <<<setCondensationEnabled(false)>>>.
+  
+** JSON format
+
+  Use the {{{./apidocs/org/incenp/obofoundry/sssom/JSONWriter.html}JSONWriter}}
+  class to write a mapping set to a file:
+  
++-----------------------------------------------------------------------
+import org.incenp.obofoundry.sssom.JSONWriter;
+import org.incenp.obofoundry.sssom.model.MappingSet;
+
+MappingSet ms = new MappingSet();
+// Fill the mapping set...
+try {
+    JSONWriter writer = new JSONWriter("my-new-mappings.sssom.tsv");
+    writer.write(ms);
+} catch (IOException ioe) {
+    // A non-SSSOM I/O error occured
+}
++-----------------------------------------------------------------------
+
+  Since the JSON format is currently unspecified, the JSON writer allows
+  some control on some aspects of its behaviour:
+  
+  * By default, all identifiers are written in their full-length form.
+    Call <<<setShortenIRIs(true)>>> to enable writing the identifiers in
+    CURIE form.
+    
+  * When a CURIE map is needed to interpret the set (when identifiers
+    are written in CURIE form), is is by default written in a
+    <<<curie_map>>> slot. Call <<<setWriteCurieMapInContext(true)>>> to
+    write the CURIE map in a JSON-LD-like <<<@context>>> dictionary.
+    This is intended for compatibility with SSSOM-Py.
+    
+  []
+  
   
 * Manipulating the mapping set and the mappings
 
@@ -223,3 +322,35 @@ MappingCardinality.inferCardinality(mappingSet.getMappings());
   This will replace any previously set value for the mapping cardinality
   (e.g. original values from the SSSOM file from which the mapping set
   was read) for each mapping.
+  
+* Dealing with non-standard slots
+
+  Currently, the SSSOM specification officially does not support the use
+  of any other metadata slots than the ones defined in the data model.
+  However, there is a proposition under discussion to add formal support
+  for “extension slots”, and this library supports this proposition.
+  
+  Extension slots are represented, both in the <<<MappingSet>>> and the
+  <<<Mapping>>> class, by a String dictionary that can be accessed with
+  <<<getExtensions()>>> and <<<setExtensions()>>>. Each key in that
+  dictionary is intended to be a property identifying the non-standard
+  metadata represented by a non-standard slot.
+  
+  All SSSOM parsers and readers (for both the TSV and the JSON format)
+  by default ignore all non-standard slots. Call their
+  <<<setExtraMetadataPolicy()>>> method to change that behaviour: the
+  allowed value for the parameter of that method are:
+  
+  [NONE] Ignore all non-standard slots. This is the default.
+  
+  [DEFINED] When parsing, only recognise non-standard slots that are
+            defined in the mapping set <<<extension_definitions>>> slot.
+            When writing, write all non-standard slots as defined
+            extensions.
+  
+  [UNDEFINED] When parsing, accept all non-standard slots even if they
+  			  are not defined as extensions. When writing, write all
+  			  non-standard slots without defining them.
+
+  []
+

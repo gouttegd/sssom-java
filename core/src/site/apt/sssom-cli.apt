@@ -15,6 +15,9 @@ Command-line tool
   specified, SSSOM-CLI will attempt to read a set from its standard
   input.
   
+  Both the SSSOM/TSV and the JSON formats are supported. SSSOM-CLI will
+  automatically detect the format.
+  
   To read both from the standard input and from one or several file(s),
   use the special value <<<->>> in an <<<--input>>> option. For example,
   the following command reads a set from <<<file1.sssom.tsv>>> and from
@@ -39,6 +42,10 @@ sssom-cli --input file1.sssom.tsv --input -
 +-----------------------------------------------------------------------
 sssom-cli --input set.sssom.tsv:metadata.yaml
 +-----------------------------------------------------------------------
+
+  The metadata file, if specified, is ignored if the input file is a
+  JSON file, since the JSON format does not allow the use of an external
+  metadata file.
 
 ** Merging metadata
 
@@ -111,6 +118,35 @@ sssom-cli --input set.sssom.tsv:metadata.yaml
   result set along the subject and object prefixes with the
   <<<--split>>> option, which accepts the name of a directory where the
   split sets will be written.
+  
+** JSON output
+
+  SSSOM-CLI writes the output set in the SSSOM/TSV format by default. To
+  output the set in the JSON format, use the <<<--json-output>>> option.
+  Note that the JSON format is currently unspecified, so the output
+  produced by that option may change in the future.
+  
+  In JSON mode, the <<<--output-metadata>>> option above is ignored,
+  since the JSON format does not allow the use of an external metadata
+  file.
+  
+  Two more options control the behaviour of the JSON mode:
+  
+  [--json-short-iris] Use this option to write all identifiers in short
+                      form (CURIE form). The default is to only write
+                      full-length identifiers.
+  
+  [--json-write-ld-context] Use this option to write the CURIE map in a
+  							JSON-LD-like <<<@context>>> key, rather than
+  							in a <<<curie_map>>> key. This is for
+  							compatibility with SSSOM-Py.
+
+  []
+  
+  For convenience, another option, <<<--sssompy-json>>>, can be used to
+  trigger JSON output tailored for SSSOM-Py compatibility. Using that
+  option is equivalent to using <<<--json-output>>>,
+  <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
 * Checking a set against an ontology
 

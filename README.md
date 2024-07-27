@@ -44,8 +44,7 @@ for (Mapping m : mappingSet.getMappings()) {
 }
 ```
 
-* Writing a SSSOM mapping set to the TSV serialisation format (only the
-  internal metadata variant is supported).
+* Writing a SSSOM mapping set to the TSV serialisation format.
 
 ```java
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -60,6 +59,8 @@ try {
     // I/O error
 }
 ```
+
+* Reading/writing a mapping set from/to the JSON serialisation format.
 
 * Extracting SSSOM mappings from a OWL ontology with ROBOT:
 

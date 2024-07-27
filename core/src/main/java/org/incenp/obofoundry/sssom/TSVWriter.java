@@ -43,8 +43,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.ValueType;
 
 /**
- * A writer to serialise a SSSOM mapping set into the TSV format. For now, only
- * the “embedded metadata” variant is supported.
+ * A writer to serialise a SSSOM mapping set into the TSV format.
  * <p>
  * If the mapping set has a CURIE map ({@link MappingSet#getCurieMap()}), it is
  * automatically used to shorten identifiers when they are written to the file.
