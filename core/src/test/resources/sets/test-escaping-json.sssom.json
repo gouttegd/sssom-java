@@ -6,6 +6,7 @@
   ],
   "license": "https://creativecommons.org/licenses/by/4.0/",
   "subject_type": "owl class",
+  "comment": "A string\nwith\tvarious\rcharacters\\that\bshould\u0001be\fescaped",
   "mappings": [
     {
       "subject_id": "https://example.org/entities/0001",

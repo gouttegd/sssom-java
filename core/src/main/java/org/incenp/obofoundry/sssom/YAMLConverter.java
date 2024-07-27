@@ -351,6 +351,12 @@ public class YAMLConverter {
             } catch ( IllegalArgumentException e ) {
                 throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
             }
+        } else if ( type == Double.class && Double.class.isInstance(rawValue) ) {
+            try {
+                slot.setValue(object, rawValue);
+            } catch ( IllegalArgumentException e ) {
+                throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
+            }
         } else if ( type == EntityType.class && String.class.isInstance(rawValue) ) {
             EntityType value = EntityType.fromString(String.class.cast(rawValue));
             if ( value != null ) {

@@ -229,7 +229,7 @@ public class JSONWriter extends BaseWriter {
 
             default:
                 if ( c <= 0x1F ) {
-                    buffer.append(String.format("\\u04x", c));
+                    buffer.append(String.format("\\u%04x", c));
                 } else {
                     buffer.appendCodePoint(c);
                 }

@@ -11,6 +11,7 @@
     "COMPID:0000-0000-0002-5678"
   ],
   "license": "https://creativecommons.org/licenses/by/4.0/",
+  "subject_type": "owl class",
   "mappings": [
     {
       "subject_id": "ORGENT:/0001",
@@ -26,7 +27,8 @@
       "predicate_id": "http://www.w3.org/2004/02/skos#closeMatch",
       "object_id": "COMENT:/0012",
       "object_label": "beta",
-      "mapping_justification": "semapv:ManualMappingCuration"
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "confidence": 0.7
     }
   ]
 }

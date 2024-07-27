@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
@@ -81,6 +82,14 @@ public class JSONWriterTest {
                 (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED));
         assertWrittenAsExpected(ms, "test-extensions-none", null,
                 (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE));
+    }
+
+    @Test
+    void testEscapingJSON() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.setComment("A string\nwith\tvarious\rcharacters\\that\bshould\u0001be\fescaped");
+
+        assertWrittenAsExpected(ms, "test-escaping-json", null, null);
     }
 
     /*
@@ -146,6 +155,7 @@ public class JSONWriterTest {
                 .objectId("https://example.com/entities/0012")
                 .objectLabel("beta")
                 .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
+                .confidence(0.7)
                 .build());
         // @formatter:on
 
@@ -156,6 +166,8 @@ public class JSONWriterTest {
 
         ms.getCreatorId().add("https://example.org/people/0000-0000-0001-1234");
         ms.getCreatorId().add("https://example.com/people/0000-0000-0002-5678");
+
+        ms.setSubjectType(EntityType.OWL_CLASS);
 
         return ms;
     }
