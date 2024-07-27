@@ -92,6 +92,54 @@ public class JSONWriterTest {
         assertWrittenAsExpected(ms, "test-escaping-json", null, null);
     }
 
+    @Test
+    void testBasicRoundtrip() throws IOException, SSSOMFormatException {
+        JSONReader reader = new JSONReader("src/test/resources/sets/exo2c.sssom.json");
+        MappingSet ms = reader.read();
+
+        assertWrittenAsExpected(ms, "exo2c", "test-basic-roundtrip", null);
+    }
+
+    @Test
+    void testTSVAndJSONRoundtrips() throws IOException, SSSOMFormatException {
+        TSVtoJSONtoTSVRoundtrip("exo2c", ExtraMetadataPolicy.NONE);
+        TSVtoJSONtoTSVRoundtrip("test-extensions-defined", ExtraMetadataPolicy.DEFINED);
+    }
+
+    private void TSVtoJSONtoTSVRoundtrip(String tsvFilename, ExtraMetadataPolicy policy)
+            throws IOException, SSSOMFormatException {
+        File origTSV = new File("src/test/resources/sets/" + tsvFilename + ".sssom.tsv");
+        if ( !origTSV.exists() ) {
+            origTSV = new File("src/test/resources/output/" + tsvFilename + ".sssom.tsv");
+        }
+
+        TSVReader tsvReader = new TSVReader(origTSV);
+        tsvReader.setExtraMetadataPolicy(policy);
+        MappingSet ms = tsvReader.read();
+
+        File json = new File("src/test/resources/output/" + tsvFilename + ".sssom.json.out");
+        JSONWriter jsonWriter = new JSONWriter(json);
+        jsonWriter.setShortenIRIs(true);
+        jsonWriter.setExtraMetadataPolicy(policy);
+        jsonWriter.write(ms);
+
+        JSONReader jsonReader = new JSONReader(json);
+        jsonReader.setExtraMetadataPolicy(policy);
+        ms = jsonReader.read();
+
+        File newTSV = new File("src/test/resources/output/" + tsvFilename + ".sssom.tsv.out");
+        TSVWriter tsvWriter = new TSVWriter(newTSV);
+        tsvWriter.setExtraMetadataPolicy(policy);
+        tsvWriter.write(ms);
+
+        boolean same = FileUtils.contentEquals(origTSV, newTSV);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            json.delete();
+            newTSV.delete();
+        }
+    }
+
     /*
      * Checks that a mapping set is written exactly as we expect. This method will
      * write the provided set to a temporary file and compares the written file with

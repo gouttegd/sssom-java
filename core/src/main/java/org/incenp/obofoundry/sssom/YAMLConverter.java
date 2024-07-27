@@ -175,6 +175,9 @@ public class YAMLConverter {
         // Process the bulk of the metadata slots
         Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
         for ( String key : rawMap.keySet() ) {
+            if ( key.equals("mappings") ) { // To be processed separately
+                continue;
+            }
             if ( setSlotMaps.containsKey(key) ) {
                 setSlotValue(setSlotMaps.get(key), ms, rawMap.get(key));
             } else {

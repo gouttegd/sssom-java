@@ -1,0 +1,20 @@
+{
+  "curie_map": {
+    "COMENT": "https://example.com/entities/",
+    "ORGENT": "https://example.org/entities/"
+  },
+  "mapping_set_id": "https://example.org/sets/exo2c",
+  "mapping_set_title": "O2C set",
+  "mappings": [
+    {
+      "subject_id": "ORGENT:0001",
+      "subject_label": "alice",
+      "predicate_id": "skos:closeMatch",
+      "object_id": "COMENT:0011",
+      "object_label": "alpha",
+      "mapping_justification": "semapv:ManualMappingCuration",
+      "subject_type": "owl class",
+      "confidence": 0.7
+    }
+  ]
+}

@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom;
 import java.io.IOException;
 import java.time.LocalDate;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
@@ -159,5 +160,14 @@ public class JSONReaderTest {
 
         // Second mapping has its own mapping tool value
         Assertions.assertEquals("bar mapper", ms.getMappings().get(1).getMappingTool());
+    }
+
+    @Test
+    void testParsingNonStringValues() throws IOException, SSSOMFormatException {
+        JSONReader reader = new JSONReader("src/test/resources/sets/test-non-string-values.sssom.json");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(EntityType.OWL_CLASS, ms.getMappings().get(0).getSubjectType());
+        Assertions.assertEquals(0.7, ms.getMappings().get(0).getConfidence());
     }
 }
