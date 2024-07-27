@@ -1,0 +1,79 @@
+{
+  "mapping_set_id": "https://example.org/sets/exo2c-with-propagatable-slots",
+  "mapping_set_title": "O2C set with propagatable slots",
+  "creator_id": [
+    "https://example.org/people/0000-0000-0001-1234",
+    "https://example.com/people/0000-0000-0002-5678"
+  ],
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "mapping_provider": "https://example.org/provider",
+  "mapping_tool": "foo mapper",
+  "publication_date": "2023-09-13",
+  "mappings": [
+    {
+      "subject_id": "https://example.org/entities/0001",
+      "subject_label": "alice",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0011",
+      "object_label": "alpha",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    },
+    {
+      "subject_id": "https://example.org/entities/0002",
+      "subject_label": "bob",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0012",
+      "object_label": "beta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+      "mapping_tool": "bar mapper"
+    },
+    {
+      "subject_id": "https://example.org/entities/0004",
+      "subject_label": "daphne",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0014",
+      "object_label": "delta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    },
+    {
+      "subject_id": "https://example.org/entities/0005",
+      "subject_label": "eve",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0015",
+      "object_label": "epsilon",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    },
+    {
+      "subject_id": "https://example.org/entities/0006",
+      "subject_label": "fanny",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0016",
+      "object_label": "zeta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    },
+    {
+      "subject_id": "https://example.org/entities/0007",
+      "subject_label": "gavin",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#exactMatch",
+      "object_id": "https://example.com/entities/0013",
+      "object_label": "gamma",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    },
+    {
+      "subject_id": "https://example.org/entities/0008",
+      "subject_label": "hector",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#closeMatch",
+      "object_id": "https://example.com/entities/0017",
+      "object_label": "eta",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    },
+    {
+      "subject_id": "https://example.org/entities/0009",
+      "subject_label": "ivan",
+      "predicate_id": "http://www.w3.org/2004/02/skos/core#exactMatch",
+      "object_id": "https://example.com/entities/0019",
+      "object_label": "iota",
+      "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration"
+    }
+  ]
+}

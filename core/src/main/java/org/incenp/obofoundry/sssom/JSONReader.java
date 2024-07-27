@@ -101,6 +101,7 @@ public class JSONReader extends BaseReader {
         } catch ( JsonParseException | JsonMappingException e ) {
             throw new SSSOMFormatException("Invalid JSON data", e);
         }
+        new SlotPropagator(propagationPolicy).propagate(ms);
 
         // Post-reading checks
         // 1. Check that built-in prefixes are not redefined
