@@ -26,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +104,7 @@ public class JSONWriter extends BaseWriter {
      * effect is shortening of IRIs (see {@link #setShortenIRIs(boolean)}) is also
      * enabled, because there is no curie map to write otherwise.
      * 
-     * @param enabled {@code True} to write the curie map as a <em>@context<em>
+     * @param enabled {@code True} to write the curie map as a <em>@context</em>
      *                dictionary. The default is to write it as a normal
      *                <em>curie_map</em> slot.
      */
@@ -130,7 +131,9 @@ public class JSONWriter extends BaseWriter {
             if ( !usedPrefixes.isEmpty() ) {
                 addKey(curieMapInContext ? "@context" : "curie_map");
                 startDict();
-                for ( String prefixName : getUsedPrefixes(mappingSet) ) {
+                List<String> sortedPrefixes = new ArrayList<String>(getUsedPrefixes(mappingSet));
+                sortedPrefixes.sort((a, b) -> a.compareTo(b));
+                for ( String prefixName : sortedPrefixes ) {
                     if ( prefixName != null ) {
                         addKey(prefixName);
                         addValue(prefixManager.getPrefix(prefixName));

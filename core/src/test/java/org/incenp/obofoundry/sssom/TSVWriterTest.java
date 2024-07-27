@@ -357,7 +357,7 @@ public class TSVWriterTest {
                 .objectLabel("alpha")
                 .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
                 .build());
-        // @formatter:off
+        // @formatter:on
 
         ms.getCurieMap().put("ORGENT", "https://example.org/entities/");
         ms.getCurieMap().put("COMENT", "https://example.com/entities/");

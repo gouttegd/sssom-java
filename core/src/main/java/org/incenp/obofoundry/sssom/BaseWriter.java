@@ -168,7 +168,10 @@ public abstract class BaseWriter {
         @Override
         public Void visit(Slot<T> slot, T object, String value) {
             if ( slot.isEntityReference() ) {
-                usedPrefixes.add(prefixManager.getPrefixName(value));
+                String prefix = prefixManager.getPrefixName(value);
+                if ( prefix != null ) {
+                    usedPrefixes.add(prefix);
+                }
             }
             return null;
         }
@@ -177,7 +180,10 @@ public abstract class BaseWriter {
         public Void visit(Slot<T> slot, T object, List<String> values) {
             if ( slot.isEntityReference() ) {
                 for ( String value : values ) {
-                    usedPrefixes.add(prefixManager.getPrefixName(value));
+                    String prefix = prefixManager.getPrefixName(value);
+                    if ( prefix != null ) {
+                        usedPrefixes.add(prefix);
+                    }
                 }
             }
             return null;

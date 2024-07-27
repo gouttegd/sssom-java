@@ -213,7 +213,10 @@ public class ExtensionSlotManager {
 
             if (policy == ExtraMetadataPolicy.DEFINED) {
                 // Extensions will be defined, so make sure we have the prefix for every property
-                usedPrefixes.add(prefixManager.getPrefixName(property));
+                String prefix = prefixManager.getPrefixName(property);
+                if ( prefix != null ) {
+                    usedPrefixes.add(prefix);
+                }
             }
 
             definedExtensionsByProperty.put(property, definition);
@@ -298,7 +301,10 @@ public class ExtensionSlotManager {
                 ExtensionValue value = extensions.get(property);
                 if ( value != null ) {
                     if ( value.isIdentifier() ) {
-                        usedPrefixes.add(prefixManager.getPrefixName(value.asString()));
+                        String prefix = prefixManager.getPrefixName(value.asString());
+                        if ( prefix != null ) {
+                            usedPrefixes.add(prefix);
+                        }
                     }
                     typesByProperty.computeIfAbsent(property, k -> new HashSet<ValueType>()).add(value.getType());
                     if ( mappingLevel ) {

@@ -272,9 +272,7 @@ public class TSVWriter extends BaseWriter {
                 // map instead.
                 values = new HashMap<String, String>();
                 for ( String prefixName : usedPrefixes ) {
-                    if ( prefixName != null ) {
-                        values.put(prefixName, prefixManager.getPrefix(prefixName));
-                    }
+                    values.put(prefixName, prefixManager.getPrefix(prefixName));
                 }
             }
 
