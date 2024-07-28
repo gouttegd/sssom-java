@@ -50,6 +50,12 @@ public class SSSOMCLITest {
     }
 
     @Test
+    void testMixingPositionalArgumentAndInputOption() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2n.sssom.tsv" }, "exo2cn.sssom.tsv",
+                new String[] { "--input", "../core/src/test/resources/sets/exo2c.sssom.tsv" });
+    }
+
+    @Test
     void testReadingOneSetFromStdin() throws IOException {
         // No --input option, should read from stdin by default
         FileInputStream input = new FileInputStream("src/test/resources/sets/exo2n.sssom.tsv");

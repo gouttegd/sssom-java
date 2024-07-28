@@ -123,8 +123,8 @@ try {
   
   * CURIEs are automatically expanded.
   
-  * Propagatable slots are automatically propagated, again propagation
-    is explicitly disabled.
+  * Propagatable slots are automatically propagated, again unless
+    propagation is explicitly disabled.
     
   * Obsolete slots are silently converted to their newer equivalents
     when possible.

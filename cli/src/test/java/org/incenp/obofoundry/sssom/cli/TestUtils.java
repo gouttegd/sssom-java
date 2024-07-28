@@ -60,7 +60,6 @@ public class TestUtils {
                 if ( !f.exists() ) {
                     f = new File("src/test/resources/sets/" + input);
                 }
-                args.add("--input");
                 args.add(f.exists() ? f.getPath() : input);
             }
         }

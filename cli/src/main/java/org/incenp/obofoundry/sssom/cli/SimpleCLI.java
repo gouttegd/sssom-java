@@ -54,6 +54,7 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * A command-line interface to manipulate mapping sets.
@@ -75,10 +76,20 @@ public class SimpleCLI implements Runnable {
     private InputOptions inputOpts = new InputOptions();
 
     private static class InputOptions {
-        @Option(names = { "-i", "--input" },
+        private ArrayList<String> files = new ArrayList<String>();
+
+        @Parameters(index = "0..*",
                 paramLabel = "SET[:META]",
-                description = "Load a mapping set. Default is to read from standard input.")
-        String[] files = new String[] { "-" };
+                description = "Load a mapping set from the specified file(s). Default is to read from standard input.")
+        private void addInputFile(String[] args) {
+            files.add(args[args.length - 1]);
+        }
+
+        // Keep accepting --input options for backwards compatibility
+        @Option(names = { "-i", "--input" }, hidden = true)
+        private void addInputFromFromOption(String[] args) {
+            files.add(args[args.length - 1]);
+        }
 
         @Option(names = "--mangle-iris",
                 paramLabel = "EPM",
@@ -254,6 +265,9 @@ public class SimpleCLI implements Runnable {
     private MappingSet loadInputs() {
         MappingSet ms = null;
         MetadataMerger merger = new MetadataMerger();
+        if ( inputOpts.files.isEmpty() ) {
+            inputOpts.files.add("-");
+        }
         for ( String input : inputOpts.files ) {
             String[] items = input.split(":", 2);
             String tsvFile = items[0];

@@ -9,25 +9,25 @@ Command-line tool
 
 * Input options
   
-  Input mapping sets are specified with the <<<--input>>> option. Repeat
-  that option as needed to read more than one mapping sets. All mapping
-  sets will be merged into a single set. If no <<<--input>>> option is
-  specified, SSSOM-CLI will attempt to read a set from its standard
-  input.
+  Input mapping sets are specified as positional arguments on the
+  command line. Use as many arguments as needed to read more than one
+  mapping sets. All mapping sets will be merged into a single set. If
+  no positional argument is specified, SSSOM-CLI will attempt to read
+  a set from its standard input.
   
   Both the SSSOM/TSV and the JSON formats are supported. SSSOM-CLI will
   automatically detect the format.
   
   To read both from the standard input and from one or several file(s),
-  use the special value <<<->>> in an <<<--input>>> option. For example,
+  use the special value <<<->>> as a positional argument. For example,
   the following command reads a set from <<<file1.sssom.tsv>>> and from
   the standard input:
   
 +-----------------------------------------------------------------------
-sssom-cli --input file1.sssom.tsv --input -
+sssom-cli file1.sssom.tsv  -
 +-----------------------------------------------------------------------
 
-  The <<<--input>>> options are processed in the order in which they
+  The positional arguments are processed in the order in which they
   appear in the command line. In the example above,
   <<<file1.sssom.tsv>>> is read first, followed by the standard input.
   
@@ -40,12 +40,16 @@ sssom-cli --input file1.sssom.tsv --input -
   colon, as in:
   
 +-----------------------------------------------------------------------
-sssom-cli --input set.sssom.tsv:metadata.yaml
+sssom-cli set.sssom.tsv:metadata.yaml
 +-----------------------------------------------------------------------
 
   The metadata file, if specified, is ignored if the input file is a
   JSON file, since the JSON format does not allow the use of an external
   metadata file.
+  
+  In previous versions of SSSOM-CLI, input files were specified using
+  <<<--input>>> options instead of positional arguments. Such options
+  are still accepted for backwards compatibility.
 
 ** Merging metadata
 
