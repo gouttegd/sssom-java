@@ -1,3 +1,10 @@
+Changes in sssom-java-0.8.0
+---------------------------
+
+    * Add JSON read/write support in the library and CLI tool.
+    * Enforce [0,1.0] range of double-typed slots.
+
+
 Changes in sssom-java-0.7.9
 ---------------------------
 
