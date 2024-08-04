@@ -107,11 +107,20 @@ public enum MappingCardinality {
         HashMap<String, HashSet<String>> objects = new HashMap<String, HashSet<String>>();
 
         for ( Mapping m : mappings ) {
+            if ( Constants.NoTermFound.equals(m.getSubjectId()) || Constants.NoTermFound.equals(m.getObjectId()) ) {
+                continue;
+            }
+
             subjects.computeIfAbsent(m.getObjectId(), k -> new HashSet<String>()).add(m.getSubjectId());
             objects.computeIfAbsent(m.getSubjectId(), k -> new HashSet<String>()).add(m.getObjectId());
         }
 
         for ( Mapping m : mappings ) {
+            if ( Constants.NoTermFound.equals(m.getSubjectId()) || Constants.NoTermFound.equals(m.getObjectId()) ) {
+                m.setMappingCardinality(null);
+                continue;
+            }
+
             int nSubjects = subjects.get(m.getObjectId()).size();
             int nObjects = objects.get(m.getSubjectId()).size();
 
