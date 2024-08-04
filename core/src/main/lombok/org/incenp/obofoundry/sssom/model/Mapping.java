@@ -185,4 +185,19 @@ public class Mapping  {
     }
 
     private Map<String,ExtensionValue> extensions;
+
+    /**
+     * Indicates whether this mapping represents a "missing" mapping.
+     * <p>
+     * A missing mapping is a mapping where the <em>subject_id</em>  or the
+     * <em>object_id</em> (or both) is the special value
+     * <code>sssom:NoTermFound</code>, and indicates that an entity in one
+     * domain could not be mapped to any entity in another domain.
+     *
+     * @return {@code True} if the mapping is a missing mapping,
+     *         {@code false} otherwise.
+     */
+    public boolean isUnmapped() {
+        return Constants.NoTermFound.equals(subjectId) || Constants.NoTermFound.equals(objectId);
+    }
 }

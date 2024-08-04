@@ -107,7 +107,7 @@ public enum MappingCardinality {
         HashMap<String, HashSet<String>> objects = new HashMap<String, HashSet<String>>();
 
         for ( Mapping m : mappings ) {
-            if ( Constants.NoTermFound.equals(m.getSubjectId()) || Constants.NoTermFound.equals(m.getObjectId()) ) {
+            if ( m.isUnmapped() ) {
                 continue;
             }
 
@@ -116,7 +116,7 @@ public enum MappingCardinality {
         }
 
         for ( Mapping m : mappings ) {
-            if ( Constants.NoTermFound.equals(m.getSubjectId()) || Constants.NoTermFound.equals(m.getObjectId()) ) {
+            if ( m.isUnmapped() ) {
                 m.setMappingCardinality(null);
                 continue;
             }
