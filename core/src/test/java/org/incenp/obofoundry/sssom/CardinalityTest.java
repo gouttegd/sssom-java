@@ -22,7 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.Constants;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.Mapping.MappingBuilder;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,7 +32,24 @@ import org.junit.jupiter.api.Test;
 public class CardinalityTest {
 
     private Mapping getSampleMapping(String subject, String object) {
-        return Mapping.builder().subjectId(subject).objectId(object).build();
+        return getSampleMapping(subject, null, object, null);
+    }
+
+    private Mapping getSampleMapping(String subject, EntityType subjectType, String object, EntityType objectType) {
+        MappingBuilder mb = Mapping.builder().subjectType(subjectType).objectType(objectType);
+        if ( subjectType == EntityType.RDFS_LITERAL ) {
+            mb.subjectLabel(subject);
+        } else {
+            mb.subjectId(subject);
+        }
+
+        if ( objectType == EntityType.RDFS_LITERAL ) {
+            mb.objectLabel(object);
+        } else {
+            mb.objectId(object);
+        }
+
+        return mb.build();
     }
 
     @Test
@@ -84,5 +103,27 @@ public class CardinalityTest {
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(0).getMappingCardinality());
         Assertions.assertNull(mappings.get(1).getMappingCardinality());
         Assertions.assertNull(mappings.get(2).getMappingCardinality());
+    }
+
+
+    @Test
+    void testCardinalityOfLiteralMappings() {
+        List<Mapping> mappings = new ArrayList<Mapping>();
+
+        // one-to-many mappings: subject2 mapped to object2 (entity) and object3
+        // (literal)
+        mappings.add(getSampleMapping("subject2", null, "object2", null));
+        mappings.add(getSampleMapping("subject2", null, "object3", EntityType.RDFS_LITERAL));
+
+        // many-to-one mappings (subject3-entity and subject3-literal both mapped to
+        // object 4)
+        mappings.add(getSampleMapping("subject3", EntityType.OWL_CLASS, "object4", null));
+        mappings.add(getSampleMapping("subject3", EntityType.RDFS_LITERAL, "object4", null));
+
+        MappingCardinality.inferCardinality(mappings);
+        Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(0).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(1).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.MANY_TO_ONE, mappings.get(2).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.MANY_TO_ONE, mappings.get(3).getMappingCardinality());
     }
 }
