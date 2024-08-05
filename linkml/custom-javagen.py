@@ -69,10 +69,6 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         {{ f.name }} = value;
     }
 {% endfor -%}
-{%- if cls.name == 'MappingSet' %}
-    @JsonProperty("extension_definitions")
-    private List<ExtensionDefinition> extensionDefinitions;
-{% endif -%}
 {%- if cls.name == 'MappingSet' or cls.name == 'Mapping' %}
     private Map<String,ExtensionValue> extensions;
 {% endif -%}
@@ -185,7 +181,7 @@ class CustomJavaGenerator(JavaGenerator):
 @click.command()
 def cli(yamlfile, output_directory=None):
     gen = CustomJavaGenerator(yamlfile)
-    gen.serialize(output_directory, excluded=["Propagatable"])
+    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition"])
 
 if __name__ == "__main__":
     cli()
