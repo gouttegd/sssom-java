@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.compatibility.JsonLDConverter;
+import org.incenp.obofoundry.sssom.compatibility.LiteralProfileConverter;
 import org.incenp.obofoundry.sssom.compatibility.MatchTermTypeConverter;
 import org.incenp.obofoundry.sssom.compatibility.MatchTypeConverter;
 import org.incenp.obofoundry.sssom.compatibility.SemanticSimilarityConverter;
@@ -62,6 +63,7 @@ public class YAMLConverter {
         preprocessors.add(new MatchTermTypeConverter());
         preprocessors.add(new JsonLDConverter());
         preprocessors.add(new SemanticSimilarityConverter());
+        preprocessors.add(new LiteralProfileConverter());
 
         setSlotMaps = new HashMap<String, Slot<MappingSet>>();
         for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {

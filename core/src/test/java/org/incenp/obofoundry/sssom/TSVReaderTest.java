@@ -485,6 +485,22 @@ public class TSVReaderTest {
         Assertions.assertEquals(EntityType.RDFS_LITERAL, ms.getMappings().get(0).getSubjectType());
     }
 
+    /*
+     * Test reading a file containing old-style literal mappings (so-called
+     * "literal profile").
+     */
+    @Test
+    void testLiteralProfileConversion() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-literal-profile-conversion.sssom.tsv");
+        Mapping m = reader.read().getMappings().get(0);
+
+        Assertions.assertEquals("alice", m.getSubjectLabel());
+        Assertions.assertEquals(EntityType.RDFS_LITERAL, m.getSubjectType());
+        Assertions.assertEquals("https://example.com/entities/source", m.getSubjectSource());
+        Assertions.assertEquals("lit source version", m.getSubjectSourceVersion());
+        Assertions.assertEquals("https://example.com/entities/preprocessor", m.getSubjectPreprocessing().get(0));
+    }
+
     @Test
     void testStringsAreCorrectlyTyped() throws IOException, SSSOMFormatException {
         String[] correctValues = { "123", "123.456", "2024-01-01", "true" };
