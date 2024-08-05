@@ -237,6 +237,19 @@ public class TSVWriterTest {
     }
 
     /*
+     * Test that we can write literal mappings.
+     */
+    @Test
+    void testLiteralMappings() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.setMappingSetId("https://example.org/sets/test-literal-mappings");
+        ms.getMappings().get(0).setSubjectId(null);
+        ms.getMappings().get(0).setSubjectType(EntityType.RDFS_LITERAL);
+
+        assertWrittenAsExpected(ms, "test-literal-mappings", null, null, null);
+    }
+
+    /*
      * Test that strings in the YAML metadata block are escaped when needed.
      */
     @Test

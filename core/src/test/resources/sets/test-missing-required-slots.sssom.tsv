@@ -1,0 +1,14 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/test-missing-required-slots
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id	subject_label	subject_type	predicate_id	object_id	object_label	object_type	mapping_justification
+	alice		skos:closeMatch	COMENT:0011	alpha		semapv:ManualMappingCuration
+	bob	owl class	skos:closeMatch	COMENT:0012	beta		semapv:ManualMappingCuration
+ORGENT:0004		rdfs literal	skos:closeMatch	COMENT:0014	delta		semapv:ManualMappingCuration
+ORGENT:0005	eve		skos:closeMatch		epsilon		semapv:ManualMappingCuration
+ORGENT:0006	fanny		skos:closeMatch		zeta	owl class	semapv:ManualMappingCuration
+ORGENT:0007	gavin		skos:exactMatch	COMENT:0013		rdfs literal	semapv:ManualMappingCuration
+ORGENT:0008	hector			COMENT:0017	eta		semapv:ManualMappingCuration
+ORGENT:0009	ivan		skos:exactMatch	COMENT:0019	iota		

@@ -60,7 +60,7 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   
   The parser automatically propagates metadata from the mapping set down
   to the individual mappings, unless that behaviour is explicitly
-  disabled with <<<setEnablePropagation(false)>>>.
+  disabled with <<<setPropagationEnabled(false)>>>.
   
   The parser has a liberal behaviour, in that: a) slots that it does not
   recognise are silently ignored and do not cause a parsing failure; b)
@@ -69,6 +69,14 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   particular means that the parser should always be able to read a file
   regardless of which version of the specification the file is
   conformant to.
+  
+  By default, the parser automatically checks that all mappings are
+  compliant with the SSSOM specification. For now, this check consists
+  in ensuring that the following slots are present for all mappings:
+  <<<subject_id>>> (or <<<subject_label>>> if the subject is a literal),
+  <<<object_id>>> (or <<<object_label>>> if the object is a literal),
+  <<<predicate_id>>>, and <<<mapping_justification>>>. This check may
+  be disabled by calling <<<setValidationEnabled(false)>>>.
   
   As a convenience, the TSV parser will automatically detect if the
   input file could be a file in the JSON format (if the first byte is a
@@ -128,6 +136,8 @@ try {
     
   * Obsolete slots are silently converted to their newer equivalents
     when possible.
+    
+  * Validation of mappings is done by default.
     
   []
   

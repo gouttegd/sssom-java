@@ -288,6 +288,7 @@ public class TSVReaderTest {
     @Test
     void testObsoleteFields() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-obsolete-fields.sssom.tsv");
+        reader.setValidationEnabled(false);
         MappingSet ms = reader.read();
 
         String[] expectedJustifications = { "LexicalMatching", "LogicalMatching", "ManualMappingCuration",
@@ -461,6 +462,27 @@ public class TSVReaderTest {
         Assertions.assertEquals("alice", ms.getMappings().get(0).getSubjectLabel());
         Assertions.assertEquals("bob", ms.getMappings().get(1).getSubjectLabel());
         Assertions.assertEquals("daphne", ms.getMappings().get(2).getSubjectLabel());
+    }
+
+    /*
+     * Test that a file with invalid mappings (missing required slots) is caught.
+     */
+    @Test
+    void testMissingRequiredSlots() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-required-slots.sssom.tsv");
+        SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
+        Assertions.assertEquals("Invalid mapping: Missing subject_id", sfe.getMessage());
+    }
+
+    /*
+     * Test reading a file containing literal mappings.
+     */
+    @Test
+    void testLiteralMappings() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-literal-mappings.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(EntityType.RDFS_LITERAL, ms.getMappings().get(0).getSubjectType());
     }
 
     @Test
