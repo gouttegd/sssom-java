@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -347,7 +348,12 @@ public class YAMLConverter {
             slot.setValue(object, value);
         } else if ( type == LocalDate.class && String.class.isInstance(rawValue) ) {
             try {
-                slot.setValue(object, LocalDate.parse(String.class.cast(rawValue)));
+                String rawDate = String.class.cast(rawValue);
+                if ( rawDate.contains("T") ) {
+                    slot.setValue(object, LocalDateTime.parse(rawDate).toLocalDate());
+                } else {
+                    slot.setValue(object, LocalDate.parse(rawDate));
+                }
             } catch ( DateTimeParseException e ) {
                 onTypingError(slot.getName(), e);
             }

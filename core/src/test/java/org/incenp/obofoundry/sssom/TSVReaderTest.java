@@ -496,6 +496,12 @@ public class TSVReaderTest {
     }
 
     @Test
+    void testAcceptDateTimesForDates() throws IOException, SSSOMFormatException {
+        Assertions.assertEquals(LocalDate.of(2024, 8, 5),
+                parseMetadataString("mapping_date: 2024-08-05T12:30:15", false).getMappingDate());
+    }
+
+    @Test
     void testExtensionValuesAreCorrectlyTyped() throws IOException, SSSOMFormatException {
         Assertions.assertEquals("123", parseExtensionValue("123", "xsd:string").getValue());
         Assertions.assertEquals("123", parseExtensionValue("\"123\"", "xsd:string").getValue());
