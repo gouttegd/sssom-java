@@ -91,6 +91,38 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     public boolean isUnmapped() {
         return Constants.NoTermFound.equals(subjectId) || Constants.NoTermFound.equals(objectId);
     }
+
+    /**
+     * @deprecated Use {@code #getSimilarityScore()} instead.
+     */
+    @Deprecated
+    public Double getSemanticSimilarityScore() {
+        return getSimilarityScore();
+    }
+
+    /**
+     * @deprecated Use {@code #setSimilarityScore(Double)} instead.
+     */
+    @Deprecated
+    public void setSemanticSimilarityScore(Double value) {
+        setSimilarityScore(value);
+    }
+
+    /**
+     * @deprecated Use {@code #getSimilarityMeasure()} instead.
+     */
+    @Deprecated
+    public String getSemanticSimilarityMeasure() {
+        return getSimilarityMeasure();
+    }
+
+    /**
+     * @deprecated Use {@code #setSimilarityMeasure(String)} instead.
+     */
+    @Deprecated
+    public void setSemanticSimilarityMeasure(String value) {
+        setSimilarityMeasure(value);
+    }
 {% endif -%}
 }
 

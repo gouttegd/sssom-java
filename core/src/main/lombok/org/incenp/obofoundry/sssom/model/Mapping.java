@@ -146,12 +146,12 @@ public class Mapping  {
     @EntityReference
     private List<String> objectPreprocessing;
 
-    @JsonProperty("semantic_similarity_score")
+    @JsonProperty("similarity_score")
     @Setter(AccessLevel.NONE)
-    private Double semanticSimilarityScore;
+    private Double similarityScore;
 
-    @JsonProperty("semantic_similarity_measure")
-    private String semanticSimilarityMeasure;
+    @JsonProperty("similarity_measure")
+    private String similarityMeasure;
 
     @JsonProperty("see_also")
     private List<String> seeAlso;
@@ -174,14 +174,14 @@ public class Mapping  {
         confidence = value;
     }
 
-    public void setSemanticSimilarityScore(Double value) {
+    public void setSimilarityScore(Double value) {
         if ( value > 1.0 ) {
-            throw new IllegalArgumentException("Invalid value for semantic_similarity_score");
+            throw new IllegalArgumentException("Invalid value for similarity_score");
         }
         if ( value < 0.0 ) {
-            throw new IllegalArgumentException("Invalid value for semantic_similarity_score");
+            throw new IllegalArgumentException("Invalid value for similarity_score");
         }
-        semanticSimilarityScore = value;
+        similarityScore = value;
     }
 
     private Map<String,ExtensionValue> extensions;
@@ -199,5 +199,37 @@ public class Mapping  {
      */
     public boolean isUnmapped() {
         return Constants.NoTermFound.equals(subjectId) || Constants.NoTermFound.equals(objectId);
+    }
+
+    /**
+     * @deprecated Use {@code #getSimilarityScore()} instead.
+     */
+    @Deprecated
+    public Double getSemanticSimilarityScore() {
+        return getSimilarityScore();
+    }
+
+    /**
+     * @deprecated Use {@code #setSimilarityScore(Double)} instead.
+     */
+    @Deprecated
+    public void setSemanticSimilarityScore(Double value) {
+        setSimilarityScore(value);
+    }
+
+    /**
+     * @deprecated Use {@code #getSimilarityMeasure()} instead.
+     */
+    @Deprecated
+    public String getSemanticSimilarityMeasure() {
+        return getSimilarityMeasure();
+    }
+
+    /**
+     * @deprecated Use {@code #setSimilarityMeasure(String)} instead.
+     */
+    @Deprecated
+    public void setSemanticSimilarityMeasure(String value) {
+        setSimilarityMeasure(value);
     }
 }

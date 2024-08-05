@@ -727,6 +727,10 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
                     && mapping.getPredicateModifier() != PredicateModifier.NOT;
             break;
 
+        case "similarity_measure":
+            filter = (mapping) -> testValue.apply(mapping.getSimilarityMeasure());
+            break;
+
         case "subject":
             filter = (mapping) -> testValue.apply(mapping.getSubjectId());
             break;
@@ -887,7 +891,8 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             break;
 
         case "semantic_similarity_score":
-            filter = (mapping) -> testValue.apply(mapping.getSemanticSimilarityScore());
+        case "similarity_score":
+            filter = (mapping) -> testValue.apply(mapping.getSimilarityScore());
             break;
         }
 

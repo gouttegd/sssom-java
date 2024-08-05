@@ -75,6 +75,7 @@ txField   : 'comment'
           | 'object_category'
           | 'object_source_version'
           | 'other'
+          | 'similarity_measure'
           | 'subject_category'
           | 'subject_source_version'
           ;
@@ -98,6 +99,7 @@ idValue   : CURIE
 
 numField  : 'confidence'
           | 'semantic_similarity_score'
+          | 'similarity_score'
           ;
 
 numOp     : '==' | '>' | '<' | '>=' | '<=';

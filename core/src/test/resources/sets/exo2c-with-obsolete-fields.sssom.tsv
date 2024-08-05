@@ -10,12 +10,12 @@
 #  - COMPID:0000-0000-0002-5678
 #license: https://creativecommons.org/licenses/by/4.0/
 #publication_date: 2023-09-13
-subject_id	subject_label	predicate_id	object_id	object_label	match_type	match_term_type
-ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	Lexical	ConceptMatch
-ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	Logical	ClassMatch
-ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	HumanCurated	ObjectPropertyMatch
-ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	Complex	IndividualMatch
-ORGENT:0006	fanny	skos:closeMatch	COMENT:0016	zeta	HumanCurated	DataPropertyMatch
-ORGENT:0007	gavin	skos:exactMatch	COMENT:0013	gamma	SemanticSimilarity	TermMatch
-ORGENT:0008	hector	skos:closeMatch	COMENT:0017	eta	Unspecified	
-ORGENT:0009	ivan	skos:exactMatch	COMENT:0019	iota			
+subject_id	subject_label	predicate_id	object_id	object_label	match_type	match_term_type	semantic_similarity_score	semantic_similarity_measure
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	Lexical	ConceptMatch	0.9	dummy measure
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	Logical	ClassMatch	0.8	dummy measure
+ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	HumanCurated	ObjectPropertyMatch	0.6	dummy measure
+ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	Complex	IndividualMatch	0.2	dummy measure
+ORGENT:0006	fanny	skos:closeMatch	COMENT:0016	zeta	HumanCurated	DataPropertyMatch		
+ORGENT:0007	gavin	skos:exactMatch	COMENT:0013	gamma	SemanticSimilarity	TermMatch	0.5	dummy measure
+ORGENT:0008	hector	skos:closeMatch	COMENT:0017	eta	Unspecified			
+ORGENT:0009	ivan	skos:exactMatch	COMENT:0019	iota					

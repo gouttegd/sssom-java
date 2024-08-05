@@ -296,6 +296,7 @@ public class TSVReaderTest {
         EntityType[] expectedEntityTypes = { EntityType.SKOS_CONCEPT, EntityType.OWL_CLASS,
                 EntityType.OWL_OBJECT_PROPERTY, EntityType.OWL_NAMED_INDIVIDUAL, EntityType.OWL_DATA_PROPERTY,
                 EntityType.RDFS_LITERAL, null, null };
+        Double[] expectedSimilarityScores = { 0.9, 0.8, 0.6, 0.2, null, 0.5, null, null };
 
         for ( int i = 0, len = ms.getMappings().size(); i < len; i++ ) {
             Mapping m = ms.getMappings().get(i);
@@ -309,6 +310,14 @@ public class TSVReaderTest {
 
             Assertions.assertEquals(expectedEntityTypes[i], m.getSubjectType());
             Assertions.assertEquals(expectedEntityTypes[i], m.getObjectType());
+
+            if ( expectedSimilarityScores[i] != null ) {
+                Assertions.assertEquals(expectedSimilarityScores[i], m.getSimilarityScore());
+                Assertions.assertEquals("dummy measure", m.getSimilarityMeasure());
+            } else {
+                Assertions.assertNull(m.getSimilarityScore());
+                Assertions.assertNull(m.getSimilarityMeasure());
+            }
         }
     }
 

@@ -115,7 +115,7 @@ creator==ORCID:*
 *** Filters on numeric slots
 
   For the two filters that act on numeric slots (<<<confidence>>> and
-  <<<semantic_similarity_score>>>, in addition to the equality operator
+  <<<similarity_score>>>, in addition to the equality operator
   (<<<==>>>), it is possible to use one of the following inequality
   operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and <<<\<=>>>. They have the
   traditional meaning you could expect. For example
