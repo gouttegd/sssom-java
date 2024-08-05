@@ -31,10 +31,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif %} {
-{%- if cls.name == 'MappingSet' %}
-    @JsonProperty("curie_map")
-    private Map<String,String> curieMap;
-{% endif -%}
 {%- for f in cls.fields %}
     {%- if f.source_slot.name != f.name %}
     @JsonProperty("{{ f.source_slot.name }}")
@@ -52,6 +48,7 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
             {%- elif f.source_slot.range == 'mapping_cardinality_enum' %}MappingCardinality
             {%- elif f.source_slot.range == 'entity_type_enum' %}EntityType
             {%- elif f.source_slot.range == 'predicate_modifier_enum' %}PredicateModifier
+            {%- elif f.source_slot.name == 'curie_map' %}Map<String,String>
             {%- else %}{{ f.range }}{% endif %} {{ f.name }};
 {% endfor -%}
 {%- for f in gen.get_constrained_slots(cls) %}
@@ -181,7 +178,7 @@ class CustomJavaGenerator(JavaGenerator):
 @click.command()
 def cli(yamlfile, output_directory=None):
     gen = CustomJavaGenerator(yamlfile)
-    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition"])
+    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix"])
 
 if __name__ == "__main__":
     cli()
