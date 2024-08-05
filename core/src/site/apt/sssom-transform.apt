@@ -74,11 +74,6 @@ predicate==semapv:crossSpecies*
   alias for <<<mapping_justification>>> and <<<cardinality>>> is
   accepted as an alias for <<<mapping_cardinality>>>.
   
-  It is not possible to filter against the <<<subject_label>>>,
-  <<<object_label>>>, and <<<predicate_label>>> slots. This is by
-  design: filtering on the subject, object, or predicate should always
-  be done using an identifier rather than a free-form label.
-  
 *** Filters on free-form text slots
 
   For the filters that act on slots that contain a free-form text value

@@ -147,8 +147,8 @@ public class MappingProcessor<T> {
             List<Mapping> keptMappings = new ArrayList<Mapping>();
             for ( Mapping mapping : mappings ) {
                 if ( rule.apply(mapping) ) {
-                    String oldSubject = mapping.getSubjectId();
-                    String oldObject = mapping.getObjectId();
+                    String oldSubject = MappingCardinality.getSubject(mapping);
+                    String oldObject = MappingCardinality.getObject(mapping);
                     mapping = rule.preprocess(mapping);
                     if ( mapping != null ) {
                         T product = rule.generate(mapping);
@@ -158,7 +158,8 @@ public class MappingProcessor<T> {
                         }
 
                         keptMappings.add(mapping);
-                        if ( !mapping.getSubjectId().equals(oldSubject) || !mapping.getObjectId().equals(oldObject) ) {
+                        if ( !MappingCardinality.getSubject(mapping).equals(oldSubject)
+                                || MappingCardinality.getObject(mapping).equals(oldObject) ) {
                             /* Subject and/or object changed, so cardinality data is no longer reliable. */
                             dirtyCard = true;
                         }

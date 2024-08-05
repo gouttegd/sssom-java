@@ -133,14 +133,32 @@ public enum MappingCardinality {
         }
     }
 
-    private static String getSubject(Mapping mapping) {
+    /**
+     * Gets a string representing the subject that can be used for cardinality
+     * computation. The returned value takes into account the <em>subject_id</em>
+     * (or the <em>subject_label</em> if the subject is a literal) and the
+     * <em>subject_type</em>.
+     * 
+     * @param mapping The mapping from which to derive a subject string.
+     * @return A string that can be used to compare subjects across mappings.
+     */
+    public static String getSubject(Mapping mapping) {
         EntityType t = mapping.getSubjectType();
         String tag = "\0" + (t == null ? "" : String.valueOf(t.ordinal())) + "\0";
         return tag + (t == EntityType.RDFS_LITERAL ? mapping.getSubjectLabel() : mapping.getSubjectId());
 
     }
 
-    private static String getObject(Mapping mapping) {
+    /**
+     * Gets a string representing the object that can be used for cardinality
+     * computation. The returned value takes into account the <em>object_id</em> (or
+     * the <em>object_label</em> if the object is a literal) and the
+     * <em>object_type</em>.
+     * 
+     * @param mapping The mapping from which to derive an object string.
+     * @return A String that can be used to compare objects across mappings.
+     */
+    public static String getObject(Mapping mapping) {
         EntityType t = mapping.getObjectType();
         String tag = "\0" + (t == null ? "" : String.valueOf(t.ordinal())) + "\0";
         return tag + (t == EntityType.RDFS_LITERAL ? mapping.getObjectLabel() : mapping.getObjectId());
