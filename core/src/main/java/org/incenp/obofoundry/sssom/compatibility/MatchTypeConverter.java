@@ -16,9 +16,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.compatibility;
 
 import java.util.Map;
+
+import org.incenp.obofoundry.sssom.IYAMLPreprocessor;
+import org.incenp.obofoundry.sssom.SSSOMFormatException;
 
 /**
  * A YAML preprocessor to convert a dictionary containing a {@code match_type}

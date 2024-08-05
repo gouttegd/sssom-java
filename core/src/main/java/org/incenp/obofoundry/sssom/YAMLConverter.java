@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.compatibility.JsonLDConverter;
+import org.incenp.obofoundry.sssom.compatibility.MatchTermTypeConverter;
+import org.incenp.obofoundry.sssom.compatibility.MatchTypeConverter;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
