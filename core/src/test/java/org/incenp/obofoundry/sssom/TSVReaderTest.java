@@ -482,7 +482,7 @@ public class TSVReaderTest {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-literal-mappings.sssom.tsv");
         MappingSet ms = reader.read();
 
-        Assertions.assertEquals(EntityType.RDFS_LITERAL, ms.getMappings().get(0).getSubjectType());
+        Assertions.assertTrue(ms.getMappings().get(0).isLiteral());
     }
 
     /*
@@ -494,6 +494,7 @@ public class TSVReaderTest {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-literal-profile-conversion.sssom.tsv");
         Mapping m = reader.read().getMappings().get(0);
 
+        Assertions.assertTrue(m.isLiteral());
         Assertions.assertEquals("alice", m.getSubjectLabel());
         Assertions.assertEquals(EntityType.RDFS_LITERAL, m.getSubjectType());
         Assertions.assertEquals("https://example.com/entities/source", m.getSubjectSource());
