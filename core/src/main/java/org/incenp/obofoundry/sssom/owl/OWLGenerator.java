@@ -88,6 +88,11 @@ public class OWLGenerator extends MappingProcessor<OWLAxiom> {
      * annotation.
      */
     private boolean entityAbsentOrDeprecated(OWLOntology ontology, String entity) {
+        if ( entity == null ) {
+            // The mapping does not refer to any entity at all.
+            return true;
+        }
+
         if ( falseValue == null ) {
             falseValue = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLLiteral(false);
         }

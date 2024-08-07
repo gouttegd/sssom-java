@@ -193,12 +193,14 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         if ( line.hasOption("only-subject-in") ) {
             String pr = pm.expandIdentifier(line.getOptionValue("only-subject-in"));
-            axiomGenerator.addStopingRule((mapping) -> !mapping.getSubjectId().startsWith(pr));
+            axiomGenerator.addStopingRule(
+                    (mapping) -> mapping.getSubjectId() == null || !mapping.getSubjectId().startsWith(pr));
         }
 
         if ( line.hasOption("only-object-in") ) {
             String pr = pm.expandIdentifier(line.getOptionValue("only-object-in"));
-            axiomGenerator.addStopingRule((mapping) -> !mapping.getObjectId().startsWith(pr));
+            axiomGenerator.addStopingRule(
+                    (mapping) -> mapping.getObjectId() == null || !mapping.getObjectId().startsWith(pr));
         }
 
         if ( line.hasOption("check-subject") ) {
