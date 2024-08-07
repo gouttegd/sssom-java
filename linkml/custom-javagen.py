@@ -86,6 +86,52 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     }
 
     /**
+     * Creates an inverted version of this mapping with an explicit predicate.
+     *
+     * @param predicate The predicate to use for the new mapping.
+     * @return A new mapping that is the inverse of this one, or {@code null}
+     *         if the specified predicate is itself {@code null}.
+     */
+    public Mapping invert(String predicate) {
+        if ( predicate == null ) {
+            return null;
+        }
+
+        Mapping inverted = toBuilder()
+                .predicateId(predicate)
+{%- for f in gen.get_slot_suffixes(cls, 'subject') %}
+                .subject{{ f }}(object{{ f }})
+                .object{{ f }}(subject{{ f }})
+{%- endfor -%}
+        .build();
+
+        if ( mappingCardinality != null ) {
+            inverted.mappingCardinality = mappingCardinality.getInverse();
+        }
+
+        return inverted;
+    }
+
+    /**
+     * Creates an inverted version of this mapping if possible.
+     * <p>
+     * Inversion is possible if the predicate is one of the known "common"
+     * predicates and is invertible. To invert a mapping with an arbitrary
+     * predicate, use {@link #invert(String)}.
+     *
+     * @return A new mapping that is the inverse of this one, or {@code null}
+     *         if inversion is not possible.
+     */
+    public Mapping invert() {
+        CommonPredicate predicate = CommonPredicate.fromString(predicateId);
+        if ( predicate == null || !predicate.isInvertible() ) {
+            return null;
+        }
+
+        return invert(predicate.getInverse());
+    }
+
+    /**
      * @deprecated Use {@code #getSimilarityScore()} instead.
      */
     @Deprecated
@@ -171,6 +217,16 @@ class CustomJavaGenerator(JavaGenerator):
         """
 
         return [f for f in cls.fields if self.is_slot_constrained(f)];
+
+    def get_slot_suffixes(self, cls, prefix):
+        """Get the suffixes of all slots that start with the given prefix.
+
+        :param cls: the class to query for slot suffixes.
+        :param prefix: the prefix to look for in slot names.
+        """
+        
+        n = len(prefix)
+        return [f.name[n:] for f in cls.fields if f.name.startswith(prefix)]
 
 
 @click.argument("yamlfile", type=click.Path(exists=True, dir_okay=False))

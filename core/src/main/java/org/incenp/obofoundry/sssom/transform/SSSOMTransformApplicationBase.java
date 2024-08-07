@@ -21,7 +21,6 @@ package org.incenp.obofoundry.sssom.transform;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
@@ -62,7 +61,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
 
         case "invert":
             checkArguments(name, 0, arguments);
-            return new NamedMappingTransformer<Mapping>("invert()", (mapping) -> CommonPredicate.invert(mapping));
+            return new NamedMappingTransformer<Mapping>("invert()", (mapping) -> mapping.invert());
 
         case "edit":
             checkArguments(name, 1, arguments, true);

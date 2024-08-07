@@ -292,13 +292,10 @@ Mapping mapping2 = mapping.toBuilder()
 * Other manipulations on mappings
 
   To <invert> a mapping (switching the subject and the object), use the
-  <<<invert()>>> static method in
-  {{{./apidocs/org/incenp/obofoundry/sssom/model/CommonPredicate.html}CommonPredicate}}:
+  <<<invert()>>> method on the <<<Mapping>>> class:
   
 +-----------------------------------------------------------------------
-import org.incenp.obofoundry.sssom.model.CommonPredicate;
-
-Mapping inverted = CommonPredicate.invert(mapping);
+Mapping inverted = mapping.invert();
 +-----------------------------------------------------------------------
 
   The method will return a new mapping with inverted values, or
@@ -307,6 +304,15 @@ Mapping inverted = CommonPredicate.invert(mapping);
   reverse predicate). Note that for now at least, the list of
   invertible predicates is built-in and not modifiable, client code
   cannot add its own predicates. This may change in the future.
+  
+  To invert a mapping that uses a predicate that is not one of the
+  built-in invertible predicates, but for which you know the proper
+  inverse predicate, provide the predicate as an argument to the
+  <<<invert()>>> method:
+  
++-----------------------------------------------------------------------
+Mapping inverted = mapping.invert("custom predicate");
++-----------------------------------------------------------------------
   
   To compute the <cardinality> of mappings in a set, use the
   <<<inferCardinality()>>> static method in

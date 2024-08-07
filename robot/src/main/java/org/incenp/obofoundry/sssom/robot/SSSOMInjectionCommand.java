@@ -26,7 +26,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVReader;
-import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -188,7 +187,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         MappingCardinality.inferCardinality(mappingSet.getMappings());
 
         if ( line.hasOption("invert") ) {
-            axiomGenerator.addRule(null, (mapping) -> CommonPredicate.invert(mapping), null);
+            axiomGenerator.addRule(null, (mapping) -> mapping.invert(), null);
         }
 
         if ( line.hasOption("only-subject-in") ) {

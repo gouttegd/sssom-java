@@ -42,7 +42,7 @@ public class InversionTest {
     void testSimpleMappingInversion() {
         Mapping mapping = getSampleMapping(CommonPredicate.SKOS_EXACT_MATCH.toString());
 
-        Mapping inverted = CommonPredicate.invert(mapping);
+        Mapping inverted = mapping.invert();
         Assertions.assertEquals(inverted.getSubjectId(), mapping.getObjectId());
         Assertions.assertEquals(CommonPredicate.SKOS_EXACT_MATCH.toString(), mapping.getPredicateId());
         Assertions.assertEquals(inverted.getObjectId(), mapping.getSubjectId());
@@ -52,7 +52,7 @@ public class InversionTest {
     void testPredicateInversion() {
         Mapping mapping = getSampleMapping(CommonPredicate.SKOS_BROAD_MATCH.toString());
 
-        Mapping inverted = CommonPredicate.invert(mapping);
+        Mapping inverted = mapping.invert();
         Assertions.assertEquals(CommonPredicate.SKOS_NARROW_MATCH.toString(), inverted.getPredicateId());
     }
 
@@ -60,7 +60,7 @@ public class InversionTest {
     void testNonInvertibleMapping() {
         Mapping mapping = getSampleMapping("http://www.w3.org/2004/02/skos/core#closeMatch");
 
-        Mapping inverted = CommonPredicate.invert(mapping);
+        Mapping inverted = mapping.invert();
         Assertions.assertNull(inverted);
     }
 
@@ -69,7 +69,7 @@ public class InversionTest {
         Mapping mapping = getSampleMapping(CommonPredicate.SKOS_EXACT_MATCH.toString());
         mapping.setMappingCardinality(MappingCardinality.ONE_TO_MANY);
 
-        Mapping inverted = CommonPredicate.invert(mapping);
+        Mapping inverted = mapping.invert();
         Assertions.assertEquals(MappingCardinality.MANY_TO_ONE, inverted.getMappingCardinality());
     }
 }

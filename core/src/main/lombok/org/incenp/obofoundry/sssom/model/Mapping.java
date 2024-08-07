@@ -202,6 +202,63 @@ public class Mapping  {
     }
 
     /**
+     * Creates an inverted version of this mapping with an explicit predicate.
+     *
+     * @param predicate The predicate to use for the new mapping.
+     * @return A new mapping that is the inverse of this one, or {@code null}
+     *         if the specified predicate is itself {@code null}.
+     */
+    public Mapping invert(String predicate) {
+        if ( predicate == null ) {
+            return null;
+        }
+
+        Mapping inverted = toBuilder()
+                .predicateId(predicate)
+                .subjectId(objectId)
+                .objectId(subjectId)
+                .subjectLabel(objectLabel)
+                .objectLabel(subjectLabel)
+                .subjectCategory(objectCategory)
+                .objectCategory(subjectCategory)
+                .subjectType(objectType)
+                .objectType(subjectType)
+                .subjectSource(objectSource)
+                .objectSource(subjectSource)
+                .subjectSourceVersion(objectSourceVersion)
+                .objectSourceVersion(subjectSourceVersion)
+                .subjectMatchField(objectMatchField)
+                .objectMatchField(subjectMatchField)
+                .subjectPreprocessing(objectPreprocessing)
+                .objectPreprocessing(subjectPreprocessing).build();
+
+        if ( mappingCardinality != null ) {
+            inverted.mappingCardinality = mappingCardinality.getInverse();
+        }
+
+        return inverted;
+    }
+
+    /**
+     * Creates an inverted version of this mapping if possible.
+     * <p>
+     * Inversion is possible if the predicate is one of the known "common"
+     * predicates and is invertible. To invert a mapping with an arbitrary
+     * predicate, use {@link #invert(String)}.
+     *
+     * @return A new mapping that is the inverse of this one, or {@code null}
+     *         if inversion is not possible.
+     */
+    public Mapping invert() {
+        CommonPredicate predicate = CommonPredicate.fromString(predicateId);
+        if ( predicate == null || !predicate.isInvertible() ) {
+            return null;
+        }
+
+        return invert(predicate.getInverse());
+    }
+
+    /**
      * @deprecated Use {@code #getSimilarityScore()} instead.
      */
     @Deprecated

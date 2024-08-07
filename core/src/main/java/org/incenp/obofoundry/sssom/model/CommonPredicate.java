@@ -125,39 +125,11 @@ public enum CommonPredicate {
      * @param mapping The mapping to invert.
      * @return A new mapping that is an inversion of the provided one, or
      *         {@code null} if the mapping could not be inverted.
+     * 
+     * @deprecated Use {@link Mapping#invert()} instead.
      */
+    @Deprecated
     public static Mapping invert(Mapping mapping) {
-        CommonPredicate predicate = CommonPredicate.fromString(mapping.getPredicateId());
-        if ( predicate == null || !predicate.isInvertible() ) {
-            return null;
-        }
-
-        // @formatter:off
-        Mapping inverted = mapping.toBuilder()
-                .predicateId(predicate.getInverse())
-                .subjectCategory(mapping.getObjectCategory())
-                .subjectId(mapping.getObjectId())
-                .subjectLabel(mapping.getObjectLabel())
-                .subjectMatchField(mapping.getObjectMatchField())
-                .subjectPreprocessing(mapping.getObjectPreprocessing())
-                .subjectSource(mapping.getObjectSource())
-                .subjectSourceVersion(mapping.getObjectSourceVersion())
-                .subjectType(mapping.getObjectType())
-                .objectCategory(mapping.getSubjectCategory())
-                .objectId(mapping.getSubjectId())
-                .objectLabel(mapping.getSubjectLabel())
-                .objectMatchField(mapping.getSubjectMatchField())
-                .objectPreprocessing(mapping.getSubjectPreprocessing())
-                .objectSource(mapping.getSubjectSource())
-                .objectSourceVersion(mapping.getSubjectSourceVersion())
-                .objectType(mapping.getSubjectType())
-                .build();
-        // @formatter:on
-
-        if ( mapping.getMappingCardinality() != null ) {
-            inverted.setMappingCardinality(mapping.getMappingCardinality().getInverse());
-        }
-
-        return inverted;
+        return mapping.invert();
     }
 }
