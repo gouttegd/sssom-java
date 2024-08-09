@@ -39,6 +39,7 @@ public class SSSOMTransformReaderTest {
         if ( !info.getTags().contains("no-common-reader") ) {
             reader = new SSSOMTransformReader<Void>(app);
             reader.addPrefix("ORGENT", "https://example.org/entities/");
+            reader.addPrefix("NETENT", "https://example.com/entities/");
         }
     }
 
@@ -157,6 +158,7 @@ public class SSSOMTransformReaderTest {
     @Test
     void testParseEmptyFilter() {
         parseRule("mapping_tool==\"\" -> action();\n", "(mapping_tool==) -> action()");
+        parseRule("subject==~ -> action();\n", "(subject==~) -> action()");
     }
 
     /*
@@ -187,6 +189,37 @@ public class SSSOMTransformReaderTest {
         checkFilter("!mapping_tool==\"\" -> action();\n", none, false);
         checkFilter("!mapping_tool==\"\" -> action();\n", tool, true);
         checkFilter("!mapping_tool==\"\" -> action();\n", other, true);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter on a ID slot.
+     */
+    @Test
+    void testIdFilter() {
+        Mapping org1 = Mapping.builder().subjectId("https://example.org/entities/0001").build();
+        Mapping org2 = Mapping.builder().subjectId("https://example.org/entities/0002").build();
+        Mapping net1 = Mapping.builder().subjectId("https://example.net/entities/0001").build();
+        Mapping empty = Mapping.builder().subjectId("").build();
+        Mapping none = Mapping.builder().subjectId(null).build();
+
+        checkFilter("subject==ORGENT:0001 -> action();\n", org1, true);
+        checkFilter("subject==ORGENT:0001 -> action();\n", org2, false);
+        checkFilter("subject==ORGENT:0001 -> action();\n", net1, false);
+
+        checkFilter("subject==ORGENT:* -> action();\n", org1, true);
+        checkFilter("subject==ORGENT:* -> action();\n", org2, true);
+        checkFilter("subject==ORGENT:* -> action();\n", net1, false);
+
+        checkFilter("subject==* -> action();\n", org1, true);
+        checkFilter("subject==* -> action();\n", org2, true);
+        checkFilter("subject==* -> action();\n", net1, true);
+
+        checkFilter("subject==~ -> action();\n", org1, false);
+        checkFilter("subject==~ -> action();\n", empty, true);
+        checkFilter("subject==~ -> action();\n", none, true);
+
+        checkFilter("!subject==~ -> action();\n", org1, true);
+        checkFilter("!subject==~ -> action();\n", org2, true);
     }
 
     /*

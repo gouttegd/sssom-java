@@ -95,6 +95,7 @@ entField  : 'object_type'
 
 idValue   : CURIE
           | '*'
+          | '~'
           ;
 
 numField  : 'confidence'

@@ -658,14 +658,15 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             return addFilter(new NamedFilter("*", (mapping) -> true));
         }
 
-        if ( expand ) {
+        boolean empty = expand ? value.equals("~") : value.isEmpty();
+        if ( expand && !empty ) {
             value = prefixManager.expandIdentifier(value);
         }
 
-        boolean glob = value.endsWith("*");
+        boolean glob = !empty && value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
         Function<String, Boolean> testValue;
-        if ( value.isEmpty() ) {
+        if ( empty ) {
             testValue = (v) -> v == null || v.isEmpty();
         } else if ( glob ) {
             testValue = (v) -> v != null && v.startsWith(pattern);
