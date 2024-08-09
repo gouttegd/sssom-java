@@ -85,6 +85,10 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         return Constants.NoTermFound.equals(subjectId) || Constants.NoTermFound.equals(objectId);
     }
 
+    public boolean isLiteral() {
+        return subjectType == EntityType.RDFS_LITERAL || objectType == EntityType.RDFS_LITERAL;
+    }
+
     /**
      * Creates an inverted version of this mapping with an explicit predicate.
      *

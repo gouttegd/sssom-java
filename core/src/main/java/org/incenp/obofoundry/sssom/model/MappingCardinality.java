@@ -111,8 +111,8 @@ public enum MappingCardinality {
                 continue;
             }
 
-            subjects.computeIfAbsent(m.getObjectId(), k -> new HashSet<String>()).add(m.getSubjectId());
-            objects.computeIfAbsent(m.getSubjectId(), k -> new HashSet<String>()).add(m.getObjectId());
+            subjects.computeIfAbsent(getObject(m), k -> new HashSet<String>()).add(getSubject(m));
+            objects.computeIfAbsent(getSubject(m), k -> new HashSet<String>()).add(getObject(m));
         }
 
         for ( Mapping m : mappings ) {
@@ -121,8 +121,8 @@ public enum MappingCardinality {
                 continue;
             }
 
-            int nSubjects = subjects.get(m.getObjectId()).size();
-            int nObjects = objects.get(m.getSubjectId()).size();
+            int nSubjects = subjects.get(getObject(m)).size();
+            int nObjects = objects.get(getSubject(m)).size();
 
             if ( nSubjects == 1 ) {
                 m.setMappingCardinality(nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY);
@@ -131,5 +131,36 @@ public enum MappingCardinality {
                         nObjects == 1 ? MappingCardinality.MANY_TO_ONE : MappingCardinality.MANY_TO_MANY);
             }
         }
+    }
+
+    /**
+     * Gets a string representing the subject that can be used for cardinality
+     * computation. The returned value takes into account the <em>subject_id</em>
+     * (or the <em>subject_label</em> if the subject is a literal) and the
+     * <em>subject_type</em>.
+     * 
+     * @param mapping The mapping from which to derive a subject string.
+     * @return A string that can be used to compare subjects across mappings.
+     */
+    public static String getSubject(Mapping mapping) {
+        EntityType t = mapping.getSubjectType();
+        String tag = "\0" + (t == null ? "" : String.valueOf(t.ordinal())) + "\0";
+        return tag + (t == EntityType.RDFS_LITERAL ? mapping.getSubjectLabel() : mapping.getSubjectId());
+
+    }
+
+    /**
+     * Gets a string representing the object that can be used for cardinality
+     * computation. The returned value takes into account the <em>object_id</em> (or
+     * the <em>object_label</em> if the object is a literal) and the
+     * <em>object_type</em>.
+     * 
+     * @param mapping The mapping from which to derive an object string.
+     * @return A String that can be used to compare objects across mappings.
+     */
+    public static String getObject(Mapping mapping) {
+        EntityType t = mapping.getObjectType();
+        String tag = "\0" + (t == null ? "" : String.valueOf(t.ordinal())) + "\0";
+        return tag + (t == EntityType.RDFS_LITERAL ? mapping.getObjectLabel() : mapping.getObjectId());
     }
 }

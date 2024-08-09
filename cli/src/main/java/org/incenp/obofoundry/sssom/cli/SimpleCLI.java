@@ -468,6 +468,9 @@ public class SimpleCLI implements Runnable {
         pm.add(ms.getCurieMap());
 
         for ( Mapping mapping : ms.getMappings() ) {
+            if ( mapping.isLiteral() ) {
+                continue;
+            }
             String subjectPrefixName = pm.getPrefixName(mapping.getSubjectId());
             String objectPrefixName = pm.getPrefixName(mapping.getObjectId());
             if ( subjectPrefixName != null && objectPrefixName != null ) {

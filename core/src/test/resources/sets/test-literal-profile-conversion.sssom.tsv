@@ -1,0 +1,6 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#mapping_set_id: https://example.org/sets/test-literal-mappings
+#license: https://creativecommons.org/licenses/by/4.0/
+literal	predicate_id	object_id	object_label	mapping_justification	literal_source	literal_source_version	literal_preprocessing
+alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	COMENT:source	lit source version	COMENT:preprocessor

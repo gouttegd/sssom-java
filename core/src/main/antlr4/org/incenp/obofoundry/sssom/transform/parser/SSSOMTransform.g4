@@ -75,10 +75,13 @@ txField   : 'comment'
           | 'mapping_tool'
           | 'mapping_tool_version'
           | 'object_category'
+          | 'object_label'
           | 'object_source_version'
           | 'other'
+          | 'predicate_label'
           | 'similarity_measure'
           | 'subject_category'
+          | 'subject_label'
           | 'subject_source_version'
           ;
 

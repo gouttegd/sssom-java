@@ -121,6 +121,11 @@ public class JSONReader extends BaseReader {
                     String.join(", ", converter.getPrefixManager().getUnresolvedPrefixNames())));
         }
 
+        // 3. Check individual mappings for missing slots
+        validate(ms.getMappings());
+
+        reader.close();
+
         return ms;
     }
 

@@ -134,6 +134,8 @@ public class SSSOMTransformReaderTest {
         parseRule("see_also==\"check this*\" -> action();\n", "(see_also==check this*) -> action()");
 
         parseRule("subject_type=='owl class' -> action();\n", "(subject_type==owl class) -> action()");
+
+        parseRule("subject_label=='alice' -> action();\n", "(subject_label==alice) -> action()");
     }
 
     /*

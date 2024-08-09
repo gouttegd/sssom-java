@@ -717,6 +717,10 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             filter = (mapping) -> testValue.apply(mapping.getObjectCategory());
             break;
 
+        case "object_label":
+            filter = (mapping) -> testValue.apply(mapping.getObjectLabel());
+            break;
+
         case "object_source":
             filter = (mapping) -> testValue.apply(mapping.getObjectSource());
             break;
@@ -734,6 +738,11 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
                     && mapping.getPredicateModifier() != PredicateModifier.NOT;
             break;
 
+        case "predicate_label":
+            filter = (mapping) -> testValue.apply(mapping.getPredicateLabel())
+                    && mapping.getPredicateModifier() != PredicateModifier.NOT;
+            break;
+
         case "similarity_measure":
             filter = (mapping) -> testValue.apply(mapping.getSimilarityMeasure());
             break;
@@ -744,6 +753,10 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
         case "subject_category":
             filter = (mapping) -> testValue.apply(mapping.getSubjectCategory());
+            break;
+
+        case "subject_label":
+            filter = (mapping) -> testValue.apply(mapping.getSubjectLabel());
             break;
 
         case "subject_source":

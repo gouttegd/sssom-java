@@ -296,6 +296,8 @@ public class TSVReader extends BaseReader {
                     String.join(", ", converter.getPrefixManager().getUnresolvedPrefixNames())));
         }
 
+        validate(ms.getMappings());
+
         metaReader.close();
         if ( tsvReader != null ) {
             tsvReader.close();
