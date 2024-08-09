@@ -31,7 +31,7 @@ import org.incenp.obofoundry.sssom.SSSOMFormatException;
  * several literal-specific slots. In SSSOM 1.0, this profile has been removed
  * and replaced by a convention that literal subjects are represented by storing
  * the literal in the <code>subject_label</code> slot and setting the
- * <code>subject_type</code> slot to <code>sssom literal</code>.
+ * <code>subject_type</code> slot to <code>rdfs literal</code>.
  */
 public class LiteralProfileConverter implements IYAMLPreprocessor {
 

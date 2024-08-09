@@ -17,8 +17,7 @@ sets from the command line, and a pluggable command for the
 
 Features
 --------
-* Reading a SSSOM mapping set from the TSV serialisation format (both
-  internal and external metadata variants are supported).
+* Reading a SSSOM mapping set from the TSV serialisation format.
 
 ```java
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -65,7 +64,7 @@ try {
 * Extracting SSSOM mappings from a OWL ontology with ROBOT:
 
 ```sh
-robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
+robot sssom:xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
 ```
 
 By default, this honours the `oboInOwl:treat-xrefs-as-...` annotations
@@ -115,7 +114,7 @@ Jar files:
 * `sssom-robot-plugin-x.y.z.jar` (in `robot/target`): a file usable as a
   ROBOT plugin.
 * `sssom-robot-standalone-x.y.z.jar` (in `robot/target`): a standalone
-  version of ROBOT (1.9.5), which includes the command(s) from the SSSOM
+  version of ROBOT (1.9.6), which includes the command(s) from the SSSOM
   plugin as if they were built-in commands.
 * `sssom-cli-x.y.z.jar` (in `cli/target`): the `sssom-cli` command-line
   tool, as a self-sufficient executable Jar archive.
