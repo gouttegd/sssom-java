@@ -40,6 +40,7 @@ public class SSSOMTransformReaderTest {
             reader = new SSSOMTransformReader<Void>(app);
             reader.addPrefix("ORGENT", "https://example.org/entities/");
             reader.addPrefix("NETENT", "https://example.com/entities/");
+            reader.addPrefix("ORGPID", "https://example.org/people/");
         }
     }
 
@@ -220,6 +221,69 @@ public class SSSOMTransformReaderTest {
 
         checkFilter("!subject==~ -> action();\n", org1, true);
         checkFilter("!subject==~ -> action();\n", org2, true);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter in a multi-valued slot.
+     */
+    @Test
+    void testTextListFilter() {
+        Mapping alice = Mapping.builder().authorLabel(new ArrayList<String>()).build();
+        alice.getAuthorLabel().add("Alice");
+
+        Mapping aliceAndBob = Mapping.builder().authorLabel(new ArrayList<String>()).build();
+        aliceAndBob.getAuthorLabel().add("Alice");
+        aliceAndBob.getAuthorLabel().add("Bob");
+
+        Mapping empty = Mapping.builder().authorLabel(new ArrayList<String>()).build();
+        Mapping none = Mapping.builder().authorLabel(null).build();
+
+        checkFilter("author_label==\"Alice\" -> action();\n", alice, true);
+        checkFilter("author_label==\"Alice\" -> action();\n", aliceAndBob, true);
+        checkFilter("author_label==\"Alice\" -> action();\n", empty, false);
+        checkFilter("author_label==\"Alice\" -> action();\n", none, false);
+
+        checkFilter("author_label==\"Bob\" -> action();\n", alice, false);
+        checkFilter("author_label==\"Bob\" -> action();\n", aliceAndBob, true);
+        checkFilter("author_label==\"Bob\" -> action();\n", empty, false);
+        checkFilter("author_label==\"Bob\" -> action();\n", none, false);
+
+        checkFilter("author_label==\"\" -> action();\n", alice, false);
+        checkFilter("author_label==\"\" -> action();\n", aliceAndBob, false);
+        checkFilter("author_label==\"\" -> action();\n", empty, true);
+        checkFilter("author_label==\"\" -> action();\n", none, true);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter in a multi-valued
+     * identifier slot.
+     */
+    @Test
+    void testIDListFilter() {
+        Mapping alice = Mapping.builder().authorId(new ArrayList<String>()).build();
+        alice.getAuthorId().add("https://example.org/people/0000-0000-0001-1234");
+
+        Mapping aliceAndBob = Mapping.builder().authorId(new ArrayList<String>()).build();
+        aliceAndBob.getAuthorId().add("https://example.org/people/0000-0000-0001-1234");
+        aliceAndBob.getAuthorId().add("https://example.org/people/0000-0000-0001-5678");
+
+        Mapping empty = Mapping.builder().authorId(new ArrayList<String>()).build();
+        Mapping none = Mapping.builder().authorId(null).build();
+
+        checkFilter("author==ORGPID:0000-0000-0001-1234 -> action();\n", alice, true);
+        checkFilter("author==ORGPID:0000-0000-0001-1234 -> action();\n", aliceAndBob, true);
+        checkFilter("author==ORGPID:0000-0000-0001-1234 -> action();\n", empty, false);
+        checkFilter("author==ORGPID:0000-0000-0001-1234 -> action();\n", none, false);
+
+        checkFilter("author==ORGPID:0000-0000-0001-5678 -> action();\n", alice, false);
+        checkFilter("author==ORGPID:0000-0000-0001-5678 -> action();\n", aliceAndBob, true);
+        checkFilter("author==ORGPID:0000-0000-0001-5678 -> action();\n", empty, false);
+        checkFilter("author==ORGPID:0000-0000-0001-5678 -> action();\n", none, false);
+
+        checkFilter("author==~ -> action();\n", alice, false);
+        checkFilter("author==~ -> action();\n", aliceAndBob, false);
+        checkFilter("author==~ -> action();\n", empty, true);
+        checkFilter("author==~ -> action();\n", none, true);
     }
 
     /*
