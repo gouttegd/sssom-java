@@ -152,6 +152,44 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
+     * Check that we can parse filter with empty values.
+     */
+    @Test
+    void testParseEmptyFilter() {
+        parseRule("mapping_tool==\"\" -> action();\n", "(mapping_tool==) -> action()");
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter on a text slot.
+     */
+    @Test
+    void testStringFilter() {
+        Mapping tool = Mapping.builder().mappingTool("tool").build();
+        Mapping other = Mapping.builder().mappingTool("other").build();
+        Mapping empty = Mapping.builder().mappingTool("").build();
+        Mapping none = Mapping.builder().mappingTool(null).build();
+
+        checkFilter("mapping_tool==\"tool\" -> action();\n", tool, true);
+        checkFilter("mapping_tool==\"tool\" -> action();\n", other, false);
+        checkFilter("mapping_tool==\"tool\" -> action();\n", empty, false);
+        checkFilter("mapping_tool==\"tool\" -> action();\n", none, false);
+
+        checkFilter("mapping_tool==\"to*\" -> action();\n", tool, true);
+        checkFilter("mapping_tool==\"to*\" -> action();\n", other, false);
+        checkFilter("mapping_tool==\"to*\" -> action();\n", empty, false);
+        checkFilter("mapping_tool==\"to*\" -> action();\n", none, false);
+
+        checkFilter("mapping_tool==\"\" -> action();\n", tool, false);
+        checkFilter("mapping_tool==\"\" -> action();\n", empty, true);
+        checkFilter("mapping_tool==\"\" -> action();\n", none, true);
+
+        checkFilter("!mapping_tool==\"\" -> action();\n", empty, false);
+        checkFilter("!mapping_tool==\"\" -> action();\n", none, false);
+        checkFilter("!mapping_tool==\"\" -> action();\n", tool, true);
+        checkFilter("!mapping_tool==\"\" -> action();\n", other, true);
+    }
+
+    /*
      * Check parsing a complete file. The test file is based on the real use case of
      * the bridge between FBbt and Uberon/CL.
      */
@@ -204,6 +242,15 @@ public class SSSOMTransformReaderTest {
     }
     
     /*
+     * Parse a single rule and check if it applies to the given mapping.
+     */
+    private void checkFilter(String rule, Mapping mapping, boolean selected) {
+        Assertions.assertTrue(reader.read(rule));
+        MappingProcessingRule<Void> parsedRule = reader.getRules().get(reader.getRules().size() - 1);
+        Assertions.assertEquals(selected, parsedRule.apply(mapping));
+    }
+
+    /*
      * A dummy SSSOM/T application that accepts any function and ensures the rules
      * have a string representation to which they can be compared.
      */
@@ -247,5 +294,4 @@ public class SSSOMTransformReaderTest {
             return sb.toString();
         }
     }
-
 }

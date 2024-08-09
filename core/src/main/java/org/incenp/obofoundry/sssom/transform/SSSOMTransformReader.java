@@ -664,8 +664,14 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
 
         boolean glob = value.endsWith("*");
         String pattern = glob ? value.substring(0, value.length() - 1) : value;
-        Function<String, Boolean> testValue = glob ? (v) -> v != null && v.startsWith(pattern)
-                : (v) -> v != null && v.equals(pattern);
+        Function<String, Boolean> testValue;
+        if ( value.isEmpty() ) {
+            testValue = (v) -> v == null || v.isEmpty();
+        } else if ( glob ) {
+            testValue = (v) -> v != null && v.startsWith(pattern);
+        } else {
+            testValue = (v) -> v != null && v.equals(pattern);
+        }
 
         IMappingFilter filter = null;
         switch ( fieldName ) {
