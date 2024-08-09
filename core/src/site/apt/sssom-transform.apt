@@ -165,7 +165,7 @@ mapping_cardinality==1:1 || mapping_cardinality==1:n
 mapping_tool==""
 +-----------------------------------------------------------------------
 
-  That syntax is also accept for the filters on <<<subject_type>>> and
+  That syntax is also accepted for the filters on <<<subject_type>>> and
   <<<object_type>>>.
 
   When combined with a negation operator (see below), this can be used
@@ -186,20 +186,8 @@ mapping_tool==""
 author==~
 +-----------------------------------------------------------------------
 
-  It is <not> possible to filter on empty values for the following
-  slots:
-  
-  * <<<predicate_modifier>>>,
-  
-  * <<<mapping_cardinality>>>,
-  
-  * <<<confidence>>>,
-  
-  * and <<<similarity_score>>>.
-  
-  []
-  
-  This is unlikely to change in the future.
+  That syntax is also accepted by the filters on numeric slots and on
+  <<<mapping_cardinality>>>.
   
 ** Combining filters
 

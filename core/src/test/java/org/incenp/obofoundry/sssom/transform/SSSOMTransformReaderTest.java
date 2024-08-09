@@ -25,6 +25,7 @@ import java.util.List;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -162,6 +163,8 @@ public class SSSOMTransformReaderTest {
         parseRule("mapping_tool==\"\" -> action();\n", "(mapping_tool==) -> action()");
         parseRule("subject==~ -> action();\n", "(subject==~) -> action()");
         parseRule("subject_type==\"\" -> action();\n", "(subject_type==) -> action()");
+        parseRule("confidence==~ -> action();\n", "(confidence==~) -> action()");
+        parseRule("cardinality==~ -> action();\n", "(cardinality==~) -> action()");
     }
 
     /*
@@ -315,6 +318,55 @@ public class SSSOMTransformReaderTest {
         checkFilter("!subject_type==\"\" -> action();\n", owlClass, true);
         checkFilter("!subject_type==\"\" -> action();\n", literal, true);
         checkFilter("!subject_type==\"\" -> action();\n", none, false);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter on a numeric slot.
+     */
+    @Test
+    void testNumericFilter() {
+        Mapping one = Mapping.builder().confidence(1.0).build();
+        Mapping half = Mapping.builder().confidence(0.5).build();
+        Mapping none = Mapping.builder().confidence(null).build();
+
+        checkFilter("confidence>=1.0 -> action();\n", one, true);
+        checkFilter("confidence>=1.0 -> action();\n", half, false);
+        checkFilter("confidence>=1.0 -> action();\n", none, false);
+
+        checkFilter("confidence==~ -> action();\n", one, false);
+        checkFilter("confidence==~ -> action();\n", half, false);
+        checkFilter("confidence==~ -> action();\n", none, true);
+
+        checkFilter("!confidence==~ -> action();\n", one, true);
+        checkFilter("!confidence==~ -> action();\n", half, true);
+        checkFilter("!confidence==~ -> action();\n", none, false);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter on the
+     * mapping_cardinality slot.
+     */
+    @Test
+    void testCardinalityFilter() {
+        Mapping _1_1 = Mapping.builder().mappingCardinality(MappingCardinality.ONE_TO_ONE).build();
+        Mapping _1_n = Mapping.builder().mappingCardinality(MappingCardinality.ONE_TO_MANY).build();
+        Mapping none = Mapping.builder().mappingCardinality(null).build();
+
+        checkFilter("cardinality==1:1 -> action();\n", _1_1, true);
+        checkFilter("cardinality==1:1 -> action();\n", _1_n, false);
+        checkFilter("cardinality==1:1 -> action();\n", none, false);
+
+        checkFilter("cardinality==1:n -> action();\n", _1_1, false);
+        checkFilter("cardinality==1:n -> action();\n", _1_n, true);
+        checkFilter("cardinality==1:n -> action();\n", none, false);
+
+        checkFilter("cardinality==~ -> action();\n", _1_1, false);
+        checkFilter("cardinality==~ -> action();\n", _1_n, false);
+        checkFilter("cardinality==~ -> action();\n", none, true);
+
+        checkFilter("!cardinality==~ -> action();\n", _1_1, true);
+        checkFilter("!cardinality==~ -> action();\n", _1_n, true);
+        checkFilter("!cardinality==~ -> action();\n", none, false);
     }
 
     /*

@@ -867,31 +867,40 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     @Override
     public IMappingFilter visitNumFilterItem(SSSOMTransformParser.NumFilterItemContext ctx) {
         String fieldName = ctx.numField().getText();
-        String operator = ctx.numOp().getText();
-        Double value = Double.valueOf(ctx.DOUBLE().getText());
+        String asText;
 
         Function<Double, Boolean> testValue;
-        switch ( operator ) {
-        case "==":
-        default:
-            testValue = (v) -> v != null && v == value;
-            break;
 
-        case ">":
-            testValue = (v) -> v != null && v > value;
-            break;
+        if ( ctx.EMPTY() != null ) {
+            asText = String.format("%s==~", fieldName);
+            testValue = (v) -> v == null;
+        } else {
+            String operator = ctx.numOp().getText();
+            Double value = Double.valueOf(ctx.DOUBLE().getText());
+            asText = String.format("%s%s%.2f", fieldName, operator, value);
 
-        case ">=":
-            testValue = (v) -> v != null && v >= value;
-            break;
+            switch ( operator ) {
+            case "==":
+            default:
+                testValue = (v) -> v != null && v == value;
+                break;
 
-        case "<":
-            testValue = (v) -> v != null && v < value;
-            break;
+            case ">":
+                testValue = (v) -> v != null && v > value;
+                break;
 
-        case "<=":
-            testValue = (v) -> v != null && v <= value;
-            break;
+            case ">=":
+                testValue = (v) -> v != null && v >= value;
+                break;
+
+            case "<":
+                testValue = (v) -> v != null && v < value;
+                break;
+
+            case "<=":
+                testValue = (v) -> v != null && v <= value;
+                break;
+            }
         }
 
         IMappingFilter filter = null;
@@ -906,12 +915,12 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             break;
         }
 
-        return addFilter(new NamedFilter(String.format("%s%s%.2f", fieldName, operator, value), filter));
+        return addFilter(new NamedFilter(asText, filter));
     }
 
     @Override
     public IMappingFilter visitCardFilterItem(SSSOMTransformParser.CardFilterItemContext ctx) {
-        String value = ctx.CARDVALUE().getText();
+        String value = ctx.CARDVALUE() != null ? ctx.CARDVALUE().getText() : ctx.EMPTY().getText();
         IMappingFilter filter = null;
         switch ( value ) {
         case "*:n":
@@ -932,6 +941,10 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
         case "1:*":
             filter = (mapping) -> mapping.getMappingCardinality() == MappingCardinality.ONE_TO_ONE
                     || mapping.getMappingCardinality() == MappingCardinality.ONE_TO_MANY;
+            break;
+
+        case "~":
+            filter = (mapping) -> mapping.getMappingCardinality() == null;
             break;
 
         default:

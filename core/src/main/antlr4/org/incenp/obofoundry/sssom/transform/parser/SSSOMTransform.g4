@@ -34,9 +34,11 @@ textFilterItem              : txField '==' string;
 
 multiTextFilterItem         : mulTxField '==' string;
 
-numFilterItem               : numField numOp DOUBLE;
+numFilterItem               : numField numOp DOUBLE
+                            | numField '==' EMPTY;
 
-cardFilterItem              : cardField '==' CARDVALUE;
+cardFilterItem              : cardField '==' CARDVALUE
+                            | cardField '==' EMPTY;
 
 predicateModifierFilterItem : 'predicate_modifier==Not';
 
@@ -94,8 +96,8 @@ entField  : 'object_type'
           ;
 
 idValue   : CURIE
+          | EMPTY
           | '*'
-          | '~'
           ;
 
 numField  : 'confidence'
@@ -125,6 +127,8 @@ argument  : string
 string    : SQ_STRING
           | DQ_STRING
           ;
+
+EMPTY     : '~';
 
 FUNCTION  : [a-zA-Z_] [a-zA-Z0-9_]+ '(';
 
