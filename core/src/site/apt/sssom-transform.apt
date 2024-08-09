@@ -152,6 +152,54 @@ mapping_cardinality==1:*
 +-----------------------------------------------------------------------
 mapping_cardinality==1:1 || mapping_cardinality==1:n
 +-----------------------------------------------------------------------
+
+*** Filtering on empty values
+
+  For most slots, it is possible to select mappings that do <not> have a
+  value in the slot.
+  
+  For all free-form text slots, this is done simply by using an empty
+  string as the value of the filter, as in:
+  
++-----------------------------------------------------------------------
+mapping_tool==""
++-----------------------------------------------------------------------
+
+  That syntax is also accept for the filters on <<<subject_type>>> and
+  <<<object_type>>>.
+
+  When combined with a negation operator (see below), this can be used
+  to select mappings that have <any non-null value> in the slot:
+  
++-----------------------------------------------------------------------
+!mapping_tool==""
++-----------------------------------------------------------------------
+
+  Note that this different from using the <<<*>>> special value, which
+  will accept any mapping regardless of whether they have a value or not
+  in the slot.
+  
+  For slots that expect identifiers, selecting mappings with an empty
+  value is done by using the special value <<<~>>>, as in:
+  
++-----------------------------------------------------------------------
+author==~
++-----------------------------------------------------------------------
+
+  It is <not> possible to filter on empty values for the following
+  slots:
+  
+  * <<<predicate_modifier>>>,
+  
+  * <<<mapping_cardinality>>>,
+  
+  * <<<confidence>>>,
+  
+  * and <<<similarity_score>>>.
+  
+  []
+  
+  This is unlikely to change in the future.
   
 ** Combining filters
 

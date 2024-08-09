@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
@@ -160,6 +161,7 @@ public class SSSOMTransformReaderTest {
     void testParseEmptyFilter() {
         parseRule("mapping_tool==\"\" -> action();\n", "(mapping_tool==) -> action()");
         parseRule("subject==~ -> action();\n", "(subject==~) -> action()");
+        parseRule("subject_type==\"\" -> action();\n", "(subject_type==) -> action()");
     }
 
     /*
@@ -221,6 +223,8 @@ public class SSSOMTransformReaderTest {
 
         checkFilter("!subject==~ -> action();\n", org1, true);
         checkFilter("!subject==~ -> action();\n", org2, true);
+        checkFilter("!subject==~ -> action();\n", empty, false);
+        checkFilter("!subject==~ -> action();\n", none, false);
     }
 
     /*
@@ -284,6 +288,33 @@ public class SSSOMTransformReaderTest {
         checkFilter("author==~ -> action();\n", aliceAndBob, false);
         checkFilter("author==~ -> action();\n", empty, true);
         checkFilter("author==~ -> action();\n", none, true);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter in on a slot that
+     * expects an entity_type value.
+     */
+    @Test
+    void testEntityTypeFilter() {
+        Mapping owlClass = Mapping.builder().subjectType(EntityType.OWL_CLASS).build();
+        Mapping literal = Mapping.builder().subjectType(EntityType.RDFS_LITERAL).build();
+        Mapping none = Mapping.builder().subjectType(null).build();
+
+        checkFilter("subject_type==\"owl class\" -> action();\n", owlClass, true);
+        checkFilter("subject_type==\"owl class\" -> action();\n", literal, false);
+        checkFilter("subject_type==\"owl class\" -> action();\n", none, false);
+
+        checkFilter("subject_type==\"*\" -> action();\n", owlClass, true);
+        checkFilter("subject_type==\"*\" -> action();\n", literal, true);
+        checkFilter("subject_type==\"*\" -> action();\n", none, true);
+
+        checkFilter("subject_type==\"\" -> action();\n", owlClass, false);
+        checkFilter("subject_type==\"\" -> action();\n", literal, false);
+        checkFilter("subject_type==\"\" -> action();\n", none, true);
+
+        checkFilter("!subject_type==\"\" -> action();\n", owlClass, true);
+        checkFilter("!subject_type==\"\" -> action();\n", literal, true);
+        checkFilter("!subject_type==\"\" -> action();\n", none, false);
     }
 
     /*

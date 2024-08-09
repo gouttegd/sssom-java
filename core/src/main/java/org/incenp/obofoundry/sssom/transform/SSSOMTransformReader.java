@@ -952,10 +952,21 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     @Override
     public IMappingFilter visitEntityTypeFilterItem(SSSOMTransformParser.EntityTypeFilterItemContext ctx) {
         String fieldName = ctx.entField().getText();
+        String value = ParseTree2RuleVisitor.unescape(ctx.string().getText());
 
-        EntityType et = EntityType.fromString(ParseTree2RuleVisitor.unescape(ctx.string().getText()));
-        if ( et == null ) {
-            return addFilter(new NamedFilter("*", (mapping) -> false));
+        EntityType et;
+        if ( value.isEmpty() ) {
+            et = null;
+        } else if ( value.equals("*") ) {
+            // Accept anything
+            return addFilter(new NamedFilter("*", (mapping) -> true));
+        } else {
+            et = EntityType.fromString(value);
+            if ( et == null ) {
+                // Illegal value, reject everything
+                return addFilter(new NamedFilter("*", (mapping) -> false));
+            }
+            value = et.toString();
         }
 
         IMappingFilter filter = null;
@@ -969,7 +980,7 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
             break;
         }
 
-        return addFilter(new NamedFilter(String.format("%s==%s", fieldName, et.toString()), filter));
+        return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
     }
 
     @Override
