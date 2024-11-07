@@ -113,11 +113,6 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
         throw new SSSOMTransformError(String.format("Unrecognised function: %s", name));
     }
 
-    @Override
-    public String getCurieExpansionFormat() {
-        return null;
-    }
-
     protected void checkArguments(String name, int expected, List<String> arguments) throws SSSOMTransformError {
         checkArguments(name, expected, arguments, false);
     }

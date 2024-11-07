@@ -91,17 +91,4 @@ public interface ISSSOMTransformApplication<T> {
      *                             are invalid).
      */
     public IMappingTransformer<T> onGeneratingAction(String name, List<String> arguments) throws SSSOMTransformError;
-
-    /**
-     * Gets a format string to be used for expanding short identifiers in actions’
-     * string arguments. If this method returns a string, then the parser will
-     * attempt to identify any short identifier (“CURIE”) in the string arguments of
-     * any action, and expands them according to the provided format before passing
-     * them to one of the {@code on...Action} methods. If this method returns
-     * {@code null}, no expansion is performed.
-     * 
-     * @return A format string for expanded CURIEs, or {@code null} if CURIE
-     *         expansion is not desired.
-     */
-    public String getCurieExpansionFormat();
 }

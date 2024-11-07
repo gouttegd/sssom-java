@@ -148,16 +148,6 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
-     * Check that short identifiers in strings are expanded if we ask for it.
-     */
-    @Test
-    void testCurieExpansionInStringArguments() {
-        app.curieExpansionFormat = "<%s>";
-        parseRule(
-                "subject==* -> action('ORGENT:0001');\n", "(*) -> action(<https://example.org/entities/0001>)");
-    }
-
-    /*
      * Check that we can parse filter with empty values.
      */
     @Test
@@ -439,7 +429,6 @@ public class SSSOMTransformReaderTest {
     private class DummyApplication implements ISSSOMTransformApplication<Void> {
 
         List<String> headerFunctions = new ArrayList<String>();
-        String curieExpansionFormat = null;
 
         @Override
         public void onInit(PrefixManager prefixManager) {
@@ -460,11 +449,6 @@ public class SSSOMTransformReaderTest {
         public IMappingTransformer<Void> onGeneratingAction(String name, List<String> arguments)
                 throws SSSOMTransformError {
             return new NamedMappingTransformer<Void>(format(name, arguments), null);
-        }
-
-        @Override
-        public String getCurieExpansionFormat() {
-            return curieExpansionFormat;
         }
 
         private String format(String name, List<String> arguments) {

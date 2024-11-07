@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -373,8 +371,6 @@ public class SSSOMTransformReader<T> {
  */
 class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
 
-    private static final Pattern curiePattern = Pattern.compile("[A-Za-z0-9_]+:[A-Za-z0-9_]+");
-
     List<MappingProcessingRule<T>> rules;
     List<SSSOMTransformError> errors;
     Deque<IMappingFilter> filters = new ArrayDeque<IMappingFilter>();
@@ -415,7 +411,7 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         if ( ctx.action().arglist() != null ) {
             for ( ArgumentContext argCtx : ctx.action().arglist().argument() ) {
                 if ( argCtx.string() != null ) {
-                    arguments.add(processString(argCtx.string().getText()));
+                    arguments.add(unescape(argCtx.string().getText()));
                 } else if ( argCtx.IRI() != null ) {
                     String iri = argCtx.IRI().getText();
                     int iriLen = iri.length();
@@ -504,7 +500,7 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         if ( ctx.arglist() != null ) {
             for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
                 if ( argCtx.string() != null ) {
-                    arguments.add(processString(argCtx.string().getText()));
+                    arguments.add(unescape(argCtx.string().getText()));
                 } else if ( argCtx.IRI() != null ) {
                     String iri = argCtx.IRI().getText();
                     int iriLen = iri.length();
@@ -545,29 +541,6 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         }
 
         return null;
-    }
-
-    // Un-quote and un-escape the string, then eventually replace any CURIE in it
-    private String processString(String s) {
-        String unquoted = unescape(s);
-
-        if ( application.getCurieExpansionFormat() != null ) {
-            String curieFormat = application.getCurieExpansionFormat();
-            Matcher curieFinder = curiePattern.matcher(unquoted);
-            Set<String> curies = new HashSet<String>();
-            while ( curieFinder.find() ) {
-                curies.add(curieFinder.group());
-            }
-
-            for ( String curie : curies ) {
-                String iri = prefixManager.expandIdentifier(curie);
-                if ( !iri.equals(curie) ) {
-                    unquoted = unquoted.replace(curie, String.format(curieFormat, iri));
-                }
-            }
-        }
-
-        return unquoted;
     }
 
     // Un-quote and un-escape the string as provided by the parser
