@@ -402,28 +402,8 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
 
     @Override
     public Void visitHeaderDecl(SSSOMTransformParser.HeaderDeclContext ctx) {
-        String name = ctx.action().FUNCTION().getText();
-        int nameLen = name.length();
-        name = name.substring(0, nameLen - 1);
-
-        ArrayList<String> arguments = new ArrayList<String>();
-
-        if ( ctx.action().arglist() != null ) {
-            for ( ArgumentContext argCtx : ctx.action().arglist().argument() ) {
-                if ( argCtx.string() != null ) {
-                    arguments.add(unescape(argCtx.string().getText()));
-                } else if ( argCtx.IRI() != null ) {
-                    String iri = argCtx.IRI().getText();
-                    int iriLen = iri.length();
-                    arguments.add(iri.substring(1, iriLen - 1));
-                } else if ( argCtx.CURIE() != null ) {
-                    arguments.add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
-                }
-            }
-        }
-
         try {
-            application.onHeaderAction(name, arguments);
+            application.onHeaderAction(getFunctionName(ctx.action()), getFunctionArguments(ctx.action()));
         } catch ( SSSOMTransformError e ) {
             errors.add(e);
         }
@@ -490,28 +470,9 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
             filter = fs;
         }
 
-        // Get function name
-        String name = ctx.FUNCTION().getText();
-        int nameLen = name.length();
-        name = name.substring(0, nameLen - 1);
-
-        // Assemble the arguments list
-        List<String> arguments = new ArrayList<String>();
-        if ( ctx.arglist() != null ) {
-            for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
-                if ( argCtx.string() != null ) {
-                    arguments.add(unescape(argCtx.string().getText()));
-                } else if ( argCtx.IRI() != null ) {
-                    String iri = argCtx.IRI().getText();
-                    int iriLen = iri.length();
-                    arguments.add(iri.substring(1, iriLen - 1));
-                } else if ( argCtx.CURIE() != null ) {
-                    arguments.add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
-                }
-            }
-        }
-
         // Get the action from the application
+        String name = getFunctionName(ctx);
+        List<String> arguments = getFunctionArguments(ctx);
         IMappingTransformer<Mapping> preprocessor = null;
         IMappingTransformer<T> generator = null;
         try {
@@ -541,6 +502,37 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         }
 
         return null;
+    }
+
+    // Remove the trailing '(' to get the name of the function
+    private String getFunctionName(SSSOMTransformParser.ActionContext ctx) {
+        String name = ctx.FUNCTION().getText();
+        int nameLen = name.length();
+        return name.substring(0, nameLen - 1);
+    }
+
+    // Process arguments in a function call:
+    // - unescape string arguments
+    // - remove enclosing brackets of IRI arguments
+    // - expand CURIE arguments
+    private List<String> getFunctionArguments(SSSOMTransformParser.ActionContext ctx) {
+        List<String> arguments = new ArrayList<String>();
+
+        if ( ctx.arglist() != null ) {
+            for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
+                if ( argCtx.string() != null ) {
+                    arguments.add(unescape(argCtx.string().getText()));
+                } else if ( argCtx.IRI() != null ) {
+                    String iri = argCtx.IRI().getText();
+                    int iriLen = iri.length();
+                    arguments.add(iri.substring(1, iriLen - 1));
+                } else if ( argCtx.CURIE() != null ) {
+                    arguments.add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
+                }
+            }
+        }
+
+        return arguments;
     }
 
     // Un-quote and un-escape the string as provided by the parser
