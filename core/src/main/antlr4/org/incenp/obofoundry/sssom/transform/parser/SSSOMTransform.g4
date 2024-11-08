@@ -22,6 +22,7 @@ filterItem: idFilterItem
           | cardFilterItem
           | predicateModifierFilterItem
           | entityTypeFilterItem
+          | applicationFilterItem
           | groupFilterItem
           | negatedFilterItem
           ;
@@ -43,6 +44,8 @@ cardFilterItem              : cardField '==' CARDVALUE
 predicateModifierFilterItem : 'predicate_modifier==Not';
 
 entityTypeFilterItem        : entField '==' string;
+
+applicationFilterItem       : FUNCTION WS* arglist? WS* ')';
 
 groupFilterItem             : '(' WS* filterSet WS* ')';
 

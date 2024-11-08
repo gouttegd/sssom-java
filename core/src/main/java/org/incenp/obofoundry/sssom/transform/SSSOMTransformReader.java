@@ -37,6 +37,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -403,7 +404,8 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
     @Override
     public Void visitHeaderDecl(SSSOMTransformParser.HeaderDeclContext ctx) {
         try {
-            application.onHeaderAction(getFunctionName(ctx.action()), getFunctionArguments(ctx.action()));
+            application.onHeaderAction(getFunctionName(ctx.action().FUNCTION()),
+                    getFunctionArguments(ctx.action().arglist(), prefixManager));
         } catch ( SSSOMTransformError e ) {
             errors.add(e);
         }
@@ -443,8 +445,11 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
 
     @Override
     public Void visitFilterSet(SSSOMTransformParser.FilterSetContext ctx) {
-        ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
-        filters.add(ctx.accept(v));
+        ParseTree2FilterVisitor<T> v = new ParseTree2FilterVisitor<T>(prefixManager, errors, application);
+        IMappingFilter filterSet = ctx.accept(v);
+        if ( filterSet != null ) {
+            filters.add(filterSet);
+        }
 
         return null;
     }
@@ -471,8 +476,8 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         }
 
         // Get the action from the application
-        String name = getFunctionName(ctx);
-        List<String> arguments = getFunctionArguments(ctx);
+        String name = getFunctionName(ctx.FUNCTION());
+        List<String> arguments = getFunctionArguments(ctx.arglist(), prefixManager);
         IMappingTransformer<Mapping> preprocessor = null;
         IMappingTransformer<T> generator = null;
         try {
@@ -504,9 +509,14 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         return null;
     }
 
+    /*
+     * The following methods are static because they do not depend on any state and
+     * are re-used below by the filter visitor.
+     */
+
     // Remove the trailing '(' to get the name of the function
-    private String getFunctionName(SSSOMTransformParser.ActionContext ctx) {
-        String name = ctx.FUNCTION().getText();
+    static String getFunctionName(TerminalNode function) {
+        String name = function.getText();
         int nameLen = name.length();
         return name.substring(0, nameLen - 1);
     }
@@ -515,11 +525,11 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
     // - unescape string arguments
     // - remove enclosing brackets of IRI arguments
     // - expand CURIE arguments
-    private List<String> getFunctionArguments(SSSOMTransformParser.ActionContext ctx) {
+    static List<String> getFunctionArguments(SSSOMTransformParser.ArglistContext ctx, PrefixManager prefixManager) {
         List<String> arguments = new ArrayList<String>();
 
-        if ( ctx.arglist() != null ) {
-            for ( ArgumentContext argCtx : ctx.arglist().argument() ) {
+        if ( ctx != null ) {
+            for ( ArgumentContext argCtx : ctx.argument() ) {
                 if ( argCtx.string() != null ) {
                     arguments.add(unescape(argCtx.string().getText()));
                 } else if ( argCtx.IRI() != null ) {
@@ -536,8 +546,6 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
     }
 
     // Un-quote and un-escape the string as provided by the parser
-    // This is static because it does not depend on any state and is re-used below
-    // by the filter visitor.
     static String unescape(String s) {
         StringBuilder sb = new StringBuilder();
         boolean escaped = false;
@@ -565,13 +573,18 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
 /*
  * Visitor to convert the ANTLR parse tree into a mapping filter object.
  */
-class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> {
+class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilter> {
     private FilterSet filterSet = new FilterSet();
     private String lastOperator = "&&";
     private PrefixManager prefixManager;
+    private List<SSSOMTransformError> errors;
+    private ISSSOMTransformApplication<T> application;
 
-    public ParseTree2FilterVisitor(PrefixManager prefixManager) {
+    public ParseTree2FilterVisitor(PrefixManager prefixManager, List<SSSOMTransformError> errors,
+            ISSSOMTransformApplication<T> application) {
         this.prefixManager = prefixManager;
+        this.errors = errors;
+        this.application = application;
     }
 
     @Override
@@ -955,17 +968,38 @@ class ParseTree2FilterVisitor extends SSSOMTransformBaseVisitor<IMappingFilter> 
     }
 
     @Override
+    public IMappingFilter visitApplicationFilterItem(SSSOMTransformParser.ApplicationFilterItemContext ctx) {
+        String name = ParseTree2RuleVisitor.getFunctionName(ctx.FUNCTION());
+        IMappingFilter f = null;
+        try {
+            f = application.onFilter(name, ParseTree2RuleVisitor.getFunctionArguments(ctx.arglist(), prefixManager));
+            if ( f == null ) {
+                errors.add(new SSSOMTransformError(String.format("Unrecognised filter: %s", name)));
+            }
+        } catch ( SSSOMTransformError e ) {
+            errors.add(e);
+        }
+
+        return f != null ? addFilter(new NamedFilter(name, f)) : null;
+    }
+
+    @Override
     public IMappingFilter visitGroupFilterItem(SSSOMTransformParser.GroupFilterItemContext ctx) {
-        ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
-        return addFilter(ctx.filterSet().accept(v));
+        ParseTree2FilterVisitor<T> v = new ParseTree2FilterVisitor<T>(prefixManager, errors, application);
+        IMappingFilter groupFilter = ctx.filterSet().accept(v);
+        return groupFilter != null ? addFilter(groupFilter) : null;
     }
 
     @Override
     public IMappingFilter visitNegatedFilterItem(SSSOMTransformParser.NegatedFilterItemContext ctx) {
-        ParseTree2FilterVisitor v = new ParseTree2FilterVisitor(prefixManager);
+        ParseTree2FilterVisitor<T> v = new ParseTree2FilterVisitor<T>(prefixManager, errors, application);
         IMappingFilter negatedFilter = ctx.filterItem().accept(v);
-        return addFilter(new NamedFilter(String.format("!%s", negatedFilter.toString()),
-                (mapping) -> !negatedFilter.filter(mapping)));
+        if ( negatedFilter != null ) {
+            return addFilter(new NamedFilter(String.format("!%s", negatedFilter.toString()),
+                    (mapping) -> !negatedFilter.filter(mapping)));
+        } else {
+            return null;
+        }
     }
 
     @Override

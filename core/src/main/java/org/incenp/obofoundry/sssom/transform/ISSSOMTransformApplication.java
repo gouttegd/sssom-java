@@ -45,6 +45,23 @@ public interface ISSSOMTransformApplication<T> {
     public void onInit(PrefixManager prefixManager);
 
     /**
+     * Processes an application-specific filter. This method is called when the
+     * parser finds a function call within the filter part of a rule. If the
+     * application recognises the function, it must return a mapping filter;
+     * otherwise, it must return {@code null} or throw a
+     * {@link SSSOMTransformError}.
+     * 
+     * @param name      The name of the function.
+     * @param arguments The list of arguments passed to the function.
+     * @return A mapping filter that filters mappings according to the application’s
+     *         needs, or {@code null} if the name is not a valid filter name for
+     *         this application.
+     * @throws SSSOMTransformError If the application cannot process the filer
+     *                             (e.g., the arguments are invalid).
+     */
+    public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError;
+
+    /**
      * Processes a header action. This method is called when the parser finds a
      * “header action”, that is an action that is not associated to any filter. Such
      * action cannot produce mapping processing rules but may otherwise influence

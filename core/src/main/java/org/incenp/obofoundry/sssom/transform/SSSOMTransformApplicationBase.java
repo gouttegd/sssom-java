@@ -47,6 +47,11 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
+    public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
+        return null;
+    }
+
+    @Override
     public void onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
         throw new SSSOMTransformError(String.format("Unrecognised function: %s", name));
     }

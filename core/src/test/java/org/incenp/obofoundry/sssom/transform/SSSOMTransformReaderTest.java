@@ -362,6 +362,33 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
+     * Test that application-specific filters are correctly parsed.
+     */
+    @Test
+    void testParseApplicationFilters() {
+        parseRule("custom_filter() -> action();\n", "(custom_filter) -> action()");
+        parseRule("custom_filter(NETENT:0001, \"Alice\") -> action();\n", "(custom_filter) -> action()");
+
+        parseRule("subject==ORGENT:* && !custom_filter() -> action();\n",
+                "(subject==https://example.org/entities/* && !custom_filter) -> action()");
+
+        parseRule("bogus() -> action();\n", null);
+        parseRule("subject==ORGENT:* && (bogus() || object==NETENT:*) -> action();\n", null);
+        
+        parseRule("is_null() -> action();\n", null);
+        parseRule("subject==ORGENT:* || !is_null() -> action();\n", null);
+    }
+
+    @Test
+    void testApplyApplicationFilters() {
+        Mapping org = Mapping.builder().subjectId("https://example.org/entities/0001").build();
+        Mapping net = Mapping.builder().subjectId("https://example.net/entities/0001").build();
+
+        checkFilter("is_org() -> action();\n", org, true);
+        checkFilter("is_org() -> action();\n", net, false);
+    }
+
+    /*
      * Check parsing a complete file. The test file is based on the real use case of
      * the bridge between FBbt and Uberon/CL.
      */
@@ -432,6 +459,22 @@ public class SSSOMTransformReaderTest {
 
         @Override
         public void onInit(PrefixManager prefixManager) {
+        }
+
+        @Override
+        public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
+            if ( name.equals("bogus") ) {
+                // For testing that we can deal with onFilter throwing an exception
+                throw new SSSOMTransformError("invalid call for filter bogus");
+            } else if ( name.equals("is_org") ) {
+                // For testing that a custom filter actually works
+                return new NamedFilter("is_org",
+                        (mapping) -> mapping.getSubjectId().startsWith("https://example.org/"));
+            } else if ( name.equals("is_null") ) {
+                // For testing that we can deal with an unrecognised filter
+                return null;
+            }
+            return new NamedFilter(name, null);
         }
 
         @Override
