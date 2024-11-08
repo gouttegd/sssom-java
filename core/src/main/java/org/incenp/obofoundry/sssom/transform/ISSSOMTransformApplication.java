@@ -69,11 +69,12 @@ public interface ISSSOMTransformApplication<T> {
      * 
      * @param name      The name of the function.
      * @param arguments The list of arguments passed to the function.
+     * @return {@code true} if the name is a valid header action for this
+     *         application, otherwise {@code false}/
      * @throws SSSOMTransformError If the application cannot process the action
-     *                             (e.g. the name is not recognised or the arguments
-     *                             are invalid).
+     *                             (e.g. the arguments are invalid).
      */
-    public void onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError;
+    public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError;
 
     /**
      * Processes a preprocessing action. This method is called when the parser finds

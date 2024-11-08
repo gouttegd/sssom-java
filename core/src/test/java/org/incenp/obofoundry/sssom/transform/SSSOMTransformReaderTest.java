@@ -372,13 +372,22 @@ public class SSSOMTransformReaderTest {
         parseRule("subject==ORGENT:* && !custom_filter() -> action();\n",
                 "(subject==https://example.org/entities/* && !custom_filter) -> action()");
 
-        parseRule("bogus() -> action();\n", null);
-        parseRule("subject==ORGENT:* && (bogus() || object==NETENT:*) -> action();\n", null);
+        parseRule("bogus_filter() -> action();\n", null);
+        Assertions.assertEquals("Invalid call for filter bogus_filter", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==ORGENT:* && (bogus_filter() || object==NETENT:*) -> action();\n", null);
+        Assertions.assertEquals("Invalid call for filter bogus_filter", reader.getErrors().get(0).getMessage());
         
-        parseRule("is_null() -> action();\n", null);
-        parseRule("subject==ORGENT:* || !is_null() -> action();\n", null);
+        parseRule("unknown_filter() -> action();\n", null);
+        Assertions.assertEquals("Unrecognised filter: unknown_filter", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==ORGENT:* || !unknown_filter() -> action();\n", null);
+        Assertions.assertEquals("Unrecognised filter: unknown_filter", reader.getErrors().get(0).getMessage());
     }
 
+    /*
+     * Test that application-specific filter are correctly applied.
+     */
     @Test
     void testApplyApplicationFilters() {
         Mapping org = Mapping.builder().subjectId("https://example.org/entities/0001").build();
@@ -386,6 +395,50 @@ public class SSSOMTransformReaderTest {
 
         checkFilter("is_org() -> action();\n", org, true);
         checkFilter("is_org() -> action();\n", net, false);
+    }
+
+    /*
+     * Test that we can recognise header actions or deal with invalid ones.
+     */
+    @Test
+    void testHandleHeaderActions() {
+        Assertions.assertFalse(reader.read("unknown_header_action();\nsubject==ORGENT:* -> action();\n"));
+        Assertions.assertEquals("Unrecognised function: unknown_header_action", reader.getErrors().get(0).getMessage());
+
+        Assertions.assertFalse(reader.read("bogus_header_action();\nsubject==ORGENT:* -> action();\n"));
+        Assertions.assertEquals("Invalid call for function bogus_header_action",
+                reader.getErrors().get(0).getMessage());
+
+        Assertions.assertTrue(reader.read("header_action();\nsubject==ORGENT:* -> action();\n"));
+        Assertions.assertTrue(app.headerFunctions.contains("header_action()"));
+    }
+
+    /*
+     * Likewise for preprocessors.
+     */
+    @Test
+    void testHandlePreprocessors() {
+        parseRule("subject==* -> bogus_preprocessor();\n", null);
+        Assertions.assertEquals("Invalid call for function bogus_preprocessor", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==* -> unknown_preprocessor();\n", null);
+        Assertions.assertEquals("Unrecognised function: unknown_preprocessor", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==* -> valid_preprocessor();\n", "(*) -> valid_preprocessor()");
+    }
+
+    /*
+     * Likewise for generators.
+     */
+    @Test
+    void testHandleGenerators() {
+        parseRule("subject==* -> bogus_generator();\n", null);
+        Assertions.assertEquals("Invalid call for function bogus_generator", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==* -> unknown_generator();\n", null);
+        Assertions.assertEquals("Unrecognised function: unknown_generator", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==* -> generator();\n", "(*) -> generator()");
     }
 
     /*
@@ -450,8 +503,9 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
-     * A dummy SSSOM/T application that accepts any function and ensures the rules
-     * have a string representation to which they can be compared.
+     * A dummy SSSOM/T application that ensures the rules have a string
+     * representation to which they can be compared. It recognises some special
+     * function names to trigger specific error conditions.
      */
     private class DummyApplication implements ISSSOMTransformApplication<Void> {
 
@@ -463,34 +517,53 @@ public class SSSOMTransformReaderTest {
 
         @Override
         public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
-            if ( name.equals("bogus") ) {
-                // For testing that we can deal with onFilter throwing an exception
-                throw new SSSOMTransformError("invalid call for filter bogus");
+            if ( name.equals("bogus_filter") ) {
+                throw new SSSOMTransformError("Invalid call for filter bogus_filter");
+            } else if ( name.equals("unknown_filter") ) {
+                return null;
             } else if ( name.equals("is_org") ) {
                 // For testing that a custom filter actually works
                 return new NamedFilter("is_org",
                         (mapping) -> mapping.getSubjectId().startsWith("https://example.org/"));
-            } else if ( name.equals("is_null") ) {
-                // For testing that we can deal with an unrecognised filter
-                return null;
             }
+            // Accept any other name as a valid filter
             return new NamedFilter(name, null);
         }
 
         @Override
-        public void onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+        public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+            if ( name.equals("bogus_header_action") ) {
+                throw new SSSOMTransformError("Invalid call for function bogus_header_action");
+            } else if ( name.equals("unknown_header_action") ) {
+                return false;
+            }
+            // Accept any other name as a valid header action
             headerFunctions.add(format(name, arguments));
+            return true;
         }
 
         @Override
         public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
                 throws SSSOMTransformError {
-            return new NamedMappingTransformer<Mapping>(format(name, arguments), null);
+            if ( name.equals("bogus_preprocessor") ) {
+                throw new SSSOMTransformError("Invalid call for function bogus_preprocessor");
+            } else if ( name.equals("valid_preprocessor") ) {
+                // Only accept valid_preprocessor as a preprocessor function
+                return new NamedMappingTransformer<Mapping>(format(name, arguments), null);
+            }
+            // Reject any other name; they will be checked as a possible generator
+            return null;
         }
 
         @Override
         public IMappingTransformer<Void> onGeneratingAction(String name, List<String> arguments)
                 throws SSSOMTransformError {
+            if ( name.equals("bogus_generator") ) {
+                throw new SSSOMTransformError("Invalid call for function bogus_generator");
+            } else if ( name.startsWith("unknown_") ) {
+                return null;
+            }
+            // Accept any other name as a valid generator
             return new NamedMappingTransformer<Void>(format(name, arguments), null);
         }
 

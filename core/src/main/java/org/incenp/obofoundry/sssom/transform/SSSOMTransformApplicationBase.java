@@ -52,8 +52,8 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
-    public void onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
-        throw new SSSOMTransformError(String.format("Unrecognised function: %s", name));
+    public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+        return false;
     }
 
     @Override
@@ -115,7 +115,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
 
     @Override
     public IMappingTransformer<T> onGeneratingAction(String name, List<String> arguments) throws SSSOMTransformError {
-        throw new SSSOMTransformError(String.format("Unrecognised function: %s", name));
+        return null;
     }
 
     protected void checkArguments(String name, int expected, List<String> arguments) throws SSSOMTransformError {

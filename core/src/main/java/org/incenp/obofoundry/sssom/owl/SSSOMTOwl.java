@@ -164,15 +164,15 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     @Override
-    public void onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+    public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
         switch ( name ) {
         case "declare_class":
             arguments.forEach((c) -> entityChecker.classNames.add(c));
-            return;
+            return true;
 
         case "declare_object_property":
             arguments.forEach((c) -> entityChecker.objectPropertyNames.add(c));
-            return;
+            return true;
 
         case "set_var":
             if ( arguments.size() < 2 || arguments.size() > 3 ) {
@@ -201,10 +201,10 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             }
             varManager.addVariable(varName, varValue, filter);
             formatter.addSubstitution("%" + varName, (mapping) -> varManager.expandVariable(varName, mapping));
-            return;
+            return true;
         }
 
-        super.onHeaderAction(name, arguments);
+        return super.onHeaderAction(name, arguments);
     }
 
     @Override
