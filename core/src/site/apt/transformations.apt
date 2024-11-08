@@ -48,7 +48,7 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   
   A processing rule, represented by the
   {{{./apidocs/org/incenp/obofoundry/sssom/transform/MappingProcessingRule.html}MappingProcessingRule\<T\>}}
-  class, is made of three elements:
+  class, is made of four elements:
   
   * a <filter> (a <<<IMappingFilter>>> object) that decides whether the
     rule applies to a given mapping;
@@ -61,18 +61,23 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   * a <generator> (a <<<IMappingTransformer<T>​>>> object, with the same
     parameter type as the <<<MappingProcessingRule>>> itself) that will
     take the filtered, preprocessed mapping and return an object
-    derived from the mapping.
+    derived from the mapping;
+    
+  * a <callback method> (a <<<IMappingProcessorCallback>>> object),
+    which may be used to implement custom treatments with possible
+    side-effects;  
     
   []
   
-  All three elements are optional. If no filter is set, a rule will
+  All four elements are optional. If no filter is set, a rule will
   apply to all mappings; if no preprocessor is set, the generator will
   be applied to the original, unmodified mapping; if no generator is
-  set, the rule will not produce anything. Obviously a rule with no
-  preprocessor <and> no generator does not make any sense. A rule with a
-  preprocessor only does make sense, though, because even if there is no
-  generator in that particular rule, the result of the preprocessing
-  will be visible to any following rules.
+  set, the rule will not produce anything; if no callback set, no custom
+  treatment will be applied. Obviously a rule with no  preprocessor
+  <and> no generator <and> no callback does not make any sense. A rule
+  with a preprocessor only does make sense, though, because even if
+  there is no generator in that particular rule, the result of the
+  preprocessing will be visible to any following rules.
   
   A rule can also have <tags>, which are simply <<<String>>> objects.
   Tags have no effect on the behaviour of the rule, but they may be used
@@ -92,7 +97,11 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   
   [[1]] For each rule in the list:
   
-        [[1]] For each mapping in the list:
+        [[1]] If the rule has a callback, invoke that callback with two
+              arguments: (1) the rule’s filter (if any), and the current
+              set of mappings.
+  
+        [[2]] For each mapping in the list:
         
               [[1]] Apply the <filter> to the mapping. If there is no
                     filter, this is equivalent to a filter that accepts

@@ -57,6 +57,11 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
+    public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
+        return null;
+    }
+
+    @Override
     public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
             throws SSSOMTransformError {
         switch ( name ) {

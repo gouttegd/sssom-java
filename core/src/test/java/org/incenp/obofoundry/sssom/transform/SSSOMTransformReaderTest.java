@@ -441,6 +441,17 @@ public class SSSOMTransformReaderTest {
         parseRule("subject==* -> generator();\n", "(*) -> generator()");
     }
 
+    @Test
+    void testHandleCallbacks() {
+        parseRule("subject==* -> bogus_callback();\n", null);
+        Assertions.assertEquals("Invalid call for function bogus_callback", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==* -> unknown_callback();\n", null);
+        Assertions.assertEquals("Unrecognised function: unknown_callback", reader.getErrors().get(0).getMessage());
+
+        parseRule("subject==* -> valid_callback();\n", "(*) -> valid_callback()");
+    }
+
     /*
      * Check parsing a complete file. The test file is based on the real use case of
      * the bridge between FBbt and Uberon/CL.
@@ -565,6 +576,19 @@ public class SSSOMTransformReaderTest {
             }
             // Accept any other name as a valid generator
             return new NamedMappingTransformer<Void>(format(name, arguments), null);
+        }
+
+        @Override
+        public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
+            if ( name.equals("bogus_callback") ) {
+                throw new SSSOMTransformError("Invalid call for function bogus_callback");
+            } else if ( name.equals("valid_callback") ) {
+                // Only accept valid_callback as a callback function
+                return new NamedMappingProcessorCallback(format(name, arguments), null);
+            }
+            // Reject any other name; they will be checked as a possible preprocessor or
+            // generator
+            return null;
         }
 
         private String format(String name, List<String> arguments) {

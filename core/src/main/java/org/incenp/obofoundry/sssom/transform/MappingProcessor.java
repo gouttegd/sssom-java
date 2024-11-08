@@ -144,6 +144,10 @@ public class MappingProcessor<T> {
                 dirtyCard = false;
             }
 
+            if ( !rule.call(mappings) ) {
+                continue;
+            }
+
             List<Mapping> keptMappings = new ArrayList<Mapping>();
             for ( Mapping mapping : mappings ) {
                 if ( rule.apply(mapping) ) {

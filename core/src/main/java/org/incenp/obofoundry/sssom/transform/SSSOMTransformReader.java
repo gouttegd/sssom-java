@@ -480,22 +480,24 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         // Get the action from the application
         String name = getFunctionName(ctx.FUNCTION());
         List<String> arguments = getFunctionArguments(ctx.arglist(), prefixManager);
+        IMappingProcessorCallback callback = null;
         IMappingTransformer<Mapping> preprocessor = null;
         IMappingTransformer<T> generator = null;
         try {
-            preprocessor = application.onPreprocessingAction(name, arguments);
-            generator = null;
-            if ( preprocessor == null ) {
-                generator = application.onGeneratingAction(name, arguments);
+            callback = application.onCallback(name, arguments);
+            if ( callback == null ) {
+                preprocessor = application.onPreprocessingAction(name, arguments);
+                if ( preprocessor == null ) {
+                    generator = application.onGeneratingAction(name, arguments);
+                }
             }
-            ;
         } catch ( SSSOMTransformError e ) {
             errors.add(e);
         }
 
         // Assemble the final rule
-        if ( preprocessor != null || generator != null ) {
-            MappingProcessingRule<T> rule = new MappingProcessingRule<T>(filter, preprocessor, generator);
+        if ( callback != null || preprocessor != null || generator != null ) {
+            MappingProcessingRule<T> rule = new MappingProcessingRule<T>(filter, preprocessor, generator, callback);
 
             // Assemble the final tag set
             tags.forEach((levelTags) -> rule.getTags().addAll(levelTags));

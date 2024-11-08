@@ -79,8 +79,25 @@ public interface ISSSOMTransformApplication<T> {
     public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError;
 
     /**
+     * Processes a callback action. This method is the first one called when the
+     * parser finds a normal action (any action associated with a filter). If the
+     * application recognises the function as a callback function, it must return
+     * the corresponding callback object; otherwise, it must return {@code null}.
+     * 
+     * @param name      The name of the function.
+     * @param arguments The list of arguments passed to the function.
+     * @return A callback object implementing the action according to the
+     *         application’s needs, or {@code null} if the name is not a valid
+     *         callback function name for this application.
+     * @throws SSSOMTransformError If the application cannot process the action
+     *                             (e.g., the arguments are invalid).
+     */
+    public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError;
+
+    /**
      * Processes a preprocessing action. This method is called when the parser finds
-     * a normal action (any action associated with a filter). It the application
+     * a normal action that is not recognised as a callback action (i.e.
+     * {@link #onCallback(String, List)} returned {@code null}). It the application
      * recognises the function, it must return a mapping preprocessor; otherwise, it
      * must return {@code null}.
      * 
@@ -97,7 +114,8 @@ public interface ISSSOMTransformApplication<T> {
 
     /**
      * Processes a generating action. This method is called when the parser finds a
-     * normal action that is not recognised as a preprocessing action (i.e.
+     * normal action that is not recognised as a callback action nor as a
+     * preprocessing action (i.e. both {@link #onCallback(String, List)} and
      * {@link #onPreprocessingAction(String, List)} returned {@code null}). If the
      * application recognises the function, it must return a mapping transformer
      * that produces the kind of objects desired by the application.

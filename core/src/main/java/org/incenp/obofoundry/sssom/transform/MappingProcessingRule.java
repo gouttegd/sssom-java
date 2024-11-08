@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.transform;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -42,6 +43,7 @@ public class MappingProcessingRule<T> {
     private IMappingFilter filter;
     private IMappingTransformer<Mapping> preprocessor;
     private IMappingTransformer<T> generator;
+    private IMappingProcessorCallback callback;
     private HashSet<String> tags = null;
     private boolean cardinalityNeeded = false;
 
@@ -64,6 +66,31 @@ public class MappingProcessingRule<T> {
         this.filter = filter;
         this.preprocessor = preprocessor;
         this.generator = generator;
+    }
+
+    /**
+     * Creates a new instance that includes a custom processing step.
+     * 
+     * @param filter       The filter to select the mappings this rule will be
+     *                     applied to; if the filter returns {@code true} for a
+     *                     given mapping, the rule is applied. If {@code null}, the
+     *                     rule is applied to any mapping.
+     * @param preprocessor The preprocessor to modify the mapping; it takes a
+     *                     mapping and returns another mapping; if {@code null}, the
+     *                     mapping is unmodified.
+     * @param generator    The generator to produce the desired object from the
+     *                     mapping; if {@code null}, the rule will produce
+     *                     {@code null}.
+     * @param callback     A callback method to call when this rule is being
+     *                     processed; if set, the callback will be called before the
+     *                     processor starts iterating over the mappings.
+     */
+    public MappingProcessingRule(IMappingFilter filter, IMappingTransformer<Mapping> preprocessor,
+            IMappingTransformer<T> generator, IMappingProcessorCallback callback) {
+        this.filter = filter;
+        this.preprocessor = preprocessor;
+        this.generator = generator;
+        this.callback = callback;
     }
 
     /**
@@ -140,6 +167,23 @@ public class MappingProcessingRule<T> {
         return null;
     }
 
+    /**
+     * Calls the custom callback associated with the rule, if any.
+     * 
+     * @param mappings The current set of mappings.
+     * @return {@code true} if the processor should still proceed with that rule
+     *         (i.e. iterate over the mappings and apply the preprocessor and
+     *         generator as needed), or {@code false} if it should proceed to the
+     *         next rule instead.
+     */
+    public boolean call(List<Mapping> mappings) {
+        if ( callback != null ) {
+            callback.process(filter, mappings);
+        }
+
+        return preprocessor != null || generator != null;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -163,6 +207,11 @@ public class MappingProcessingRule<T> {
         if ( generator != null ) {
             sb.append(" -> ");
             sb.append(generator.toString());
+        }
+
+        if ( callback != null ) {
+            sb.append(" -> ");
+            sb.append(callback.toString());
         }
 
         return sb.toString();
