@@ -339,7 +339,7 @@ direct("direct:");
 
   [check_object_existence()] Likewise, but for the object side.
 
-*** Header functions
+*** Directive functions
 
   Those are the functions that may be used at the top of the
   SSSOM/Transform file, before any rule. They are used to declare

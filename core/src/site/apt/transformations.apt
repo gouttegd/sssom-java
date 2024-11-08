@@ -239,7 +239,7 @@ public class SSSOMTFoo extends SSSOMTransformApplicationBase<Foo> {
         // Check that the name is an allowed instruction name
         // (in this example, "create_foo" is the only allowed instruction)
         if ( ! name.equals("create_foo") ) {
-            throw new SSSOMTransformError("Invalid instruction name");
+            return null; // Let the parser know we did not recognise the function
         }
         
         // Check the arguments

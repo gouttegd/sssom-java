@@ -184,6 +184,12 @@ author==~
   That syntax is also accepted by the filters on numeric slots and on
   <<<mapping_cardinality>>>.
   
+*** Application-specific filters
+
+  A SSSOM/Transform application can define its own filters to enrich the
+  set of built-in filters. An application-specific filter takes the form
+  of a function call and behaves like an atomic filter.
+  
 ** Combining filters
 
   As you may have guessed already, if there are <atomic filters>, then
@@ -582,18 +588,18 @@ prefix skos:   <http://www.w3.org/2004/02/skos/core#>
 prefix semapv: <https://w3id.org/semapv/vocab/>
 +-----------------------------------------------------------------------
 
-* Header actions
+* Directive actions
 
   In addition to rules as described above, a SSSOM/Transform file may
-  also contain <header actions>, which look like a rule without any
+  also contain <directive actions>, which look like a rule without any
   filter and without any tags:
   
 +-----------------------------------------------------------------------
-my_header_function("first argument", "second argument");
+my_directive("first argument", "second argument");
 +-----------------------------------------------------------------------
 
-  Header actions can only occur at the beginning of a SSSOM/Transform
-  file, after the prefix declarations (if any) but before any rule.
+  Directives can only occur at the beginning of a SSSOM/Transform file,
+  after the prefix declarations (if any) but before any rule.
   
-  Which header functions are available and what they do is entirely left
-  at the discretion of the application that is using SSSOM/Transform.
+  Which directives are available and what they do is entirely left at
+  the discretion of the application that is using SSSOM/Transform.

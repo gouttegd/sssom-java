@@ -211,8 +211,8 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
   The SSSOM/T dialect used by SSSOM-CLI is currently very simple and
   comprises, in addition to the generic <<<stop()>>>, <<<invert()>>>,
-  <<<assign>>>, and <<<replace>>> functions, only one dialect-specific
-  function called <<<include()>>>.
+  <<<assign()>>>, and <<<replace()>>> functions, only one
+  dialect-specific function called <<<include()>>>.
   
   Use <<<include()>>> in a SSSOM/T rule to indicate that the mappings
   the rule is applied to should be included in the resulting mapping
