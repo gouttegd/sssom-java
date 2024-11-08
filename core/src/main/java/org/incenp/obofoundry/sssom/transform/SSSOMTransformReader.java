@@ -402,10 +402,10 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
     }
 
     @Override
-    public Void visitHeaderDecl(SSSOMTransformParser.HeaderDeclContext ctx) {
+    public Void visitDirective(SSSOMTransformParser.DirectiveContext ctx) {
         String name = getFunctionName(ctx.action().FUNCTION());
         try {
-            if ( !application.onHeaderAction(name, getFunctionArguments(ctx.action().arglist(), prefixManager)) ) {
+            if ( !application.onDirectiveAction(name, getFunctionArguments(ctx.action().arglist(), prefixManager)) ) {
                 errors.add(new SSSOMTransformError(String.format("Unrecognised function: %s", name)));
             }
         } catch ( SSSOMTransformError e ) {

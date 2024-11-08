@@ -164,7 +164,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     @Override
-    public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+    public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
         switch ( name ) {
         case "declare_class":
             arguments.forEach((c) -> entityChecker.classNames.add(c));
@@ -204,7 +204,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             return true;
         }
 
-        return super.onHeaderAction(name, arguments);
+        return super.onDirectiveAction(name, arguments);
     }
 
     @Override

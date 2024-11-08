@@ -62,19 +62,21 @@ public interface ISSSOMTransformApplication<T> {
     public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError;
 
     /**
-     * Processes a header action. This method is called when the parser finds a
-     * “header action”, that is an action that is not associated to any filter. Such
-     * action cannot produce mapping processing rules but may otherwise influence
-     * the behaviour of the application.
+     * Processes a directive action. This method is called when the parser finds a
+     * function call that is not associated with any filter. Such calls (which can
+     * only happen at the beginning of a SSSOM/T file, after the prefix declarations
+     * but before any other rule) cannot produce mapping processing rules but may
+     * otherwise influence the behaviour of the application. They are executed as
+     * soon as they are encountered when parsing the abstract tree.
      * 
      * @param name      The name of the function.
      * @param arguments The list of arguments passed to the function.
-     * @return {@code true} if the name is a valid header action for this
-     *         application, otherwise {@code false}/
+     * @return {@code true} if the name is a valid directive for this application,
+     *         otherwise {@code false}/
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g. the arguments are invalid).
      */
-    public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError;
+    public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError;
 
     /**
      * Processes a preprocessing action. This method is called when the parser finds

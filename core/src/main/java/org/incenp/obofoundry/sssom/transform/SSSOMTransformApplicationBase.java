@@ -52,7 +52,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
-    public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
+    public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
         return false;
     }
 

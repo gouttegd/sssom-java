@@ -398,19 +398,19 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
-     * Test that we can recognise header actions or deal with invalid ones.
+     * Test that we can recognise directives or deal with invalid ones.
      */
     @Test
-    void testHandleHeaderActions() {
-        Assertions.assertFalse(reader.read("unknown_header_action();\nsubject==ORGENT:* -> action();\n"));
-        Assertions.assertEquals("Unrecognised function: unknown_header_action", reader.getErrors().get(0).getMessage());
+    void testHandleDirectives() {
+        Assertions.assertFalse(reader.read("unknown_directive();\nsubject==ORGENT:* -> action();\n"));
+        Assertions.assertEquals("Unrecognised function: unknown_directive", reader.getErrors().get(0).getMessage());
 
-        Assertions.assertFalse(reader.read("bogus_header_action();\nsubject==ORGENT:* -> action();\n"));
-        Assertions.assertEquals("Invalid call for function bogus_header_action",
+        Assertions.assertFalse(reader.read("bogus_directive();\nsubject==ORGENT:* -> action();\n"));
+        Assertions.assertEquals("Invalid call for function bogus_directive",
                 reader.getErrors().get(0).getMessage());
 
-        Assertions.assertTrue(reader.read("header_action();\nsubject==ORGENT:* -> action();\n"));
-        Assertions.assertTrue(app.headerFunctions.contains("header_action()"));
+        Assertions.assertTrue(reader.read("directive();\nsubject==ORGENT:* -> action();\n"));
+        Assertions.assertTrue(app.directives.contains("directive()"));
     }
 
     /*
@@ -453,11 +453,11 @@ public class SSSOMTransformReaderTest {
 
         Assertions.assertFalse(reader.hasErrors());
 
-        Assertions.assertEquals(2, app.headerFunctions.size());
+        Assertions.assertEquals(2, app.directives.size());
         Assertions.assertEquals("declare_class(http://purl.obolibrary.org/obo/NCBITaxon_7227)",
-                app.headerFunctions.get(0));
+                app.directives.get(0));
         Assertions.assertEquals("declare_object_property(http://purl.obolibrary.org/obo/BFO_0000050)",
-                app.headerFunctions.get(1));
+                app.directives.get(1));
 
         List<MappingProcessingRule<Void>> rules = reader.getRules();
         Assertions.assertEquals(8, rules.size());
@@ -509,7 +509,7 @@ public class SSSOMTransformReaderTest {
      */
     private class DummyApplication implements ISSSOMTransformApplication<Void> {
 
-        List<String> headerFunctions = new ArrayList<String>();
+        List<String> directives = new ArrayList<String>();
 
         @Override
         public void onInit(PrefixManager prefixManager) {
@@ -531,14 +531,14 @@ public class SSSOMTransformReaderTest {
         }
 
         @Override
-        public boolean onHeaderAction(String name, List<String> arguments) throws SSSOMTransformError {
-            if ( name.equals("bogus_header_action") ) {
-                throw new SSSOMTransformError("Invalid call for function bogus_header_action");
-            } else if ( name.equals("unknown_header_action") ) {
+        public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
+            if ( name.equals("bogus_directive") ) {
+                throw new SSSOMTransformError("Invalid call for function bogus_directive");
+            } else if ( name.equals("unknown_directive") ) {
                 return false;
             }
-            // Accept any other name as a valid header action
-            headerFunctions.add(format(name, arguments));
+            // Accept any other name as a valid directive
+            directives.add(format(name, arguments));
             return true;
         }
 
