@@ -175,6 +175,24 @@ ROBOT inject command
   precedence over ROBOT’s built-in prefixes and prefixes declared in the
   input prefix map.
   
+*** Custom filters
+
+  The SSSOM/T-OWL dialect defines the following custom filters:
+  
+  [subject_is_a(TERM)] Will select mappings whose subject is either the
+                       specified <TERM>, or a descendant of that term.
+  
+  [object_is_a(TERM)] Will select mappings whose object is either the
+                      specified <TERM>, or a descendant of that term.
+  
+  [subject_exists()] Will select mappings whose subject exists in the
+                     ontology and is not obsolete.
+  
+  [object_exists()] Will select mappings whose object exists in the
+                    ontology and is not obsolete.
+  
+  []
+  
 *** Axiom-generating functions
 
   Those are the functions that may be used in a SSSOM/Transform rule.
@@ -381,23 +399,29 @@ declare_class(NCBITaxon:7227);
 declare_object_property(BFO:0000050);
 +-----------------------------------------------------------------------
 
-  It is also possible to declare <mapping-dependent variables> in the
-  header using the <<<set_var()>>> function, which takes two or three
-  arguments: the name of the variable to declare, its value, and
-  (optionally) the condition a mapping must satisfy for the variable to
-  have the declared value.
+*** Variables
+
+  The SSSOM/T-OWL dialect allows to declare <variables> whose value can
+  vary depending on the current mapping.
   
-  Consider the following example:
+  A variable must first be declared by calling the <<<set_var>>>
+  directive, which sets the <default> value of the variable:
   
 +-----------------------------------------------------------------------
-set_var("RELATION", BFO:0000050);
-set_var("RELATION", BFO:0000066, "%object_id is_a UBERON:00000105");
+set_var("RELATION", BFO:0000050)
 +-----------------------------------------------------------------------
 
-  This defines a variable named <RELATION> which by default (for almost
-  all mappings) has the value <<<BFO:0000050>>>, except for mappings
-  where the object is a subclass of UBERON:0000105, in which case the
-  value of <RELATION> will be <<<BFO:0000066>>>.
+  Then, the variable can be assigned a different value for a specific
+  set of mappings selected by a filter:
+  
++-----------------------------------------------------------------------
+object_is_a(UBERON:0000105) -> set_var("RELATION", BFO:0000066);
++-----------------------------------------------------------------------
+
+  The <RELATION> variable will still have, for almost all mappings, the
+  default value <<<BFO:0000050>>>, but for mappings where the object is
+  a descendant of UBERON:0000105, the value of <RELATION> will now be
+  <<<BFO:0000066>>>.
   
   The variable may then be used in a subsequent SSSOM/T rule:
   
@@ -405,10 +429,6 @@ set_var("RELATION", BFO:0000066, "%object_id is_a UBERON:00000105");
 subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (%RELATION some NCBITaxon:7227)');
 +-----------------------------------------------------------------------
 
-  Currently, the only condition it is possible to use as the third
-  argument is a test on whether the subject or the object is a subclass
-  of a given class, as in the example above. More conditions may be
-  added in the future.
 
 * Exploiting tags in a ruleset
 

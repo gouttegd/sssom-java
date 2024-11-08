@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
+import org.incenp.obofoundry.sssom.transform.IMappingProcessorCallback;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
@@ -111,6 +113,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     private CustomEntityChecker entityChecker;
     private VariableManager varManager;
     private OWLLiteral falseValue = null;
+    private HashMap<String, Set<String>> subClassesOf = new HashMap<String, Set<String>>();
 
     /**
      * Creates a new instance.
@@ -164,6 +167,28 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     @Override
+    public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
+        switch ( name ) {
+        case "subject_is_a":
+            checkArguments(name, 1, arguments);
+            return (mapping) -> getSubclassesOf(arguments.get(0)).contains(mapping.getSubjectId());
+
+        case "object_is_a":
+            checkArguments(name, 1, arguments);
+            return (mapping) -> getSubclassesOf(arguments.get(0)).contains(mapping.getObjectId());
+
+        case "subject_exists":
+            return (mapping) -> checkExistence(mapping.getSubjectId());
+
+        case "object_exists":
+            return (mapping) -> checkExistence(mapping.getObjectId());
+
+        }
+
+        return null;
+    }
+
+    @Override
     public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
         switch ( name ) {
         case "declare_class":
@@ -184,6 +209,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             String varValue = arguments.get(1);
             IMappingFilter filter = null;
             if ( arguments.size() == 3 ) {
+                // DEPRECATED, will be removed in a future version
                 // Condition is of the form "(%subject_id|%object_id) is_a <ID>"
                 String condition = arguments.get(2);
                 String[] parts = condition.split(" ", 3);
@@ -208,13 +234,31 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     @Override
+    public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
+        if ( name.equals("set_var") ) {
+            checkArguments(name, 2, arguments);
+            String varName = arguments.get(0);
+            String varValue = arguments.get(1);
+
+            IMappingProcessorCallback cb = (filter, mappings) -> {
+                varManager.addVariable(varName, varValue, filter);
+                formatter.addSubstitution("%" + varName, (mapping) -> varManager.expandVariable(varName, mapping));
+            };
+            return cb;
+        }
+        return null;
+    }
+
+    @Override
     public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
             throws SSSOMTransformError {
         switch ( name ) {
         case "check_subject_existence":
+            // DEPRECATED, use "!subject_exists() -> drop();"
             return (mapping) -> checkExistence(mapping.getSubjectId()) ? mapping : null;
 
         case "check_object_existence":
+            // DEPRECATED, use "!object_exists() -> drop();"
             return (mapping) -> checkExistence(mapping.getObjectId()) ? mapping : null;
         }
         return super.onPreprocessingAction(name, arguments);
@@ -394,17 +438,22 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
      * Gets a list of all subclasses of the provided root class.
      */
     private Set<String> getSubclassesOf(String root) {
-        Set<String> classes = new HashSet<String>();
-        classes.add(root.toString());
+        Set<String> classes = subClassesOf.get(root);
+        if ( classes == null ) {
+            classes = new HashSet<String>();
+            classes.add(root);
 
-        if ( reasoner == null ) {
-            reasoner = reasonerFactory.createReasoner(ontology);
-        }
-
-        for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(IRI.create(root)), false).getFlattened() ) {
-            if ( !c.isBottomEntity() ) {
-                classes.add(c.getIRI().toString());
+            if ( reasoner == null ) {
+                reasoner = reasonerFactory.createReasoner(ontology);
             }
+
+            for ( OWLClass c : reasoner.getSubClasses(factory.getOWLClass(IRI.create(root)), false).getFlattened() ) {
+                if ( !c.isBottomEntity() ) {
+                    classes.add(c.getIRI().toString());
+                }
+            }
+
+            subClassesOf.put(root, classes);
         }
 
         return classes;
