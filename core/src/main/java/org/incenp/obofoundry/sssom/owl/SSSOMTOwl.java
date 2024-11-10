@@ -301,8 +301,9 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                 // No luck. Parse the Manchester expression once on a dummy mapping, so that any
                 // syntax error is at least detected immediately.
                 try {
-                    testParse(text);
-                    transformer = (mapping) -> this.parseForMapping(mapping, text);
+                    IMappingTransformer<String> textGenerator = formatter.getTransformer(text);
+                    testParse(textGenerator);
+                    transformer = (mapping) -> this.parseForMapping(mapping, textGenerator);
                 } catch ( OWLParserException e ) {
                     throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%\"", text));
                 } catch ( IllegalArgumentException e ) {
@@ -372,7 +373,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
      * Creates a mapping with dummy IDs and try parsing the expression for that
      * mapping.
      */
-    private void testParse(String text) {
+    private void testParse(IMappingTransformer<String> text) {
         Mapping dummy = new Mapping();
         dummy.setSubjectId("http://example.org/EX_0001");
         dummy.setObjectId("http://example.org/EX_0002");
@@ -381,15 +382,16 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     /*
-     * Creates an axiom from a mapping and an expression in Manchester syntax.
+     * Creates an axiom from a mapping and a text generator that produces an
+     * expression in Manchester syntax.
      */
-    private OWLAxiom parseForMapping(Mapping mapping, String text) {
-        // Ensure the parser will recognise the mapping's subject and object
-        // (this is assuming mappings are between classes only).
+    private OWLAxiom parseForMapping(Mapping mapping, IMappingTransformer<String> text) {
+        // Ensure the parser will recognise the mapping's subject and object (this is
+        // assuming mappings between classes only).
         entityChecker.classNames.add(mapping.getSubjectId());
         entityChecker.classNames.add(mapping.getObjectId());
 
-        manParser.setStringToParse(formatter.format(text, mapping));
+        manParser.setStringToParse(text.transform(mapping));
         return manParser.parseAxiom();
     }
 
