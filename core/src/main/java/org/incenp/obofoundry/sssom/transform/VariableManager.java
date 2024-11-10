@@ -83,6 +83,17 @@ public class VariableManager {
     }
 
     /**
+     * Checks if a name is the name of a known variable.
+     * 
+     * @param name The name to check
+     * @return {@code true} if a variable with the given name is known to this
+     *         manager, otherwise {@code false}.
+     */
+    public boolean hasVariable(String name) {
+        return vars.containsKey(name);
+    }
+
+    /**
      * Gets the value of a variable for a given mapping.
      * 
      * @param name    The name of the variable to lookup.
