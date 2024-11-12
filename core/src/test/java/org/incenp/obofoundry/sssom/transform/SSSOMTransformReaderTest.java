@@ -452,6 +452,15 @@ public class SSSOMTransformReaderTest {
         parseRule("subject==* -> valid_callback();\n", "(*) -> valid_callback()");
     }
 
+    @Test
+    void testHandleArguments() {
+        parseRule("subject==* -> action(\"string\");\n", "(*) -> action(string)");
+        parseRule("subject==* -> action(ORGENT:0001);\n", "(*) -> action(https://example.org/entities/0001)");
+        parseRule("subject==* -> action(<iri>);\n", "(*) -> action(iri)");
+        parseRule("subject==* -> action(%{placeholder});\n", "(*) -> action(%{placeholder})");
+        parseRule("subject==* -> action(%{placeholder|modifier});\n", "(*) -> action(%{placeholder|modifier})");
+    }
+
     /*
      * Check parsing a complete file. The test file is based on the real use case of
      * the bridge between FBbt and Uberon/CL.

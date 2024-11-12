@@ -126,6 +126,7 @@ action    : FUNCTION WS* arglist? WS* ')' WS* ';';
 arglist   : argument (WS* ',' WS* argument)*;
 
 argument  : string
+          | PLACEHOLDER
           | CURIE
           | IRI
           ;
@@ -153,6 +154,8 @@ PREFIX    : [a-zA-Z0-9_]+ ':';
 IRI       : '<' [a-zA-Z0-9_/:#=.?&-]+ '>';
 
 DOUBLE    : [0-9]+ '.' [0-9]+;
+
+PLACEHOLDER: '%{' [a-zA-Z] [a-zA-Z0-9_]* ('|' [a-zA-Z] [a-zA-Z0-9_]*)? '}';
 
 COMMENT   : '#' .*? NL -> skip;
 

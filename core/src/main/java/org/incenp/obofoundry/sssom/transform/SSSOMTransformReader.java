@@ -538,6 +538,8 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
             for ( ArgumentContext argCtx : ctx.argument() ) {
                 if ( argCtx.string() != null ) {
                     arguments.add(unescape(argCtx.string().getText()));
+                } else if ( argCtx.PLACEHOLDER() != null ) {
+                    arguments.add(argCtx.PLACEHOLDER().getText());
                 } else if ( argCtx.IRI() != null ) {
                     String iri = argCtx.IRI().getText();
                     int iriLen = iri.length();
