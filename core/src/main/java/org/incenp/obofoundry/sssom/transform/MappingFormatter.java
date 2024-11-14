@@ -95,7 +95,7 @@ public class MappingFormatter {
      * @throws IllegalArgumentException If the placeholder name contains characters
      *                                  other than letters and underscores.
      * 
-     * @deprecated Use {@link #setLegacySubstitution(String, IMappingTransformer)}
+     * @deprecated Use {@link #setSubstitution(String, IMappingTransformer)}
      *             instead, unless you need expansion of un-bracketed placeholders
      *             for backwards compatibility.
      */
