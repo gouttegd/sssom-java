@@ -36,13 +36,13 @@ public class SSSOMInjectionCommandTest {
     void testSampleBridge() throws IOException {
         // @formatter:off
         runCommand("sssom-inject",
-                "--create",
+                "--input", "../core/src/test/resources/owl/uberon.owl",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
+                "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
                 "--ruleset", "../core/src/test/resources/rules/fbbt-bridge.rules",
                 "--exclude-rule", "xrefs",
-                "convert",
-                "--format", "ofn",
-                "--output", "src/test/resources/output/fbbt-bridge.ofn.out");
+                "--bridge-format", "ofn",
+                "--bridge-file", "src/test/resources/output/fbbt-bridge.ofn.out");
         // @formatter:on
         checkOutput("fbbt-bridge.ofn");
     }
@@ -54,13 +54,13 @@ public class SSSOMInjectionCommandTest {
     void testSampleXref() throws IOException {
         // @formatter:off
         runCommand("sssom-inject",
-                "--create",
+                "--input", "../core/src/test/resources/owl/uberon.owl",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
+                "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
                 "--ruleset", "../core/src/test/resources/rules/fbbt-bridge.rules",
                 "--exclude-rule", "fbbt",
-                "convert",
-                "--format", "ofn",
-                "--output", "src/test/resources/output/fbbt-xrefs.ofn.out");
+                "--bridge-format", "ofn",
+                "--bridge-file", "src/test/resources/output/fbbt-xrefs.ofn.out");
         // @formatter:on
         checkOutput("fbbt-xrefs.ofn");
     }

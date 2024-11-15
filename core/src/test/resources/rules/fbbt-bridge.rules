@@ -3,13 +3,19 @@ prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_>
 prefix CL:     <http://purl.obolibrary.org/obo/CL_>
 prefix BFO:    <http://purl.obolibrary.org/obo/BFO_>
 prefix FBbt:   <http://purl.obolibrary.org/obo/FBbt_>
+prefix FBdv:   <http://purl.obolibrary.org/obo/FBdv_>
 prefix IAO:    <http://purl.obolibrary.org/obo/IAO_>
 prefix TAX:    <http://purl.obolibrary.org/obo/NCBITaxon_>
 prefix OIO:    <http://www.geneontology.org/formats/oboInOwl#>
 
 # Header functions
 declare_class(TAX:7227);
-declare_object_property(BFO:0000050);
+declare_object_property(BFO:0000050, BFO:0000066);
+
+# The relation to use in bridging axioms:
+# part_of by default, or occurs_in if the object is an occurrent
+set_var("TAXREL", BFO:0000050);
+set_var("TAXREL", BFO:0000066, "%object_id is_a UBERON:0000000");
 
 # Rules
 # -----
@@ -20,18 +26,21 @@ declare_object_property(BFO:0000050);
 # Exclude any mapping to something else than UBERON/CL
 !(object==UBERON:* || object==CL:*) -> stop();
 
+# Check that the object exists
+predicate==* -> check_object_existence();
+
 # A foreign term should be mapped to no more than one UBERON/CL term
 !cardinality==*:1 -> stop();
 
-# FBbt bridge
-[fbbt] subject==FBbt:* predicate==semapv:crossSpeciesExactMatch {
+# FBbt/dv bridge
+[fbbt] (subject==FBbt:* || subject==FBdv:*) predicate==semapv:crossSpeciesExactMatch {
     [uberon-fbbt] object==UBERON:* -> {
-        annotate_subject(IAO:0000589, '%subject_label (Drosophila)');
-        create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227)');
+        annotate_subject(IAO:0000589, '%object_label (Drosophila)');
+        create_axiom('%subject_id EquivalentTo: %object_id and (%TAXREL some TAX:7227)');
     }
     [cl-fbbt] object==CL:* -> {
-        annotate_subject(IAO:0000589, '%subject_label (Drosophila)');
-        create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227)');
+        annotate_subject(IAO:0000589, '%object_label (Drosophila)');
+        create_axiom('%subject_id EquivalentTo: %object_id and (%TAXREL some TAX:7227)');
     }
 }
 

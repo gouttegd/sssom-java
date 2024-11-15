@@ -1,0 +1,17 @@
+#curie_map:
+#  FBdv: http://purl.obolibrary.org/obo/FBdv_
+#  UBERON: http://purl.obolibrary.org/obo/UBERON_
+#mapping_set_id: http://purl.obolibrary.org/obo/uberon/core/mappings.sssom.tsv
+#license: http://creativecommons.org/licenses/by/3.0/
+#subject_source: http://purl.obolibrary.org/obo/uberon/core.owl
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+UBERON:0000066	fully formed stage	semapv:crossSpeciesExactMatch	FBdv:00005369	semapv:UnspecifiedMatching
+UBERON:0000068	embryo stage	semapv:crossSpeciesExactMatch	FBdv:00005289	semapv:UnspecifiedMatching
+UBERON:0000070	pupal stage	semapv:crossSpeciesExactMatch	FBdv:00005349	semapv:UnspecifiedMatching
+UBERON:0000104	life cycle	semapv:crossSpeciesExactMatch	FBdv:00000000	semapv:UnspecifiedMatching
+UBERON:0000105	life cycle stage	semapv:crossSpeciesExactMatch	FBdv:00007012	semapv:UnspecifiedMatching
+UBERON:0000106	zygote stage	semapv:crossSpeciesExactMatch	FBdv:00005288	semapv:UnspecifiedMatching
+UBERON:0000107	cleavage stage	semapv:crossSpeciesExactMatch	FBdv:00000054	semapv:UnspecifiedMatching
+UBERON:0000109	gastrula stage	semapv:crossSpeciesExactMatch	FBdv:00005317	semapv:UnspecifiedMatching
+UBERON:0004730	instar larval stage	semapv:crossSpeciesExactMatch	FBdv:00005336	semapv:UnspecifiedMatching
+UBERON:0007220	late embryonic stage	semapv:crossSpeciesExactMatch	FBdv:00005333	semapv:UnspecifiedMatching

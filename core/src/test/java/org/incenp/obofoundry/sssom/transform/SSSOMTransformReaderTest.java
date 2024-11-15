@@ -473,23 +473,29 @@ public class SSSOMTransformReaderTest {
 
         Assertions.assertFalse(reader.hasErrors());
 
-        Assertions.assertEquals(2, app.directives.size());
+        Assertions.assertEquals(4, app.directives.size());
         Assertions.assertEquals("declare_class(http://purl.obolibrary.org/obo/NCBITaxon_7227)",
                 app.directives.get(0));
-        Assertions.assertEquals("declare_object_property(http://purl.obolibrary.org/obo/BFO_0000050)",
+        Assertions.assertEquals(
+                "declare_object_property(http://purl.obolibrary.org/obo/BFO_0000050, http://purl.obolibrary.org/obo/BFO_0000066)",
                 app.directives.get(1));
+        Assertions.assertEquals("set_var(TAXREL, http://purl.obolibrary.org/obo/BFO_0000050)", app.directives.get(2));
+        Assertions.assertEquals(
+                "set_var(TAXREL, http://purl.obolibrary.org/obo/BFO_0000066, %object_id is_a UBERON:0000000)",
+                app.directives.get(3));
 
         List<MappingProcessingRule<Void>> rules = reader.getRules();
-        Assertions.assertEquals(8, rules.size());
+        Assertions.assertEquals(9, rules.size());
         
         String[] renditions = new String[] {
                 "((subject==http://purl.obolibrary.org/obo/UBERON_* || subject==http://purl.obolibrary.org/obo/CL_*)) -> invert()",
                 "(!(object==http://purl.obolibrary.org/obo/UBERON_* || object==http://purl.obolibrary.org/obo/CL_*)) -> stop()",
+                "(*) -> check_object_existence()",
                 "(!cardinality==*:1) -> stop()",
-                "[fbbt,uberon-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/UBERON_*)) -> annotate_subject(http://purl.obolibrary.org/obo/IAO_0000589, %subject_label (Drosophila))",
-                "[fbbt,uberon-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/UBERON_*)) -> create_axiom(%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227))",
-                "[fbbt,cl-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/CL_*)) -> annotate_subject(http://purl.obolibrary.org/obo/IAO_0000589, %subject_label (Drosophila))",
-                "[fbbt,cl-fbbt] ((subject==http://purl.obolibrary.org/obo/FBbt_* && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/CL_*)) -> create_axiom(%subject_id EquivalentTo: %object_id and (BFO:0000050 some TAX:7227))",
+                "[fbbt,uberon-fbbt] (((subject==http://purl.obolibrary.org/obo/FBbt_* || subject==http://purl.obolibrary.org/obo/FBdv_*) && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/UBERON_*)) -> annotate_subject(http://purl.obolibrary.org/obo/IAO_0000589, %object_label (Drosophila))",
+                "[fbbt,uberon-fbbt] (((subject==http://purl.obolibrary.org/obo/FBbt_* || subject==http://purl.obolibrary.org/obo/FBdv_*) && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/UBERON_*)) -> create_axiom(%subject_id EquivalentTo: %object_id and (%TAXREL some TAX:7227))",
+                "[fbbt,cl-fbbt] (((subject==http://purl.obolibrary.org/obo/FBbt_* || subject==http://purl.obolibrary.org/obo/FBdv_*) && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/CL_*)) -> annotate_subject(http://purl.obolibrary.org/obo/IAO_0000589, %object_label (Drosophila))",
+                "[fbbt,cl-fbbt] (((subject==http://purl.obolibrary.org/obo/FBbt_* || subject==http://purl.obolibrary.org/obo/FBdv_*) && predicate==https://w3id.org/semapv/vocab/crossSpeciesExactMatch) && (object==http://purl.obolibrary.org/obo/CL_*)) -> create_axiom(%subject_id EquivalentTo: %object_id and (%TAXREL some TAX:7227))",
                 "[xrefs] (*) -> annotate_object(http://www.geneontology.org/formats/oboInOwl#hasDbXref, %subject_curie)"
         };
 
