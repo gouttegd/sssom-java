@@ -47,6 +47,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     public void onInit(PrefixManager prefixManager) {
         pfxMgr = prefixManager;
         formatter.setStandardSubstitutions();
+        formatter.setModifier("short", (s) -> pfxMgr.shortenIdentifier(s));
     }
 
     @Override
