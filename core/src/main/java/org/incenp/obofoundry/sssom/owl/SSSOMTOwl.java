@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SlotHelper;
@@ -43,7 +41,6 @@ import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
-import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLDatatype;
@@ -89,18 +86,6 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * </ul>
  */
 public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
-
-    /*
-     * Common expression patterns that are handled through specialised generators.
-     * 
-     * Equivalence: %subject_id EquivalentTo %object_id and (REL:1234 some FIL:1234)
-     * 
-     * Subclass: %subject_id SubclassOf %object_id
-     */
-    private static final Pattern equivPattern = Pattern.compile(
-            "%(subject|object)_id +EquivalentTo: +%(subject|object)_id( +and +\\((<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+) +some +(<[^>]+>|[A-Za-z0-9_]+:[A-Za-z0-9_]+)\\))?");
-    private static final Pattern subclassPattern = Pattern
-            .compile("%(subject|object)_id +SubClassOf: +%(subject|object)_id");
 
     private OWLOntology ontology;
     private OWLDataFactory factory;
@@ -280,26 +265,14 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             checkArguments(name, 1, arguments, true);
             String text = arguments.get(0);
 
-            // First look if the expression is a "common" one, to avoid if possible
-            // mobilising a full Manchester syntax parser.
             try {
-                transformer = recogniseCommonPattern(text);
+                IMappingTransformer<String> textGenerator = formatter.getTransformer(text);
+                testParse(textGenerator);
+                transformer = (mapping) -> this.parseForMapping(mapping, textGenerator);
+            } catch ( OWLParserException e ) {
+                throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%\"", text));
             } catch ( IllegalArgumentException e ) {
                 throw new SSSOMTransformError(e.getMessage());
-            }
-
-            if ( transformer == null ) {
-                // No luck. Parse the Manchester expression once on a dummy mapping, so that any
-                // syntax error is at least detected immediately.
-                try {
-                    IMappingTransformer<String> textGenerator = formatter.getTransformer(text);
-                    testParse(textGenerator);
-                    transformer = (mapping) -> this.parseForMapping(mapping, textGenerator);
-                } catch ( OWLParserException e ) {
-                    throw new SSSOMTransformError(String.format("Cannot parse Manchester expression \"%\"", text));
-                } catch ( IllegalArgumentException e ) {
-                    throw new SSSOMTransformError(e.getMessage());
-                }
             }
 
             if ( arguments.size() == 2 ) {
@@ -309,55 +282,6 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
         }
 
         return transformer != null ? transformer : super.onGeneratingAction(name, arguments, keyedArguments);
-    }
-
-    /*
-     * Try some patterns on the expression provided as argument to create_axiom to
-     * see whether it can be handled by custom generators (more efficient than the
-     * default generator, which involves parsing the expression with a full-blown
-     * Manchester syntax parser for each mapping).
-     */
-    private IMappingTransformer<OWLAxiom> recogniseCommonPattern(String text) {
-        Matcher m = subclassPattern.matcher(text);
-        if ( m.matches() ) {
-            return new SubclassAxiomGenerator(ontology, m.group(1).equals("object"));
-        }
-
-        m = equivPattern.matcher(text);
-        if ( m.matches() ) {
-            boolean invert = m.group(1).equals("object");
-            if ( m.group(3) == null ) {
-                return new EquivalentAxiomGenerator(ontology, (OWLClassExpression) null, invert);
-            }
-            String relation = entityChecker.getUnquotedIRI(m.group(4));
-            String filler = entityChecker.getUnquotedIRI(m.group(5));
-            if ( relation.charAt(0) == '%' || filler.charAt(0) == '%' ) {
-                IMappingTransformer<String> relGenerator = getVariableGenerator(relation);
-                IMappingTransformer<String> fillerGenerator = getVariableGenerator(filler);
-                IMappingTransformer<OWLClassExpression> exprGenerator = (mapping) -> factory.getOWLObjectSomeValuesFrom(
-                        factory.getOWLObjectProperty(IRI.create(relGenerator.transform(mapping))),
-                        factory.getOWLClass(IRI.create(fillerGenerator.transform(mapping))));
-                return new EquivalentAxiomGenerator(ontology, exprGenerator, invert);
-            } else {
-                OWLClassExpression expr = factory.getOWLObjectSomeValuesFrom(
-                        entityChecker.getOWLObjectProperty(relation), entityChecker.getOWLClass(filler));
-                return new EquivalentAxiomGenerator(ontology, expr, invert);
-            }
-        }
-
-        return null;
-    }
-
-    /*
-     * If name is a registered variable, gets a transformer to expand the variable
-     * value at runtime.
-     */
-    private IMappingTransformer<String> getVariableGenerator(String name) {
-        if ( name.charAt(0) == '%' ) {
-            return varMgr.getTransformer(name.substring(1));
-        } else {
-            return (mapping) -> name;
-        }
     }
 
     /*
