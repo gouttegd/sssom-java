@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -80,6 +81,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         options.addOption(null, "no-merge", false, "do not merge mapping-derived axioms into the ontology");
         options.addOption(null, "bridge-file", true, "write mapping-derived axioms into the specified file");
         options.addOption(null, "bridge-iri", true, "specify the ontology IRI for the bridge file");
+        options.addOption(null, "bridge-format", true, "force the format of the bridge file");
         options.addOption(null, "create", false, "create a new ontology with the mappings-derived axioms");
         options.addOption(null, "check-subject", false, "ignore mappings whose subject does not exist in the ontology");
         options.addOption(null, "check-object", false, "ignore mappings whose subject does not exist in the ontology");
@@ -308,7 +310,12 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
                 bridgeOntology = mgr.createOntology();
             }
             mgr.addAxioms(bridgeOntology, bridgingAxioms);
-            ioHelper.saveOntology(bridgeOntology, line.getOptionValue("bridge-file"));
+            if ( line.hasOption("bridge-format") ) {
+                ioHelper.saveOntology(bridgeOntology, IOHelper.getFormat(line.getOptionValue("bridge-format")),
+                        new File(line.getOptionValue("bridge-file")));
+            } else {
+                ioHelper.saveOntology(bridgeOntology, line.getOptionValue("bridge-file"));
+            }
         }
 
         CommandLineHelper.maybeSaveOutput(line, state.getOntology());

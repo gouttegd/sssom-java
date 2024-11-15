@@ -27,7 +27,10 @@ ROBOT inject command
   The option <<<--bridge-file>>>, followed by a filename, will instruct
   the command to write the generated axioms into a separate file. The
   <<<--bridge-iri>>> option can additionally be used to specify the
-  ontology IRI of the file to be created.
+  ontology IRI of the file to be created. The format of the bridge file
+  will be automatically inferred from the filename’s extension (as with
+  other ROBOT commands); to force a specific format regardless of the
+  extension, use the <<<--bridge-format>>> option.
   
   The option <<<--no-merge>>> will instruct the command <not> to merge
   the generated axioms into the current ontology, which will then be
