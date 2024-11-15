@@ -36,7 +36,7 @@ public class SSSOMInjectionCommandTest {
     void testSampleBridge() throws IOException {
         // @formatter:off
         runCommand("sssom-inject",
-                "--input", "../core/src/test/resources/owl/uberon.owl",
+                "--input", "../core/src/test/resources/owl/uberon.ofn.gz",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
                 "--ruleset", "../core/src/test/resources/rules/fbbt-bridge.rules",
@@ -54,7 +54,7 @@ public class SSSOMInjectionCommandTest {
     void testSampleXref() throws IOException {
         // @formatter:off
         runCommand("sssom-inject",
-                "--input", "../core/src/test/resources/owl/uberon.owl",
+                "--input", "../core/src/test/resources/owl/uberon.ofn.gz",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
                 "--ruleset", "../core/src/test/resources/rules/fbbt-bridge.rules",
