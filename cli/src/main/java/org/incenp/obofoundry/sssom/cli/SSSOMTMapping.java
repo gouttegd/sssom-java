@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.cli;
 
 import java.util.List;
+import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
@@ -39,12 +40,13 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 public class SSSOMTMapping extends SSSOMTransformApplicationBase<Mapping> {
 
     @Override
-    public IMappingTransformer<Mapping> onGeneratingAction(String name, List<String> arguments)
+    public IMappingTransformer<Mapping> onGeneratingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments)
             throws SSSOMTransformError {
         if ( name.equals("include") ) {
             return (mapping) -> mapping;
         }
-        return super.onGeneratingAction(name, arguments);
+        return super.onGeneratingAction(name, arguments, keyedArguments);
     }
 
 }

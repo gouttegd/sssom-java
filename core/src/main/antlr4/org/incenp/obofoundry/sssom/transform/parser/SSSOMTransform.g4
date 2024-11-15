@@ -125,17 +125,25 @@ action    : FUNCTION WS* arglist? WS* ')' WS* ';';
 
 arglist   : argument (WS* ',' WS* argument)*;
 
-argument  : string
-          | PLACEHOLDER
-          | CURIE
-          | IRI
+argument  : nonKeyedArgument
+          | keyedArgument
           ;
+
+keyedArgument: KEY nonKeyedArgument;
+
+nonKeyedArgument: string
+                | PLACEHOLDER
+                | CURIE
+                | IRI
+                ;
 
 string    : SQ_STRING
           | DQ_STRING
           ;
 
 EMPTY     : '~';
+
+KEY       : '/' [a-z_]+ '=';
 
 FUNCTION  : [a-zA-Z_] [a-zA-Z0-9_]+ '(';
 

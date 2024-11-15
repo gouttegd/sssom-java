@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.transform;
 
 import java.util.List;
+import java.util.Map;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -51,12 +52,14 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
-    public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
+    public IMappingFilter onFilter(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError {
         return null;
     }
 
     @Override
-    public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
+    public boolean onDirectiveAction(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError {
         if ( name.equals("set_var") ) {
             checkArguments(name, 2, arguments);
             String varName = arguments.get(0);
@@ -69,7 +72,8 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
-    public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
+    public IMappingProcessorCallback onCallback(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError {
         if ( name.equals("set_var") ) {
             checkArguments(name, 2, arguments);
             String varName = arguments.get(0);
@@ -80,7 +84,8 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
-    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
+    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments)
             throws SSSOMTransformError {
         switch ( name ) {
         case "stop":
@@ -137,7 +142,8 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
     }
 
     @Override
-    public IMappingTransformer<T> onGeneratingAction(String name, List<String> arguments) throws SSSOMTransformError {
+    public IMappingTransformer<T> onGeneratingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments) throws SSSOMTransformError {
         return null;
     }
 

@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.transform;
 
 import java.util.List;
+import java.util.Map;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -51,15 +52,18 @@ public interface ISSSOMTransformApplication<T> {
      * otherwise, it must return {@code null} or throw a
      * {@link SSSOMTransformError}.
      * 
-     * @param name      The name of the function.
-     * @param arguments The list of arguments passed to the function.
+     * @param name           The name of the function.
+     * @param arguments      The list of arguments passed to the function.
+     * @param keyedArguments The map of keyed arguments (<code>/key=...</code>)
+     *                       passed to the function.
      * @return A mapping filter that filters mappings according to the application’s
      *         needs, or {@code null} if the name is not a valid filter name for
      *         this application.
      * @throws SSSOMTransformError If the application cannot process the filer
      *                             (e.g., the arguments are invalid).
      */
-    public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError;
+    public IMappingFilter onFilter(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError;
 
     /**
      * Processes a directive action. This method is called when the parser finds a
@@ -69,14 +73,17 @@ public interface ISSSOMTransformApplication<T> {
      * otherwise influence the behaviour of the application. They are executed as
      * soon as they are encountered when parsing the abstract tree.
      * 
-     * @param name      The name of the function.
-     * @param arguments The list of arguments passed to the function.
+     * @param name           The name of the function.
+     * @param arguments      The list of arguments passed to the function.
+     * @param keyedArguments The map of keyed arguments (<code>/key=...</code>)
+     *                       passed to the function.
      * @return {@code true} if the name is a valid directive for this application,
      *         otherwise {@code false}/
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g. the arguments are invalid).
      */
-    public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError;
+    public boolean onDirectiveAction(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError;
 
     /**
      * Processes a callback action. This method is the first one called when the
@@ -84,49 +91,58 @@ public interface ISSSOMTransformApplication<T> {
      * application recognises the function as a callback function, it must return
      * the corresponding callback object; otherwise, it must return {@code null}.
      * 
-     * @param name      The name of the function.
-     * @param arguments The list of arguments passed to the function.
+     * @param name           The name of the function.
+     * @param arguments      The list of arguments passed to the function.
+     * @param keyedArguments The map of keyed arguments (<code>/key=...</code>)
+     *                       passed to the function.
      * @return A callback object implementing the action according to the
      *         application’s needs, or {@code null} if the name is not a valid
      *         callback function name for this application.
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g., the arguments are invalid).
      */
-    public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError;
+    public IMappingProcessorCallback onCallback(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError;
 
     /**
      * Processes a preprocessing action. This method is called when the parser finds
      * a normal action that is not recognised as a callback action (i.e.
-     * {@link #onCallback(String, List)} returned {@code null}). It the application
-     * recognises the function, it must return a mapping preprocessor; otherwise, it
-     * must return {@code null}.
+     * {@link #onCallback(String, List, Map)} returned {@code null}). It the
+     * application recognises the function, it must return a mapping preprocessor;
+     * otherwise, it must return {@code null}.
      * 
-     * @param name      The name of the function.
-     * @param arguments The list of arguments passed to the function.
+     * @param name           The name of the function.
+     * @param arguments      The list of arguments passed to the function.
+     * @param keyedArguments The map of keyed arguments (<code>/key=...</code>)
+     *                       passed to the function.
      * @return A mapping preprocessor implementing the action according to the
      *         application’s needs, or {@code null} if the name is not a valid
      *         preprocessing function name for this application.
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g., the arguments are invalid).
      */
-    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
+    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments)
             throws SSSOMTransformError;
 
     /**
      * Processes a generating action. This method is called when the parser finds a
      * normal action that is not recognised as a callback action nor as a
-     * preprocessing action (i.e. both {@link #onCallback(String, List)} and
-     * {@link #onPreprocessingAction(String, List)} returned {@code null}). If the
-     * application recognises the function, it must return a mapping transformer
+     * preprocessing action (i.e. both {@link #onCallback(String, List, Map)} and
+     * {@link #onPreprocessingAction(String, List, Map)} returned {@code null}). If
+     * the application recognises the function, it must return a mapping transformer
      * that produces the kind of objects desired by the application.
      * 
-     * @param name      The name of the function.
-     * @param arguments The list of arguments passed to the function.
+     * @param name           The name of the function.
+     * @param arguments      The list of arguments passed to the function.
+     * @param keyedArguments The map of keyed arguments (<code>/key=...</code>)
+     *                       passed to the function.
      * @return A mapping transformer implementing the action according to the
      *         application’s needs.
      * @throws SSSOMTransformError If the application cannot process the action
      *                             (e.g. the name is not recognised or the arguments
      *                             are invalid).
      */
-    public IMappingTransformer<T> onGeneratingAction(String name, List<String> arguments) throws SSSOMTransformError;
+    public IMappingTransformer<T> onGeneratingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments) throws SSSOMTransformError;
 }

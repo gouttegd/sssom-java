@@ -25,6 +25,7 @@ import java.io.Reader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -405,7 +406,10 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
     public Void visitDirective(SSSOMTransformParser.DirectiveContext ctx) {
         String name = getFunctionName(ctx.action().FUNCTION());
         try {
-            if ( !application.onDirectiveAction(name, getFunctionArguments(ctx.action().arglist(), prefixManager)) ) {
+            List<String> arguments = new ArrayList<String>();
+            Map<String, String> keyedArguments = new HashMap<String, String>();
+            getFunctionArguments(ctx.action().arglist(), arguments, keyedArguments, prefixManager);
+            if ( !application.onDirectiveAction(name, arguments, keyedArguments) ) {
                 errors.add(new SSSOMTransformError(String.format("Unrecognised function: %s", name)));
             }
         } catch ( SSSOMTransformError e ) {
@@ -479,16 +483,18 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
 
         // Get the action from the application
         String name = getFunctionName(ctx.FUNCTION());
-        List<String> arguments = getFunctionArguments(ctx.arglist(), prefixManager);
+        List<String> arguments = new ArrayList<String>();
+        Map<String, String> keyedArguments = new HashMap<String, String>();
+        getFunctionArguments(ctx.arglist(), arguments, keyedArguments, prefixManager);
         IMappingProcessorCallback callback = null;
         IMappingTransformer<Mapping> preprocessor = null;
         IMappingTransformer<T> generator = null;
         try {
-            callback = application.onCallback(name, arguments);
+            callback = application.onCallback(name, arguments, keyedArguments);
             if ( callback == null ) {
-                preprocessor = application.onPreprocessingAction(name, arguments);
+                preprocessor = application.onPreprocessingAction(name, arguments, keyedArguments);
                 if ( preprocessor == null ) {
-                    generator = application.onGeneratingAction(name, arguments);
+                    generator = application.onGeneratingAction(name, arguments, keyedArguments);
                 }
             }
         } catch ( SSSOMTransformError e ) {
@@ -527,30 +533,43 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
         return name.substring(0, nameLen - 1);
     }
 
-    // Process arguments in a function call:
-    // - unescape string arguments
-    // - remove enclosing brackets of IRI arguments
-    // - expand CURIE arguments
-    static List<String> getFunctionArguments(SSSOMTransformParser.ArglistContext ctx, PrefixManager prefixManager) {
-        List<String> arguments = new ArrayList<String>();
+    // Process a non-keyed argument in a function call:
+    // - unescape if it's a string
+    // - remove enclosing brackets if it's an IRI
+    // - expand if it's a CURIE
+    static String getNonKeyedArgument(SSSOMTransformParser.NonKeyedArgumentContext ctx, PrefixManager prefixManager) {
+        if ( ctx.string() != null ) {
+            return unescape(ctx.string().getText());
+        } else if ( ctx.PLACEHOLDER() != null ) {
+            return ctx.PLACEHOLDER().getText();
+        } else if ( ctx.IRI() != null ) {
+            String iri = ctx.IRI().getText();
+            int len = iri.length();
+            return iri.substring(1, len - 1);
+        } else if ( ctx.CURIE() != null ) {
+            return prefixManager.expandIdentifier(ctx.CURIE().getText());
+        }
 
+        // Should never happen
+        return null;
+    }
+
+    // Process the list of arguments in a function call and fill the "arguments"
+    // list and the "keyedArguments" map with the results
+    static void getFunctionArguments(SSSOMTransformParser.ArglistContext ctx, List<String> arguments,
+            Map<String, String> keyedArguments, PrefixManager prefixManager) {
         if ( ctx != null ) {
             for ( ArgumentContext argCtx : ctx.argument() ) {
-                if ( argCtx.string() != null ) {
-                    arguments.add(unescape(argCtx.string().getText()));
-                } else if ( argCtx.PLACEHOLDER() != null ) {
-                    arguments.add(argCtx.PLACEHOLDER().getText());
-                } else if ( argCtx.IRI() != null ) {
-                    String iri = argCtx.IRI().getText();
-                    int iriLen = iri.length();
-                    arguments.add(iri.substring(1, iriLen - 1));
-                } else if ( argCtx.CURIE() != null ) {
-                    arguments.add(prefixManager.expandIdentifier(argCtx.CURIE().getText()));
+                if ( argCtx.nonKeyedArgument() != null ) {
+                    arguments.add(getNonKeyedArgument(argCtx.nonKeyedArgument(), prefixManager));
+                } else if ( argCtx.keyedArgument() != null ) {
+                    String key = argCtx.keyedArgument().KEY().getText();
+                    int len = key.length();
+                    key = key.substring(1, len - 1);
+                    keyedArguments.put(key, getNonKeyedArgument(argCtx.keyedArgument().nonKeyedArgument(), prefixManager));
                 }
             }
         }
-
-        return arguments;
     }
 
     // Un-quote and un-escape the string as provided by the parser
@@ -980,7 +999,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
         String name = ParseTree2RuleVisitor.getFunctionName(ctx.FUNCTION());
         IMappingFilter f = null;
         try {
-            f = application.onFilter(name, ParseTree2RuleVisitor.getFunctionArguments(ctx.arglist(), prefixManager));
+            List<String> arguments = new ArrayList<String>();
+            Map<String, String> keyedArguments = new HashMap<String, String>();
+            ParseTree2RuleVisitor.getFunctionArguments(ctx.arglist(), arguments, keyedArguments, prefixManager);
+            f = application.onFilter(name, arguments, keyedArguments);
             if ( f == null ) {
                 errors.add(new SSSOMTransformError(String.format("Unrecognised filter: %s", name)));
             }

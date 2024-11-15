@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.transform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.EntityType;
@@ -461,6 +462,19 @@ public class SSSOMTransformReaderTest {
         parseRule("subject==* -> action(%{placeholder|modifier});\n", "(*) -> action(%{placeholder|modifier})");
     }
 
+    @Test
+    void testHandleKeyedArguments() {
+        parseRule("subject==* -> action(/key=\"string value\");\n", "(*) -> action(/key=string value)");
+        parseRule("subject==* -> action(/key=ORGENT:0001);\n", "(*) -> action(/key=https://example.org/entities/0001)");
+        parseRule("subject==* -> action(/key=<iri>);\n", "(*) -> action(/key=iri)");
+        parseRule("subject==* -> action(/key=%{placeholder});\n", "(*) -> action(/key=%{placeholder})");
+        parseRule("subject==* -> action(/key=%{placeholder|modifier});\n",
+                "(*) -> action(/key=%{placeholder|modifier})");
+
+        parseRule("subject==* -> action(/key=\"string value\", \"string\");\n",
+                "(*) -> action(string, /key=string value)");
+    }
+
     /*
      * Check parsing a complete file. The test file is based on the real use case of
      * the bridge between FBbt and Uberon/CL.
@@ -542,7 +556,8 @@ public class SSSOMTransformReaderTest {
         }
 
         @Override
-        public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
+        public IMappingFilter onFilter(String name, List<String> arguments, Map<String, String> keyedArguments)
+                throws SSSOMTransformError {
             if ( name.equals("bogus_filter") ) {
                 throw new SSSOMTransformError("Invalid call for filter bogus_filter");
             } else if ( name.equals("unknown_filter") ) {
@@ -557,32 +572,35 @@ public class SSSOMTransformReaderTest {
         }
 
         @Override
-        public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
+        public boolean onDirectiveAction(String name, List<String> arguments, Map<String, String> keyedArguments)
+                throws SSSOMTransformError {
             if ( name.equals("bogus_directive") ) {
                 throw new SSSOMTransformError("Invalid call for function bogus_directive");
             } else if ( name.equals("unknown_directive") ) {
                 return false;
             }
             // Accept any other name as a valid directive
-            directives.add(format(name, arguments));
+            directives.add(format(name, arguments, keyedArguments));
             return true;
         }
 
         @Override
-        public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
+        public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments,
+                Map<String, String> keyedArguments)
                 throws SSSOMTransformError {
             if ( name.equals("bogus_preprocessor") ) {
                 throw new SSSOMTransformError("Invalid call for function bogus_preprocessor");
             } else if ( name.equals("valid_preprocessor") ) {
                 // Only accept valid_preprocessor as a preprocessor function
-                return new NamedMappingTransformer<Mapping>(format(name, arguments), null);
+                return new NamedMappingTransformer<Mapping>(format(name, arguments, keyedArguments), null);
             }
             // Reject any other name; they will be checked as a possible generator
             return null;
         }
 
         @Override
-        public IMappingTransformer<Void> onGeneratingAction(String name, List<String> arguments)
+        public IMappingTransformer<Void> onGeneratingAction(String name, List<String> arguments,
+                Map<String, String> keyedArguments)
                 throws SSSOMTransformError {
             if ( name.equals("bogus_generator") ) {
                 throw new SSSOMTransformError("Invalid call for function bogus_generator");
@@ -590,27 +608,38 @@ public class SSSOMTransformReaderTest {
                 return null;
             }
             // Accept any other name as a valid generator
-            return new NamedMappingTransformer<Void>(format(name, arguments), null);
+            return new NamedMappingTransformer<Void>(format(name, arguments, keyedArguments), null);
         }
 
         @Override
-        public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
+        public IMappingProcessorCallback onCallback(String name, List<String> arguments,
+                Map<String, String> keyedArguments) throws SSSOMTransformError {
             if ( name.equals("bogus_callback") ) {
                 throw new SSSOMTransformError("Invalid call for function bogus_callback");
             } else if ( name.equals("valid_callback") ) {
                 // Only accept valid_callback as a callback function
-                return new NamedMappingProcessorCallback(format(name, arguments), null);
+                return new NamedMappingProcessorCallback(format(name, arguments, keyedArguments), null);
             }
             // Reject any other name; they will be checked as a possible preprocessor or
             // generator
             return null;
         }
 
-        private String format(String name, List<String> arguments) {
+        private String format(String name, List<String> arguments, Map<String, String> keyedArguments) {
             StringBuilder sb = new StringBuilder();
             sb.append(name);
             sb.append('(');
             sb.append(String.join(", ", arguments));
+            boolean needComma = !arguments.isEmpty();
+            for ( String key : keyedArguments.keySet() ) {
+                if ( needComma ) {
+                    sb.append(", ");
+                }
+                sb.append('/');
+                sb.append(key);
+                sb.append('=');
+                sb.append(keyedArguments.get(key));
+            }
             sb.append(')');
             return sb.toString();
         }

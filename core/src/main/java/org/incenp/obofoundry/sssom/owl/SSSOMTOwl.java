@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.owl;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -164,7 +165,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     @Override
-    public IMappingFilter onFilter(String name, List<String> arguments) throws SSSOMTransformError {
+    public IMappingFilter onFilter(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError {
         switch ( name ) {
         case "subject_is_a":
             checkArguments(name, 1, arguments);
@@ -186,7 +188,8 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     }
 
     @Override
-    public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
+    public boolean onDirectiveAction(String name, List<String> arguments, Map<String, String> keyedArguments)
+            throws SSSOMTransformError {
         switch ( name ) {
         case "declare_class":
             arguments.forEach((c) -> entityChecker.classNames.add(c));
@@ -232,11 +235,12 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             return true;
         }
 
-        return super.onDirectiveAction(name, arguments);
+        return super.onDirectiveAction(name, arguments, keyedArguments);
     }
 
     @Override
-    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments)
+    public IMappingTransformer<Mapping> onPreprocessingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments)
             throws SSSOMTransformError {
         switch ( name ) {
         case "check_subject_existence":
@@ -247,11 +251,12 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             // DEPRECATED, use "!object_exists() -> drop();"
             return (mapping) -> checkExistence(mapping.getObjectId()) ? mapping : null;
         }
-        return super.onPreprocessingAction(name, arguments);
+        return super.onPreprocessingAction(name, arguments, keyedArguments);
     }
 
     @Override
-    public IMappingTransformer<OWLAxiom> onGeneratingAction(String name, List<String> arguments)
+    public IMappingTransformer<OWLAxiom> onGeneratingAction(String name, List<String> arguments,
+            Map<String, String> keyedArguments)
             throws SSSOMTransformError {
         IMappingTransformer<OWLAxiom> transformer = null;
 
@@ -303,7 +308,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             break;
         }
 
-        return transformer != null ? transformer : super.onGeneratingAction(name, arguments);
+        return transformer != null ? transformer : super.onGeneratingAction(name, arguments, keyedArguments);
     }
 
     /*
