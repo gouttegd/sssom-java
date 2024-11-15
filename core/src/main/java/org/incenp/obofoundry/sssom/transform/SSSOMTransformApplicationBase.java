@@ -39,11 +39,14 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  */
 public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplication<T> {
 
-    protected PrefixManager pm = null;
+    protected PrefixManager pfxMgr = null;
+    protected VariableManager varMgr = new VariableManager();
+    protected MappingFormatter formatter = new MappingFormatter();
 
     @Override
     public void onInit(PrefixManager prefixManager) {
-        pm = prefixManager;
+        pfxMgr = prefixManager;
+        formatter.setStandardSubstitutions();
     }
 
     @Override
@@ -53,11 +56,25 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
 
     @Override
     public boolean onDirectiveAction(String name, List<String> arguments) throws SSSOMTransformError {
+        if ( name.equals("set_var") ) {
+            checkArguments(name, 2, arguments);
+            String varName = arguments.get(0);
+            String value = arguments.get(1);
+            varMgr.addVariable(varName, value);
+            formatter.setSubstitution(varName, varMgr.getTransformer(varName));
+            return true;
+        }
         return false;
     }
 
     @Override
     public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
+        if ( name.equals("set_var") ) {
+            checkArguments(name, 2, arguments);
+            String varName = arguments.get(0);
+            String value = arguments.get(1);
+            return (filter, mappings) -> varMgr.addVariable(varName, value, filter);
+        }
         return null;
     }
 
@@ -75,7 +92,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
 
         case "edit":
             checkArguments(name, 1, arguments, true);
-            MappingEditor editEditor = new MappingEditor(pm);
+            MappingEditor editEditor = new MappingEditor(pfxMgr);
             for (String argument : arguments) {
                 String[] items = argument.split("=", 2);
                 if (items.length != 2) {
@@ -109,7 +126,7 @@ public class SSSOMTransformApplicationBase<T> implements ISSSOMTransformApplicat
                         "Invalid number of arguments for function replace: expected multiple of 3, found %d",
                         arguments.size()));
             }
-            MappingEditor replaceEditor = new MappingEditor(pm);
+            MappingEditor replaceEditor = new MappingEditor(pfxMgr);
             for ( int i = 0; i < arguments.size(); i += 3 ) {
                 replaceEditor.addReplacement(arguments.get(i), arguments.get(i + 1), arguments.get(i + 2));
             }

@@ -29,13 +29,10 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
-import org.incenp.obofoundry.sssom.transform.IMappingProcessorCallback;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
-import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
-import org.incenp.obofoundry.sssom.transform.VariableManager;
 import org.semanticweb.owlapi.expression.OWLEntityChecker;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
@@ -109,9 +106,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
     private OWLReasonerFactory reasonerFactory;
     private OWLReasoner reasoner;
     private ManchesterOWLSyntaxParser manParser;
-    private MappingFormatter formatter;
     private CustomEntityChecker entityChecker;
-    private VariableManager varManager;
     private OWLLiteral falseValue = null;
     private HashMap<String, Set<String>> subClassesOf = new HashMap<String, Set<String>>();
 
@@ -132,14 +127,6 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
         OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
         manParser = new ManchesterOWLSyntaxParserImpl(() -> config, factory);
-
-        formatter = new MappingFormatter();
-        formatter.addSubstitution("%subject_label", (mapping) -> getSubjectLabel(mapping));
-        formatter.addSubstitution("%object_label", (mapping) -> getObjectLabel(mapping));
-        formatter.addSubstitution("%subject_id", (mapping) -> String.format("<%s>", mapping.getSubjectId()));
-        formatter.addSubstitution("%object_id", (mapping) -> String.format("<%s>", mapping.getObjectId()));
-
-        varManager = new VariableManager();
     }
 
     /**
@@ -157,13 +144,23 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
 
     @Override
     public void onInit(PrefixManager pm) {
-        formatter.addSubstitution("%subject_curie", (mapping) -> pm.shortenIdentifier(mapping.getSubjectId()));
-        formatter.addSubstitution("%object_curie", (mapping) -> pm.shortenIdentifier(mapping.getObjectId()));
-
         entityChecker = new CustomEntityChecker(ontology, pm);
         manParser.setOWLEntityChecker(entityChecker);
 
         super.onInit(pm);
+
+        // Override standard *_label substitutions to allow obtaining the label from the
+        // ontology if the mapping does not have a label slot
+        formatter.setSubstitution("subject_label", (m) -> getSubjectLabel(m));
+        formatter.setSubstitution("object_label", (m) -> getObjectLabel(m));
+
+        // Support the old-style (unbracketed) substitutions, for now at least
+        formatter.addSubstitution("subject_label", (m) -> getSubjectLabel(m));
+        formatter.addSubstitution("object_label", (m) -> getObjectLabel(m));
+        formatter.addSubstitution("subject_id", (m) -> String.format("<%s>", m.getSubjectId()));
+        formatter.addSubstitution("object_id", (m) -> String.format("<%s>", m.getObjectId()));
+        formatter.addSubstitution("subject_curie", (m) -> pm.shortenIdentifier(m.getSubjectId()));
+        formatter.addSubstitution("object_curie", (m) -> pm.shortenIdentifier(m.getObjectId()));
     }
 
     @Override
@@ -200,6 +197,9 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             return true;
 
         case "set_var":
+            // We override the base set_var handler to (1) allow expansion of unbracketed
+            // variable references and (2) support the 3-argument form. Both features will
+            // be removed at some point, but we need to support them for a while.
             if ( arguments.size() < 2 || arguments.size() > 3 ) {
                 throw new SSSOMTransformError(
                         String.format("Invalid number of arguments for function set_var: expected 2 or 3, found %d",
@@ -209,7 +209,6 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
             String varValue = arguments.get(1);
             IMappingFilter filter = null;
             if ( arguments.size() == 3 ) {
-                // DEPRECATED, will be removed in a future version
                 // Condition is of the form "(%subject_id|%object_id) is_a <ID>"
                 String condition = arguments.get(2);
                 String[] parts = condition.split(" ", 3);
@@ -221,32 +220,19 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
                 Set<String> targetIds = getSubclassesOf(entityChecker.getUnquotedIRI(parts[2]));
                 if ( parts[0].equals("%subject_id") ) {
                     filter = (mapping) -> targetIds.contains(mapping.getSubjectId());
-                } else if ( parts[0].equals("%object_id") ) {
+                } else {
                     filter = (mapping) -> targetIds.contains(mapping.getObjectId());
                 }
             }
-            varManager.addVariable(varName, varValue, filter);
-            formatter.addSubstitution("%" + varName, (mapping) -> varManager.expandVariable(varName, mapping));
+            varMgr.addVariable(varName, varValue, filter);
+            if ( filter == null ) {
+                formatter.setSubstitution(varName, varMgr.getTransformer(varName));
+                formatter.addSubstitution(varName, varMgr.getTransformer(varName));
+            }
             return true;
         }
 
         return super.onDirectiveAction(name, arguments);
-    }
-
-    @Override
-    public IMappingProcessorCallback onCallback(String name, List<String> arguments) throws SSSOMTransformError {
-        if ( name.equals("set_var") ) {
-            checkArguments(name, 2, arguments);
-            String varName = arguments.get(0);
-            String varValue = arguments.get(1);
-
-            IMappingProcessorCallback cb = (filter, mappings) -> {
-                varManager.addVariable(varName, varValue, filter);
-                formatter.addSubstitution("%" + varName, (mapping) -> varManager.expandVariable(varName, mapping));
-            };
-            return cb;
-        }
-        return null;
     }
 
     @Override
@@ -363,7 +349,7 @@ public class SSSOMTOwl extends SSSOMTransformApplicationBase<OWLAxiom> {
      */
     private IMappingTransformer<String> getVariableGenerator(String name) {
         if ( name.charAt(0) == '%' ) {
-            return varManager.getTransformer(name.substring(1));
+            return varMgr.getTransformer(name.substring(1));
         } else {
             return (mapping) -> name;
         }
