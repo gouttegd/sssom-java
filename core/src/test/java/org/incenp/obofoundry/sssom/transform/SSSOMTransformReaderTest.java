@@ -468,7 +468,7 @@ public class SSSOMTransformReaderTest {
     @Test
     @Tag("no-common-reader")
     void testParseFile() throws IOException {
-        reader = new SSSOMTransformReader<Void>(app, "src/test/resources/rules/fbbt-bridge.rules");
+        reader = new SSSOMTransformReader<Void>(app, "src/test/resources/rules/fbbt-bridge-legacy.rules");
         reader.read();
 
         Assertions.assertFalse(reader.hasErrors());

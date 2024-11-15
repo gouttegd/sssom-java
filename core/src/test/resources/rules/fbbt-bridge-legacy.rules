@@ -15,7 +15,7 @@ declare_object_property(BFO:0000050, BFO:0000066);
 # The relation to use in bridging axioms:
 # part_of by default, or occurs_in if the object is an occurrent
 set_var("TAXREL", BFO:0000050);
-object_is_a(UBERON:0000000) -> set_var("TAXREL", BFO:0000066);
+set_var("TAXREL", BFO:0000066, "%object_id is_a UBERON:0000000");
 
 # Rules
 # -----
@@ -27,7 +27,7 @@ object_is_a(UBERON:0000000) -> set_var("TAXREL", BFO:0000066);
 !(object==UBERON:* || object==CL:*) -> stop();
 
 # Check that the object exists
-!object_exists() -> stop();
+predicate==* -> check_object_existence();
 
 # A foreign term should be mapped to no more than one UBERON/CL term
 !cardinality==*:1 -> stop();
@@ -35,14 +35,14 @@ object_is_a(UBERON:0000000) -> set_var("TAXREL", BFO:0000066);
 # FBbt/dv bridge
 [fbbt] (subject==FBbt:* || subject==FBdv:*) predicate==semapv:crossSpeciesExactMatch {
     [uberon-fbbt] object==UBERON:* -> {
-        annotate_subject(IAO:0000589, '%{object_label} (Drosophila)');
-        create_axiom('<%{subject_id}> EquivalentTo: <%{object_id}> and (<%{TAXREL}> some TAX:7227)');
+        annotate_subject(IAO:0000589, '%object_label (Drosophila)');
+        create_axiom('%subject_id EquivalentTo: %object_id and (%TAXREL some TAX:7227)');
     }
     [cl-fbbt] object==CL:* -> {
-        annotate_subject(IAO:0000589, '%{object_label} (Drosophila)');
-        create_axiom('<%{subject_id}> EquivalentTo: <%{object_id}> and (<%{TAXREL}> some TAX:7227)');
+        annotate_subject(IAO:0000589, '%object_label (Drosophila)');
+        create_axiom('%subject_id EquivalentTo: %object_id and (%TAXREL some TAX:7227)');
     }
 }
 
 # Old-style cross-references, for backwards compatibility
-[xrefs] predicate==* -> annotate_object(OIO:hasDbXref, %{subject_id|short});
+[xrefs] predicate==* -> annotate_object(OIO:hasDbXref, "%subject_curie");
