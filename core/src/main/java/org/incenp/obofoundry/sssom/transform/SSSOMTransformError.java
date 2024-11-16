@@ -44,4 +44,17 @@ public class SSSOMTransformError extends Exception {
     public SSSOMTransformError(String message) {
         super(message);
     }
+
+    /**
+     * Creates a new instance for an application-specific errors.
+     * <p>
+     * This is merely a convenience constructor and is equivalent to
+     * {@code SSSOMTransformError(String.format(message, args))}.
+     * 
+     * @param message The application-specific error message, as a format string.
+     * @param args    Arguments to insert into the format string.
+     */
+    public SSSOMTransformError(String message, Object... args) {
+        super(String.format(message, args));
+    }
 }
