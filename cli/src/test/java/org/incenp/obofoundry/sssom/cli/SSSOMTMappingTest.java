@@ -18,7 +18,13 @@
 
 package org.incenp.obofoundry.sssom.cli;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,17 +34,37 @@ import org.junit.jupiter.api.Test;
  */
 public class SSSOMTMappingTest {
 
+    SSSOMTransformApplication<Mapping> application;
+
+    SSSOMTMappingTest() {
+        application = new SSSOMTransformApplication<Mapping>();
+        application.registerGenerator(new SSSOMTIncludeFunction());
+    }
+
     @Test
     void testRecogniseSSSOMTMappingFunction() {
-        SSSOMTransformReader<Mapping> reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping());
+        SSSOMTransformReader<Mapping> reader = new SSSOMTransformReader<Mapping>(application);
 
         Assertions.assertTrue(reader.read("predicate==* -> include()"));
     }
 
     @Test
     void testParsingErrorOnUnknownFunction() {
-        SSSOMTransformReader<Mapping> reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping());
+        SSSOMTransformReader<Mapping> reader = new SSSOMTransformReader<Mapping>(application);
 
         Assertions.assertFalse(reader.read("predicate==* -> foo()"));
+    }
+
+    @Test
+    void testIncludeFunction() {
+        try {
+            IMappingTransformer<Mapping> o = application.onGeneratingAction("include", new ArrayList<String>(),
+                    new HashMap<String, String>());
+            Mapping m = new Mapping();
+            Mapping included = o.transform(m);
+            Assertions.assertEquals(m, included);
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
     }
 }

@@ -44,6 +44,7 @@ import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
+import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -530,10 +531,12 @@ public class SimpleCLI implements Runnable {
 
     private void loadTransformRules(MappingProcessor<Mapping> processor) {
         SSSOMTransformReader<Mapping> reader = null;
+        SSSOMTransformApplication<Mapping> application = new SSSOMTransformApplication<Mapping>();
+        application.registerGenerator(new SSSOMTIncludeFunction());
 
         if ( transOpts.rulesetFile != null ) {
             try {
-                reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping(), transOpts.rulesetFile);
+                reader = new SSSOMTransformReader<Mapping>(application, transOpts.rulesetFile);
                 reader.addPrefixMap(transOpts.prefixMap);
                 reader.read();
             } catch (IOException ioe) {
@@ -543,7 +546,7 @@ public class SimpleCLI implements Runnable {
 
         if ( !transOpts.rules.isEmpty() ) {
             if ( reader == null ) {
-                reader = new SSSOMTransformReader<Mapping>(new SSSOMTMapping());
+                reader = new SSSOMTransformReader<Mapping>(application);
                 reader.addPrefixMap(transOpts.prefixMap);
             }
             for ( String rule : transOpts.rules ) {

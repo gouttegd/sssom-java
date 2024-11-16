@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2023 Damien Goutte-Gattat
+ * Copyright © 2024 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the Gnu General Public License
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -23,30 +23,38 @@ import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
-import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplicationBase;
+import org.incenp.obofoundry.sssom.transform.ISSSOMTFunction;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 
 /**
- * A specialised application of the SSSOM/Transform language to read mapping
- * processing rules that produce mappings from mappings.
+ * Represents the SSSOM/T-Mapping generator function "include".
  * <p>
- * This application recognises the following actions:
- * <ul>
- * <li>{@code stop()} to stop any further processing for the current mapping;
- * <li>{@code invert()} to invert the current mapping;
- * <li>{@code include()} to produce the current mapping as it is.
- * </ul>
+ * This function does the opposite of the standard preprocessor function "stop".
+ * It unconditionally produces the original mapping. It should be called to
+ * include a mapping in the resulting set of the SSSOM/T-Mapping application.
  */
-public class SSSOMTMapping extends SSSOMTransformApplicationBase<Mapping> {
+public class SSSOMTIncludeFunction
+        implements ISSSOMTFunction<IMappingTransformer<Mapping>>, IMappingTransformer<Mapping> {
 
     @Override
-    public IMappingTransformer<Mapping> onGeneratingAction(String name, List<String> arguments,
-            Map<String, String> keyedArguments)
+    public String getName() {
+        return "include";
+    }
+
+    @Override
+    public String getSignature() {
+        return "";
+    }
+
+    @Override
+    public IMappingTransformer<Mapping> call(List<String> arguments, Map<String, String> keyedArguments)
             throws SSSOMTransformError {
-        if ( name.equals("include") ) {
-            return (mapping) -> mapping;
-        }
-        return super.onGeneratingAction(name, arguments, keyedArguments);
+        return this;
+    }
+
+    @Override
+    public Mapping transform(Mapping mapping) {
+        return mapping;
     }
 
 }
