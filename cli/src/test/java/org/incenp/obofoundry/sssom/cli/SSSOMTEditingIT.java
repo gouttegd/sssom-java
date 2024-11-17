@@ -44,6 +44,23 @@ public class SSSOMTEditingIT {
     }
 
     @Test
+    void testMappingEditionWithDelayedAssign() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-edited-delayed-change.sssom.tsv",
+                new String[] { "--prefix-map-from-input",
+                        "--rule=predicate==skos:closeMatch -> assign('comment', 'almost the same as %{subject_label} (%{subject_id|short})')",
+                        "--include-all" });
+    }
+
+    @Test
+    void testMappingEditionWithValuesFromExtensionSlots() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c-with-extensions.sssom.tsv" },
+                "exo2c-edited-extension-derived-values.sssom.tsv",
+                new String[] { "--prefix-map-from-input", "--accept-extra-metadata=DEFINED",
+                        "--rule=subject==* -> assign('curation_rule_text', 'bar: %{https://example.org/properties/barProperty}')",
+                        "--include-all" });
+    }
+
+    @Test
     void testMappingEditionWithReplace() throws IOException {
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-edited-all-exact-match.sssom.tsv",
                 new String[] { "--prefix-map-from-input",

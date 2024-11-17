@@ -30,10 +30,14 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * That function expects pairs of arguments where the first item of the pair is
  * the name of a SSSOM metadata slot and the second item is the value to assign
  * to that slot.
+ * <p>
+ * The second argument may contain SSSOM/T placeholders referring to any SSSOM
+ * metadata slots or any declared variables.
  */
 public class SSSOMTAssignFunction implements ISSSOMTFunction<IMappingTransformer<Mapping>> {
 
     private PrefixManager pfxMgr;
+    private MappingFormatter formatter;
 
     /**
      * Creates a new instance.
@@ -43,6 +47,7 @@ public class SSSOMTAssignFunction implements ISSSOMTFunction<IMappingTransformer
      */
     public <T> SSSOMTAssignFunction(SSSOMTransformApplication<T> application) {
         pfxMgr = application.getPrefixManager();
+        formatter = application.getFormatter();
     }
 
     @Override
@@ -63,7 +68,16 @@ public class SSSOMTAssignFunction implements ISSSOMTFunction<IMappingTransformer
         int len = arguments.size();
         for ( int i = 0; i < len; i += 2 ) {
             try {
-                editor.addSimpleAssign(arguments.get(i), arguments.get(i + 1));
+                String slotName = arguments.get(i);
+                String value = arguments.get(i + 1);
+                if ( value.contains("%{") ) {
+                    // It's not really worth trying to detect if that percent sign is escaped; if it
+                    // is, and there is no actual placeholder in the value, then we are delaying for
+                    // nothing, but it will still do the job.
+                    editor.addDelayedAssign(slotName, formatter.getTransformer(value));
+                } else {
+                    editor.addSimpleAssign(slotName, value);
+                }
             } catch ( IllegalArgumentException e ) {
                 throw new SSSOMTransformError("Invalid argument for function assign: %s", e.getMessage());
             }

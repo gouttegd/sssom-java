@@ -195,6 +195,28 @@ public class SSSOMTransformApplicationTest {
     }
 
     @Test
+    void testDelayedAssign() {
+        arguments.add("object_label");
+        arguments.add("same as %{subject_label}");
+        arguments.add("comment");
+        arguments.add("%{subject_id|short}");
+
+        try {
+            IMappingTransformer<Mapping> o = application.onPreprocessingAction("assign", arguments, keyedArguments);
+
+            Mapping m = Mapping.builder().subjectLabel("subject").subjectId("https://example.org/entities/0001")
+                    .build();
+            application.getPrefixManager().add("ORGENT", "https://example.org/entities/");
+
+            Mapping edited = o.transform(m);
+            Assertions.assertEquals("same as subject", edited.getObjectLabel());
+            Assertions.assertEquals("ORGENT:0001", edited.getComment());
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testReplacePreprocessor() {
         arguments.add("object_label");
         arguments.add("Old");

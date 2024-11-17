@@ -19,7 +19,10 @@
 package org.incenp.obofoundry.sssom.transform;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.junit.jupiter.api.Assertions;
@@ -195,6 +198,17 @@ public class MappingFormatterTest {
         m.getAuthorLabel().add("Alice");
         m.getAuthorLabel().add("Bob");
         Assertions.assertEquals("Alice|Bob", formatter.getTransformer("%{author_label}").transform(m));
+    }
+
+    @Test
+    void testSubstitutionWithExtensionSlots() {
+        Mapping m = getSampleMapping();
+        Map<String, ExtensionValue> extensions = new HashMap<String, ExtensionValue>();
+        extensions.put("https://example.org/properties/barProperty", new ExtensionValue("extended value"));
+        m.setExtensions(extensions);
+
+        Assertions.assertEquals("bar: extended value",
+                formatter.getTransformer("bar: %{https://example.org/properties/barProperty}").transform(m));
     }
 
     private Mapping getSampleMapping() {

@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class MappingEditorTest {
@@ -51,6 +52,18 @@ public class MappingEditorTest {
         assertNull(editor.transform(getSampleMapping()).getMappingJustification());
 
         assertThrows(IllegalArgumentException.class, () -> editor.addSimpleAssign("object_id", null));
+    }
+
+    @Test
+    void testDelayedChange() {
+        MappingEditor editor = new MappingEditor();
+        editor.addDelayedAssign("object_label", (m) -> String.format("same as %s", m.getSubjectLabel()));
+
+        Mapping m1 = getSampleMapping();
+        m1.setSubjectLabel("subject");
+        Mapping edited = editor.transform(m1);
+
+        Assertions.assertEquals("same as subject", edited.getObjectLabel());
     }
 
     @Test

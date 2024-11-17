@@ -39,17 +39,31 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
 /**
  * A mapping transformer that applies arbitrary changes to a mapping.
  * <p>
- * Changes to be applied must be specified by one or several calls to
- * {@link #addSimpleAssign(String, String)} or
- * {@link #addReplacement(String, String, String)}:
+ * There are three ways to specify a change to apply. The simplest one is to use
+ * {@link #addSimpleAssign(String, String)}, when the value to assign is static
+ * and therefore fully known at the time the function is called:
  * 
  * <pre>
- * MappingEditor editor = new MappingEditor();
- * // set a mapping justification
+ * // Set a mapping justification
  * editor.addSimpleAssign("mapping_justification", "semapv:ManualMappingCuration");
- * // remove subject source
- * editor.addSimpleAssign("subject_source", null);
- * // do a regex-based replacement
+ * </pre>
+ * 
+ * <p>
+ * If the value to assign is to be generated from the mapping the change must be
+ * applied to, then use {@link #addDelayedAssign(String, IMappingTransformer)}.
+ * For example, to set the object label to a value derived from the subject
+ * label:
+ * 
+ * <pre>
+ * editor.addDelayedAssign("object_label", (mapping) -> String.format("same as %s", mapping -> getSubjectLabel()));
+ * </pre>
+ * 
+ * <p>
+ * Lastly, use {@link #addReplacement(String, String, String)} to change the
+ * value of a slot by searching and replacing a pattern within the original
+ * value:
+ * 
+ * <pre>
  * editor.addReplacement("subject_id", "https://meshb.nlm.nih.gov/record/ui[?]ui=", "http://id.nlm.nih.gov/mesh/");
  * </pre>
  */
@@ -126,34 +140,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
             return;
         }
 
-        Object parsedValue = null;
-        Class<?> type = slot.getType();
-        if ( type == String.class ) {
-            parsedValue = slot.isEntityReference() ? pm.expandIdentifier(value) : value;
-        } else if ( type == List.class ) {
-            List<String> listValue = new ArrayList<String>();
-            for ( String item : value.split("\\|") ) {
-                listValue.add(slot.isEntityReference() ? pm.expandIdentifier(item.trim()) : item.trim());
-            }
-            parsedValue = listValue;
-        } else if ( type == LocalDate.class ) {
-            try {
-                parsedValue = LocalDate.parse(value);
-            } catch ( DateTimeParseException e ) {
-            }
-        } else if ( type == Double.class ) {
-            try {
-                parsedValue = Double.valueOf(value);
-            } catch ( NumberFormatException e ) {
-            }
-        } else if ( type == EntityType.class ) {
-            parsedValue = EntityType.fromString(value);
-        } else if ( type == MappingCardinality.class ) {
-            parsedValue = MappingCardinality.fromString(value);
-        } else if ( type == PredicateModifier.class ) {
-            parsedValue = PredicateModifier.fromString(value);
-        }
-
+        Object parsedValue = parseValue(slot, value);
         if ( parsedValue == null ) {
             throw new IllegalArgumentException(String.format("Invalid value \"%s\" for slot \"%s\"", value, slotName));
         }
@@ -162,6 +149,32 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
         values.put(slotName, (mapping) -> setValue);
 
         // Reset slotHelper so that the list of visited slots is up-to-date
+        slotHelper = null;
+    }
+
+    /**
+     * Adds a change to be applied by transformer, when the new value to assign will
+     * only be known at the time the change is applied because it may depend on the
+     * mapping the change is applied to.
+     * <p>
+     * Of note, because the new value is not known at the time the change is
+     * registered, we cannot perform any check on the value. We only check whether
+     * the given slot name is a valid one.
+     * 
+     * @param slotName The name of the mapping slot to change.
+     * @param value    The transformer that will derive the new value to assign from
+     *                 a mapping.
+     * @exception IllegalArgumentException If {@code slotName} is not a valid slot
+     *                                     name.
+     */
+    public void addDelayedAssign(String slotName, IMappingTransformer<String> value) {
+        Slot<Mapping> slot = slotsDict.get(slotName);
+        if ( slot == null ) {
+            throw new IllegalArgumentException(String.format("Invalid slot name: %s", slotName));
+        }
+
+        IMappingTransformer<Object> transformer = (mapping) -> parseValue(slot, value.transform(mapping));
+        values.put(slotName, transformer);
         slotHelper = null;
     }
 
@@ -220,6 +233,41 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
 
         // Reset slotHelper so that the list of visited slots is up-to-date
         slotHelper = null;
+    }
+
+    /*
+     * Shared logic of simple and delayed assign operations.
+     */
+    private Object parseValue(Slot<Mapping> slot, String value) {
+        Object parsedValue = null;
+        Class<?> type = slot.getType();
+        if ( type == String.class ) {
+            parsedValue = slot.isEntityReference() ? pm.expandIdentifier(value) : value;
+        } else if ( type == List.class ) {
+            List<String> listValue = new ArrayList<String>();
+            for ( String item : value.split("\\|") ) {
+                listValue.add(slot.isEntityReference() ? pm.expandIdentifier(item.trim()) : item.trim());
+            }
+            parsedValue = listValue;
+        } else if ( type == LocalDate.class ) {
+            try {
+                parsedValue = LocalDate.parse(value);
+            } catch ( DateTimeParseException e ) {
+            }
+        } else if ( type == Double.class ) {
+            try {
+                parsedValue = Double.valueOf(value);
+            } catch ( NumberFormatException e ) {
+            }
+        } else if ( type == EntityType.class ) {
+            parsedValue = EntityType.fromString(value);
+        } else if ( type == MappingCardinality.class ) {
+            parsedValue = MappingCardinality.fromString(value);
+        } else if ( type == PredicateModifier.class ) {
+            parsedValue = PredicateModifier.fromString(value);
+        }
+
+        return parsedValue;
     }
 
     private SlotHelper<Mapping> getHelper() {
