@@ -37,6 +37,12 @@
       <artifactId>owlapi-distribution</artifactId>
       <version>4.5.29</version>
     </dependency>
+    <dependency>
+      <groupId>io.github.liveontologies</groupId>
+      <artifactId>elk-owlapi</artifactId>
+      <version>0.6.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

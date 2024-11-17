@@ -34,7 +34,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
  * reification” rules set forth in the SSSOM specification.
  *
  * @see <a href=
- *      "https://mapping-commons.github.io/sssom/spec/#rdfxml-serialised-re-ified-owl-axioms">SSSOM
+ *      "https://mapping-commons.github.io/sssom/spec-formats-owl/">SSSOM
  *      specification</a>
  */
 public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
