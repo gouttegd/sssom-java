@@ -159,7 +159,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         pfxMgr = prefixManager;
 
         formatter.setStandardSubstitutions();
-        formatter.setModifier("short", (s) -> pfxMgr.shortenIdentifier(s));
+        formatter.setModifier(new SSSOMTShortFunction(pfxMgr));
 
         registerDirective(new SSSOMTSetvarFunction(this));
         registerCallback(new SSSOMTSetvarCallbackFunction(this));

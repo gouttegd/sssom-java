@@ -20,6 +20,7 @@ package org.incenp.obofoundry.sssom.transform;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -72,14 +73,47 @@ public class MappingFormatterTest {
     @Test
     void testModifier() {
         formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
-        formatter.setModifier("upper", (s) -> s.toUpperCase());
+        formatter.setModifier(new UppercaseModifier());
 
         IMappingTransformer<String> f = formatter
                 .getTransformer("%{subject_label} (uppercase: %{subject_label|upper})");
         Assertions.assertEquals("alice (uppercase: ALICE)", f.transform(getSampleMapping()));
 
+        f = formatter.getTransformer("%{subject_label|upper()}");
+        Assertions.assertEquals("ALICE", f.transform(getSampleMapping()));
+    }
+
+    @Test
+    void testModifierArguments() {
+        formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
+        formatter.setModifier(new ModifierWithArgs());
+
+        IMappingTransformer<String> f;
+        Mapping m = getSampleMapping();
+
+        f = formatter.getTransformer("%{subject_label} (modified: %{subject_label|with_args(abc, def)})");
+        Assertions.assertEquals("alice (modified: with_args(alice, abc, def))", f.transform(m));
+
+        f = formatter.getTransformer("Another: %{subject_label|with_args(ghi)}");
+        Assertions.assertEquals("Another: with_args(alice, ghi)", f.transform(m));
+
+        f = formatter.getTransformer("One: %{subject_label|with_args(abc)}, Two: %{subject_label|with_args(def)}");
+        Assertions.assertEquals("One: with_args(alice, abc), Two: with_args(alice, def)", f.transform(m));
+
+        f = formatter.getTransformer("%{subject_label|with_args(,abc, , )}");
+        Assertions.assertEquals("with_args(alice, , abc, , )", f.transform(m));
+    }
+
+    @Test
+    void testModifierErrors() {
+        formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
+        formatter.setModifier(new UppercaseModifier());
+
         Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{subject_label|mod}"),
                 "Unknown modifier: mod");
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> formatter.getTransformer("%{subject_label|upper(abc)}"), "Invalid call for function upper");
     }
 
     @Test
@@ -123,7 +157,7 @@ public class MappingFormatterTest {
         f = formatter.getTransformer("%{inexisting}");
         Assertions.assertEquals("%{inexisting}", f.transform(mapping));
 
-        formatter.setModifier("upper", (s) -> s.toUpperCase());
+        formatter.setModifier(new UppercaseModifier());
         f = formatter.getTransformer("%{|upper}");
         Assertions.assertEquals("%{}", f.transform(mapping));
 
@@ -133,10 +167,12 @@ public class MappingFormatterTest {
 
     @Test
     void testUnterminatedBracketedPlaceholder() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some"),
-                "Unterminated placeholder in format string");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some|mod"),
-                "Unterminated placeholder in format string");
+        final String ERR = "Unterminated placeholder in format string";
+        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some"), ERR);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some|"), ERR);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some|mod"), ERR);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some|mod(abc"), ERR);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.getTransformer("%{some|mod(abc)"), ERR);
     }
 
     @Test
@@ -148,9 +184,6 @@ public class MappingFormatterTest {
                 "Invalid placeholder name");
         Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.addSubstitution("su:", null),
                 "Invalid placeholder name");
-
-        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.setModifier("mod|", null),
-                "Invalid modifier name");
     }
 
     @Test
@@ -224,4 +257,50 @@ public class MappingFormatterTest {
 
         return m;
     }
+}
+
+class UppercaseModifier implements ISSSOMTFunction<String> {
+
+    @Override
+    public String getName() {
+        return "upper";
+    }
+
+    @Override
+    public String getSignature() {
+        return "S";
+    }
+
+    @Override
+    public String call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
+        return arguments.get(0).toUpperCase();
+    }
+
+}
+
+class ModifierWithArgs implements ISSSOMTFunction<String> {
+
+    @Override
+    public String getName() {
+        return "with_args";
+    }
+
+    @Override
+    public String getSignature() {
+        return "S+";
+    }
+
+    @Override
+    public String call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
+        StringBuilder sb = new StringBuilder();
+        sb.append("with_args(");
+        sb.append(arguments.get(0));
+        arguments.listIterator(1).forEachRemaining((a) -> {
+            sb.append(", ");
+            sb.append(a);
+        });
+        sb.append(')');
+        return sb.toString();
+    }
+
 }

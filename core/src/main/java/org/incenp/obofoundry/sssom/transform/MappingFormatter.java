@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -74,7 +73,7 @@ public class MappingFormatter {
     private Map<String, IMappingTransformer<String>> legacyPlaceholders = new HashMap<String, IMappingTransformer<String>>();
     private Map<String, IMappingTransformer<String>> placeholders = new HashMap<String, IMappingTransformer<String>>();
     private Map<String, IMappingTransformer<String>> cache = new HashMap<String, IMappingTransformer<String>>();
-    private Map<String, Function<String, String>> modifiers = new HashMap<String, Function<String, String>>();
+    private Map<String, ISSSOMTFunction<String>> modifiers = new HashMap<String, ISSSOMTFunction<String>>();
 
     /**
      * Defines a simple placeholder text to be substituted by a mapping-derived
@@ -204,26 +203,28 @@ public class MappingFormatter {
     }
 
     /**
-     * Defines a modifier that can be used to alter the value of a substitution.
+     * Registers a modifier function that can be used to alter the value of a
+     * substitution.
      * <p>
-     * In a format string, a modifier can be inserted within the brackets after the
-     * name of the placeholder, separated from it by a '|' character, as in
-     * <code>%{placeholder|modifier}</code>. The modifier must be a function that
-     * expects a string and returns a string. It will receive the mapping-derived
-     * substitution value for the placeholder, and must returned the value to
-     * actually insert into the formatted string.
+     * In a format string, a modifier function can called within the brackets after
+     * the name of the placeholder, separated from it by a '|' character, as in
+     * <code>%{placeholder|modifier(arg1, arg2)}</code>.
+     * <p>
+     * The modifier function will receive a list of string as arguments, with the
+     * first argument (always present) being the mapping-derived substitution value
+     * for the placeholder. Remaining arguments are those explicitly passed to the
+     * function, if any (<em>arg1</em> and <em>arg2</em> in the example above). The
+     * function must return the value that should effectively be inserted into the
+     * formatted string.
+     * <p>
+     * If the function does not need any additional argument beyond the mandatory
+     * substitution value, the parentheses may be omitted, as in
+     * <code>%{placeholder|modifier}</code>.
      * 
-     * @param name     The name of the modifier function. It must not contain any
-     *                 '|' or '}' character.
-     * @param modifier The actual modifier function to call when substituting a
-     *                 placeholder where this modifier has been used.
-     * 
-     * @throws IllegalArgumentException If the name contains '}' or '|' characters.
+     * @param modifier The modifier function to register.
      */
-    public void setModifier(String name, Function<String, String> modifier) {
-        if ( name.contains("}") || name.contains("|") ) {
-            throw new IllegalArgumentException("Invalid modifier name");
-        }
+    public void setModifier(ISSSOMTFunction<String> modifier) {
+        String name = modifier.getName();
         if ( modifiers.containsKey(name) ) {
             cache.clear();
         }
@@ -299,6 +300,42 @@ public class MappingFormatter {
     }
 
     /*
+     * Gets the transformer for a format specified accompanied by a modifier
+     * function.
+     */
+    private IMappingTransformer<String> getTransformer(String name, String modifier, List<String> arguments) {
+        IMappingTransformer<String> transformer = getTransformer(name, false);
+        ISSSOMTFunction<String> modFunction = modifiers.get(modifier);
+        if ( modFunction == null ) {
+            throw new IllegalArgumentException(String.format("Unknown modifier function: %s", modifier));
+        }
+
+        // Check arguments against the signature
+        StringBuilder sb = new StringBuilder();
+        sb.append('S');
+        int nArgs = arguments.size();
+        for ( int i = 0; i < nArgs; i++ ) {
+            sb.append('S');
+        }
+        if ( !Pattern.matches(modFunction.getSignature(), sb) ) {
+            throw new IllegalArgumentException(String.format("Invalid call for function %s", modifier));
+        }
+
+        return (mapping) -> {
+            ArrayList<String> args = new ArrayList<String>();
+            args.add(transformer.transform(mapping));
+            for ( String argument : arguments ) {
+                args.add(argument);
+            }
+            try {
+                return modFunction.call(args, new HashMap<String, String>());
+            } catch ( SSSOMTransformError e ) {
+                return args.get(0);
+            }
+        };
+    }
+
+    /*
      * Actual parsing of the format string.
      */
     private IMappingTransformer<String> parse(String format) {
@@ -307,6 +344,7 @@ public class MappingFormatter {
         int len = format.length();
         ParserState state = ParserState.PLAIN;
         StringBuilder buffer = new StringBuilder();
+        List<String> modifierArgs = null;
         String name = null;
         String modifier = null;
 
@@ -380,6 +418,7 @@ public class MappingFormatter {
                     name = buffer.toString();
                     buffer.delete(0, buffer.length());
                     state = ParserState.MODIFIER;
+                    modifierArgs = new ArrayList<String>();
                 } else {
                     buffer.append(c);
                 }
@@ -389,18 +428,40 @@ public class MappingFormatter {
                 if ( c == '}' ) {
                     modifier = buffer.toString();
                     buffer.delete(0, buffer.length());
-                    Function<String, String> mod = modifiers.get(modifier);
-                    if ( mod == null ) {
-                        throw new IllegalArgumentException(String.format("Unknown modifier: %s", modifier));
-                    }
-                    IMappingTransformer<String> transformer = getTransformer(name, false);
-                    components.add((mapping) -> mod.apply(transformer.transform(mapping)));
+                    components.add(getTransformer(name, modifier, modifierArgs));
                     state = ParserState.PLAIN;
+                } else if ( c == '(' ) {
+                    modifier = buffer.toString();
+                    buffer.delete(0, buffer.length());
+                    state = ParserState.MODIFIER_ARGUMENT_LIST;
                 } else {
                     buffer.append(c);
                 }
                 break;
 
+            case MODIFIER_ARGUMENT_LIST:
+                if ( c == ')' ) {
+                    if ( buffer.length() > 0 ) {
+                        modifierArgs.add(buffer.toString().trim());
+                    }
+                    buffer.delete(0, buffer.length());
+                    state = ParserState.MODIFIER_END_ARGUMENT_LIST;
+                } else if ( c == ',' ) {
+                    modifierArgs.add(buffer.toString().trim());
+                    buffer.delete(0, buffer.length());
+                } else {
+                    buffer.append(c);
+                }
+                break;
+
+            case MODIFIER_END_ARGUMENT_LIST:
+                if ( c == '}' ) {
+                    components.add(getTransformer(name, modifier, modifierArgs));
+                    state = ParserState.PLAIN;
+                } else if ( !Character.isWhitespace(c) ) {
+                    throw new IllegalArgumentException("Extra text after modifier call");
+                }
+                break;
             }
         }
 
@@ -428,6 +489,8 @@ public class MappingFormatter {
                 // Format string ended in the middle of a bracketed placeholder
                 throw new IllegalArgumentException("Unterminated placeholder in format string");
             }
+        } else if ( state != ParserState.PLAIN ) {
+            throw new IllegalArgumentException("Unterminated placeholder in format string");
         }
 
         // Assemble the final transformer object
@@ -478,6 +541,8 @@ public class MappingFormatter {
         PERCENT,
         LEGACY_PLACEHOLDER,
         PLACEHOLDER,
-        MODIFIER
+        MODIFIER,
+        MODIFIER_ARGUMENT_LIST,
+        MODIFIER_END_ARGUMENT_LIST
     }
 }
