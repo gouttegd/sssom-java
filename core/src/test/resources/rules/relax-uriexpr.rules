@@ -1,0 +1,11 @@
+prefix COMENT: <https://example.com/entities/>
+prefix NETENT: <https://example.net/entities/>
+prefix ORGENT: <https://example.org/entities/>
+prefix SCHEMA: <https://example.org/schema/>
+
+subject==SCHEMA:0001* uriexpr_contains(%{subject_id}, 'field1', COMENT:*) ->
+    assign('predicate_id', skos:closeMatch,
+           'subject_id', "%{subject_id|uriexpr_slot_value(field1)}",
+           'comment', "%{subject_id|uriexpr_slot_value(field1)|short} in combination with %{subject_id|uriexpr_slot_value(field2)|short}");
+
+predicate==skos:closeMatch -> include();

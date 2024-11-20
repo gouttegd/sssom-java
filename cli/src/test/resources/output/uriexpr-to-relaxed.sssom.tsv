@@ -1,0 +1,9 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  NETENT: https://example.net/entities/
+#mapping_set_id: https://example.org/sets/test-uriexpression-ids
+#mapping_set_title: Set between NET entities and composite COM and ORG entities
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id	predicate_id	object_id	mapping_justification	comment
+COMENT:0011	skos:closeMatch	NETENT:0111	semapv:ManualMappingCuration	COMENT:0011 in combination with ORGENT:0001
+COMENT:0012	skos:closeMatch	NETENT:0112	semapv:ManualMappingCuration	COMENT:0012 in combination with ORGENT:0002

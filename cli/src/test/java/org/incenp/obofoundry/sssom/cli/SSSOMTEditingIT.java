@@ -66,4 +66,10 @@ public class SSSOMTEditingIT {
                 new String[] { "--prefix-map-from-input",
                         "--rule=subject==* -> replace('predicate_id', 'closeMatch', 'exactMatch')", "--include-all" });
     }
+
+    @Test
+    void testMappingEditionWithUriExpressions() throws IOException {
+        TestUtils.runCommand(0, new String[] { "test-uriexpression-ids.sssom.tsv" }, "uriexpr-to-relaxed.sssom.tsv",
+                new String[] { "--ruleset", "../core/src/test/resources/rules/relax-uriexpr.rules" });
+    }
 }

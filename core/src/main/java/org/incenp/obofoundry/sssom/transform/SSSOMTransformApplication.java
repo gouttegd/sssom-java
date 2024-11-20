@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionContainsFunction;
+import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionSlotValueFunction;
 
 /**
  * Represents a SSSOM/Transform application, that is, a specialisation of the
@@ -168,6 +170,10 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         registerPreprocessor(new SSSOMTAssignFunction(this));
         registerPreprocessor(new SSSOMTReplaceFunction(this));
         registerPreprocessor(new SSSOMTEditFunction(this));
+
+        // Enable support for URI Expressions
+        registerFilter(new SSSOMTUriExpressionContainsFunction<T>(this));
+        formatter.setModifier(new SSSOMTUriExpressionSlotValueFunction(pfxMgr));
     }
 
     @Override
