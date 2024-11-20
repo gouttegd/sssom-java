@@ -101,6 +101,19 @@ public class SSSOMInjectionCommandTest {
         checkOutput("fbbt-xrefs.ofn");
     }
 
+    @Test
+    void testUriExpressionExpansion() throws IOException {
+        // @formatter:off
+        runCommand("sssom-inject",
+                "--create",
+                "--sssom", "../core/src/test/resources/sets/test-uriexpression-ids.sssom.tsv",
+                "--ruleset", "../core/src/test/resources/rules/uriexpr-to-owl.rules",
+                "--bridge-format", "ofn",
+                "--bridge-file", "src/test/resources/output/uriexpr-bridge.ofn.out");
+        // @formatter:on
+        checkOutput("uriexpr-bridge.ofn");
+    }
+
     /*
      * Run a ROBOT command.
      */

@@ -1,0 +1,12 @@
+prefix COMENT: <https://example.com/entities/>
+prefix NETENT: <https://example.net/entities/>
+prefix ORGENT: <https://example.org/entities/>
+prefix SCHEMA: <https://example.org/schema/>
+prefix oboInOwl: <http://www.geneontology.org/formats/oboInOwl#>
+
+uriexpr_declare_format(SCHEMA:0001, "(<{field1}> and <{field2}>)");
+
+subject==SCHEMA:0001* && predicate==skos:exactMatch -> {
+    create_axiom("%{subject_id|uriexpr_expand} EquivalentTo: <%{object_id}>");
+    annotate("%{subject_id|uriexpr_slot_value(field2)}", oboInOwl:hasDbXref, "%{subject_id|uriexpr_slot_value(field1)|short}");
+}

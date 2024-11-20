@@ -29,6 +29,9 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
+import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionDeclareFormatFunction;
+import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionExpandFunction;
+import org.incenp.obofoundry.sssom.uriexpr.UriExpressionRegistry;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -52,6 +55,7 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
     private OWLLiteral falseValue;
     private EditableEntityChecker entityChecker;
     private Map<String, Set<String>> subClassesOf = new HashMap<String, Set<String>>();
+    private UriExpressionRegistry uriExprRegistry = new UriExpressionRegistry();
 
     /**
      * Creates a new instance.
@@ -109,6 +113,10 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         registerPreprocessor(new SSSOMTCheckObjectExistenceFunction(this));
         registerGenerator(new SSSOMTAnnotateSubjectFunction(this));
         registerGenerator(new SSSOMTAnnotateObjectFunction(this));
+
+        // Enable support for URI Expressions
+        registerDirective(new SSSOMTUriExpressionDeclareFormatFunction(this));
+        fmt.setModifier(new SSSOMTUriExpressionExpandFunction(this));
     }
 
     /**
@@ -129,6 +137,16 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
      */
     public OWLOntology getOntology() {
         return ontology;
+    }
+
+    /**
+     * Gets the registry of URI Expression templates, needed to expand a URI
+     * Expression into a OWL expression.
+     * 
+     * @return The registry.
+     */
+    public UriExpressionRegistry getUriExpressionRegistry() {
+        return uriExprRegistry;
     }
 
     /**

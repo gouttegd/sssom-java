@@ -1,0 +1,50 @@
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+
+
+Ontology(
+Declaration(Class(<https://example.com/entities/0003>))
+Declaration(Class(<https://example.com/entities/0011>))
+Declaration(Class(<https://example.com/entities/0012>))
+Declaration(Class(<https://example.net/entities/0111>))
+Declaration(Class(<https://example.net/entities/0112>))
+Declaration(Class(<https://example.net/entities/0113>))
+Declaration(Class(<https://example.org/entities/0001>))
+Declaration(Class(<https://example.org/entities/0002>))
+Declaration(Class(<https://example.org/entities/0013>))
+Declaration(AnnotationProperty(<http://www.geneontology.org/formats/oboInOwl#hasDbXref>))
+
+
+############################
+#   Classes
+############################
+
+# Class: <https://example.com/entities/0003> (<https://example.com/entities/0003>)
+
+AnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasDbXref> <https://example.com/entities/0003> "ORGENT:0013")
+
+# Class: <https://example.net/entities/0111> (<https://example.net/entities/0111>)
+
+EquivalentClasses(<https://example.net/entities/0111> ObjectIntersectionOf(<https://example.com/entities/0011> <https://example.org/entities/0001>))
+
+# Class: <https://example.net/entities/0112> (<https://example.net/entities/0112>)
+
+EquivalentClasses(<https://example.net/entities/0112> ObjectIntersectionOf(<https://example.com/entities/0012> <https://example.org/entities/0002>))
+
+# Class: <https://example.net/entities/0113> (<https://example.net/entities/0113>)
+
+EquivalentClasses(<https://example.net/entities/0113> ObjectIntersectionOf(<https://example.com/entities/0003> <https://example.org/entities/0013>))
+
+# Class: <https://example.org/entities/0001> (<https://example.org/entities/0001>)
+
+AnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasDbXref> <https://example.org/entities/0001> "COMENT:0011")
+
+# Class: <https://example.org/entities/0002> (<https://example.org/entities/0002>)
+
+AnnotationAssertion(<http://www.geneontology.org/formats/oboInOwl#hasDbXref> <https://example.org/entities/0002> "COMENT:0012")
+
+
+)
