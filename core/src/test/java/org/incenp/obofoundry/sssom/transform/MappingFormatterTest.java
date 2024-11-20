@@ -105,6 +105,22 @@ public class MappingFormatterTest {
     }
 
     @Test
+    void testChainingModifiers() {
+        formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
+        formatter.setModifier(new UppercaseModifier());
+        formatter.setModifier(new ModifierWithArgs());
+
+        IMappingTransformer<String> f;
+        Mapping m = getSampleMapping();
+
+        f = formatter.getTransformer("%{subject_label|upper|with_args(abc)}");
+        Assertions.assertEquals("with_args(ALICE, abc)", f.transform(m));
+
+        f = formatter.getTransformer("%{subject_label|with_args(def)|upper}");
+        Assertions.assertEquals("WITH_ARGS(ALICE, DEF)", f.transform(m));
+    }
+
+    @Test
     void testModifierErrors() {
         formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
         formatter.setModifier(new UppercaseModifier());

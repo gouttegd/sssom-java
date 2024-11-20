@@ -300,53 +300,13 @@ public class MappingFormatter {
     }
 
     /*
-     * Gets the transformer for a format specified accompanied by a modifier
-     * function.
-     */
-    private IMappingTransformer<String> getTransformer(String name, String modifier, List<String> arguments) {
-        IMappingTransformer<String> transformer = getTransformer(name, false);
-        ISSSOMTFunction<String> modFunction = modifiers.get(modifier);
-        if ( modFunction == null ) {
-            throw new IllegalArgumentException(String.format("Unknown modifier function: %s", modifier));
-        }
-
-        // Check arguments against the signature
-        StringBuilder sb = new StringBuilder();
-        sb.append('S');
-        int nArgs = arguments.size();
-        for ( int i = 0; i < nArgs; i++ ) {
-            sb.append('S');
-        }
-        if ( !Pattern.matches(modFunction.getSignature(), sb) ) {
-            throw new IllegalArgumentException(String.format("Invalid call for function %s", modifier));
-        }
-
-        return (mapping) -> {
-            ArrayList<String> args = new ArrayList<String>();
-            args.add(transformer.transform(mapping));
-            for ( String argument : arguments ) {
-                args.add(argument);
-            }
-            try {
-                return modFunction.call(args, new HashMap<String, String>());
-            } catch ( SSSOMTransformError e ) {
-                return args.get(0);
-            }
-        };
-    }
-
-    /*
      * Actual parsing of the format string.
      */
     private IMappingTransformer<String> parse(String format) {
-        List<IMappingTransformer<String>> components = new ArrayList<IMappingTransformer<String>>();
-
         int len = format.length();
         ParserState state = ParserState.PLAIN;
         StringBuilder buffer = new StringBuilder();
-        List<String> modifierArgs = null;
-        String name = null;
-        String modifier = null;
+        FormatBuilder fb = new FormatBuilder();
 
         for ( int i = 0; i < len; i++ ) {
             char c = format.charAt(i);
@@ -368,8 +328,7 @@ public class MappingFormatter {
                 } else if ( c == '{' || Character.isLetter(c) ) {
                     // Add current buffer as a plain component
                     if ( buffer.length() > 0 ) {
-                        String component = buffer.toString();
-                        components.add((mapping) -> component);
+                        fb.appendText(buffer.toString());
                         buffer.delete(0, buffer.length());
                     }
                     if ( c == '{' ) {
@@ -389,18 +348,8 @@ public class MappingFormatter {
             case LEGACY_PLACEHOLDER:
                 if ( !(Character.isLetter(c) || c == '_') ) {
                     // End of a (putative) legacy placeholder
-                    name = buffer.toString();
+                    fb.appendLegacyTransformer(buffer.toString());
                     buffer.delete(0, buffer.length());
-                    IMappingTransformer<String> component = getTransformer(name, true);
-                    if ( component != null ) {
-                        components.add(component);
-                    } else {
-                        // This was not a valid legacy placeholder, re-insert it into the buffer (with
-                        // the initial '%') and treat as plain
-                        buffer.append('%');
-                        buffer.append(name);
-                    }
-
                     buffer.append(c);
                     state = ParserState.PLAIN;
                 } else {
@@ -410,15 +359,13 @@ public class MappingFormatter {
 
             case PLACEHOLDER:
                 if ( c == '}' ) {
-                    name = buffer.toString();
+                    fb.appendTransformer(buffer.toString());
                     buffer.delete(0, buffer.length());
-                    components.add(getTransformer(name, false));
                     state = ParserState.PLAIN;
                 } else if ( c == '|' ) {
-                    name = buffer.toString();
+                    fb.appendTransformer(buffer.toString());
                     buffer.delete(0, buffer.length());
                     state = ParserState.MODIFIER;
-                    modifierArgs = new ArrayList<String>();
                 } else {
                     buffer.append(c);
                 }
@@ -426,14 +373,16 @@ public class MappingFormatter {
 
             case MODIFIER:
                 if ( c == '}' ) {
-                    modifier = buffer.toString();
+                    fb.appendModifier(buffer.toString());
                     buffer.delete(0, buffer.length());
-                    components.add(getTransformer(name, modifier, modifierArgs));
                     state = ParserState.PLAIN;
                 } else if ( c == '(' ) {
-                    modifier = buffer.toString();
+                    fb.appendModifier(buffer.toString());
                     buffer.delete(0, buffer.length());
                     state = ParserState.MODIFIER_ARGUMENT_LIST;
+                } else if ( c == '|' ) {
+                    fb.appendModifier(buffer.toString());
+                    buffer.delete(0, buffer.length());
                 } else {
                     buffer.append(c);
                 }
@@ -442,12 +391,12 @@ public class MappingFormatter {
             case MODIFIER_ARGUMENT_LIST:
                 if ( c == ')' ) {
                     if ( buffer.length() > 0 ) {
-                        modifierArgs.add(buffer.toString().trim());
+                        fb.appendModifierArgument(buffer.toString().trim());
                     }
                     buffer.delete(0, buffer.length());
                     state = ParserState.MODIFIER_END_ARGUMENT_LIST;
                 } else if ( c == ',' ) {
-                    modifierArgs.add(buffer.toString().trim());
+                    fb.appendModifierArgument(buffer.toString().trim());
                     buffer.delete(0, buffer.length());
                 } else {
                     buffer.append(c);
@@ -456,8 +405,9 @@ public class MappingFormatter {
 
             case MODIFIER_END_ARGUMENT_LIST:
                 if ( c == '}' ) {
-                    components.add(getTransformer(name, modifier, modifierArgs));
                     state = ParserState.PLAIN;
+                } else if ( c == '|' ) {
+                    state = ParserState.MODIFIER;
                 } else if ( !Character.isWhitespace(c) ) {
                     throw new IllegalArgumentException("Extra text after modifier call");
                 }
@@ -468,23 +418,13 @@ public class MappingFormatter {
         // Deal with last component that may still be in the buffer
         if ( buffer.length() > 0 ) {
             if ( state == ParserState.LEGACY_PLACEHOLDER ) {
-                IMappingTransformer<String> transformer = getTransformer(buffer.toString(), true);
-                if ( transformer != null ) {
-                    components.add(transformer);
-                } else {
-                    // Unrecognised legacy placeholder, re-insert initial '%' and treat as plain
-                    buffer.insert(0, '%');
-                    String last = buffer.toString();
-                    components.add((mapping) -> last);
-                }
+                fb.appendLegacyTransformer(buffer.toString());
             } else if ( state == ParserState.PLAIN ) {
-                String last = buffer.toString();
-                components.add((mapping) -> last);
+                fb.appendText(buffer.toString());
             } else if ( state == ParserState.PERCENT ) {
                 // String terminated on '%'
                 buffer.append('%');
-                String last = buffer.toString();
-                components.add((mapping) -> last);
+                fb.appendText(buffer.toString());
             } else {
                 // Format string ended in the middle of a bracketed placeholder
                 throw new IllegalArgumentException("Unterminated placeholder in format string");
@@ -493,21 +433,9 @@ public class MappingFormatter {
             throw new IllegalArgumentException("Unterminated placeholder in format string");
         }
 
-        // Assemble the final transformer object
-        IMappingTransformer<String> transformer;
-        if ( components.size() == 1 ) {
-            transformer = components.get(0);
-        } else {
-            transformer = (mapping) -> {
-                StringBuilder sb = new StringBuilder();
-                for ( IMappingTransformer<String> component : components ) {
-                    sb.append(component.transform(mapping));
-                }
-                return sb.toString();
-            };
-        }
+        fb.validate();
 
-        return transformer;
+        return fb;
     }
 
     /*
@@ -544,5 +472,214 @@ public class MappingFormatter {
         MODIFIER,
         MODIFIER_ARGUMENT_LIST,
         MODIFIER_END_ARGUMENT_LIST
+    }
+
+    /*
+     * Helper classes to represent the elements that make up a format string.
+     */
+
+    /*
+     * A call to a modifier function with its arguments.
+     */
+    private class Modifier {
+        ISSSOMTFunction<String> function;
+        List<String> arguments;
+
+        Modifier(ISSSOMTFunction<String> modifier) {
+            function = modifier;
+            arguments = new ArrayList<String>();
+        }
+    }
+
+    /*
+     * A building block of a format string. Either a text fragment that should be
+     * produced verbatim, or a transformer that must be invoked to obtain the text
+     * to produce.
+     */
+    private class Component {
+        String text;
+        IMappingTransformer<String> transformer;
+        List<Modifier> modifiersList;
+        int nModifiers = 0;
+
+        /*
+         * Creates a text component.
+         */
+        Component(String text) {
+            this.text = text;
+        }
+
+        /*
+         * Creates a transformer component.
+         */
+        Component(IMappingTransformer<String> transformer) {
+            this.transformer = transformer;
+            modifiersList = new ArrayList<Modifier>();
+        }
+
+        /*
+         * Adds a modifier to the last added component.
+         */
+        void addModifier(ISSSOMTFunction<String> modifier) {
+            if ( modifiersList == null ) {
+                throw new AssertionError("Parser error: modifier added without a transformer");
+            }
+            modifiersList.add(new Modifier(modifier));
+            nModifiers += 1;
+        }
+
+        /*
+         * Adds an argument to the last added modifier.
+         */
+        void addModifierArgument(String argument) {
+            if ( modifiersList == null || nModifiers > modifiersList.size() ) {
+                throw new AssertionError("Parser error: argument added without a modifier");
+            }
+            modifiersList.get(nModifiers - 1).arguments.add(argument);
+        }
+    }
+
+    /*
+     * Represents the "compiled" version of a format string, as a list of format
+     * components.
+     */
+    private class FormatBuilder implements IMappingTransformer<String> {
+        List<Component> components;
+        int nComponents;
+
+        /*
+         * Initialises the format string.
+         */
+        FormatBuilder() {
+            components = new ArrayList<Component>();
+            nComponents = 0;
+        }
+
+        /*
+         * Appends a verbatim text fragment.
+         */
+        void appendText(String text) {
+            components.add(new Component(text));
+            nComponents += 1;
+        }
+
+        /*
+         * Tries appending a legacy transformer; if the provided name is not the name of
+         * a valid legacy placeholder, it is added as a verbatim text component
+         * (preceded with a '%' character).
+         */
+        void appendLegacyTransformer(String name) {
+            IMappingTransformer<String> transformer = getTransformer(name, true);
+            if ( transformer != null ) {
+                components.add(new Component(transformer));
+            } else {
+                components.add(new Component("%" + name));
+            }
+            nComponents += 1;
+        }
+
+        /*
+         * Appends a transformer component.
+         */
+        void appendTransformer(String name) {
+            components.add(new Component(getTransformer(name, false)));
+            nComponents += 1;
+        }
+
+        /*
+         * Appends a modifier to the last added component.
+         */
+        void appendModifier(String name) {
+            if ( nComponents > components.size() ) {
+                throw new AssertionError("Parser error: modifier added without a component");
+            }
+            ISSSOMTFunction<String> modifier = modifiers.get(name);
+            if ( modifier == null ) {
+                throw new IllegalArgumentException(String.format("Unknown modifier: %s", name));
+            }
+            components.get(nComponents - 1).addModifier(modifier);
+        }
+
+        /*
+         * Appends an argument to the last added modifier.
+         */
+        void appendModifierArgument(String argument) {
+            if ( nComponents > components.size() ) { // Should not happen
+                throw new AssertionError("Parser error: argument added without a component");
+            }
+            components.get(nComponents - 1).addModifierArgument(argument);
+        }
+
+        /*
+         * Ensure that all modifier functions called within this object are called with
+         * the expected number of arguments.
+         */
+        void validate() {
+            for ( Component c : components ) {
+                if ( c.transformer != null ) {
+                    for ( Modifier m : c.modifiersList ) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append('S');
+                        int nArgs = m.arguments.size();
+                        for ( int i = 0; i < nArgs; i++ ) {
+                            sb.append('S');
+                        }
+                        if ( !Pattern.matches(m.function.getSignature(), sb) ) {
+                            throw new IllegalArgumentException(
+                                    String.format("Invalid call for function %s", m.function.getName()));
+                        }
+                    }
+                }
+            }
+        }
+
+        /*
+         * Applies the format string to a mapping.
+         */
+        @Override
+        public String transform(Mapping mapping) {
+
+            /*
+             * Avoid going through the loop below if there is only component that does not
+             * call any function.
+             */
+            if ( components.size() == 1 ) {
+                Component c = components.get(0);
+                if ( c.text != null ) {
+                    return c.text;
+                } else if ( c.nModifiers == 0 ) {
+                    return c.transformer.transform(mapping);
+                }
+            }
+
+            /*
+             * Builds the string by assembling all the components, calling the modifier
+             * functions as needed.
+             */
+            StringBuilder sb = new StringBuilder();
+            for ( Component component : components ) {
+                if ( component.text != null ) {
+                    sb.append(component.text);
+                } else {
+                    String value = component.transformer.transform(mapping);
+
+                    for ( Modifier modifier : component.modifiersList ) {
+                        ArrayList<String> arguments = new ArrayList<String>();
+                        arguments.add(value);
+                        for ( String argument : modifier.arguments ) {
+                            arguments.add(argument);
+                        }
+                        try {
+                            value = modifier.function.call(arguments, new HashMap<String, String>());
+                        } catch ( SSSOMTransformError e ) {
+                        }
+                    }
+
+                    sb.append(value);
+                }
+            }
+
+            return sb.toString();
+        }
     }
 }
