@@ -74,6 +74,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
     private HashMap<String, IMappingTransformer<Object>> values = new HashMap<String, IMappingTransformer<Object>>();
     private SlotHelper<Mapping> slotHelper = null;
     private PrefixManager pm;
+    private Mapping sourceMapping;
 
     static {
         for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
@@ -102,6 +103,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
     @Override
     public Mapping transform(Mapping mapping) {
         Mapping edited = mapping.toBuilder().build();
+        sourceMapping = mapping;
         getHelper().visitSlots(edited, this, true);
         return edited;
     }
@@ -109,7 +111,7 @@ public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVi
     @Override
     public Void visit(Slot<Mapping> slot, Mapping object, Object value) {
         if ( values.containsKey(slot.getName()) ) {
-            slot.setValue(object, values.get(slot.getName()).transform(object));
+            slot.setValue(object, values.get(slot.getName()).transform(sourceMapping));
         }
         return null;
     }
