@@ -160,6 +160,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
     public void onInit(PrefixManager prefixManager) {
         pfxMgr = prefixManager;
 
+        formatter.setPrefixManager(prefixManager);
         formatter.setStandardSubstitutions();
         formatter.setModifier(new SSSOMTShortFunction(pfxMgr));
 

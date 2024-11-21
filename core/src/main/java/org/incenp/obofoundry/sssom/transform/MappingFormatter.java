@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
@@ -74,6 +75,18 @@ public class MappingFormatter {
     private Map<String, IMappingTransformer<String>> placeholders = new HashMap<String, IMappingTransformer<String>>();
     private Map<String, IMappingTransformer<String>> cache = new HashMap<String, IMappingTransformer<String>>();
     private Map<String, ISSSOMTFunction<String>> modifiers = new HashMap<String, ISSSOMTFunction<String>>();
+
+    private PrefixManager pfxMgr;
+
+    /**
+     * Sets the prefix manager to use when attempting to resolve a placeholder name
+     * into the name of an extension slot.
+     * 
+     * @param prefixManager The prefix manager.
+     */
+    public void setPrefixManager(PrefixManager prefixManager) {
+        pfxMgr = prefixManager;
+    }
 
     /**
      * Defines a simple placeholder text to be substituted by a mapping-derived
@@ -286,6 +299,9 @@ public class MappingFormatter {
             transformer = (mapping) -> {
                 if ( mapping.getExtensions() != null ) {
                     ExtensionValue ev = mapping.getExtensions().get(name);
+                    if ( ev == null && pfxMgr != null ) {
+                        ev = mapping.getExtensions().get(pfxMgr.expandIdentifier(name));
+                    }
                     if ( ev != null ) {
                         return ev.toString();
                     }

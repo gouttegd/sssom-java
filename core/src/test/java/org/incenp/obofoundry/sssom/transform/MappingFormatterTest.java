@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
@@ -258,6 +259,13 @@ public class MappingFormatterTest {
 
         Assertions.assertEquals("bar: extended value",
                 formatter.getTransformer("bar: %{https://example.org/properties/barProperty}").transform(m));
+
+        PrefixManager pfxMgr = new PrefixManager();
+        pfxMgr.add("EXPROP", "https://example.org/properties/");
+        formatter.setPrefixManager(pfxMgr);
+
+        Assertions.assertEquals("bar: extended value",
+                formatter.getTransformer("bar: %{EXPROP:barProperty}").transform(m));
     }
 
     private Mapping getSampleMapping() {
