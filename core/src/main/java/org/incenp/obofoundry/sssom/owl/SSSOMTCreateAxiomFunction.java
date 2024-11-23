@@ -18,12 +18,15 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.transform.IFormatModifierFunction;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.ISSSOMTFunction;
+import org.incenp.obofoundry.sssom.transform.SSSOMTFormatFunction;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
@@ -48,6 +51,15 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * </pre>
  * 
  * <p>
+ * Note that un-bracketed placeholders, if used, are automatically formatted
+ * with enclosing angled brackets, for convenience, so the following call is
+ * equivalent to the call above:
+ * 
+ * <pre>
+ * create_axiom("%subject_id EquivalentTo: %object_id");
+ * </pre>
+ * 
+ * <p>
  * The function also accepts an optional <code>/annots=...</code> parameter; if
  * present, it should be a list of SSSOM metadata fields that should be used to
  * annotate the generated axiom.
@@ -58,6 +70,8 @@ public class SSSOMTCreateAxiomFunction
     private SSSOMTOwlApplication app;
     private ManchesterOWLSyntaxParser manParser;
     private IMappingTransformer<String> expr;
+    private IFormatModifierFunction defaultModifier;
+    private List<String> defaultModifierArgs;
 
     /**
      * Creates a new instance.
@@ -71,6 +85,10 @@ public class SSSOMTCreateAxiomFunction
         manParser = new ManchesterOWLSyntaxParserImpl(() -> config,
                 app.getOntology().getOWLOntologyManager().getOWLDataFactory());
         manParser.setOWLEntityChecker(app.getEntityChecker());
+
+        defaultModifier = new SSSOMTFormatFunction();
+        defaultModifierArgs = new ArrayList<String>();
+        defaultModifierArgs.add("<%s>");
     }
 
     private SSSOMTCreateAxiomFunction(SSSOMTOwlApplication application, ManchesterOWLSyntaxParser parser,
@@ -97,7 +115,7 @@ public class SSSOMTCreateAxiomFunction
         IMappingTransformer<OWLAxiom> t = null;
 
         try {
-            expr = app.getFormatter().getTransformer(text);
+            expr = app.getFormatter().getTransformer(text, defaultModifier, defaultModifierArgs);
             testParse(expr);
             t = new SSSOMTCreateAxiomFunction(app, manParser, expr);
         } catch ( OWLParserException e ) {

@@ -259,7 +259,7 @@ public class MappingFormatter {
     public String format(String format, Mapping mapping) {
         IMappingTransformer<String> transformer = cache.get(format);
         if ( transformer == null ) {
-            transformer = parse(format);
+            transformer = parse(format, null, null);
             cache.put(format, transformer);
         }
 
@@ -279,7 +279,28 @@ public class MappingFormatter {
      *                                  specifiers.
      */
     public IMappingTransformer<String> getTransformer(String format) {
-        return parse(format);
+        return parse(format, null, null);
+    }
+
+    /**
+     * Gets a mapping transformer that can directly create a formatted string from a
+     * mapping by application of all the substitutions defined in this object.
+     * 
+     * @param format            The format string containing placeholders to
+     *                          substitute by mapping-derived values.
+     * @param defaultModifier   A default modifier function to apply to all simple
+     *                          (un-bracketed) placeholders. May be {@code null}.
+     * @param modifierArguments Arguments to the default modifier function, if any.
+     *                          May be {@code null}.
+     * @return A mapping transformer that can transform a mapping into a formatted
+     *         string.
+     * 
+     * @throws IllegalArgumentException If the format string contains invalid format
+     *                                  specifiers.
+     */
+    public IMappingTransformer<String> getTransformer(String format, IFormatModifierFunction defaultModifier,
+            List<String> modifierArguments) {
+        return parse(format, defaultModifier, modifierArguments);
     }
 
     /*
@@ -316,7 +337,8 @@ public class MappingFormatter {
     /*
      * Actual parsing of the format string.
      */
-    private IMappingTransformer<String> parse(String format) {
+    private IMappingTransformer<String> parse(String format, IFormatModifierFunction defaultModifier,
+            List<String> modifierArguments) {
         int len = format.length();
         ParserState state = ParserState.PLAIN;
         StringBuilder buffer = new StringBuilder();
@@ -362,7 +384,7 @@ public class MappingFormatter {
             case LEGACY_PLACEHOLDER:
                 if ( !(Character.isLetter(c) || c == '_') ) {
                     // End of a (putative) legacy placeholder
-                    fb.appendLegacyTransformer(buffer.toString());
+                    fb.appendLegacyTransformer(buffer.toString(), defaultModifier, modifierArguments);
                     buffer.delete(0, buffer.length());
                     buffer.append(c);
                     state = ParserState.PLAIN;
@@ -474,7 +496,7 @@ public class MappingFormatter {
         // Deal with last component that may still be in the buffer
         if ( buffer.length() > 0 ) {
             if ( state == ParserState.LEGACY_PLACEHOLDER ) {
-                fb.appendLegacyTransformer(buffer.toString());
+                fb.appendLegacyTransformer(buffer.toString(), defaultModifier, modifierArguments);
             } else if ( state == ParserState.PLAIN ) {
                 fb.appendText(buffer.toString());
             } else if ( state == ParserState.PERCENT ) {
@@ -603,10 +625,19 @@ public class MappingFormatter {
          * a valid legacy placeholder, it is added as a verbatim text component
          * (preceded with a '%' character).
          */
-        void appendLegacyTransformer(String name) {
+        void appendLegacyTransformer(String name, IFormatModifierFunction modifier, List<String> modifierArguments) {
             IMappingTransformer<Object> transformer = getTransformer(name, true);
             if ( transformer != null ) {
-                components.add(new Component(transformer));
+                Component component = new Component(transformer);
+                if ( modifier != null ) {
+                    component.addModifier(modifier);
+                    if ( modifierArguments != null ) {
+                        for ( String argument : modifierArguments ) {
+                            component.addModifierArgument(argument);
+                        }
+                    }
+                }
+                components.add(component);
             } else {
                 components.add(new Component("%" + name));
             }

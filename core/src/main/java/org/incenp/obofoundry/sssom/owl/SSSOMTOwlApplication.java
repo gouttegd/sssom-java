@@ -92,8 +92,8 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         // Old-style substitutions for compatibility with previous implementation
         fmt.addSubstitution("subject_label", (m) -> getSubjectLabel(m));
         fmt.addSubstitution("object_label", (m) -> getObjectLabel(m));
-        fmt.addSubstitution("subject_id", (m) -> String.format("<%s>", m.getSubjectId()));
-        fmt.addSubstitution("object_id", (m) -> String.format("<%s>", m.getObjectId()));
+        fmt.addSubstitution("subject_id", (m) -> m.getSubjectId());
+        fmt.addSubstitution("object_id", (m) -> m.getObjectId());
         fmt.addSubstitution("subject_curie", (m) -> prefixManager.shortenIdentifier(m.getSubjectId()));
         fmt.addSubstitution("object_curie", (m) -> prefixManager.shortenIdentifier(m.getObjectId()));
 
