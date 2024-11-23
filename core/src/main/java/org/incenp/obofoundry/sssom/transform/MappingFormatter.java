@@ -403,17 +403,59 @@ public class MappingFormatter {
                 break;
 
             case MODIFIER_ARGUMENT_LIST:
-                if ( c == ')' ) {
+                if ( c == '\'' ) {
+                    state = ParserState.MODIFIER_SINGLE_QUOTED_ARGUMENT;
+                } else if ( c == '"' ) {
+                    state = ParserState.MODIFIER_DOUBLE_QUOTED_ARGUMENT;
+                } else if ( c == ')' ) {
+                    state = ParserState.MODIFIER_END_ARGUMENT_LIST;
+                } else if ( c != ',' && !Character.isWhitespace(c) ) {
+                    buffer.append(c);
+                    state = ParserState.MODIFIER_UNQUOTED_ARGUMENT;
+                }
+                break;
+
+            case MODIFIER_UNQUOTED_ARGUMENT:
+                if ( c == ',' ) {
+                    fb.appendModifierArgument(buffer.toString());
+                    buffer.delete(0, buffer.length());
+                    state = ParserState.MODIFIER_ARGUMENT_LIST;
+                } else if ( c == ')' ) {
                     if ( buffer.length() > 0 ) {
-                        fb.appendModifierArgument(buffer.toString().trim());
+                        fb.appendModifierArgument(buffer.toString());
                     }
                     buffer.delete(0, buffer.length());
                     state = ParserState.MODIFIER_END_ARGUMENT_LIST;
-                } else if ( c == ',' ) {
-                    fb.appendModifierArgument(buffer.toString().trim());
-                    buffer.delete(0, buffer.length());
                 } else {
                     buffer.append(c);
+                }
+                break;
+
+            case MODIFIER_SINGLE_QUOTED_ARGUMENT:
+                if ( c == '\'' ) {
+                    fb.appendModifierArgument(buffer.toString());
+                    buffer.delete(0, buffer.length());
+                    state = ParserState.MODIFIER_POST_QUOTED_ARGUMENT;
+                } else {
+                    buffer.append(c);
+                }
+                break;
+
+            case MODIFIER_DOUBLE_QUOTED_ARGUMENT:
+                if ( c == '"' ) {
+                    fb.appendModifierArgument(buffer.toString());
+                    buffer.delete(0, buffer.length());
+                    state = ParserState.MODIFIER_POST_QUOTED_ARGUMENT;
+                } else {
+                    buffer.append(c);
+                }
+                break;
+
+            case MODIFIER_POST_QUOTED_ARGUMENT:
+                if ( c == ',' ) {
+                    state = ParserState.MODIFIER_ARGUMENT_LIST;
+                } else if ( c == ')' ) {
+                    state = ParserState.MODIFIER_END_ARGUMENT_LIST;
                 }
                 break;
 
@@ -460,6 +502,10 @@ public class MappingFormatter {
         PLACEHOLDER,
         MODIFIER,
         MODIFIER_ARGUMENT_LIST,
+        MODIFIER_UNQUOTED_ARGUMENT,
+        MODIFIER_SINGLE_QUOTED_ARGUMENT,
+        MODIFIER_DOUBLE_QUOTED_ARGUMENT,
+        MODIFIER_POST_QUOTED_ARGUMENT,
         MODIFIER_END_ARGUMENT_LIST
     }
 

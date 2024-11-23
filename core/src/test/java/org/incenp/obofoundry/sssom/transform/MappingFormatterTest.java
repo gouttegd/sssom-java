@@ -98,11 +98,11 @@ public class MappingFormatterTest {
         f = formatter.getTransformer("Another: %{subject_label|with_args(ghi)}");
         Assertions.assertEquals("Another: with_args(alice, ghi)", f.transform(m));
 
-        f = formatter.getTransformer("One: %{subject_label|with_args(abc)}, Two: %{subject_label|with_args(def)}");
+        f = formatter.getTransformer("One: %{subject_label|with_args(\"abc\")}, Two: %{subject_label|with_args(def)}");
         Assertions.assertEquals("One: with_args(alice, abc), Two: with_args(alice, def)", f.transform(m));
 
-        f = formatter.getTransformer("%{subject_label|with_args(,abc, , )}");
-        Assertions.assertEquals("with_args(alice, , abc, , )", f.transform(m));
+        f = formatter.getTransformer("%{subject_label|with_args('', abc, 'd,e f', '')}");
+        Assertions.assertEquals("with_args(alice, , abc, d,e f, )", f.transform(m));
     }
 
     @Test
