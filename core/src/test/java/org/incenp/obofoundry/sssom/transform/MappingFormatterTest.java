@@ -43,32 +43,31 @@ public class MappingFormatterTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
     void testSimpleLegacyExpansion() {
-        formatter.addSubstitution("subject", (m) -> m.getSubjectId());
+        formatter.setSubstitution("subject", (m) -> m.getSubjectId());
 
         IMappingTransformer<String> f = formatter.getTransformer("Subject is <%subject>");
         Assertions.assertEquals("Subject is <https://example.org/entities/0001>", f.transform(getSampleMapping()));
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testMixedExpansion() {
-        formatter.setSubstitution("subject_id", (m) -> m.getSubjectId());
-        formatter.addSubstitution("subject_label", (m) -> m.getSubjectLabel());
+    void testPlaceholderWithNonLetters() {
+        formatter.setSubstitution("the-subject", (m) -> m.getSubjectLabel());
 
-        IMappingTransformer<String> f = formatter.getTransformer("%{subject_id} = %subject_label");
-        Assertions.assertEquals("https://example.org/entities/0001 = alice", f.transform(getSampleMapping()));
+        IMappingTransformer<String> f = formatter.getTransformer("Subject is %{the-subject}");
+        Assertions.assertEquals("Subject is alice", f.transform(getSampleMapping()));
+
+        f = formatter.getTransformer("Subject is %the-subject");
+        Assertions.assertEquals("Subject is %the-subject", f.transform(getSampleMapping()));
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testDifferentExpansionInOpenOrBracketedMode() {
+    void testMixedExpansion() {
+        formatter.setSubstitution("subject_id", (m) -> m.getSubjectId());
         formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
-        formatter.addSubstitution("subject_label", (m) -> m.getSubjectLabel().toUpperCase());
 
-        IMappingTransformer<String> f = formatter.getTransformer("%subject_label %{subject_label}");
-        Assertions.assertEquals("ALICE alice", f.transform(getSampleMapping()));
+        IMappingTransformer<String> f = formatter.getTransformer("%{subject_id} = %subject_label");
+        Assertions.assertEquals("https://example.org/entities/0001 = alice", f.transform(getSampleMapping()));
     }
 
     @Test
@@ -134,10 +133,8 @@ public class MappingFormatterTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
     void testPercentEscape() {
         formatter.setSubstitution("subject_label", (m) -> m.getSubjectLabel());
-        formatter.addSubstitution("subject_label", (m) -> m.getSubjectLabel());
         Mapping mapping = getSampleMapping();
 
         IMappingTransformer<String> f = formatter.getTransformer("%%{subject_label}");
@@ -193,13 +190,10 @@ public class MappingFormatterTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
     void testIllegalValues() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.setSubstitution("sub|", null),
                 "Invalid placeholder name");
         Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.setSubstitution("sub}", null),
-                "Invalid placeholder name");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> formatter.addSubstitution("su:", null),
                 "Invalid placeholder name");
     }
 

@@ -90,12 +90,8 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         fmt.setSubstitution("object_label", (m) -> getObjectLabel(m));
 
         // Old-style substitutions for compatibility with previous implementation
-        fmt.addSubstitution("subject_label", (m) -> getSubjectLabel(m));
-        fmt.addSubstitution("object_label", (m) -> getObjectLabel(m));
-        fmt.addSubstitution("subject_id", (m) -> m.getSubjectId());
-        fmt.addSubstitution("object_id", (m) -> m.getObjectId());
-        fmt.addSubstitution("subject_curie", (m) -> prefixManager.shortenIdentifier(m.getSubjectId()));
-        fmt.addSubstitution("object_curie", (m) -> prefixManager.shortenIdentifier(m.getObjectId()));
+        fmt.setSubstitution("subject_curie", (m) -> prefixManager.shortenIdentifier(m.getSubjectId()));
+        fmt.setSubstitution("object_curie", (m) -> prefixManager.shortenIdentifier(m.getObjectId()));
 
         // Current SSSOM/T-Owl functions
         registerDirective(new SSSOMTDeclareFunction(this));

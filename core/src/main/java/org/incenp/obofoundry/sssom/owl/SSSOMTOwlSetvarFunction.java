@@ -29,13 +29,8 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 /**
  * Represents the SSSOM/T-Owl variant of the SSSOM/T directive "set_var".
  * <p>
- * This function overrides the standard SSSOM/T directive to:
- * <ul>
- * <li>make it possible to refer to a declared variable using “old-style”,
- * unbracketed placeholders (e.g., <code>%MY_VAR</code> instead of
- * <code>%{MY_VAR}</code>);
- * <li>support the 3-argument form, for backwards compatibility.
- * </ul>
+ * This function overrides the standard SSSOM/T directive to support the
+ * 3-argument form, for backwards compatibility.
  * <p>
  * The standard, 2-argument form is used in the same way as the standard SSSOM/T
  * function: it expects the name of the variable to define, and its default
@@ -78,7 +73,6 @@ public class SSSOMTOwlSetvarFunction implements ISSSOMTFunction<Void> {
         if ( arguments.size() == 2 ) {
             app.getVariableManager().addVariable(name, value);
             app.getFormatter().setSubstitution(name, app.getVariableManager().getTransformer(name));
-            app.getFormatter().addSubstitution(name, app.getVariableManager().getTransformer(name));
         } else {
             String condition = arguments.get(2);
             String[] parts = condition.split(" ", 3);

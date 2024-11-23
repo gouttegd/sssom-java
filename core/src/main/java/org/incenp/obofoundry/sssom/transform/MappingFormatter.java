@@ -33,7 +33,8 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * <p>
  * This class is intended to facilitate the creation of strings that may contain
  * values derived from mappings, using ”format specifiers” of the form
- * <code>%{placeholder}</code>.
+ * <code>%{placeholder}</code> (or <code>%placeholder</code>, but generally the
+ * “bracketed” form should be preferred).
  * <p>
  * For example, this initialises a formatter that can substitute
  * <code>%{predicate}</code> and <code>%{justification}</code> in a string by
@@ -67,9 +68,6 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  */
 public class MappingFormatter {
 
-    private static final Pattern legacyPlaceholderNamePattern = Pattern.compile("^[a-zA-Z][a-zA-Z_]+$");
-
-    private Map<String, IMappingTransformer<Object>> legacyPlaceholders = new HashMap<String, IMappingTransformer<Object>>();
     private Map<String, IMappingTransformer<Object>> placeholders = new HashMap<String, IMappingTransformer<Object>>();
     private Map<String, IMappingTransformer<String>> cache = new HashMap<String, IMappingTransformer<String>>();
     private Map<String, IFormatModifierFunction> modifiers = new HashMap<String, IFormatModifierFunction>();
@@ -87,53 +85,26 @@ public class MappingFormatter {
     }
 
     /**
-     * Defines a simple placeholder text to be substituted by a mapping-derived
-     * value if it is preceded by a single '%' character in a format string.
-     * <p>
-     * This is for compatibility with earlier versions of SSSOM/T-OWL only, which
-     * specifically allowed the use of a few placeholders like
-     * <code>%subject_id</code>. The use of such placeholders is deprecated in
-     * favour of the “bracketed” placeholders (<code>%{subject_id}</code>) that may
-     * be defined using {@link #setSubstitution(String, IMappingTransformer)}.
-     * <p>
-     * The placeholder must comprises only letters and underscores, and cannot start
-     * with an underscore.
-     * 
-     * @param placeholder The placeholder value to find and replace in a text.
-     * @param transformer The transformer to produce the value the placeholder
-     *                    should be replaced with.
-     * @throws IllegalArgumentException If the placeholder name contains characters
-     *                                  other than letters and underscores.
-     * 
-     * @deprecated Use {@link #setSubstitution(String, IMappingTransformer)}
-     *             instead, unless you need expansion of un-bracketed placeholders
-     *             for backwards compatibility.
-     */
-    @Deprecated
-    public void addSubstitution(String placeholder, IMappingTransformer<Object> transformer) {
-        // The earlier, SSSOM/T-OWL-specific implementation expected the leading '%' to
-        // be supplied by the caller. For compatibility, we still allow that here, so we
-        // must remove any leading '%'.
-        if ( placeholder.length() > 1 && placeholder.charAt(0) == '%' ) {
-            placeholder = placeholder.substring(1);
-        }
-        if ( !legacyPlaceholderNamePattern.matcher(placeholder).matches() ) {
-            throw new IllegalArgumentException("Invalid placeholder name");
-        }
-        if ( legacyPlaceholders.containsKey(placeholder) ) {
-            cache.clear();
-        }
-        legacyPlaceholders.put(placeholder, transformer);
-	}
-
-    /**
      * Defines a placeholder text to be substituted by a value derived from a
      * mapping.
      * <p>
-     * The placeholder will be recognised within a format string if it is found
-     * within curly brackets preceded by a single '%' character, as in
-     * <code>%{placeholder}</code>. The placeholder cannot contain a '}' character
-     * or a '|' character.
+     * The placeholder will be recognised within a format string if it is found:
+     * <ul>
+     * <li>within curly backets preceded by a single '%' character, as in
+     * <code>%{placeholder}</code>, or
+     * <li>simply preceded by a single '%' character, as in
+     * <code>%placeholder</code>.
+     * </ul>
+     * <p>
+     * The placeholder cannot contain a '{' or a '|' character.
+     * <p>
+     * Note that in addition, an un-bracketed placeholder can only be recognised if
+     * it starts with a letter, and contains only letters and underscores. So while
+     * it is possible to define a placeholder named, for example,
+     * <code>my-placeholder</code>, such a placeholder can only be used with the
+     * bracketed form (<code>%{my-placeholder}</code>); <code>%my-placeholder</code>
+     * would be interpreted as the placeholder <code>my</code> (if such a
+     * placeholder exists) followed by the plain string <code>-placeholder</code>.
      * 
      * @param placeholder The placeholder value that should be substituted by a
      *                    mapping-derived value.
@@ -231,6 +202,8 @@ public class MappingFormatter {
      * If the function does not need any additional argument beyond the mandatory
      * substitution value, the parentheses may be omitted, as in
      * <code>%{placeholder|modifier}</code>.
+     * <p>
+     * Modifier functions can only be used with the bracketed syntax.
      * 
      * @param modifier The modifier function to register.
      */
@@ -310,7 +283,7 @@ public class MappingFormatter {
         IMappingTransformer<Object> transformer = null;
 
         // Lookup in registered placeholder patterns
-        transformer = legacy ? legacyPlaceholders.get(name) : placeholders.get(name);
+        transformer = placeholders.get(name);
 
         // Unregistered placeholder, assume it is the name of an extension field (only
         // for a bracketed, non-legacy placeholder)
