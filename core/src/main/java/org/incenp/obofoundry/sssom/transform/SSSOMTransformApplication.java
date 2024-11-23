@@ -163,6 +163,9 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         formatter.setPrefixManager(prefixManager);
         formatter.setStandardSubstitutions();
         formatter.setModifier(new SSSOMTShortFunction(pfxMgr));
+        formatter.setModifier(new SSSOMTFormatFunction());
+        formatter.setModifier(new SSSOMTListItemFunction());
+        formatter.setModifier(new SSSOMTFlattenFunction());
 
         registerDirective(new SSSOMTSetvarFunction(this));
         registerCallback(new SSSOMTSetvarCallbackFunction(this));
