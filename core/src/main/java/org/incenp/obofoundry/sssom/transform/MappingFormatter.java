@@ -18,8 +18,6 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,10 +69,10 @@ public class MappingFormatter {
 
     private static final Pattern legacyPlaceholderNamePattern = Pattern.compile("^[a-zA-Z][a-zA-Z_]+$");
 
-    private Map<String, IMappingTransformer<String>> legacyPlaceholders = new HashMap<String, IMappingTransformer<String>>();
-    private Map<String, IMappingTransformer<String>> placeholders = new HashMap<String, IMappingTransformer<String>>();
+    private Map<String, IMappingTransformer<Object>> legacyPlaceholders = new HashMap<String, IMappingTransformer<Object>>();
+    private Map<String, IMappingTransformer<Object>> placeholders = new HashMap<String, IMappingTransformer<Object>>();
     private Map<String, IMappingTransformer<String>> cache = new HashMap<String, IMappingTransformer<String>>();
-    private Map<String, ISSSOMTFunction<String>> modifiers = new HashMap<String, ISSSOMTFunction<String>>();
+    private Map<String, IFormatModifierFunction> modifiers = new HashMap<String, IFormatModifierFunction>();
 
     private PrefixManager pfxMgr;
 
@@ -112,7 +110,7 @@ public class MappingFormatter {
      *             for backwards compatibility.
      */
     @Deprecated
-	public void addSubstitution(String placeholder, IMappingTransformer<String> transformer) {
+    public void addSubstitution(String placeholder, IMappingTransformer<Object> transformer) {
         // The earlier, SSSOM/T-OWL-specific implementation expected the leading '%' to
         // be supplied by the caller. For compatibility, we still allow that here, so we
         // must remove any leading '%'.
@@ -145,7 +143,7 @@ public class MappingFormatter {
      * @throws IllegalArgumentException If the placeholder contains illegal
      *                                  characters.
      */
-    public void setSubstitution(String placeholder, IMappingTransformer<String> transformer) {
+    public void setSubstitution(String placeholder, IMappingTransformer<Object> transformer) {
         if ( placeholder.contains("}") || placeholder.contains("|") ) {
             throw new IllegalArgumentException("Invalid placeholder name");
         }
@@ -165,50 +163,50 @@ public class MappingFormatter {
         // This is somewhat cumbersome, but only needs to be done once, so it would not
         // really be worth it to resort to reflection to automatically generate those
         // substitutions.
-        placeholders.put("author_id", (m) -> format(m.getAuthorId()));
-        placeholders.put("author_label", (m) -> format(m.getAuthorLabel()));
-        placeholders.put("comment", (m) -> format(m.getComment()));
-        placeholders.put("confidence", (m) -> format(m.getConfidence()));
-        placeholders.put("creator_id", (m) -> format(m.getCreatorId()));
-        placeholders.put("creator_label", (m) -> format(m.getCreatorLabel()));
-        placeholders.put("curation_rule", (m) -> format(m.getCurationRule()));
-        placeholders.put("curation_rule_text", (m) -> format(m.getCurationRuleText()));
-        placeholders.put("issue_tracker_item", (m) -> format(m.getIssueTrackerItem()));
-        placeholders.put("license", (m) -> format(m.getLicense()));
-        placeholders.put("mapping_cardinality", (m) -> format(m.getMappingCardinality()));
-        placeholders.put("mapping_date", (m) -> format(m.getMappingDate()));
-        placeholders.put("mapping_justification", (m) -> format(m.getMappingJustification()));
-        placeholders.put("mapping_provider", (m) -> format(m.getMappingProvider()));
-        placeholders.put("mapping_source", (m) -> format(m.getMappingSource()));
-        placeholders.put("mapping_tool", (m) -> format(m.getMappingTool()));
-        placeholders.put("mapping_tool_version", (m) -> format(m.getMappingToolVersion()));
-        placeholders.put("match_string", (m) -> format(m.getMatchString()));
-        placeholders.put("object_category", (m) -> format(m.getObjectCategory()));
-        placeholders.put("object_id", (m) -> format(m.getObjectId()));
-        placeholders.put("object_label", (m) -> format(m.getObjectLabel()));
-        placeholders.put("object_match_field", (m) -> format(m.getObjectMatchField()));
-        placeholders.put("object_preprocessing", (m) -> format(m.getObjectPreprocessing()));
-        placeholders.put("object_source", (m) -> format(m.getObjectSource()));
-        placeholders.put("object_source_version", (m) -> format(m.getObjectSourceVersion()));
-        placeholders.put("object_type", (m) -> format(m.getObjectType()));
-        placeholders.put("other", (m) -> format(m.getOther()));
-        placeholders.put("predicate_id", (m) -> format(m.getPredicateId()));
-        placeholders.put("predicate_label", (m) -> format(m.getPredicateLabel()));
-        placeholders.put("predicate_modifier", (m) -> format(m.getPredicateModifier()));
-        placeholders.put("publication_date", (m) -> format(m.getPublicationDate()));
-        placeholders.put("reviewer_id", (m) -> format(m.getReviewerId()));
-        placeholders.put("reviewer_label", (m) -> format(m.getReviewerLabel()));
-        placeholders.put("see_also", (m) -> format(m.getSeeAlso()));
-        placeholders.put("similarity_measure", (m) -> format(m.getSimilarityMeasure()));
-        placeholders.put("similarity_score", (m) -> format(m.getSimilarityScore()));
-        placeholders.put("subject_category", (m) -> format(m.getSubjectCategory()));
-        placeholders.put("subject_id", (m) -> format(m.getSubjectId()));
-        placeholders.put("subject_label", (m) -> format(m.getSubjectLabel()));
-        placeholders.put("subject_match_field", (m) -> format(m.getSubjectMatchField()));
-        placeholders.put("subject_preprocessing", (m) -> format(m.getSubjectPreprocessing()));
-        placeholders.put("subject_source", (m) -> format(m.getSubjectSource()));
-        placeholders.put("subject_source_version", (m) -> format(m.getSubjectSourceVersion()));
-        placeholders.put("subject_type", (m) -> format(m.getSubjectType()));
+        placeholders.put("author_id", (m) -> m.getAuthorId());
+        placeholders.put("author_label", (m) -> m.getAuthorLabel());
+        placeholders.put("comment", (m) -> m.getComment());
+        placeholders.put("confidence", (m) -> m.getConfidence());
+        placeholders.put("creator_id", (m) -> m.getCreatorId());
+        placeholders.put("creator_label", (m) -> m.getCreatorLabel());
+        placeholders.put("curation_rule", (m) -> m.getCurationRule());
+        placeholders.put("curation_rule_text", (m) -> m.getCurationRuleText());
+        placeholders.put("issue_tracker_item", (m) -> m.getIssueTrackerItem());
+        placeholders.put("license", (m) -> m.getLicense());
+        placeholders.put("mapping_cardinality", (m) -> m.getMappingCardinality());
+        placeholders.put("mapping_date", (m) -> m.getMappingDate());
+        placeholders.put("mapping_justification", (m) -> m.getMappingJustification());
+        placeholders.put("mapping_provider", (m) -> m.getMappingProvider());
+        placeholders.put("mapping_source", (m) -> m.getMappingSource());
+        placeholders.put("mapping_tool", (m) -> m.getMappingTool());
+        placeholders.put("mapping_tool_version", (m) -> m.getMappingToolVersion());
+        placeholders.put("match_string", (m) -> m.getMatchString());
+        placeholders.put("object_category", (m) -> m.getObjectCategory());
+        placeholders.put("object_id", (m) -> m.getObjectId());
+        placeholders.put("object_label", (m) -> m.getObjectLabel());
+        placeholders.put("object_match_field", (m) -> m.getObjectMatchField());
+        placeholders.put("object_preprocessing", (m) -> m.getObjectPreprocessing());
+        placeholders.put("object_source", (m) -> m.getObjectSource());
+        placeholders.put("object_source_version", (m) -> m.getObjectSourceVersion());
+        placeholders.put("object_type", (m) -> m.getObjectType());
+        placeholders.put("other", (m) -> m.getOther());
+        placeholders.put("predicate_id", (m) -> m.getPredicateId());
+        placeholders.put("predicate_label", (m) -> m.getPredicateLabel());
+        placeholders.put("predicate_modifier", (m) -> m.getPredicateModifier());
+        placeholders.put("publication_date", (m) -> m.getPublicationDate());
+        placeholders.put("reviewer_id", (m) -> m.getReviewerId());
+        placeholders.put("reviewer_label", (m) -> m.getReviewerLabel());
+        placeholders.put("see_also", (m) -> m.getSeeAlso());
+        placeholders.put("similarity_measure", (m) -> m.getSimilarityMeasure());
+        placeholders.put("similarity_score", (m) -> m.getSimilarityScore());
+        placeholders.put("subject_category", (m) -> m.getSubjectCategory());
+        placeholders.put("subject_id", (m) -> m.getSubjectId());
+        placeholders.put("subject_label", (m) -> m.getSubjectLabel());
+        placeholders.put("subject_match_field", (m) -> m.getSubjectMatchField());
+        placeholders.put("subject_preprocessing", (m) -> m.getSubjectPreprocessing());
+        placeholders.put("subject_source", (m) -> m.getSubjectSource());
+        placeholders.put("subject_source_version", (m) -> m.getSubjectSourceVersion());
+        placeholders.put("subject_type", (m) -> m.getSubjectType());
 
         // Don't bother checking if we replaced existing substitutions, always clear the
         // cache.
@@ -223,12 +221,12 @@ public class MappingFormatter {
      * the name of the placeholder, separated from it by a '|' character, as in
      * <code>%{placeholder|modifier(arg1, arg2)}</code>.
      * <p>
-     * The modifier function will receive a list of string as arguments, with the
-     * first argument (always present) being the mapping-derived substitution value
-     * for the placeholder. Remaining arguments are those explicitly passed to the
-     * function, if any (<em>arg1</em> and <em>arg2</em> in the example above). The
-     * function must return the value that should effectively be inserted into the
-     * formatted string.
+     * The modifier function will receive as its first argument the mapping-derived
+     * substitution value for the placeholder (optionally modified by other
+     * modifiers). Remaining arguments are those explicitly passed to the function,
+     * if any (<em>arg1</em> and <em>arg2</em> in the example above). The function
+     * must return the value that should effectively be inserted into the formatted
+     * string.
      * <p>
      * If the function does not need any additional argument beyond the mandatory
      * substitution value, the parentheses may be omitted, as in
@@ -236,7 +234,7 @@ public class MappingFormatter {
      * 
      * @param modifier The modifier function to register.
      */
-    public void setModifier(ISSSOMTFunction<String> modifier) {
+    public void setModifier(IFormatModifierFunction modifier) {
         String name = modifier.getName();
         if ( modifiers.containsKey(name) ) {
             cache.clear();
@@ -287,8 +285,8 @@ public class MappingFormatter {
     /*
      * Gets the transformer for a single format specifier.
      */
-    private IMappingTransformer<String> getTransformer(String name, boolean legacy) {
-        IMappingTransformer<String> transformer = null;
+    private IMappingTransformer<Object> getTransformer(String name, boolean legacy) {
+        IMappingTransformer<Object> transformer = null;
 
         // Lookup in registered placeholder patterns
         transformer = legacy ? legacyPlaceholders.get(name) : placeholders.get(name);
@@ -454,31 +452,6 @@ public class MappingFormatter {
         return fb;
     }
 
-    /*
-     * Helper formatting functions used by the standard substitutions.
-     */
-
-    private String format(String s) {
-        return s != null ? s : "";
-    }
-
-    private String format(Double v) {
-        if ( v == null ) {
-            return "";
-        }
-        DecimalFormat fmt = new DecimalFormat("#.##");
-        fmt.setRoundingMode(RoundingMode.HALF_UP);
-        return fmt.format(v);
-    }
-
-    private String format(List<String> l) {
-        return l != null ? String.join("|", l) : "";
-    }
-
-    private String format(Object o) {
-        return o != null ? o.toString() : "";
-    }
-
     /* Used to keep track of the current state when parsing a format string. */
     private enum ParserState {
         PLAIN,
@@ -498,10 +471,10 @@ public class MappingFormatter {
      * A call to a modifier function with its arguments.
      */
     private class Modifier {
-        ISSSOMTFunction<String> function;
+        IFormatModifierFunction function;
         List<String> arguments;
 
-        Modifier(ISSSOMTFunction<String> modifier) {
+        Modifier(IFormatModifierFunction modifier) {
             function = modifier;
             arguments = new ArrayList<String>();
         }
@@ -514,7 +487,7 @@ public class MappingFormatter {
      */
     private class Component {
         String text;
-        IMappingTransformer<String> transformer;
+        IMappingTransformer<Object> transformer;
         List<Modifier> modifiersList;
         int nModifiers = 0;
 
@@ -528,7 +501,7 @@ public class MappingFormatter {
         /*
          * Creates a transformer component.
          */
-        Component(IMappingTransformer<String> transformer) {
+        Component(IMappingTransformer<Object> transformer) {
             this.transformer = transformer;
             modifiersList = new ArrayList<Modifier>();
         }
@@ -536,7 +509,7 @@ public class MappingFormatter {
         /*
          * Adds a modifier to the last added component.
          */
-        void addModifier(ISSSOMTFunction<String> modifier) {
+        void addModifier(IFormatModifierFunction modifier) {
             if ( modifiersList == null ) {
                 throw new AssertionError("Parser error: modifier added without a transformer");
             }
@@ -585,7 +558,7 @@ public class MappingFormatter {
          * (preceded with a '%' character).
          */
         void appendLegacyTransformer(String name) {
-            IMappingTransformer<String> transformer = getTransformer(name, true);
+            IMappingTransformer<Object> transformer = getTransformer(name, true);
             if ( transformer != null ) {
                 components.add(new Component(transformer));
             } else {
@@ -609,7 +582,7 @@ public class MappingFormatter {
             if ( nComponents > components.size() ) {
                 throw new AssertionError("Parser error: modifier added without a component");
             }
-            ISSSOMTFunction<String> modifier = modifiers.get(name);
+            IFormatModifierFunction modifier = modifiers.get(name);
             if ( modifier == null ) {
                 throw new IllegalArgumentException(String.format("Unknown modifier: %s", name));
             }
@@ -635,7 +608,6 @@ public class MappingFormatter {
                 if ( c.transformer != null ) {
                     for ( Modifier m : c.modifiersList ) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append('S');
                         int nArgs = m.arguments.size();
                         for ( int i = 0; i < nArgs; i++ ) {
                             sb.append('S');
@@ -664,7 +636,8 @@ public class MappingFormatter {
                 if ( c.text != null ) {
                     return c.text;
                 } else if ( c.nModifiers == 0 ) {
-                    return c.transformer.transform(mapping);
+                    Object o = c.transformer.transform(mapping);
+                    return o != null ? o.toString() : "";
                 }
             }
 
@@ -676,22 +649,25 @@ public class MappingFormatter {
             for ( Component component : components ) {
                 if ( component.text != null ) {
                     sb.append(component.text);
+                } else if ( component.modifiersList.isEmpty() ) {
+                    Object value = component.transformer.transform(mapping);
+                    if ( value != null ) {
+                        sb.append(value.toString());
+                    }
                 } else {
-                    String value = component.transformer.transform(mapping);
+                    Object value = component.transformer.transform(mapping);
+                    if ( value == null ) {
+                        value = "";
+                    }
 
                     for ( Modifier modifier : component.modifiersList ) {
-                        ArrayList<String> arguments = new ArrayList<String>();
-                        arguments.add(value);
-                        for ( String argument : modifier.arguments ) {
-                            arguments.add(argument);
-                        }
-                        try {
-                            value = modifier.function.call(arguments, new HashMap<String, String>());
-                        } catch ( SSSOMTransformError e ) {
+                        value = modifier.function.call(value, modifier.arguments);
+                        if ( value == null ) {
+                            value = "";
                         }
                     }
 
-                    sb.append(value);
+                    sb.append(value.toString());
                 }
             }
 

@@ -19,11 +19,9 @@
 package org.incenp.obofoundry.sssom.uriexpr;
 
 import java.util.List;
-import java.util.Map;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.transform.ISSSOMTFunction;
-import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
+import org.incenp.obofoundry.sssom.transform.IFormatModifierFunction;
 
 /**
  * Represents the SSSOM/T substitution modifier function "uriexpr_slot_value".
@@ -50,7 +48,7 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
  * "The (CURIE) value of 'field1 is %{subject_id|uriexpr_slot_value(field1)|short}"
  * </pre>
  */
-public class SSSOMTUriExpressionSlotValueFunction implements ISSSOMTFunction<String> {
+public class SSSOMTUriExpressionSlotValueFunction implements IFormatModifierFunction {
 
     private PrefixManager pfxMgr;
 
@@ -71,21 +69,21 @@ public class SSSOMTUriExpressionSlotValueFunction implements ISSSOMTFunction<Str
 
     @Override
     public String getSignature() {
-        return "SS";
+        return "S";
     }
 
     @Override
-    public String call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
-        UriExpression expr = UriExpression.parse(arguments.get(0), pfxMgr);
+    public Object call(Object value, List<String> arguments) {
+        UriExpression expr = UriExpression.parse(value.toString(), pfxMgr);
         if ( expr != null ) {
-            String value = expr.getComponent(arguments.get(1));
-            if ( value != null ) {
-                return value;
+            String slotValue = expr.getComponent(arguments.get(0));
+            if ( slotValue != null ) {
+                return slotValue;
             }
         }
 
-        // Not a URI Expression or slot not found, return the original text
-        return arguments.get(0);
+        // Not a URI Expression or slot not found, return the original value
+        return value;
     }
 
 }

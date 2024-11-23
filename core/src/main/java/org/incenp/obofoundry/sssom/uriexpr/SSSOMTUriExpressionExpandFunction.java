@@ -19,11 +19,9 @@
 package org.incenp.obofoundry.sssom.uriexpr;
 
 import java.util.List;
-import java.util.Map;
 
 import org.incenp.obofoundry.sssom.owl.SSSOMTOwlApplication;
-import org.incenp.obofoundry.sssom.transform.ISSSOMTFunction;
-import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
+import org.incenp.obofoundry.sssom.transform.IFormatModifierFunction;
 
 /**
  * Represents the SSSOM/T-OWL substitution modifier function "uriexpr_expand".
@@ -40,7 +38,7 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
  * ... -&gt; create_axiom("%{subject_id|uriexpr_expand} EquivalentTo: &lt;%{object_id}&gt;");
  * </pre>
  */
-public class SSSOMTUriExpressionExpandFunction implements ISSSOMTFunction<String> {
+public class SSSOMTUriExpressionExpandFunction implements IFormatModifierFunction {
 
     private SSSOMTOwlApplication app;
 
@@ -55,14 +53,14 @@ public class SSSOMTUriExpressionExpandFunction implements ISSSOMTFunction<String
 
     @Override
     public String getSignature() {
-        return "S";
+        return "";
     }
 
     @Override
-    public String call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
-        UriExpression expr = UriExpression.parse(arguments.get(0), app.getPrefixManager());
+    public Object call(Object value, List<String> arguments) {
+        UriExpression expr = UriExpression.parse(value.toString(), app.getPrefixManager());
         if ( expr == null ) {
-            return arguments.get(0);
+            return value;
         }
 
         for ( String slotName : expr.getComponentNames() ) {
@@ -70,7 +68,7 @@ public class SSSOMTUriExpressionExpandFunction implements ISSSOMTFunction<String
         }
 
         String text = app.getUriExpressionRegistry().applyTemplate(expr, "Manchester");
-        return text != null ? text : arguments.get(0);
+        return text != null ? text : value;
     }
 
 }

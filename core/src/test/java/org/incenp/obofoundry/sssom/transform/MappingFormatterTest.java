@@ -247,7 +247,7 @@ public class MappingFormatterTest {
         m.setAuthorLabel(new ArrayList<String>());
         m.getAuthorLabel().add("Alice");
         m.getAuthorLabel().add("Bob");
-        Assertions.assertEquals("Alice|Bob", formatter.getTransformer("%{author_label}").transform(m));
+        Assertions.assertEquals("[Alice, Bob]", formatter.getTransformer("%{author_label}").transform(m));
     }
 
     @Test
@@ -283,7 +283,7 @@ public class MappingFormatterTest {
     }
 }
 
-class UppercaseModifier implements ISSSOMTFunction<String> {
+class UppercaseModifier implements IFormatModifierFunction {
 
     @Override
     public String getName() {
@@ -292,17 +292,17 @@ class UppercaseModifier implements ISSSOMTFunction<String> {
 
     @Override
     public String getSignature() {
-        return "S";
+        return "";
     }
 
     @Override
-    public String call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
-        return arguments.get(0).toUpperCase();
+    public Object call(Object value, List<String> arguments) {
+        return value.toString().toUpperCase();
     }
 
 }
 
-class ModifierWithArgs implements ISSSOMTFunction<String> {
+class ModifierWithArgs implements IFormatModifierFunction {
 
     @Override
     public String getName() {
@@ -311,15 +311,15 @@ class ModifierWithArgs implements ISSSOMTFunction<String> {
 
     @Override
     public String getSignature() {
-        return "S+";
+        return "S*";
     }
 
     @Override
-    public String call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
+    public Object call(Object value, List<String> arguments) {
         StringBuilder sb = new StringBuilder();
         sb.append("with_args(");
-        sb.append(arguments.get(0));
-        arguments.listIterator(1).forEachRemaining((a) -> {
+        sb.append(value.toString());
+        arguments.forEach((a) -> {
             sb.append(", ");
             sb.append(a);
         });
