@@ -224,6 +224,18 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
+     * Test that "complex" CURIEs are correctly recognised.
+     */
+    @Test
+    void testComplexIds() {
+        Mapping org1 = Mapping.builder().subjectId("https://example.org/entities/complex/id?foo=yes").build();
+        Mapping org2 = Mapping.builder().subjectId("https://example.org/entities/another#complex+90?r=no").build();
+
+        checkFilter("subject==ORGENT:complex/id?foo=yes -> action();\n", org1, true);
+        checkFilter("subject==ORGENT:another#complex+90?r=no -> action();\n", org2, true);
+    }
+
+    /*
      * Test that a mapping is correctly selected by a filter in a multi-valued slot.
      */
     @Test
