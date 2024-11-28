@@ -1,14 +1,14 @@
-  ----------
-  SSSOM-Java
-  ----------
-  Damien Goutte-Gattat
-  --------------------
-  2023-07-28
-  ----------
+    ----------
+    SSSOM-Java
+    ----------
+    Damien Goutte-Gattat
+    --------------------
+    2023-07-28
+    ----------
   
   <SSSOM-Java> is an implementation of the
-  {{{https://mapping-commons.github.io/sssom/spec/}SSSOM standard}} for
-  the Java language – just a hobby, won’t be big and professional like
+  {{{https://mapping-commons.github.io/sssom/}SSSOM standard}} for the
+  Java language – just a hobby, won’t be big and professional like
   <<<sssom-py>>>.
   
   It provides a {{{./library.html}library of Java classes}} to represent

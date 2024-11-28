@@ -1,3 +1,8 @@
+    --------------------
+    ROBOT rename command
+    --------------------
+
+
 ROBOT rename command
 
   The <<<rename>>> command provided by the SSSOM plugin does a similar
@@ -7,7 +12,7 @@ ROBOT rename command
   which entity should be renamed into what, instead of the ad-hoc,
   dual-column TSV format used by the standard command.
   
-* Usage
+* 1. Usage
 
   The command just needs the <<<--sssom>>> option, which indicates the
   file containing the mapping set to use for renaming. Any entity within
@@ -18,7 +23,7 @@ ROBOT rename command
   read mappings from more than one file. All mapping sets will be
   combined before the renaming operation is performed.
   
-* Selecting mappings to use
+* 2. Selecting mappings to use
 
   By default, only mappings whose mapping predicate is
   <<<http://purl.obolibrary.org/obo/IAO_0100001>>> (“term replaced by”)
@@ -32,7 +37,7 @@ ROBOT rename command
   special value <<<all>>> (or <<<any>>>) to the <<<--predicate>>>
   option.
   
-* Updating labels
+* 3. Updating labels
 
   If the <<<--labels>>> option is used, and the mapping set contains
   <<<object_label>>> metadata, then in addition to changing the IRI the

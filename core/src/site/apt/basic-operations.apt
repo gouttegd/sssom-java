@@ -1,8 +1,14 @@
+    ------------------------
+    Basic library operations
+    ------------------------
+
 Basic library operations
 
-* Reading mappings
+%{toc|section=1|fromDepth=2|toDepth=3}
 
-** TSV format
+* 1. Reading mappings
+
+** 1.1. TSV format
 
   The {{{https://mapping-commons.github.io/sssom/spec-formats-tsv/}TSV format}}
   is the main supported format. Both the “internal metadata” variant
@@ -84,7 +90,7 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   JSON parser. This allows using the TSV parser in any case if you don’t
   know in advance whether the input file is a TSV file or a JSON file.
   
-** JSON format
+** 1.2. JSON format
 
   The {{{https://mapping-commons.github.io/sssom/spec-formats-json/}JSON format}}
   is mostly a direct JSON rendering of the SSSOM data model. It is
@@ -142,9 +148,9 @@ try {
   []
   
   
-* Writing mappings
+* 2. Writing mappings
 
-** TSV format
+** 2.1. TSV format
   
   Use the {{{./apidocs/org/incenp/obofoundry/sssom/TSVWriter.html}TSVWriter}}
   class to write a mapping set to a file:
@@ -185,7 +191,7 @@ TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv", "my-meta.yml");
   operation of the “propagation” that happens upon parsing. Condensation
   may be disabled by calling <<<setCondensationEnabled(false)>>>.
   
-** JSON format
+** 2.2. JSON format
 
   Use the {{{./apidocs/org/incenp/obofoundry/sssom/JSONWriter.html}JSONWriter}}
   class to write a mapping set to a file:
@@ -220,7 +226,7 @@ try {
   []
   
   
-* Manipulating the mapping set and the mappings
+* 3. Manipulating the mapping set and the mappings
 
   As hinted in the examples above, a mapping set is represented by the
   {{{./apidocs/org/incenp/obofoundry/sssom/model/MappingSet.html}MappingSet}}
@@ -271,7 +277,7 @@ Mapping mapping2 = mapping.toBuilder()
                           .build();
 +-----------------------------------------------------------------------
 
-* Visiting the slots of a mapping or a mapping set
+* 4. Visiting the slots of a mapping or a mapping set
 
   A common need when manipulating mapping is to apply an operation on
   all <slots> (in the LinkML sense; basically, the attributes, or the
@@ -299,7 +305,7 @@ Mapping mapping2 = mapping.toBuilder()
   whether you want to visit the slots of a mapping or of a mapping set),
   and simply call the <<<visitSlots()>>> method on that object.
 
-* Other manipulations on mappings
+* 5. Other manipulations on mappings
 
   To <invert> a mapping (switching the subject and the object), use the
   <<<invert()>>> method on the <<<Mapping>>> class:
@@ -339,7 +345,7 @@ MappingCardinality.inferCardinality(mappingSet.getMappings());
   (e.g. original values from the SSSOM file from which the mapping set
   was read) for each mapping.
   
-* Dealing with non-standard slots
+* 6. Dealing with non-standard slots
 
   Currently, the SSSOM specification officially does not support the use
   of any other metadata slots than the ones defined in the data model.

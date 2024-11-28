@@ -1,9 +1,15 @@
+    --------------------
+    ROBOT inject command
+    --------------------
+
 ROBOT inject command
 
   The <<<inject>>> command is intended to allow the injection of
   SSSOM-derived axioms into an ontology as part of a ROBOT pipeline.
+
+%{toc|section=1|fromDepth=2|toDepth=3}
   
-* Usage
+* 1. Usage
 
   The <<<inject>>> command takes a SSSOM mapping set file specified with
   the <<<-s>>> (or <<<--sssom>>>) option. If the metadata section of the
@@ -52,7 +58,7 @@ ROBOT inject command
   ontology with the generated axioms. The newly created ontology becomes
   ROBOT’s current ontology, and will passed down the command pipeline.
   
-* Mapping preprocessing
+* 2. Mapping preprocessing
 
   A few options allow for basic preprocessing of a mapping set. They are
   intended to avoid having to use SSSOM/Transform rules for simple use
@@ -71,7 +77,7 @@ ROBOT inject command
   These options are applied before any other processing. Inversion, if
   specified, is always performed first. 
   
-* Checking for the existence of the subject and/or object
+* 3. Checking for the existence of the subject and/or object
 
   By default, <<<inject>>> will generate axioms regardless of whether
   the subject and object of a mapping exist in the current ontology (if
@@ -92,7 +98,7 @@ ROBOT inject command
   what will really be checked is the existence of the original <object>
   side of the mapping.
   
-* Dropping “duplicate” mappings
+* 4. Dropping “duplicate” mappings
 
   Use the <<<--drop-duplicate-subjects>>> option to drop any mapping
   that has the same subject ID as a previously processed mapping. With
@@ -103,15 +109,16 @@ ROBOT inject command
   Use the <<<--drop-duplicate-objects>>> option to do the same, but for
   the object side of mappings.
   
-* Specifying the axioms to generate
+* 5. Specifying the axioms to generate
 
   There are two ways of instructing the command of the axioms it is
   supposed to generate from the mappings: with ad-hoc options or with a
-  <ruleset> written in the {{{./sssom-transform.html}SSSOM/Transform}}
-  language. They are not mutually exclusive: a single invocation of the
-  command can make use of both an ad-hoc option <and> a ruleset.
+  <ruleset> written in the {{{./sssomt-owl.html}SSSOM/T-OWL}} dialect of
+  the {{{./sssom-transform.html}SSSOM/Transform}} language. They are not
+  mutually exclusive: a single invocation of the command can make use of
+  both an ad-hoc option <and> a ruleset.
   
-** Ad-hoc options
+** 5.1. Ad-hoc options
 
   These options are typically tailored for one particular use case and
   do not offer a lot of control on what is happening. There are
@@ -119,7 +126,7 @@ ROBOT inject command
   
   The <<<--direct>>> option transforms the mappings into their OWL
   serialisation as described in the
-  {{{https://mapping-commons.github.io/sssom/spec/#rdfxml-serialised-re-ified-owl-axioms}SSSOM specification}}.
+  {{{https://mapping-commons.github.io/sssom/spec-formats-owl/}SSSOM specification}}.
   
   For example, per the SSSOM specification:
   
@@ -147,18 +154,19 @@ ROBOT inject command
   annotations (<<<oboInOwl:hasDbXref>>>) on the subject with the
   shortened identifier of the object as value.
   
-** Using a SSSOM/Transform ruleset
+** 5.2. Using a SSSOM/T-OWL ruleset
   
   Use the <<<--ruleset>>> option to specify the name of a
-  SSSOM/Transform file describing precisely which axioms to generate
-  from which mappings.
+  SSSOM/T-OWL file describing precisely which axioms to generate from
+  which mappings.
   
-  Refer to the {{{./sssom-transform.html}description}} of the
-  SSSOM/Transform language for details about the syntax of rules and
-  filter expressions. This section describes the details that are
-  specific to the <SSSOM/T-OWL> dialect used by <<<inject>>>.
+  Refer to the description of the
+  {{{./sssom-transform.html}SSSOM/Transform language}} for details about
+  the generic syntax of rules and filter expressions, and to the
+  description of the {{{./sssomt-owl.html}SSSOM/T-OWL dialect}} for the
+  details that are specific to the dialect used by <<<inject>>>.
   
-*** Prefixes
+*** 5.2.1. Prefixes in SSSOM/T-OWL
 
   By default, all prefixes that are known to ROBOT (either because they
   are declared in the current ontology, or because they have been
@@ -178,78 +186,14 @@ ROBOT inject command
   precedence over ROBOT’s built-in prefixes and prefixes declared in the
   input prefix map.
   
-*** Custom filters
-
-  The SSSOM/T-OWL dialect defines the following custom filters:
-  
-  [subject_is_a(TERM)] Will select mappings whose subject is either the
-                       specified <TERM>, or a descendant of that term.
-  
-  [object_is_a(TERM)] Will select mappings whose object is either the
-                      specified <TERM>, or a descendant of that term.
-  
-  [subject_exists()] Will select mappings whose subject exists in the
-                     ontology and is not obsolete.
-  
-  [object_exists()] Will select mappings whose object exists in the
-                    ontology and is not obsolete.
-  
-  []
-  
-*** Axiom-generating functions
-
-  Those are the functions that may be used in a SSSOM/Transform rule.
-  Each function will generate one OWL axiom. The following functions are
-  allowed:
-  
-  [direct()] Will generate an axiom that is the “direct” serialisation
-             of the mapping. This has the same effect as the
-             <<<--direct>>> option explained in a previous section,
-             except that here only the mappings selected by the rule
-             this instruction belongs to will be serialised, instead of
-             all the mappings in the set when the <<<--direct>>> option
-             is used.
-  
-  [annotate_subject()] Will generate an annotation assertion axiom on
-                       mapping’s subject; this instruction expects two
-                       argument: the annotation property to use and the
-                       value of the annotation.
-  
-  [annotate_object()] Similar to the previous one, but will annotate the
-                      mapping’s object.
-  
-  [create_axiom()] Will generate an arbitrary axiom; this instruction
-                   expects one argument, which must be an expression in
-                   {{{https://www.w3.org/TR/owl2-manchester-syntax/}OWL Manchester Syntax}}
-                   representing the axiom to create.
-  
-  []
-  
-  The argument to <<<create_axiom>>> and the second argument to both
-  <<<annotate_subject>>> and <<<annotate_object>>> can contain the
-  following placeholders:
-  
-  [%subject_id] replaced by the identifier of the mapping’s subject;
-  
-  [%subject_label] replaced by the label of the mapping’s subject, if
-  				   such a label is specified (otherwise the placeholder
-  				   is left as it is);
-  
-  [%subject_curie] a shortened version of the identifier of the
-                   mapping’s subject (this requires that a suitable
-                   prefix be declared in the SSSOM/Transform file).
-  
-  []
-  
-  Corresponding placeholders are also available for the object side
-  (<<<%object_id>>>, etc.).
-  
-  Of note, the use of <<<%subject_curie>>> (or <<<%object_curie>>>
-  requires that a suitable prefix has been declared to shorten the
-  subject (or object) ID. Without such a prefix, the identifier is
+  Of note, the use of the {{{6.5.1. short}<short>}} format modifier
+  requires that a suitable prefix has been declared to shorten the ID
+  the modifier is applied to. Without such a prefix, the identifier is
   written in its canonical full-form and a warning will be emitted.
   Use the <<<--error-on-unshortenable-iris>>> option to force the
   command to error out if that happens.
+  
+*** 5.2.2. Examples
   
   Below are some example of axiom-producing SSSOM/Transform rules (the
   prefix declarations are omitted for brevity).
@@ -273,174 +217,24 @@ subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0
   subject’s label being injected inside the annotation value:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> annotate_subject(IAO:0000589,  "%subject_label (Drosophila)");
+subject==FBbt:* -> annotate(%{subject_id}, IAO:0000589,  "%{subject_label} (Drosophila)");
 +-----------------------------------------------------------------------
 
   This generates an annotation assertion axiom on the object, with the
   value being the shortened identifier of the subject:
   
 +-----------------------------------------------------------------------
-subject==FBbt:* -> annotate_object(oio:hasDbXref, "%subject_curie");
+subject==FBbt:* -> annotate(%{object_id}, oio:hasDbXref, "%{subject|short}");
 +-----------------------------------------------------------------------
 
-*** Annotating axioms
-
-  The axiom-generating functions listed in the previous section accepts
-  an additional, optional argument that indicates whether the generated
-  axiom should itself be annotated with the mapping metadata. The
-  argument should be of the form <<<translator:slot_list>>>, where
-  <<<translator>>> is the name of a metadata translator and
-  <<<slot_list>>> is the list of slots from which to derive annotations.
-  
-  Currently, the only allowe value for the <<<translator>>> part is
-  <<<direct>>>; it instructs to create annotations using the IRI of the
-  slot itself. For example, under <<<direct>>>, a <mapping_provider>
-  slot would result in a <<<https://w3id.org/sssom/mapping_provider>>>
-  annotation.
-  
-  The <<<slot_list>>> is a comma-separated list of slot names. Each name
-  may be preceded by a <<<->>> character, indicating that the
-  corresponding slot should be excluded when creating annotations.
-  
-  The following special slot names are accepted:
-  
-  [all] Include all available slots;
-  
-  [mapping] Include all the slots that are about the mapping itself
-  			rather than its metadata; that means <<<subject_id>>>,
-  			<<<predicate_id>>>, and <<<object_id>>>;
-  
-  [metadata] Include all the slots that are strictly about the
-             mapping metadata, excluding <<<subject_id>>>,
-             <<<predicate_id>>>, and <<<object_id>>>.
-  
-  []
-  
-  For example, the following call:
-  
-+-----------------------------------------------------------------------
-subject==FBbt:* -> annotate_object(oio:hasDbXref, "%subject_curie"
-                   "direct:metadata,-mapping_cardinality"
-                   );
-+-----------------------------------------------------------------------
-
-  would create an annotation axiom which would itself be annotated with
-  values derived from the all the metadata slots except
-  <<<mapping_cardinality>>>.
-  
-  Of note, the default behaviour of the <<<direct>>> function is already
-  to generate axiom annotations from all the mapping metadata slots
-  except <<<mapping_cardinality>>>. That is, a single call to
-  <<<direct()>>>, without any argument, is actually equivalent to
-  
-+-----------------------------------------------------------------------
-direct("direct:metadata,-mapping_cardinality");
-+-----------------------------------------------------------------------
-
-  To generate direct OWL axioms without any annotation, that default
-  behaviour may be disabled by passing an argument with an empty list of
-  slots:
-  
-+-----------------------------------------------------------------------
-direct("direct:");
-+-----------------------------------------------------------------------
-
-*** Preprocessing functions
-
-  Those functions will not yield any axiom, but will influence how the
-  mappings they are applied to will be further processed.
-  
-  [check_subject_existence()] Check whether the subject of the mapping
-                              exists in the ontology and is not
-                              obsolete. If not, the mapping is dropped
-                              from the set and will not be subject to
-                              any further processing. This is similar to
-                              the  <<<--check-subject>>> option, but
-                              applied only to selected mappings.
-
-  [check_object_existence()] Likewise, but for the object side.
-
-*** Directive functions
-
-  Those are the functions that may be used at the top of the
-  SSSOM/Transform file, before any rule. They are used to declare
-  classes and object properties, to ensure that they will be correctly
-  recognised when they are used in <<<create_axiom>>> functions.
-  
-  [declare_class()] Declares one or several OWL classes.
-  
-  [declare_object_property()] Declare one or several OWL object
-                              properties.
-  
-  []
-  
-  Most of the time, those functions should not be needed. This is
-  because the <<<inject>>> command is already aware of all the classes
-  and object properties defined in the ontology that is currently being
-  manipulated by the ROBOT pipeline.
-    
-  For example, considering the following rule:
-  
-+-----------------------------------------------------------------------
-subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
-+-----------------------------------------------------------------------
-
-  For the expression in Manchester syntax to be successfully parsed, the
-  parser must know what <<<BFO:0000050>>> and <<<NCBITaxon:7227>>> refer
-  to. If we want to inject such an axiom into an ontology, it is likely
-  that the ontology already contains the declaration axioms for both the
-  <<<BFO:000050>>> property and the <<<NCBITaxon:7227>>> class, so we
-  don’t have anything to do.
-  
-  But if if the ontology does not actually contain these declaration
-  axioms, then the <<<inject>>> command will fail because it will not be
-  able to parse the expression. To avoid that, we must declare any
-  entity we may want to use in a <<<create_axiom>>> function:
-  
-+-----------------------------------------------------------------------
-declare_class(NCBITaxon:7227);
-declare_object_property(BFO:0000050);
-+-----------------------------------------------------------------------
-
-*** Variables
-
-  The SSSOM/T-OWL dialect allows to declare <variables> whose value can
-  vary depending on the current mapping.
-  
-  A variable must first be declared by calling the <<<set_var>>>
-  directive, which sets the <default> value of the variable:
-  
-+-----------------------------------------------------------------------
-set_var("RELATION", BFO:0000050)
-+-----------------------------------------------------------------------
-
-  Then, the variable can be assigned a different value for a specific
-  set of mappings selected by a filter:
-  
-+-----------------------------------------------------------------------
-object_is_a(UBERON:0000105) -> set_var("RELATION", BFO:0000066);
-+-----------------------------------------------------------------------
-
-  The <RELATION> variable will still have, for almost all mappings, the
-  default value <<<BFO:0000050>>>, but for mappings where the object is
-  a descendant of UBERON:0000105, the value of <RELATION> will now be
-  <<<BFO:0000066>>>.
-  
-  The variable may then be used in a subsequent SSSOM/T rule:
-  
-+-----------------------------------------------------------------------
-subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (%RELATION some NCBITaxon:7227)');
-+-----------------------------------------------------------------------
-
-
-* Exploiting tags in a ruleset
+* 6. Exploiting tags in a ruleset
 
   When using a SSSOM/Transform ruleset (with the <<<--ruleset>>>
   option), if the ruleset contains
-  {{{./sssom-transform.html#Tagging_rules}tags}}, two more features are
-  available to <<<inject>>>.
+  {{{./sssom-transform.html#a8._Tagging_rules}tags}}, two more features
+  are available to <<<inject>>>.
   
-** Selectively enable or disabled tagged rules
+** 6.1. Selectively enable or disabled tagged rules
 
   By default, all SSSOM/Transform rules found within a ruleset will be
   used when processing the mapping.
@@ -460,7 +254,7 @@ subject==FBbt:* -> create_axiom('%subject_id EquivalentTo: %object_id and (%RELA
   rule marked with the specified tag. As for its inclusive counterpart,
   it may be used as many times as needed to exclude more than one tag.
   
-** Write generated axiom to different files
+** 6.2. Write generated axiom to different files
 
   For some applications, having all the axioms generated from the
   mappings in a single output file (the file specified with the
@@ -523,16 +317,16 @@ file: output-file-for-tag.owl
   
 +-----------------------------------------------------------------------
 [fbbt] subject==FBbt:* {
-    [unique-label] predicate==* -> annotate_subject(IAO:0000589, "%subject_label (Drosophila)");
+    [unique-label] predicate==* -> annotate(%{subject_id}, IAO:0000589, "%{subject_label} (Drosophila)");
     predicate==skos:speciesExactMatch -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)');
 }
 
 [wbbt] subject=WBbt:* {
-    [unique-label] predicate==* -> annotate_subject(IAO:0000589, "%subject_label (worm)");
+    [unique-label] predicate==* -> annotate(%{subject_id}, IAO:0000589, "%subject_label (worm)");
     predicate==skos:speciesExactMatch -> create_axiom('%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:6237)');
 }
 
-[xrefs] predicate==* -> annotate_subject(oio:hasDbXref, "%object_curie");
+[xrefs] predicate==* -> annotate(%{subject_id}, oio:hasDbXref, "%{object_id|short}");
 +-----------------------------------------------------------------------
 
   and the following dispatch table:

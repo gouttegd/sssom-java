@@ -1,0 +1,792 @@
+    -----------------------
+    The SSSOM/T-OWL dialect
+    -----------------------
+
+The SSSOM/T-OWL dialect    
+
+  SSSOM/T-OWL is the dialect of
+  {{{./sssom-transform.html}SSSOM/Transform}} used by the
+  {{{./robot-sssom-inject.html}<inject> command}} of the ROBOT plugin
+  to derive OWL axioms from mappings and inject them into an ontology.
+  
+  This page describes the specific functions of the SSSOM/T-OWL dialect.
+  
+  Note: For a quick overview of the dialect, you may want to jump to the
+  {{{7. Examples}Examples section}} at first, then come back to learn
+  more about each function.
+
+%{toc|section=1|fromDepth=2|toDepth=3}
+
+* 1. General considerations
+
+** 1.1. Helper ontology
+
+  Several functions in SSSOM/T-OWL assumes that the SSSOM/T engine that
+  will execute the ruleset has access to a OWL ontology, which is
+  hereafter referred to as as the <helper ontology>.
+  
+  With the {{{./robot-sssom-inject.html}<inject> command}} of the ROBOT
+  plugin, this is ROBOT’s current ontology – the one that has been
+  loaded by a previous <<<--input>>> or <<<--input-iri>>> option. This
+  is typically the ontology into which the axioms produced by the
+  SSSOM/T-OWL rules are intended to be injected, but it does not need to
+  be – the generated axioms may be saved to a separate file and later
+  merged into another ontology that is completely distinct from the
+  “helper ontology” against which they have been generated.
+
+* 2. Directive functions
+
+** 2.1. <declare>
+
+  The <declare> function allows to pre-emptively declare OWL entities
+  that may later be used with the {{{a4.2._create_axiom}<create_axiom>}}
+  function.
+  
+  This is only needed if the entities are not already known in the
+  helper ontology. “Known”, in this context, means that the entity must
+  be referenced in axioms that are enough to unambiguously infer the
+  type of the entity (e.g. class, object property, data property, etc.)
+  – typically, this will be done by declaration axioms.
+  
+  Consider the following example:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("%subject_id SubClassOf: RO:1234 some %object_id");
++-----------------------------------------------------------------------
+
+  In order to successfully parse this expression, the Manchester syntax
+  parser that underlies the <create_axiom> function must be aware of the
+  <<<RO:1234>>> entity.
+  
+  It is expected that most of the time, the helper ontology will already
+  declare that entity, so it will not be needed to do anything. But if
+  the helper ontology does <not> contain any trace of <<<RO:1234>>>, it
+  is then necessary to declare it, which is what the <declare> function
+  is about.
+  
+  It takes one or several arguments which are the entities to declare,
+  and an optional <<</type>>> flag indicating the type of entities.
+  
+  For example, to declare a couple of object properties, including the
+  <<<RO:1234>>> used in the example above::
+  
++-----------------------------------------------------------------------
+declare(RO:1234, RO:5678, /type="object_property");
++-----------------------------------------------------------------------
+
+  (This is of course assuming that the <<<RO>>> prefix name has been
+  duly declared.)
+  
+  To declare some classes:
+  
++-----------------------------------------------------------------------
+declare(NCBITaxon:6893, NCBITaxon:6939, NCBITaxon:44484, /type="class");
++-----------------------------------------------------------------------
+
+  (Again, assuming <<<NCBITaxon>>> is a known prefix name.) Note that
+  <<<class>>> is the default value for the <<</type>>> flag, so the
+  previous example is equivalent to:
+  
++-----------------------------------------------------------------------
+declare(NCBITaxon:6893, NCBITaxon:6939, NCBITaxon:44484);
++-----------------------------------------------------------------------
+
+  Other values for the <<</type>>> flag are:
+  
+  * <<<data_property>>>,
+  
+  * <<<individual>>>,
+  
+  * <<<datatype>>>,
+  
+  * and <<<annotation_property>>>.
+  
+  []
+
+* 3. Filter functions
+
+** 3.1. <exists>
+
+  The <exists> function allows to filter mappings depending on whether a
+  given entity (typically, the mapping’s subject or object, but it could
+  be anything else) exists in the helper ontology <and> is not obsolete.
+  In the context of that function, an entity “exists” if it is present
+  in the <signature> of the ontology.
+  
+  The function takes a single argument, in which placeholders are
+  expanded and which is the entity whose existence and obsoletion status
+  is to be checked. The function will reject any mapping for which the
+  entity either does not exist, or exists but has been deprecated.
+  
+  For example:
+  
++-----------------------------------------------------------------------
+exists(%{subject_id}) -> annotate(%{subject_id}, rdfs:comment, "I exist!");
++-----------------------------------------------------------------------
+
+  will annotate the entities referenced by the subject of each mapping,
+  if those entities exist and are not obsolete.
+  
+  Presumably, the most common usage of that filter will be to exclude
+  mappings if their subject and/or object does not exist or is
+  deprecated:
+  
++-----------------------------------------------------------------------
+!exists(%{subject_id}) -> stop();
+!exists(%{object_id}) -> stop();
++-----------------------------------------------------------------------
+
+  Note that it is possible to test for the existence of an entity that
+  is <not> derived from the mappings, but is instead a constant value,
+  as in:
+  
++-----------------------------------------------------------------------
+exists(ENT:1234) -> ...;
++-----------------------------------------------------------------------
+
+  but this would presumably be of very little interest since the outcome
+  of the filter would then be the same for all mappings, and so the
+  filter would not discriminate anything (either <<<ENT:1234>>> exists,
+  in which case the rule will apply to all mappings, or it does not 
+  – or it is obsolete –, in which case the rule will not apply to any
+  mapping at all).
+
+** 3.2. <is_a>
+
+  The <is_a> function allows to filter mappings depending on whether a
+  given entity (again, typically the mapping’s subject or object) is a
+  descendant of another entity, in the helper ontology. Both asserted
+  and inferred classifications are taken into account.
+  
+  Note that currently, this function only works on <classes>; it cannot
+  be used to test whether an object property, for example, is a
+  subproperty of another object property.
+  
+  The function takes two arguments: the first is the entity whose
+  ascendency is to be checked, and the second is the putative ascendant.
+  Placeholders are expanded in both arguments.
+  
+  For example:
+  
++-----------------------------------------------------------------------
+is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "I am an occurent!");
++-----------------------------------------------------------------------
+
+  This will annotate the entities referenced by the object of each
+  mapping, if said entities are descendants of <<<BFO:0000003>>>. Note
+  that this include the case where the object is <<<BFO:0000003>>>
+  itself; to select the mappings where the object is strictly a proper
+  descendant, you could combine <is_a> with another filter to explicitly
+  exclude <<<BFO:0000003>>>:
+  
++-----------------------------------------------------------------------
+!object==BFO:0000003 && is_a(%{object_id}, BFO:0000003) ->
+    annotate(%{object_id}, rdfs:comment, "I am an occurrent, but not THE occurrent!");
++----------------------------------------------------------------------- 
+
+* 4. Generator functions
+
+** 4.1. <direct>
+
+  The <direct> function transforms a mapping into its “direct” OWL
+  representation, following the rules set forth in the
+  {{{https://mapping-commons.github.io/sssom/spec-formats-owl/}SSSOM specification}}.
+  
+  It takes a single optional argument, which describes how the generated
+  axioms should be annotated with the mapping metadata.
+  
+*** 4.1.2. OWL serialisation rules
+  
+  Of note, those rules are not fully specified yet and therefore the
+  precise behaviour of this function may change in the future, but so
+  far the rules are as follows:
+  
+  * if the mapping predicate is an annotation property, the mapping is
+    transformed into a _OWL Annotation Assertion_ axiom on the subject,
+    with the predicate as the annotation property and the object as the
+    annotation value;
+    
+  * if the mapping predicate is an object property, the mapping is
+    transformed into a _SubClassOf_ axiom where the suclass is the
+    subject, and the superclass is an existential restriction over the
+    predicate and the object;
+    
+  * if the mapping predicate is <<<owl:equivalentClass>>>, the mapping
+    is transformed into a _EquivalentClasses_ axiom between the subject
+    and the object;
+    
+  * if the mapping predicate is <<<rdfs:subClassOf>>>, the mapping is
+    tranformed into a _SubClassOf_ axiom where the subclass is the
+    subject and the superclass is the object.
+    
+  []
+  
+  It is important to note here that SSSOM has particular views about
+  predicate types. For example, <<<skos:exactMatch>>> is considered, in
+  SSSOM context, to be an <annotation property>, even though the
+  {{{https://www.w3.org/TR/skos-reference/}SKOS specification}} defines
+  it as an <object> property. As a general rule, for any predicate that
+  is listed in the
+  {{{https://mapping-commons.github.io/semantic-mapping-vocabulary/}Semantic Mapping Vocabulary}}
+  (SEMAPV), the source of truth regarding the predicate type (as far as
+  SSSOM is concerned) is always SEMAPV itself, even if the predicate had
+  originally been defined in another specification which gives it a
+  different type than the one indicated by SEMAPV.
+  
+*** 4.1.2. Axiom annotations
+
+  By default, the <direct> function will annotate a generated axiom with
+  one annotation for every single metadata slot available in the mapping
+  from which the axiom is derived (except the <mapping_cardinality>
+  slot).
+  
+  For example, the following mapping:
+  
+*----------------*--------------------*-----------------*--------------*------------------------*------------*
+| subject_id     | subject_label      | predicate_id    | object_id    | mapping_justification  | confidence |
+*----------------*--------------------*-----------------*--------------*------------------------*------------*
+| UBERON:0000016 | endocrine pancreas | skos:exactMatch | mesh:D007515 | semapv:LexicalMatching | 0.9        |
+*----------------*--------------------*-----------------*--------------*------------------------*------------*
+
+  would be translated into (in OWL Functional Syntax, and assuming as
+  always that all prefix names have been duly declared):
+  
++-----------------------------------------------------------------------
+AnnotationAssertion(
+  Annotation(sssom:subject_label "endocrine pancreas"^^xsd:string)
+  Annotation(sssom:mapping_justification semapv:LexicalMatching)
+  Annotation(sssom:confidence "0.9"^^xsd:double)
+  skos:exactMatch UBERON:0000016 mesh:D007515)
++-----------------------------------------------------------------------
+
+  To change the default behaviour, the <direct> function accepts an
+  optional argument that is a comma-separated list of names. Each name
+  should be the name of a metadata slot that is to be turned into an
+  axiom annotation, unless it is prefixed by a minus character
+  (<<<->>>), in which case the slot is to be excluded from the
+  annotations.
+  
+  The following special names can also be used:
+  
+  * <<<all>>>: represent all slots;
+  
+  * <<<mapping>>>: represent the slots that describes the mapping itself
+    (<<<subject_id>>>, <<<predicate_id>>>, <<<object_id>>>);
+    
+  * <<<metadata>>>: represents the slots that are about the mapping
+    metadata (all slots except the previous three).
+    
+  []
+  
+  For example:
+  
++-----------------------------------------------------------------------
+... -> direct("mapping_justification,subject_label,object_label");
++-----------------------------------------------------------------------
+
+  will generate axioms that will be annotated with the values of the
+  <mapping_justification>, <subject_label>, and <object_label> slots
+  (assuming those slots are present of course).
+  
++-----------------------------------------------------------------------
+... -> direct("metadata,-subject_label,-object_label)";
++-----------------------------------------------------------------------
+
+  will generate axioms annotated with all the metadata slots, <except>
+  the <subject_label> and <object_label> slots.
+  
+  To prevent the <direct> function from annotating axioms completely,
+  simply pass it an empty string.
+
+** 4.2. <create_axiom>
+
+  The <create_axiom> is arguably the most important function of the
+  SSSOM/T-OWL dialect. It allows to create an arbitrary axiom by
+  specifying as an expression in OWL Manchester Syntax.
+  
+  It accepts a single argument which is the expression representing the
+  axiom to create. Placeholders are expanded in that argument.
+  
+  For example, to create a simple _SubClassOf_ axiom between a mapping’s
+  subject and its object:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("<%{subject_id}> SubClassOf: <%{object_id}>");
++-----------------------------------------------------------------------
+
+  The expression can of course be more complex:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("<%{subject_id}> EquivalentTo: <%{object_id}>
+                     and (BFO:0000050 some NCBITaxon:7227)");
++-----------------------------------------------------------------------
+
+  Note that, if the expression refers to entities beyond just the
+  mapping’s subject and object (such as <<<BFO:0000050>>> and
+  <<<NCBITaxon:7227>>> in the example above), you must ensure those
+  entities are known to the Manchester parser, either by having them
+  declared in the helper ontology, or by declaring them explicitly at
+  the beginning of the SSSOM/T-OWL ruleset using the
+  {{{2.1. declare}declare}} directive.
+  
+*** 4.2.1. Referencing entities within the Manchester expression
+
+  Entities within the Manchester expression can be referenced in two
+  ways:
+  
+  * using their full-length IRI, enclosed in angled brackets (e.g.
+    <<<\<http://purl.obolibrary.org/obo/BFO_0000050\>>>>);
+  
+  * as “naked” CURIEs (e.g. <<<BFO:0000050>>>, assuming the BFO prefix
+    name has been duly declared).
+    
+  []
+  
+  Remember that placeholders representing ID slots (such as
+  <<<%\{subject_id\}>>> and <<<%\{object_id\}>>>) are expanded into the
+  full-length form of the corresponding identifiers. That is why, in the
+  examples above, those placeholders are themselves enclosed in angled
+  brackets.
+  
+  It would be perfectly possible to use the
+  {{{./sssom-transform.html#a6.5.1._short}<short>}} modifier instead, to
+  expand the placeholders into their short, “CURIEfied” form, as in
+  <<<%\{subject_id|short\}>>>. However (1) this is arguably not any
+  clearer or easier to type than <<<\<%\{subject_id\}\>>>>, and (2) it
+  is kind of ridiculous because we are contracting a full-length
+  identifier into a CURIE, only for the Manchester parser to
+  immediately expand said CURIE back into its full-length form.
+  
+  For a bit a convenience however, and specifically within the context
+  of the <create_axiom> function, <un-bracketed> placeholders (such as
+  <<<%subject_id>>>) are expanded into full-length IRIs that are already
+  enclosed in angled brackets. This means that the two examples above
+  can also be written, for exactly the same meaning, as follows:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("%subject_id SubClassOf: %object_id");
++-----------------------------------------------------------------------
+
+  and:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("%subject_id EquivalentTo: %object_id
+                     and (BFO:0000050 some NCBITaxon:7227)");
++-----------------------------------------------------------------------
+
+  which is, arguably, clearer and easier to type than when using the
+  bracketed form that requires explicit angled brackets.
+
+*** 4.2.2. Annotating the generated axiom
+
+  By default, <create_axiom> creates un-annotated axioms. It can be made
+  to annotate the axioms it creates in a similar fashion as the <direct>
+  function, by adding an optional <<</annots>>> flag whose argument
+  should follow {{{4.1.2. Axiom annotations}the same rules}} as the
+  argument to the <direct> function.
+  
+  For example, to annotate a _SubClassOf_ axiom with annotations from
+  all the mapping’s metadata slots except <mapping_cardinality>:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("%subject_id SubClassOf: %object_id",
+                    /annots="metadata,-mapping_cardinality");
++-----------------------------------------------------------------------
+
+** 4.3. <annotate>
+
+  The <annotate> function creates _annotation assertion_ axioms. It
+  takes three mandatory arguments, which are all subject to placeholder
+  expansion:
+  
+  * the annotation subject;
+  
+  * the annotation property;
+  
+  * and the annotation value.
+  
+  []
+  
+  For example, to annotate the subject of the mapping with a OBO-style
+  cross-reference pointing to the object:
+  
++-----------------------------------------------------------------------
+... -> annotate(%{subject_id}, oboInOwl:hasDbXref, %{object_id|short});
++-----------------------------------------------------------------------
+
+  (Do I need to say it: this is assuming that the <<<oboInOwl>>> prefix
+  name has been duly declared!)
+  
+*** 4.3.1. Annotation type
+
+  By default, the annotation value is assumed to be a
+  <<<xsd:string>>>. To explicitly specify a different type, the
+  <annotate> function accepts an optional <<</type>>> flag.
+  
+  For example, to annotate with a boolean value:
+  
++-----------------------------------------------------------------------
+... -> annotate(%{subject_id}, owl:deprecated, "true", /type=xsd:boolean);
++-----------------------------------------------------------------------
+
+  The special value <<<iri>>> may be used to indicate that the value
+  should not be treated as a literal but as an entity reference:
+  
++-----------------------------------------------------------------------
+... -> annotate(%{subject_id}, IAO:0100001, %{object_id}, /type="iri");
++-----------------------------------------------------------------------
+
+*** 4.3.2. Annotating the generated axiom
+
+  The <annotate> function accepts the same <<</annots>>> optional flag
+  as the <create_axiom> function, to annotate the generated annotation
+  axiom with values from the mapping’s metadata slots.
+  
+  The <<</annots>>> flag may be used at the same time as the <<</type>>>
+  flag. They can be specified in any order.
+
+* 6. Backwards compatibility
+
+  The SSSOM/T-OWL dialect has changed quite a bit since version 0.9.0 of
+  SSSOM-Java. This sections briefly describes some functions that are
+  still supported for backwards compatibility but that should preferably
+  no longer be used.
+
+** 6.1. Directive functions
+
+*** 6.1.1. <declare_class>
+
+  This was the ancient way of declaring a OWL class to ensure it was
+  known to the Manchester parser. The {{{2.1. declare}<declare>}}
+  directive should be used instead.
+
+*** 6.1.2. <declare_object_property>
+
+  This was the ancient way of declaring an object property to ensure it
+  was known to the Manchester parser. The {{{2.1. declare}<declare>}}
+  directive, with the <<</type="object_property">>> flag, should be used
+  instead.
+  
+  That is, replace for example
+  
++-----------------------------------------------------------------------
+declare_object_property(BFO:0000051)
++-----------------------------------------------------------------------
+
+  with
+  
++-----------------------------------------------------------------------
+declare(BFO:0000051, /type="object_property");
++-----------------------------------------------------------------------
+
+*** 6.1.3. <set_var> (3-argument form)
+
+  This was a very weird and ugly hack to allow defining a variable with
+  a given value depending on whether the subject or the object of a
+  mapping was a descendant of a given entity.
+  
+  Use the {{{3.2. is_a}<is_a>}} filter function combined with
+  {{{./sssom-transform.html#a6.1.1._set_var}<set_var>}} instead.
+
+** 6.2. Preprocessor functions
+
+*** 6.2.1. <check_subject_existence>
+
+  This preprocessor allowed to drop a mapping if its subject did not
+  exist or was obsolete in the helper ontology. Use the
+  {{{3.1. exists}<exists>}} filter instead, combined with the
+  {{{./sssom-transform.html#a6.4.1._stop}<stop>}} preprocessor.
+  
+  That is, replace for example
+  
++-----------------------------------------------------------------------
+subject==UBERON:* -> check_subject_existence();
++-----------------------------------------------------------------------
+
+  with
+  
++-----------------------------------------------------------------------
+subject==UBERON:* && !exists(%{subject_id}) -> stop();
++-----------------------------------------------------------------------
+
+*** 6.2.2. <check_object_existence>
+
+  Similar to {{{6.2.1. check_subject_existence}<check_subject_existence>}}
+  but for checking the object of a mapping instead of the subject.
+  
+  Same replacement, for example replace
+  
++-----------------------------------------------------------------------
+object==UBERON:* && predicate==* -> check_object_existence();
++-----------------------------------------------------------------------
+
+  with
+  
++-----------------------------------------------------------------------
+object==UBERON:* && !exists(%{object_id}) -> stop();
++-----------------------------------------------------------------------  
+
+** 6.3. Generator functions
+
+*** 6.3.1. <annotate_subject>
+
+  This function allowed to annotate the subject of a mapping. Use the
+  {{{4.3. annotate}<annotate>}} function instead, with
+  <<<%\{subject_id\}>>> as the first argument.
+
+*** 6.3.2. <annotate_object>
+
+  Similar to {{{6.3.1. annotate_subject}<annotate_subject>}}, but to
+  annotate the object of a mapping. Use the
+  {{{4.3. annotate}<annotate>}} function instead, with
+  <<<%\{object_id\}>>> as the first argument.
+
+** 6.4. The <*_curie> placeholders
+
+  In addition to the deprecated functions described above, previous
+  versions of the SSSOM/T-OWL dialect also defined two special
+  placeholders: <<<%subject_curie>>> to insert the shortened form of a
+  mapping’s subject ID, and <<<%object_curie>>> to insert the shortened
+  form of a mapping’s object ID.
+  
+  Those placeholders are still supported, but it should now be preferred
+  to use the standard <<<subject_id>>> and <<<object_id>>> placeholders,
+  combined with the {{{6.5.1. short}<short>}} format modifier.
+  
+** 6.5. Annotating the generated axioms
+
+  The <create_axiom> function, as well as the deprecated
+  <annotate_subject> and <annotate_object> functions, also accepted an
+  optional position argument that specified whether and how the
+  generated axiom should be annotated with values from the mapping’s
+  metadata.
+  
+  That argument is still supported, but the <<</annots>>> flag should
+  be preferred instead.
+  
+  In addition, that argument was expected to start with the fixed string
+  <<<direct:>>> – this was to leave room for the possibility of
+  generating annotations in different manners. That possibility is no
+  longer open for now, and should it be reopen, the way to specify how
+  annotations should be generated will rather be indicated by a new
+  flag option. The <<<direct:>>> prefix is now silently ignored.
+  
+  In short, replace for example:
+  
++-----------------------------------------------------------------------
+... -> create_axiom("%subject_id SubClassOf: %object_id", "direct:metadata,-mapping_cardinality");
++-----------------------------------------------------------------------
+
+  with
+  
++-----------------------------------------------------------------------
+...-> create_axiom("%subject_id SubClassOf: %object_id", /annots="metadata,-mapping_cardinality");
++-----------------------------------------------------------------------
+
+* 7. Examples
+
+** 7.1. FBbt-to-Uberon/CL bridge
+
+  This example is inspired from the real world use-case of the
+  cross-species “bridge ontology” between the Drosophila Anatomy
+  Ontology (FBbt) and the Uberon and CL anatomy and cell type
+  ontologies. Constructing this bridge ontology, and the other similar
+  cross-species bridges with other taxon-specific anatomy ontologies,
+  has in fact been the <main> use-case driving the development of
+  SSSOM/T-OWL, and is therefore a good example of some of the most
+  important features.
+  
+  Roughly, the main goal of that bridge ontology is to link FBbt
+  Drosophila-specific classes to their taxon-neutral counterparts in
+  Uberon and CL, with equivalent axioms that should look like this:
+  
++-----------------------------------------------------------------------
+FBbt:X EquivalentTo: UBERON:Y and (BFO:0000050 some NCBITaxon:7227);
++-----------------------------------------------------------------------
+
+  if the Uberon term <<<UBERON:Y>>> is a continuant, or like that:
+  
++-----------------------------------------------------------------------
+FBbt:X EquivalentTo: UBERON:Y and (BFO:0000066 some NCBITaxon:7227);
++-----------------------------------------------------------------------
+
+  if <<<UBERON:Y>>> is an occurrent. <<<NCBITaxon:7227>>> is the taxon
+  identifier for <Drosophila melanogaster>, <<<BFO:0000050>>> is the
+  classic <part_of> relation, and <<<BFO:0000066>>> is the <occurs_in>
+  relation (basically, the pendant of <part_of> for occurrents).
+  
+  To construct that bridge ontology, our source material is a SSSOM
+  mapping set containing mappings between FBbt terms on one side, and
+  Uberon or CL terms on the other side. The <helper> ontology will be
+  a merge of Uberon and CL.
+  
+  Rather than presenting the whole ruleset in one piece, we will
+  construct it piece by piece.
+  
+  First, as for all SSSOM/T ruleset, the prefix declarations:
+  
++-----------------------------------------------------------------------
+prefix FBbt:      <http://purl.obolibrary.org/obo/FBbt_>
+prefix CL:        <http://purl.obolibrary.org/obo/CL_>
+prefix UBERON:    <http://purl.obolibrary.org/obo/UBERON_>
+prefix oboInOwl:  <http://www.geneontology.org/formats/oboInOwl#>
+prefix NCBITaxon: <http://purl.obolibrary.org/obo/NCBITaxon_>
+prefix BFO:       <http://purl.obolibrary.org/obo/BFO_>
+prefix RO:        <http://purl.obolibrary.org/obo/RO_>
+prefix IAO:       <http://purl.obolibrary.org/obo/IAO_>
++-----------------------------------------------------------------------
+
+  Nothing much to say here. Any prefix ever used in a SSSOM/T ruleset
+  <must> be declared, except for the SSSOM built-in prefixes (those
+  listed {{{https://mapping-commons.github.io/sssom/spec-intro/#iri-prefixes}here}}).
+  
+  Then, comes the <directive> section. Directives are instructions at
+  the beginning of a SSSOM/T ruleset that do not produce anything, but
+  that may perform needed initialisation steps.
+  
+  Our helper ontology (Uberon+CL) may not contain declarations for
+  <<<NCBITaxon:7227>>> and the <<<BFO:0000066>>> relation, so to be on
+  the safe side, we declare those:
+  
++-----------------------------------------------------------------------
+declare(NCBITaxon:7227);
+declare(BFO:0000066, /type="object_property");
++-----------------------------------------------------------------------
+
+  (There is no need to declare <<<BFO:0000050>>>, which is so widely
+  used that it can be considered “ubiquitous” – there is no way a merge
+  of Uberon and CL does <not> contain a trace of <<<BFO:0000050>>>!)
+
+  As we have seen, we need to create two different types of equivalence
+  axioms, which differ only by the relation to use (part_of or
+  occurs_in). We will then create a <variable> to hold the relation to
+  use. The default value of that variable will be <<<BFO:0000050>>>,
+  because most terms involved in our FBbt-to-Uberon/CL mappings are
+  continuants and so most of our bridging axioms will use that relation:
+  
++-----------------------------------------------------------------------
+set_var("RELATION", BFO:0000050);
++-----------------------------------------------------------------------
+
+  We want this variable to take the value <<<BFO:0000066>>> whenever a
+  mapping involves a Uberon term that is an occurrent. In Uberon, all
+  occurrent terms (which represent things such as developmental stages)
+  are children of either <<<UBERON:0000104>>> or <<<UBERON:0000105>>>),
+  so we can do:
+  
++-----------------------------------------------------------------------
+is_a(%{object_id}, UBERON:0000104) -> set_var("RELATION", BFO:0000066);
+is_a(%{object_id}, UBERON:0000105) -> set_var("RELATION", BFO:0000066);
++-----------------------------------------------------------------------
+
+  The first line above reads approximately like, “whenever the object of
+  a mapping <is a> UBERON:0000104 (meaning, is either UBERON:0000104
+  itself or any of its descendant), the value of the <RELATION>
+  variable should be <<<BFO:0000066>>> instead of its default value.”
+  
+  Now come the actual rules. But before we can start producing axioms, a
+  bit of housekeeping. First, since we deal with mappings that we have
+  gathered from several sources, they may not all be in the same
+  “orientation”: some of them may have the FBbt term on the subject side
+  and the Uberon/CL term on the object side, and for others it may be
+  the other way around. Some mappings may also involve entities that
+  belong neither to FBbt nor to Uberon/CL.
+  
+  So, first, if there any mappings with a subject that is a Uberon or CL
+  term, we invert them, so that Uberon/CL terms are consistently on the
+  object side:
+  
++-----------------------------------------------------------------------
+subject==CL:* || subject==UBERON:* -> invert();
++-----------------------------------------------------------------------
+
+  Then, if there are any mappings with something else than a Uberon or
+  CL term as their object, we can drop them, we are not interested in
+  them:
+  
++-----------------------------------------------------------------------
+!object==CL:* || !object==UBERON:* -> stop();
++-----------------------------------------------------------------------
+
+  At this point, we are left with only mappings that have a Uberon or CL
+  term as their object: either because they were already oriented that
+  way to begin with, or because we just inverted them.
+  
+  There is a chance that the mappings are slightly out-of-date compared
+  to the Uberon/CL ontology, and that they may refer to Uberon/CL terms
+  that have been obsoleted. We don’t want to create bridging axioms to
+  obsolete terms, so we drop any mapping whose object refers to an
+  inexistent or obsolete entity:
+  
++-----------------------------------------------------------------------
+!exists(%{object_id}) -> stop();
++-----------------------------------------------------------------------
+
+  (We cannot similarly check that the FBbt side of the mappings always
+  refer to a non-obsolete term, because the helper ontology we are using
+  does not include FBbt, so if we were to ask it whether a FBbt term
+  ”exists”, it would always answer by the negative. It would be possible
+  to construct a merge ontology that includes FBbt of course, but in the
+  context of building the Uberon cross-species bridges that was not
+  really an option.)
+  
+  One last check! It <could> happen that a single FBbt term is mapped to
+  more than one Uberon term. In general there is nothing necessarily
+  wrong with that (mappings are not necessarily 1-to-1 mappings), but in
+  the context of the cross-species bridges this is not something that
+  should happen, so just in case, we drop any mapping with a cardinality
+  that is not <<<1:1>>> or <<<n:1>>>:
+  
++-----------------------------------------------------------------------
+!cardinality==*:1 -> stop();
++-----------------------------------------------------------------------
+
+  And finally, we can start producing axioms! First, the most important,
+  the equivalence axioms:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch ->
+    create_axiom("%subject_id EquivalentTo: %object_id and (%TAXREL some NCBITaxon:7227))");
++-----------------------------------------------------------------------
+
+  We filter on the subject side to make sure we are only dealing with
+  FBbt terms. We could also have dropped non-FBbt subjects earlier, of
+  course.
+  
+  Then, we want to generate a OBO-style ”cross-reference” on the
+  Uberon/CL terms, pointing to the FBbt terms they are mapped with:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch ->
+  annotate(%{object_id}, oboInOwl:hasDbXref, "%{subject_id|short}");
++-----------------------------------------------------------------------
+
+  Note here the use of the {{{./sssom-transform.html#a6.4.1_short}<short>}}
+  format modifier, so that the value of the cross-reference annotation
+  is the subject ID in its “CURIEfied” form (as typically expected for
+  OBO cross-references.)
+  
+  Lastly, we want the FBbt terms to carry a “OBO Foundry Unique Label”
+  (<<<IAO:0000589>>>) that explicitly indicates to a human reader that
+  those terms are the Drosophila equivalent of their Uberon/CL
+  counterparts. That is, if a FBbt term is mapped to the Uberon/CL term
+  for, say, “mouth”, we want that FBbt term to have a unique label of
+  “mouth (Drosophila)”:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch ->
+  annotate(%{subject_id}, IAO:0000589, "%{object_label} (Drosophila)");
++-----------------------------------------------------------------------
+
+  And voilà! The last thing to do (not strictly required, but for better
+  readability) is to regroup the last three rules. You will have noticed
+  that they all share the same filter expression, so they can be
+  rewritten as:
+  
++-----------------------------------------------------------------------
+subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch -> {
+    create_axiom("%subject_id EquivalentTo: %object_id and (%TAXREL some NCBITaxon:7227))");
+    annotate(%{object_id}, oboInOwl:hasDbXref, "%{subject_id|short}");
+    annotate(%{subject_id}, IAO:0000589, "%{object_label} (Drosophila)");
+}
++-----------------------------------------------------------------------

@@ -1,9 +1,15 @@
+   --------------------------
+   ROBOT xref-extract command
+   --------------------------
+
 ROBOT xref-extract command
 
   The <<<xref-extract>>> command is intended to extract mappings from
   the cross-reference annotations found in an ontology.
 
-* Usage
+%{toc|section=1|fromDepth=2|toDepth=3}
+
+* 1. Usage
 
   In its simplest form, the command just needs (in addition to an input
   ontology, which may be specified with the <<<-i>>> option or be taken
@@ -15,7 +21,7 @@ ROBOT xref-extract command
 robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
 +-----------------------------------------------------------------------
   
-* How extraction works
+* 2. How extraction works
 
   The default behaviour is to honour the <<<oboInOwl:treat-xrefs-as->>>
   ontology annotations found in the ontology. Those annotations are used
@@ -48,7 +54,7 @@ robot xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
   Several options allow to alter the default behaviour, they are
   described in the next subsections.
   
-** Custom prefix-to-predicate mappings
+** 2.1. Custom prefix-to-predicate mappings
   
   Use the <<<--map-prefix-to-predicate>>> option to force the use of a
   given predicate for cross-references with a specific prefix. For
@@ -67,7 +73,7 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   annotations, and only use explicitly specified prefix-to-predicate
   mappings, use the <<<--ignore-treat-xrefs>>> option.
   
-** Extracting cross-references using unmapped prefixes
+** 2.2. Extracting cross-references using unmapped prefixes
   
   By default, only cross-references with a prefix for which there is a
   prefix-to-predicate mapping are used (whether the prefix-to-predicate
@@ -78,7 +84,7 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   predicate will be turned into mappings with a <<<oboInOwl:hasDbXref>>>
   predicate.
   
-** Extracting cross-references using unknown prefixes
+** 2.3. Extracting cross-references using unknown prefixes
   
   Lastly, cross-references with a prefix that cannot be resolved are
   completely ignored, regardless of any other options. To force those
@@ -87,13 +93,13 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   in an invalid SSSOM file if the ontology does contain cross-references
   with non-resolvable prefix names.
   
-** Extracting cross-references from obsolete classes
+** 2.4. Extracting cross-references from obsolete classes
   
   By default, classes that are marked as obsolete (<<<owl:deprecated>>>)
   are completely ignored. To extract cross-references from obsolete
   classes as well, use <<<--include-obsoletes>>>.
   
-** Pruning "duplicated" cross-references
+** 2.5. Pruning "duplicated" cross-references
   
   When more than one cross-reference in the source ontology point to the
   same foreign term, the default behaviour is to generate a mapping from
@@ -105,7 +111,7 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   emitted for each such foreign term, giving the list of all subject
   terms that have a cross-reference to it.
   
-* Re-using an existing mapping set
+* 3. Re-using an existing mapping set
 
   By default, the file indicated by the <<<--mapping-file>>> options is
   not required to exist – and if it does, it will be overwritten.
@@ -137,7 +143,7 @@ robot xref-extract -i uberon.owl --mapping-file uberon.mappings.ssom.tsv \
   are used), to reuse an existing metadata file that is not associated
   to a set.
   
-* Manually specifying some set metadata
+* 4. Manually specifying some set metadata
 
   Some of the metadata for the extracted mapping set can be explicitly
   specified on the command line.

@@ -1,0 +1,110 @@
+    ---------------------------
+    The SSSOM/T-Mapping dialect
+    ---------------------------
+
+The SSSOM/T-Mapping dialect    
+
+  SSSOM/T-Mapping is the dialect of
+  {{{./sssom-transform.html}SSSOM/Transform}} used by the
+  {{{./sssom-cli.html}SSSOM-CLI}} command-line tool to filter and modify
+  a SSSOM mapping set.
+  
+  SSSOM/T-Mapping is a somewhat special dialect, in that instead of
+  transforming mappings into something else (which is normally what a
+  SSSOM/T dialect is about), it “transforms” mappings into… mappings.
+  
+  Currently, there is only one dialect-specific function in
+  SSSOM/T-Mapping: the <include> function, which is used to indicate
+  that the mapping the rule is applied to should be <included> in the
+  final mapping set that is being produced by the ruleset.
+  
+  Combined with the preprocessor functions from the base SSSOM/T
+  language (notably the {{{./sssom-transform.html#a6.4.1._stop}<stop>}}
+  function, to “drop” or “exclude” a mapping), this allows to select
+  precisely which mappings should or should not appear in the final
+  mapping set.
+  
+* 1. Principle of operation
+
+  To understand how SSSOM/T-Mapping works and how to best use it, it
+  may help to realise that the dialect is manipulating two distinct sets
+  of mappings:
+  
+  * the <source> set, containing the original mappings;
+  
+  * the <destination> or <result> set, containing the final mappings.
+  
+  []
+  
+  All SSSOM/T filters selects mappings from the <source> set. All
+  preprocessor functions like
+  {{{./sssom-transform.html#a6.4.1._stop}<stop>}},
+  {{{./sssom-transform.html#a6.4.2._invert}<invert>}}, or
+  {{{./sssom-transform.htnl#a6.4.3._assign}<assign>}}, also act on the
+  <source> set.
+  
+  Generator functions (of which the only one, at least for now, is the
+  <include> function), on the other hand, modify the <result> set.
+  Specifically, the <include> function takes mappings from the <source>
+  set and copies them over to the <result> set.
+  
+* 2. Examples
+
+  (All prefix declarations omitted from the examples, for brevity.)
+  
+  To To exclude all mappings with a subject in the CL namespace, while
+  keeping all other mappings:
+  
++-----------------------------------------------------------------------
+subject==CL:* -> stop();
+subject==* -> include();
++-----------------------------------------------------------------------
+
+  The first rule drops all mappings with a CL subject, while the second
+  includes all remaining mappings into the final set. The second rule
+  applies to all mappings (due to the “joker” <<<subject==*>>>), but at
+  this point the CL mappings are no longer in the source set.
+  
+  The order in which the <stop> and <include> rules are written is very
+  important, because (1) once a mapping has been dropped from the source
+  set, it can no longer be included, even if it is the target of a
+  subsequent <include> rule; (2) conversely, once a mapping has been
+  included in the final set, it can no longer be removed, even if it the
+  target of a subsequent <stop> rule (remember, the <stop> function, as
+  all preprocessors, only acts on the <source> set).
+  
+  Consider the following example:
+  
++-----------------------------------------------------------------------
+subject==CL:* -> stop();
+# At the point ALL mappings with a CL subject have been dropped already,
+# so the following rule has nothing to work on and will have no effect.
+subject==CL:1111 -> include();
++-----------------------------------------------------------------------
+
+  To exclude all mappings with a CL subject <except> CL:1111, you must
+  proceed in three steps: (1) explicitly include CL:1111, (2) drop all
+  the CL mappings, and (3) include everything else:
+  
++-----------------------------------------------------------------------
+subject==CL:1111 -> include();
+subject==CL:* -> stop();
+subject==* -> include();
++-----------------------------------------------------------------------
+
+  Or, alternatively, use a combined filter to only exclude the mappings
+  that have a CL subject <but> whose subject is not CL:1111:
+  
++-----------------------------------------------------------------------
+subject==CL:* && !subject==CL:1111 -> stop();
+subject==* -> include();
++-----------------------------------------------------------------------
+
+  Or still, with just one rule, to include CL:1111 and everything that
+  does not have a CL subject:
+  
++-----------------------------------------------------------------------
+subject==CL:1111 || !subject==CL:* -> include();
++-----------------------------------------------------------------------
+
+  Arguably, for readability, the 3-rule variant is probably better.

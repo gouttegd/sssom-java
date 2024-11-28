@@ -1,0 +1,132 @@
+    -----------------------------------------
+    URI Expression support in SSSOM/Transform
+    -----------------------------------------
+
+URI Expression support in SSSOM/Transform
+
+  {{{https://github.com/monarch-initiative/uri-expression-language}URI Expression}}
+  is a proposed model to encode complex entities, involving a
+  combination of simple entities, into a URI. In the context of SSSOM,
+  URI Expressions can be used to represent complex mappings, where
+  either the subject or the object is a complex entity.
+  
+  In SSSOM proper, complex mappings represented by means of
+  URI Expressions are not distinguishable from any other mappings.
+  Subject and object IDs are always treated as opaque strings, and the
+  fact that an ID may happen to be a URI Expression that represents a
+  complex entity is irrelevant for SSSOM.
+  
+  But users of such complex mappings may occasionally want to treat them
+  differently, and notably to “peek” inside the URI Expressions (instead
+  of treating them as opaque). For that, the SSSOM/Transform language
+  offers some helper functions specifically intended to manipulate URI
+  Expressions.
+  
+  Of note, URI Expressions in SSSOM/Transform should be considered
+  <experimental>, and subject to changes in the future.
+  
+%{toc|section=1|fromDepth=2|toDepth=3}
+
+* 1. <uriexpr_contains>
+
+  This is a filter function. It allows to select mappings depending on
+  whether a URI Expression contains a given value in one of its slots.
+  
+  It takes (at least) three arguments:
+  
+  * the URI Expression whose contents should be tested; placeholders
+    are expanded in this argument, which will be typically be set to
+    a mapping’s subject or object ID;
+    
+  * the name of a URI Expression slot;
+  
+  * the expected value of that slot.
+  
+  []
+  
+  The function may take additional pairs of arguments to check several
+  slots in the same call.
+  
+  For example, a mapping with the following subject ID:
+  
++-----------------------------------------------------------------------
+https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:4567')
++-----------------------------------------------------------------------
+
+  would be selected by the following filter (assuming the <MONDO> prefix
+  name has been duly declared):
+  
++-----------------------------------------------------------------------
+uriexpr_contains(%{subject_id}, 'disease', MONDO:*) -> ...;
++-----------------------------------------------------------------------
+
+* 2. <uriexpr_slot_value>
+
+  This is a {{{./sssom-transform.html#5.3. Format modifiers}format modifier}}
+  function that allows to extract the value of a particular slot within
+  a URI Expression.
+  
+  It takes a single mandatory argument, which is the name of the slot
+  whose value should be extracted.
+  
+  For example, assuming the same subject ID as in the previous section,
+  the following placeholder:
+
+  the following placeholder
+  
++-----------------------------------------------------------------------
+"%{subject_id|uriexpr_slot_value(phenotype)}"
++-----------------------------------------------------------------------
+
+  will insert the value <<<HP:4567>>>. Note that if the <<<HP>>> prefix
+  name is declared, the value of the slot will be expanded to its
+  full-length form. Append the <short> modifier if you specifically want
+  the short form of the identifier.
+  
+* 3. <uriexpr_expand>
+
+  This is a format modifier function that is specific to the
+  {{{./sssomt-owl.html}SSSOM/T-OWL}} dialect. It expands a URI
+  Expression value into a OWL class expression according to a
+  pre-defined template.
+  
+  The template must be declared at the beginning of the SSSOM/T-OWL
+  ruleset using the <uriexpr_declare_format> directive, which expects
+  two arguments:
+  
+  * the name of the URI Expression schema (the first part of the URI
+    Expression),
+    
+  * and the template to use for URI Expressions that follow that schema;
+    in that template, names enclosed in curly brackets (like this:
+    <<<\{name\}>>> represent the slots of the URI Expression.
+    
+  []
+  
+  Here is a complete example:
+
++-----------------------------------------------------------------------
+prefix SCHEMA: <http://example.org/schema/>
+prefix BFO:    <http://purl.obolibrary.org/obo/BFO_>
+prefix MONDO:  <http://purl.obolibrary.org/obo/MONDO_>
+prefix HP:     <http://purl.obolibrary.org/obo/HP_>
+prefix DO:     <http://purl.obolibrary.org/obo/DOID_>
+
+uriexpr_declare_format(SCHEMA:0001, "(<{disease}> and (BFO:0000051 some <{phenotype}>))");
+
+subject==SCHEMA:0001* -> create_axiom("%object_id EquivalentTo: %{subject_id|uriexpr_expand}");
++-----------------------------------------------------------------------
+
+  When applied to the following mapping:
+
+*---------------------------------------------------------------------------*-----------------*-----------*
+| subject_id                                                                | predicate_id    | object_id |  
+*---------------------------------------------------------------------------*-----------------*-----------*
+| http://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:5678') | skos:exactMatch | DO:3333   |
+*---------------------------------------------------------------------------*-----------------*-----------*
+
+  that ruleset  would create the following axiom:
+  
++-----------------------------------------------------------------------
+DO:3333 EquivalentTo: MONDO:1234 and (BFO:0000051 some HP:5678)
++-----------------------------------------------------------------------

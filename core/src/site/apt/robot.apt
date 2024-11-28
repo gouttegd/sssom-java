@@ -1,10 +1,14 @@
+    --------------
+    ROBOT commands
+    --------------
+
 ROBOT commands
 
   SSSOM-Java provides {{{http://robot.obolibrary.org/}ROBOT}} commands
   that are intended to allow manipulating SSSOM mapping sets as part of
   a ROBOT pipeline.
   
-* Enabling the SSSOM commands in ROBOT
+* 1. Enabling the SSSOM commands in ROBOT
 
   ROBOT 1.9.5 has {{{http://robot.obolibrary.org/plugins}built-in
   support}} for pluggable commands. To enable the commands provided by
@@ -36,7 +40,7 @@ ROBOT commands
   Note that in the standalone version, the <<<inject>>> command is
   renamed to <<<sssom-inject>>> for clarity.
   
-* Available commands
+* 2. Available commands
 
   Currently, this project provides three commands:
   

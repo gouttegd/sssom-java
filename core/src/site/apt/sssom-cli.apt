@@ -1,3 +1,7 @@
+    -----------------
+    Command-line tool
+    -----------------
+
 Command-line tool
 
   SSSOM-Java provides a command-line tool called <<<sssom-cli>>> to
@@ -7,7 +11,9 @@ Command-line tool
   perform some treatments on the mappings, and then write the resulting
   mapping set out.
 
-* Input options
+%{toc|section=1|fromDepth=2|toDepth=3}
+
+* 1. Input options
   
   Input mapping sets are specified as positional arguments on the
   command line. Use as many arguments as needed to read more than one
@@ -51,7 +57,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<--input>>> options instead of positional arguments. Such options
   are still accepted for backwards compatibility.
 
-** Merging metadata
+** 1.1. Merging metadata
 
   When merging several sets, by default multi-valued metadata slots are
   merged together. For example, if the first set has a
@@ -61,7 +67,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   the result set to contain only the metadata from the <first> input
   set.
   
-** Extended Prefix Map support
+** 1.2. Extended Prefix Map support
 
   Once a mapping set has been read, any IRI it contains may be
   “reconciled” against an
@@ -69,7 +75,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   by specifying the extended prefix map to use with the
   <<<--mangle-iris>>> option.
   
-* Output options
+* 2. Output options
   
   By default, SSSOM-CLI writes the resulting mapping set to the standard
   output. Use the <<<--output>>> option to specify an output file
@@ -83,7 +89,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   write the TSV section to its standard output and the metadata block to
   the file specified by <<<--metadata-output>>>.
   
-** Output prefix map
+** 2.1. Output prefix map
 
   The <<<--output-prefix-map>>> option allows to control which prefix
   map is used to shorten IRIs when writing the result set. That option
@@ -101,7 +107,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
          latter taking precedence over the former. This is the default
          behaviour.
          
-** Metadata of the output set
+** 2.3. Metadata of the output set
 
   By default, the output set will contain the same set-level metadata as
   the <first> input set, except for multi-valued slots which will
@@ -116,14 +122,14 @@ sssom-cli set.sssom.tsv:metadata.yaml
   which case the output metadata will <only> come from the
   <<<--output-metadata>>> option.
   
-** Splitting the result set
+** 2.4. Splitting the result set
 
   Instead of writing a single mapping set, it is possible to split the
   result set along the subject and object prefixes with the
   <<<--split>>> option, which accepts the name of a directory where the
   split sets will be written.
   
-** JSON output
+** 2.5. JSON output
 
   SSSOM-CLI writes the output set in the SSSOM/TSV format by default. To
   output the set in the JSON format, use the <<<--json-output>>> option.
@@ -152,7 +158,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   option is equivalent to using <<<--json-output>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
-* Checking a set against an ontology
+* 3. Checking a set against an ontology
 
   The <<<--update-from-ontology>>> option allows checking and updating
   the mapping set against an OWL ontology. It expects the filename of an
@@ -203,22 +209,12 @@ sssom-cli set.sssom.tsv:metadata.yaml
   value <<<none>>> to disable using the default <<<catalog-v001.xml>>>
   file).
   
-* Transformations
+* 4. Transformations
 
-  The {{{./sssom-transform.html}SSSOM/Transform}} language can be used
-  to apply arbitrary transformations to the mapping set before it is
+  The {{{./sssomt-mapping.html}SSSOM/T-Mapping dialect}} of the
+  {{{./sssom-transform.html}SSSOM/Transform language}} can be used to
+  apply arbitrary transformations to the mapping set before it is
   written to output.
-  
-  The SSSOM/T dialect used by SSSOM-CLI is currently very simple and
-  comprises, in addition to the generic <<<stop()>>>, <<<invert()>>>,
-  <<<assign()>>>, and <<<replace()>>> functions, only one
-  dialect-specific function called <<<include()>>>.
-  
-  Use <<<include()>>> in a SSSOM/T rule to indicate that the mappings
-  the rule is applied to should be included in the resulting mapping
-  set written out by SSSOM-CLI. This allows to create arbitrary complex
-  filters and to select precisely which mappings should or should not
-  appear in the resulting set.
   
   The ruleset must contain at least one rule that uses the
   <<<include()>>> function, otherwise the resulting set will be
@@ -241,7 +237,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<--include subject==UBERON:*>>> is equivalent to
   <<<--rule "subject==UBERON:* -> include()">>>.
 
-** Prefix map for SSSOM/T rules
+** 4.1. Prefix map for SSSOM/T rules
 
   All prefixes used in SSSOM/T rules must be declared. There are four
   different ways of declaring them. By order of precedence, they are:
@@ -268,7 +264,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   command line (with a <<<--rule>>> option) can use a prefix declared in
   the header of the SSSOM/T file.
     
-** Examples 
+** 4.2. Examples 
 
   The following example shows how to filter out any mapping that does
   not have a subject in the <<<http://purl.obolibrary.org/obo/UBERON_>>>

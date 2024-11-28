@@ -1,11 +1,17 @@
+    -----------------------
+    Mapping transformations
+    -----------------------
+
 Mapping transformations
 
   The {{{./apidocs/org/incenp/obofoundry/sssom/transform/package-summary.html}
   org.incenp.obofoundry.sssom.transform}} package provides
   classes and interfaces intended to allow transforming SSSOM mappings
   into other objects (including other SSSOM mappings).
+
+%{toc|section=1|fromDepth=2|toDepth=3}
   
-* Building blocks
+* 1. Building blocks
 
   A <mapping filter>, represented by the
   {{{./apidocs/org/incenp/obofoundry/sssom/transform/IMappingFilter.html}IMappingFilter}}
@@ -39,7 +45,7 @@ IMappingFilter filter = (mapping) -> mapping.getPredicateId().equals("http://www
 IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapping);
 +-----------------------------------------------------------------------
 
-* Processing rule
+* 2. Processing rule
 
   Mapping filters and transformers can be used on their own. However,
   they are also intended to be used as building blocks to create
@@ -87,7 +93,7 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   
   * identify which rule generated a given object.
   
-* The mapping processor
+* 3. The mapping processor
 
   Now that we have rules, we need to apply them to mappings. That is the
   job of the <mapping processor>
@@ -204,15 +210,23 @@ exactMatchOnly.getTags().add("exact-match-only");
   
   * the product that was generated from that mapping.
   
-* Reading rules from a file in SSSOM/Transform
+* 4. Reading rules from a file in SSSOM/Transform
 
   While processing rules can be created “manually” by calling the
   <<<MapppingProcessingRule>>> constructor as in the example above, they
   can also be parsed from a file in the
-  {{{./sssom-transform.html}SSSOM/Transform language}}, a small
-  domain-specific language specifically intended to express them. The
+  {{{./sssom-transform.html}SSSOM/Transform language}} (SSSOM/T), a
+  small domain-specific language specifically intended to express them.
+  The
   {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformReader.html}SSSOMTransformReader}}
   class provides a parser for the SSSOM/Transform language.
+  
+  Note that the SSSOM/Transform language is slightly more restrictive
+  than what the mapping processor model allows. In the mapping processor
+  model, a processing rule can simultaneously have a callback function,
+  a preprocessor function, and a generator function. In SSSOM/Transform,
+  a rule can only have <either> a callback function, <or> a preprocessor
+  function, <or> a generator function.
   
   The parser is independent of the type of objects one wishes to derive
   from mappings, and knows nothing of the functions that can be used in
@@ -227,63 +241,11 @@ exactMatchOnly.getTags().add("exact-match-only");
   
   Please refer to the API documentation of the <<<ISSSOMTransformApplication>>>
   for more details. To facilitate the creation of a SSSOM/Transform
-  application, a helper class
-  {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformApplicationBase.html}SSSOMTransformApplicationBase}}
-  is also available. It provides a minimal implementation that only
-  recognise two preprocessing actions: <<<stop()>>> and <<<invert()>>>.
-  Client code can extend that class and override just the methods they
-  need.
-  
-  So if we wanted to transform mappings into objects of type <Foo>, we
-  would first create a <<<SSSOMTFoo>>> class that extends
-  <<<SSSOMTransformApplicationBase<Foo>​>>>, and at a minimum override
-  the <<<onGeneratingAction>>> method to recognise a function
-  <<<create_foo>>>:
-  
-+-----------------------------------------------------------------------
-public class SSSOMTFoo extends SSSOMTransformApplicationBase<Foo> {
-
-    @Override
-    public IMappingTransformer<Foo> onGeneratingAction(String name, List<String> arguments) {
-        // Check that the name is an allowed instruction name
-        // (in this example, "create_foo" is the only allowed instruction)
-        if ( ! name.equals("create_foo") ) {
-            return null; // Let the parser know we did not recognise the function
-        }
-        
-        // Check the arguments
-        // (here, we'll suppose we need two arguments to create a Foo)
-        if ( arguments.size() != 2 ) {
-            throw new SSSOMTransformError("Invalid call to create_foo()");
-        }
-        
-        // Finally, create a transformer according to the application's
-        // logic (here with a lamda, but it could be an instance of a
-        // "real" class implementing the IMappingTransformer interface
-        // instead):
-        IMappingTransformer<Foo> transformer = (mapping) -> [application-specific code that will create a Foo from a mapping];
-
-        return transformer;
-    }
-}
-+-----------------------------------------------------------------------
-
-  Then we would be able to use the SSSOM/Transform parser as follows:
-  
-+-----------------------------------------------------------------------
-try {
-    SSSOMTransformReader<Foo> reader = new SSSOMTransformReader<Foo>(new SSSOMTFoo(), "my-sssom-transform-file.sssomt"); 
-    if ( reader.read() ) {
-        // parsing completed without errors, get the rules
-        List<MappingProcessingRule<Foo>> rules = reader.getRules();
-    } else {
-        // Some parsing errors occurred
-        List<SSSOMTransformError> errors = reader.getErrors();
-    }
-} catch (IOException ioe) {
-    // Some I/O error (not specific to SSSOM/Transform) occurred
-}
-+-----------------------------------------------------------------------
-
-  The rules thus obtained (assuming no parsing error) can then be given
-  to a <<<MappingProcessor<Foo>​>>> object.
+  application, a
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/SSSOMTransformApplication.html}base implementation}}
+  is also available. It supports all functions defined in the
+  description of the {{{./sssom-transform.html}SSSOM/T base language}},
+  and allows to register new application-specific functions which are
+  each represented by implementations of the
+  {{{./apidocs/org/incenp/obofoundry/sssom/transform/ISSSOMTFunction.html}ISSSOMTFunction}}
+  interface.

@@ -1,13 +1,114 @@
+    ----------------------------
+    The SSSOM/Transform language
+    ----------------------------
+
 The SSSOM/Transform language
 
   <SSSOM/Transform> (or <SSSOM/T>) is a small domain-specific language
   for filtering and transforming SSSOM mappings into other objects.
   
-* The basics
+%{toc|section=1|fromDepth=2|toDepth=3}
 
-  The core element of the SSSOM/Transform language is the <rule>. In
-  fact, a SSSOM/Transform file is called a <ruleset>. In its simplest
-  form, a rule looks like the following:
+* 1. SSSOM/T and SSSOM/T dialects
+
+  The SSSOM/T language cannot be used on its own; it is merely a
+  backbone whose purpose is to serve as the basis for the definition of
+  SSSOM/T “dialects” or “applications”.
+  
+  As of the current version, in SSSOM-Java there are two distinct
+  SSSOM/T dialects:
+  
+  * {{{./sssomt-owl.html}SSSOM/T-OWL}}, used in the
+    {{{/robot-sssom-inject.html}SSSOM plugin}} for ROBOT and intended
+    for producing OWL axioms from mappings;
+    
+  * {{{./sssomt-mapping.html}SSSOM/T-Mapping}}, used in the
+    {{{/sssom-cli.html}SSSOM-CLI}} command line tool, intended for
+    producing mappings from other mappings.
+    
+  []
+  
+  This page describes the base SSSOM/T language that is common to all
+  dialects. Dialect-specific functions are described in the page for
+  each respective dialect.
+  
+* 2. General structure of a SSSOM/T file
+
+  A SSSOM/T file is made of up to three sections:
+  
+  * a <prefix declaration section>;
+  
+  * a <directive section>;
+  
+  * and a <rule section>.
+  
+  []
+  
+  Those sections must appear in the indicated order; the prefix
+  declaration and directive section are optional.
+  
+  Lines starting with a <<<#>>> are comments.
+  
+  In most places whitespace is insignificant, except when explicitly
+  specified otherwise in this document.
+  
+** 2.1. The prefix declaration section
+
+  The SSSOM/T language, as the SSSOM standard itself, makes great use of
+  so-called <CURIEs>, or “shortened identifiers”, to avoid having to
+  always write full-length identifiers. For example,
+  <<<skos:exactMatch>>> is a shortcut for
+  <<<http://www.w3.org/2004/02/skos/core#exactMatch>>>, where <<<skos>>>
+  is the <prefix name> (standing for the IRI prefix
+  <<<http://www.w3.org/2004/02/skos/core#>>>) and <<<exactMatch>>> is
+  the <local identifier>
+  
+  As with SSSOM, all prefix names must be declared before they can be
+  used in a SSSOM/T file. This is the role of the prefix declaration
+  section.
+  
+  Prefix declarations must appear at the beginning of a SSSOM/T file,
+  before any <directive> and any <rule>. They are of the form:
+  
++-----------------------------------------------------------------------
+prefix PFX: <URL_PREFIX>
++-----------------------------------------------------------------------
+
+  where <PFX> is the prefix name, as it appears in shortened
+  identifiers, and <URL_PREFIX> is the corresponding URL prefix to which
+  the prefix name should be expanded.
+  
+  The following prefixes are built-in and need not be declared:
+    
++-----------------------------------------------------------------------
+prefix sssom:  <https://w3id.org/sssom/>
+prefix owl:    <http://www.w3.org/2002/07/owl#>
+prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
+prefix skos:   <http://www.w3.org/2004/02/skos/core#>
+prefix semapv: <https://w3id.org/semapv/vocab/>
++-----------------------------------------------------------------------
+
+** 2.2. The directive section
+
+  In SSSOM/T, a <directive> is a function call (see below for the
+  generic syntax of function calls) that appears on its own in a
+  ruleset (not associated to any <filter>), just after the prefix
+  declarations (if any) but before any <rule>.
+  
+  Directive are intended to pass informations to the SSSOM/T
+  application, before the application proceeds with applying the
+  transformation rules.
+  
+  The base SSSOM/T language currently defines only one directive,
+  {{{6.1.1. set_var}set_var}}.
+  
+** 2.3. The rule section
+
+  The rule section is the most important part of a SSSOM/T ruleset.
+  It runs from the end of the last <directive> to the end of the file.
+  
+  The general form of a <rule> is:
   
 +-----------------------------------------------------------------------
 FILTER -> ACTION;
@@ -17,42 +118,82 @@ FILTER -> ACTION;
   the rule is applied, and <ACTION> describes what will happen when the
   rule is applied to those mappings.
   
-  A <ruleset> is a succession of rules, to be applied in the order in
-  which they appear in the file.
+  Rules are applied in the order in which they appear in the SSSOM/T
+  file.
   
-  In most places whitespace is insignificant, except when explicitly
-  specified otherwise in this document. Comments start with a <<<#>>>
-  character and runs until the end of the line.
-  
-* Filters
+** 2.4. Execution of a SSSOM/T ruleset
 
-** Atomic filters
+  Briefly, here is the flow of how a SSSOM/T ruleset is executed.
+  
+  [[1]] First, all directives are executed. This actually happens at
+        parsing time.
+        
+  [[2]] Then, the SSSOM/T processor iterates over all rules, in the
+        order in which they were declared. For each rule:
+        
+        [[1]] If the rule is associated to a callback function, that
+              function is called, then the processor switches to the
+              next rule.
+              
+        [[2]] Otherwise, the processor iterates through all mappings
+              in the input set. For each mapping:
+              
+              [[1]] If the mapping does not match the rule’s filter,
+                    the processor switches to the next mapping.
+                    
+              [[2]] Otherwise, the rule’s action is executed for the
+                    selected mapping.
+                    
+  []
+
+* 3. Filters
+
+** 3.1. Atomic filters
 
   The <FILTER> part of a rule can be quite complex but the core
-  component of it is an <atomic filter>, which is of the form:
+  component is always an <atomic filter>, which is generally of the
+  form:
   
 +-----------------------------------------------------------------------
-FIELD_NAME==PATTERN
-+-----------------------------------------------------------------------
-
-  where <FIELD_NAME> identifies a SSSOM metadata slot and <PATTERN> is
-  the value to which the slot will be compared. For example, the
-  following filter:
-  
-+-----------------------------------------------------------------------
-mapping_justification==semapv:ManualMappingCuration
+NAME==PATTERN
 +-----------------------------------------------------------------------
 
-  will match any mapping that has a <mapping_justification> metadata
-  slot set to <semapv:ManualMappingCuration>.
+  where <NAME> identifies a SSSOM metadata slot and <PATTERN> is the
+  value to which the slot will be compared. There should be no
+  whitespace characters between the <NAME> and the <<<==>>> operator and
+  between the operator and the <PATTERN> – this is one of the few cases
+  where whitespace is significant.
   
-  There should be no whitespace characters between the <FIELD_NAME> and
-  the operator and between the operator and the <PATTERN> – this is one
-  of the few cases where whitespace is significant.
+  The <NAME> usually corresponds exactly to the name of the metadata
+  slot against which the filter operates, except that for the slots
+  whose name ends with <<<_id>>> (e.g. <<<subject_id>>>,
+  <<<predicate_id>>>, <<<creator_id>>>, etc.), the <<<_id>>> suffix is
+  dropped. Also, <<<justification>>> is accepted as an alias for
+  <<<mapping_justification>>> and <<<cardinality>>> is accepted as an
+  alias for <<<mapping_cardinality>>>.
   
-  The <PATTERN> part of an atomic filter may end with an asterisk (<*>),
-  in which case the filter will match if the corresponding slot <begins>
-  with the specified value. For example:
+*** 3.1.1. ID filters
+
+  The most important atomic filters are those that filter mappings based
+  on the value of an ID field (e.g. <<<subject_id>>>, <<<object_id>>>,
+  etc.).
+  
+  For example, the following filter:
+  
++-----------------------------------------------------------------------
+predicate==skos:exactMatch
++-----------------------------------------------------------------------
+
+  will match any mapping whose predicate ID is
+  <<<http://www.w3.org/2004/02/skos/core#exactMatch>>>.
+  
+  Importantly, the value of an ID filter can only be specified as a
+  CURIE. The use of full-length IRIs is not possible. However the actual
+  comparison is always made <after expansion>, on the full-length IRIs.
+  
+  The value of an ID filter may end with an asterisk (<<<*>>>), in which
+  case the filter will match if the corresponding slot <begins> with the
+  specified value. For example:
   
 +-----------------------------------------------------------------------
 predicate==semapv:crossSpecies*
@@ -60,60 +201,58 @@ predicate==semapv:crossSpecies*
 
   will match any mapping that has a predicate whose ID starts with
   <<<https://w3id.org/semapv/vocab/crossSpecies>>> (after expansion of
-  the built-in <<<semapv>>> prefix). So it will match a mapping with a
-  predicate <<<semapv:crossSpeciesExactMatch>>> for example, but not a
-  mapping with a predicate <<<skos:exactMatch>>>.
+  the built-in <<<semapv>>> prefix name).
   
-  The <FIELD_NAME> usually corresponds exactly to the name of the
-  metadata slot against which the filter operates (as is the case for
-  <<<mapping_justification>>> above), except that for the slots whose
-  name ends with <<<_id>>> (e.g. <<<subject_id>>>, <<<predicate_id>>>,
-  <<<creator_id>>>, etc.), the <_id> suffix is dropped (that’s why the
-  previous example is <<<predicate==…>>> instead of
-  <<<predicate_id==…>>>). Also, <<<justification>>> is accepted as an
-  alias for <<<mapping_justification>>> and <<<cardinality>>> is
-  accepted as an alias for <<<mapping_cardinality>>>.
+  That logic holds when the asterisk represents the entire local part of
+  the CURIE, as in:
   
-*** Filters on free-form text slots
++-----------------------------------------------------------------------
+predicate==skos:*
++-----------------------------------------------------------------------
+
+  This will match any mapping with a predicate in the SKOS namespace
+  (formally, any predicate whose ID starts with
+  <<<http://www.w3.org/2004/02/skos/core#>>>).
+  
+*** 3.1.2. Filters on free-form text slots
 
   For the filters that act on slots that contain a free-form text value
-  or an URI (rather than an identifier, a numerical value, or an enum
-  value), the value to filter against must be specified in single or
-  double quotes. For example:
+  (rather than an identifier, a numerical value, or an enum value), the
+  value to filter against must be specified in single or double quotes.
+  For example:
   
 +-----------------------------------------------------------------------
 mapping_tool=="mira"
 +-----------------------------------------------------------------------
 
   This also applies, by exception, to the <<<subject_type>>> and
-  <<<object_type>>> slots, because even though they are enum-typed,
-  the values they accept (from the
-  {{{https://mapping-commons.github.io/sssom/EntityTypeEnum/}EntityType
-  enum}} in SSSOM) contain whitespaces.
+  <<<object_type>>> slots, because even though they are enum-typed, the
+  values they accept (from the
+  {{{https://mapping-commons.github.io/sssom/EntityTypeEnum/}EntityType enum}}
+  in the SSSOM specification) contain whitespaces.
   
-*** Filters on multi-valued slots
+*** 3.1.3. Filters on multi-valued slots
 
   For the filters that act on multi-valued slots (e.g. <<<creator_id>>>,
   <<<author_id>>>, etc.), a mapping is considered to match if at least
-  <one> of the values matches the specified pattern. For example
+  <one> of the values matches the specified pattern. For example:
   
 +-----------------------------------------------------------------------
 creator==ORCID:*
 +-----------------------------------------------------------------------
 
-  will match a mapping if the list of its creators’ identifiers contains
-  at least one ORCID identifier (assuming the <ORCID> prefix has been
-  declared, see further below for how to declare a prefix). A mapping
-  with no creator IDs or with only creator IDs of another type will not
-  match.
+  Assuming the <ORCID> prefix name has been duly declared, this will
+  match a mapping if the list of its creators’ identifiers contains at
+  least one ORCID identifier. A mapping with no creator IDs or with only
+  creator IDs of another type than ORCIDs will not match.
   
-*** Filters on numeric slots
+*** 3.1.4. Filters on numeric slots
 
   For the two filters that act on numeric slots (<<<confidence>>> and
-  <<<similarity_score>>>, in addition to the equality operator
+  <<<similarity_score>>>), in addition to the equality operator
   (<<<==>>>), it is possible to use one of the following inequality
   operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and <<<\<=>>>. They have the
-  traditional meaning you could expect. For example
+  traditional meaning you could expect. For example:
   
 +-----------------------------------------------------------------------
 confidence>=0.8
@@ -122,33 +261,31 @@ confidence>=0.8
   will match any mapping with a confidence value higher than or equal to
   0.8.
   
-*** Filtering on mapping predicate
+*** 3.1.5. Filtering on mapping predicate
 
-  The filter on mapping predicate (<<<predicate==…>>>) is a bit special
+  The filter on mapping predicate (<<<predicate==….>>>) is a bit special
   in that it takes into account the <predicate modifier> of a mapping,
   if present, to determine whether the mapping is a match or not. If the
-  predicate modifier <<<Not>>> is present, then the mapping will not be
-  a match for the filter even if its predicate does correspond to the
-  pattern that the filter is looking for.
+  predicate modifier <<<Not>>> (currently the only legal predicate
+  modifier defined in the SSSOM specification) is present, then the
+  mapping will not be a match for the filter even if its predicate does
+  correspond to the pattern that the filter is looking for.
   
-*** Filtering on cardinality
+*** 3.1.6. Filtering on cardinality
 
   In addition to the cardinality values specified in the SSSOM
   specification (<<<1:1>>>, <<<1:n>>>, <<<n:1>>>, etc.), the cardinality
-  filter accepts a joker value on either side of the <<<:>>>. For
-  example
+  filter accepts a joker value on either side of the <<<:>>> sign. For
+  example:
   
 +-----------------------------------------------------------------------
-mapping_cardinality==1:*
+mapping_cardinality==*:1
 +-----------------------------------------------------------------------
 
-  is strictly equivalent to
+  will select mappings with a cardinality of either <<<1:1>>> or
+  <<<n:1>>>.
   
-+-----------------------------------------------------------------------
-mapping_cardinality==1:1 || mapping_cardinality==1:n
-+-----------------------------------------------------------------------
-
-*** Filtering on empty values
+*** 3.1.7. Filtering on empty values
 
   For most slots, it is possible to select mappings that do <not> have a
   value in the slot.
@@ -162,7 +299,7 @@ mapping_tool==""
 
   That syntax is also accepted for the filters on <<<subject_type>>> and
   <<<object_type>>>.
-
+  
   When combined with a negation operator (see below), this can be used
   to select mappings that have <any non-null value> in the slot:
   
@@ -170,11 +307,11 @@ mapping_tool==""
 !mapping_tool==""
 +-----------------------------------------------------------------------
 
-  Note that this different from using the <<<*>>> special value, which
-  will accept any mapping regardless of whether they have a value or not
-  in the slot.
+  Note that this is different from using the <<<*>>> special value,
+  which will accept any mapping regardless of whether they a value or
+  not in the slot.
   
-  For slots that expect identifiers, selecting mappings with an empty
+  For slots that expects identifiers, selecting mappings with an empty
   value is done by using the special value <<<~>>>, as in:
   
 +-----------------------------------------------------------------------
@@ -184,13 +321,16 @@ author==~
   That syntax is also accepted by the filters on numeric slots and on
   <<<mapping_cardinality>>>.
   
-*** Application-specific filters
+*** 3.1.8. Function filters
 
-  A SSSOM/Transform application can define its own filters to enrich the
-  set of built-in filters. An application-specific filter takes the form
-  of a function call and behaves like an atomic filter.
+  Lastly, an atomic filter may also take the form of a call to a
+  {{{6.2. Filter functions}filter function}}.
   
-** Combining filters
+  The base SSSOM/T language currently defines only one filter
+  function: {{{6.2.1. uriexpr_contains}uriexpr_contains}}. SSSOM/T
+  dialects may define their own filter functions.
+  
+** 3.2. Combining filters
 
   As you may have guessed already, if there are <atomic filters>, then
   there must be some kind of <non-atomic> filters. Indeed, atomic
@@ -244,7 +384,7 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   strongly recommended to always use parentheses instead of relying on
   the operators’ precedence rules.
   
-** Negating filters
+** 3.3. Negating filters
 
   Any filter, be it atomic or combined, can be <negated> by prepending a
   <<<!>>> sign. If <A> is a filter, <<<!A>>> will match any mapping that
@@ -258,7 +398,7 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   <<<skos:exactMatch>>>.
   
   Note that because of the particular behaviour of the <<<predicate>>>
-  filter ({{{Filtering on mapping predicate}see above}}), in this
+  filter ({{{3.1.5. Filtering on mapping predicate}see above}}), in this
   example, the filter <would> match a mapping that has a
   <<<skos:exactMatch>>> predicate coupled to the predicate modifier
   <Not>: the <<<predicate==skos:exactMatch>>> would initially reject
@@ -279,192 +419,492 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
 !predicate==skos:exactMatch && !predicate_modifier==Not
 +-----------------------------------------------------------------------
 
-* Actions
+* 4. Actions
 
-  Once the <FILTER> part of a rule has accepted a mapping, the <ACTION>
-  part (after the <<<-\>>>> sign) specifies what to do with it. Each
-  action is made of an <function> followed by a list of <arguments>
-  (which may be empty):
+  Once the <FILTER> part of a rule has selected a mapping, the <ACTION>
+  part (everything after the <<<-\>>>> sign) specifies what to do with
+  it.
   
-+-----------------------------------------------------------------------
-my_function(arg1, arg2, arg3);
-+-----------------------------------------------------------------------
-
-  Arguments can be either:
+  Each action takes the form of a single function call.
   
-  * single- or double-quoted strings, such as <<<"my argument">>>
-    (if the string has to contain a quote character of the same type as
-    used to delimit the string itself, it must be escaped, as in
-    <<<"my \"great\" argument">>>);
-    
-  * an IRI enclosed in angled brackets, such as
-    <<<​<https://w3id.org/semapv/vocab/crossSpecies>​>>>;
-    
-  * a shortened identifier (aka a “CURIE”), such as <<<BFO:0000050>>>.
+  There are three types of functions that may be used in the <ACTION>
+  part of a rule:
   
-** Built-in functions
-
-  The default parser provided with SSSOM-Java recognises four built-in
-  functions:
-  
-  * The <<<stop()>>> function indicates that the mapping to which the
-    action is applied should be excluded from any remaining rules.
-    Basically, once this action has been applied to a mapping, it’s as
-    if the mapping was removed from the mapping set for the rest of the
-    ruleset.
+  * <generator> functions, which must produce the kind of objects the
+    SSSOM/T dialect is intended to generate (for example, a generator
+    function in the SSSOM/T-OWL dialect must produce a OWL axiom);
     
-  * The <<<invert()>>> function <inverts> the current mapping, so
-    that the subject becomes the object and vice-versa. Note that not
-    all mappings can be inverted (the predicate needs to be invertible);
-    if a given mapping cannot be inverted, it will be excluded from any
-    further processing (as if it had been the target of a <<<stop()>>>
-    action).
+  * <preprocessor> functions, which do not produce anything but may
+    modify the mapping currently being processed;
     
-    See the {{{https://mapping-commons.github.io/sssom/chaining_rules/#inverse-rules}SSSOM documentation}}
-    about mapping inversion.
-    
-  * The <<<assign()>>> function allows to modify the selected mapping by
-    assigned a constant value to a given slot. It takes at least two
-    arguments, the first one being the name of the slot to modify and
-    the second one being the value to assign to that slot.
-    
-    The second argument may be an empty string (<<<"">>>) to indicate
-    that the slot should have no value (any existing value for that slot
-    would then be removed). To set several values in a multi-valued slot
-    (such as <<<creator_id>>>), separate the values with a <<<|>>>. When
-    setting a value to a slot that accepts an entity reference, short
-    identifiers may be used using any prefix that is declared in a
-    <<<prefix>>> declaration (see below).
-    
-    It is possible to modify more than one slots in a single call by
-    adding extra arguments. Each supplementary pair of arguments should
-    follow the same rules as the first pair (so, the third argument is
-    the name of the second slot to modify, the fourth argument is the
-    value to assign to that slot, and so on).
-    
-  * The <<<replace()>>> function allows to modify the selected mapping
-    by assigning to a slot a value that is calculated at runtime. It
-    takes at least three arguments: the name of the slot to modify, a
-    pattern to find within the value of that slot for a given mapping,
-    and a string to replace all occurrences of the pattern with.
-    
-    Currently, that function is only available for slots whose values
-    are either string or list-of-strings (including entity references).
-    
-    As for the <<<assign()>>> function, it is possible to modify more
-    than one slot by adding extra triplets of arguments.
+  * <callback> functions, which do not produce anything but may modify
+    the state of the SSSOM/T application.
     
   []
+  
+  The base SSSOM/T language described here does not specify any
+  generator functions (since such functions are specific to a given
+  SSSOM/T dialect). It defines a handful of
+  {{{6.4. Preprocessor functions}preprocessor functions}}, as well as
+  one {{{6.3. Callback functions}call function}}. 
+
+* 5. Function calls
+
+  As we have seen above, both <directives> and <rules> contain
+  <function calls>. A function call is of the form:
+  
++-----------------------------------------------------------------------
+FUNCTION(ARG1, ARG2, ...);
++-----------------------------------------------------------------------
+
+  That is, it comprises the name of the function (<FUNCTION>) followed
+  by parentheses which may contain a comma-separated list of arguments,
+  followed by a semi-colon.
+  
+** 5.1. Function arguments
+  
+  Arguments to a function can be of four types:
+  
+  * single- or double-quoted strings, such as <<<"my argument">>> (if
+    the string has to contain a quote character of the same type as used
+    to delimit the string itself, it has to be escaped, as in
+    <<<"my \"great\" argument">>>);
+    
+  * IRIs enclosed within angled brackets, such as
+    <<<https://w3id.org/semapv/vocab/crossSpeciesExactMatch>>>;
+  
+  * “naked” CURIEs, such as <<<BFO:0000050>>> (always using a prefix
+    name that hasbeen duly <declared> beforehand!);
+  
+  * and <flags>, which are named arguments starting with a <<</>>>
+    character and followed by a value which can itself be a string,
+    a IRI, or a CURIE.
+    
+  []
+  
+  The following example illustrates all four types of arguments:
+
++-----------------------------------------------------------------------
+FUNCTION("string argument", <IRI_argument>, CURIE:argument, /flag="argument");
++-----------------------------------------------------------------------
+
+  In this example, the value of the first argument is simply <<<string
+  argument>>>, without the enclosing quotes. The value of the second
+  argument is <<<IRI_argument>>>, without the enclosing angled brackets.
+  
+  Importantly, the value of the third argument is the full-length
+  identifier formed by the expansion of the <CURIE> prefix name into
+  whatever URL prefix has been associated to it. “Naked” CURIEs are
+  <always> expanded into their full-length form.
+  
+** 5.2. Placeholder expansion in string arguments
+
+  String arguments in a function call can contain <placeholders> which
+  will be automatically replaced by some value.
+  
+  A placeholder may take two different forms:
+  
+  * a “bracketed form”, where the name of the placeholder is enclosed in
+    curly brackets and preceded by a <<<%>>> character, as in
+    <<<%\{PLACEHOLDER}>>>;
+    
+  * a “un-bracketed form”, where the name of the placeholder is simply
+    preceded by a <<<%>>> character, as in <<<%PLACEHOLDER>>>.
+    
+  []
+  
+  When using the un-bracketed form, a placeholder name must start with a
+  letter, and must contain only letters and underscore (<<<_>>>)
+  characters. The bracketed form does not have such a limitation, and a
+  bracketed placeholder may contain any character except <<<|>>> and
+  <<<}>>>.
+  
+  All SSSOM/T dialects define at least one placeholder for each of the
+  slots associated to the <Mapping> class in the SSSOM specification.
+  Those placeholders use the same name as the name of the slot itself.
+  
+  For example, to insert into the argument to a function call the
+  label of the subject of the mapping being currently processed, it is
+  possible to do:
+  
++-----------------------------------------------------------------------
+my_function("The label of this mapping is %{subject_label}.");
++-----------------------------------------------------------------------
+
+  or, using the un-bracketed form:
+  
++-----------------------------------------------------------------------
+my_function("The label of this mapping is %subject_label.");
++-----------------------------------------------------------------------
+
+  As a convenience, when a string argument is made entirely of a
+  single bracketed placeholder, the enclosing quotes may be omitted.
+  For example, this:
+  
++-----------------------------------------------------------------------
+my_function(%{subject_id});
++-----------------------------------------------------------------------
+
+  is equivalent to:
+  
++-----------------------------------------------------------------------
+my_function("%{subject_id}");
++-----------------------------------------------------------------------
+
+  SSSOM/T dialects may define additional placeholders, and custom
+  placeholders may also be defined in a SSSOM/T ruleset by the directive
+  function {{{6.1.1. The set_var directive}set_var}}.
+  
+  Note that not all SSSOM/T functions accept the use of placeholders
+  within their arguments. Consult the documentation of each function to
+  find out whether the use of placeholders is possible or not.
+  
+** 5.3. Format modifiers
+
+  When using the bracketed syntax to insert a placeholder inside a
+  string argument, the placeholder itself may be followed by one or
+  more <format modifier> as follows:
+  
++-----------------------------------------------------------------------
+my_function("Subject ID: %{subject_id|mod1|mod2|mod3}");
++-----------------------------------------------------------------------
+
+  In that example, the <mod1> modifier takes the value of the current
+  mapping’s subject ID, modifies it somehow, and passes the result to
+  the <mod2> modifier, which in turn modifies it as well and passes it
+  to the <mod3> modifier; the value eventually inserted into the string
+  is the output of that last modifier.
+  
+  Format modifiers can optionally accept arguments of their own, as in
+  this example:
+  
++-----------------------------------------------------------------------
+FUNCTION("Subject ID: %{subject_id|mod1(arg1, 'arg 2')|mod2}");
++-----------------------------------------------------------------------
+
+  Here, the <mod1> modifier is given two arguments: <<<arg1>>> and
+  <<<arg 2>>>. As hinted by that example, arguments to format modifiers
+  may be quoted or unquoted.
+  
+  The base SSSOM/T language defines a few standard format modifiers,
+  {{{6.5. Format modifier functions}described below}}. SSSOM/T dialects
+  may define additional modifiers.
+  
+* 6. Base SSSOM/T functions
+
+  This sections describes the functions that are defined in the base
+  SSSOM/T language and that are therefore available in all dialects.
+  
+** 6.1. Directive functions
+
+*** 6.1.1. <set_var>
+
+  This directive allows to define an additional placeholder name that
+  can later be used in function arguments. It expects two arguments:
+  the name of the placeholder, and its value.
+  
+  For example:
+  
++-----------------------------------------------------------------------
+set_var("MY_VARIABLE", "its value");
++-----------------------------------------------------------------------
+
+  defines a placeholder named <MY_VARIABLE> and assigns to it the value
+  <<<its value>>>.
+  
+  That placeholder can then be used in an argument to a function
+  (assuming the function allows the use of placeholders generally) as
+  any other placeholder, for example:
+  
++-----------------------------------------------------------------------
+my_function("My variable has the value %{MY_VARIABLE}");
++-----------------------------------------------------------------------
+
+** 6.2. Filter functions
+
+  The base SSSOM/Transform language currently does not define any filter
+  function. All filtering is done using the standard filter constructs
+  described in the {{{3. Filters}Filters}} section.
+
+** 6.3. Callback functions
+
+*** 6.3.1. <set_var>
+
+  This is in fact the same function as the
+  {{{6.1.1. set_var}set_var directive}} above, except in a different
+  context.
+  
+  When called as the <ACTION> part of a rule (after a filter), it will
+  assign a new value to the variable, only for the mappings that are
+  selected by the corresponding filter.
+  
+  For example:
+  
++-----------------------------------------------------------------------
+predicate==skos:broadMatch -> set_var("MY_VARIABLE", "value for broad matches");
++-----------------------------------------------------------------------
+
+  The variable <MY_VARIABLE> will have the value <<<value for broad
+  matches>>>, <only> for the mappings that have a <<<skos:broadMatch>>>
+  predicate. For all other mappings, the variable will retain the value
+  that was originally declared in the <set_var> directive.
+  
+  Of note, it is forbidden to use <set_var> to assign a
+  mapping-dependent value to a variable that has <not> been previously
+  declared in a <set_var> directive at the beginning of the ruleset.
+
+** 6.4. Preprocessor functions
+
+*** 6.4.1. <stop>
+
+  This function indicates that the mapping to which it is applied should
+  be excluded from any remaining rules. Basically, once this function
+  has been applied to a mapping, it is as if the mapping was removed
+  from the mapping set for the rest of the ruleset.
+  
+  The function does not take any argument.
+  
+*** 6.4.2. <invert>
+
+  This function <inverts> the current mapping, so that the subject
+  becomes the object and vice-versa. It does not take any argument.
+  
+  Note that not all mappings can be inverted (the predicate needs to be
+  invertible); if a given mapping cannot be inverted, it will be
+  excluded from any further processing (as if it has been the target of
+  the {{{The stop function}stop}} function).
+  
+  See the
+  {{{https://mapping-commons.github.io/sssom/chaining-rules/#inverse}SSSOM documentation}}
+  for details about mapping inversion.
   
   Example:
   
 +-----------------------------------------------------------------------
-!mapping_justification==semapv:ManualMappingCuration -> stop();
+!justification===semapv:ManualMappingCuration -> stop();
 subject==CL:* -> invert();
 +-----------------------------------------------------------------------
 
   The first rule will drop all mappings that do not come from a manual
-  curation process. The second rule (which, consequently, will only ever
-  apply to manually curated mappings) inverts all mappings that have a
-  subject in the CL namespace. After these two rules, the mapping set
-  only contains manually curated mappings, and no mapping can have a CL
-  subject (since the mappings that did were either inverted, or dropped
-  if they couldn’t be inverted).
+  curation process. The second rule (which, consequently, will only
+  ever apply to manually curated mappings) inverts all mappings that
+  have a subject in the CL namespace. After those two rules, the mapping
+  set only contains manually curated mappings, and no mapping can have a
+  CL subject (since the mappings that did were either inverted, or
+  dropped if they could not be inverted).
   
   Note that, on their own, these two rules are equivalent to this single
   one:
   
 +-----------------------------------------------------------------------
-mapping_justification==semapv:ManualMappingCuration && subject==CL:* -> invert()
+justification==semapv:ManualMappingCuration && subject==CL:* -> invert();
 +-----------------------------------------------------------------------
 
   which inverts all manually curated mappings that have a CL subject.
   The difference lies in what may happen next: in the second case,
   mappings that are not manually curated are still present in the set
-  – they have been excluded from the <<<invert()>>> rule, but not
-  removed, so they will be seen by any rule that may follow.
+  – they have been excluded from the <invert()> rule, but not removed,
+  so they will be seen be any rule that may follow.
   
-  This other example shows how to modify mappings. Here, any mapping
-  using a <<<oboInOwl:hasDbXref>>> predicate is modified to use a
-  <<<skos:exactMatch>>> predicate instead:
+*** 6.4.3. <assign>
+
+  This function allows to modify the selected mapping by assigning a
+  value to a given slot. It takes at least two arguments:
+  
+  * the name of the slot to modify;
+  
+  * the value to assign to that slot.
+  
+  []
+  
+  The second argument:
+  
+  * may contain
+    {{{5.2. Placeholder expansion in string arguments}placeholders}};
+  
+  * may be an empty string, to indicate that the slot should have no
+    value (any existing value for that slot would then be removed);
+    
+  * may contain several values separated by a pipe character (<<<|>>>),
+    when assigning a value to a multi-valued slot.
+    
+  []
+  
+  It is possible to modify more than one slots in a single call to
+  <assign()> by adding extra arguments. Each supplementary pair of
+  arguments should follow the same rules as the first pair (so, the
+  third argument is the name of the second slot to modify, the fourth
+  argument is the value to assign to that slot, and so on).
+  
+  Examples:
+  
+  This rule will modify any mapping that uses a <<<oboInOwl:hasDbXref>>>
+  predicate to make it use a <<<skos:exactMatch>>> predicate instead:
   
 +-----------------------------------------------------------------------
-predicate==oboInOwl:hasDbXref -> assign("predicate_id", "skos:exactMatch");
+predicate==oboInOwl:hasDbXref -> assign("predicate_id", skos:exactMatch);
 +-----------------------------------------------------------------------
 
-  Finally, this example shows how to perform string replacements within
-  a mapping. Here, object IDs are renamed to fix a bogus prefix URL:
+  This rule will add to any mapping a (somewhat useless!) comment that
+  basically states in plain English what the mapping is about:
+  
++-----------------------------------------------------------------------
+predicate==* -> assign("comment", "Mapping between '%{subject_label}' and '%{object_label}'");
++-----------------------------------------------------------------------
+  
+*** 6.4.4. <replace>
+
+  This function allows to modify the selected mapping by performing a
+  search-and-replace operation within the value of a slot. It takes at
+  least three arguments:
+  
+  * the name of the slot to modify;
+  
+  * the regular expression pattern to find within the value of that
+    slot;
+  
+  * the string to replaced the pattern with.
+  
+  []
+  
+  Currently, that function is only available for slots whose values are
+  either strings or list-of-strings (including entity references).
+  
+  As for the {{{6.4.3. assign}assign}} function, it is possible to
+  modify more than one slot in a single call by adding extra triplets of
+  arguments.
+  
+  Example: The following rule shows how to use the <replace()> function
+  to fix a bogus IRI prefix:
   
 +-----------------------------------------------------------------------
 predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui=", "http://id.nlm.nih.gov/mesh/");
 +-----------------------------------------------------------------------
 
-  Any object ID with an IRI starting with
+  Any object ID with a IRI starting with
   <<<https://meshb.nlm.nih.gov/record/ui?ui=>>> will be renamed so that
-  its IRI starts with <http://id.nlm.nih.gov/mesh/>>> instead. Note how
-  the <<<?>>> character in the original URL prefix had to be escaped,
-  since that character has a special meaning in regular expressions.
-  
-  
-** Application-specific functions
+  its IRI starts with <<<http://id.nlm.nih.gov/mesh/>>> instead. Note
+  how the <<<?>>> character in the original IRI prefix had to be
+  escaped, since that character has a special meaning in regular
+  expressions.
 
-  Application-specific functions are entirely left at the
-  discretion of applications that use SSSOM/Transform. The variant of
-  SSSOM/Transform usable in an application, with its own list of
-  application-specific functions, is called a <SSSOM/Transform
-  application> or <SSSOM/Transform dialect>.
+** 6.5. Format modifier functions
+
+  Refer to {{{5.3. Format modifiers}section 5.3}} for more details about
+  format modifier functions and where they can be used.
   
-  For example, the {{{./robot.html}sssom-inject}} ROBOT command uses the
-  SSSOM/Transform language to generate OWL axioms from mappings. To that
-  effect, it defines a SSSOM/Transform dialect called <SSSOM/T-OWL>.
-  That dialect defines several application-specific functions, such as
-  <<<annotate_subject>>>, which may be used as follows:
+*** 6.5.1. <short>
+
+  The <short> format modifier does not take any argument. It attempts
+  to condense its input (which is expected to be a full-length IRI)
+  into a short identifier or CURIE, based on the prefix declarations in
+  the SSSOM/T ruleset.
+  
+  For example, to insert the short form of the current mapping’s
+  predicate ID:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> annotate_subject(oboInOwl:hasDbXref, "%subject_curie");
+"The predicate is %{predicate_id|short}."
 +-----------------------------------------------------------------------
 
-  For <<<sssom-inject>>>, this rule means that mappings with a
-  <<<skos:exactMatch>>> predicate should yield an annotation assertion
-  axiom using the property identified by <<<oboInOwl:hasDbXref>>> and
-  the value <<<%subject_curie>>> – that value is a placeholder that will
-  be replaced by the shortened form of the identifier of the mapping’s
-  subject.
-  
-  Other applications can devise whatever syntax is appropriate for their
-  specific functions. For example, if an application used
-  SSSOM/Transform-based rules to load SSSOM data into a database, one
-  could imagine a hypothetical <SSSOM/T-SQL> dialect with an
-  <<<insert>>> function such as:
+  When used on a multi-valued slot, the <short> modifier will attempt to
+  shorten all items in the list. For example, to insert the (short) IDs
+  of all the authors of a mapping:
   
 +-----------------------------------------------------------------------
-predicate==skos:exactMatch -> insert("exact_matches", "%subject_id", "%object_id"");
+"Authored by: %{author_id|short}."
 +-----------------------------------------------------------------------
 
-  that the program could understand as an order to insert the
-  identifiers for the mapping subject and object into a table named
-  <<<exact_matches>>>.
+*** 6.5.2. <list_item>
 
-* Grouping rules
+  The <list_item> modifier works specifically on multi-valued slots. It
+  accepts an argument which is the 1-based index of an item in the list
+  of values in the multi-valued slot, and produces the value of that
+  item.
+  
+  For example, to insert the ID of only the first author of a mapping:
+  
++-----------------------------------------------------------------------
+"First author: %{author_id|list_item(1)}."
++-----------------------------------------------------------------------
 
-  If several actions need to be performed on the same selection on the
-  same mappings, they can be grouped into a bracket-enclosed group as
+  Likewise, but to insert the ID in its short form, by combining with
+  the <short> modifier:
+  
++-----------------------------------------------------------------------
+"First author: %{author_id|list_item(1)|short}."
++-----------------------------------------------------------------------
+
+*** 6.5.3. <flatten>
+
+  This is another modifier that works specifically on multi-valued
+  slots. It transforms a list of values into a single string. It accepts
+  up to the three arguments, all optional:
+  
+  * the separator to insert between each value (by default <<<, >>>);
+  
+  * the string to insert at the beginning of the list (by default an
+    empty string);
+    
+  * the string to insert at the end of the list (also an empty string by
+    default).
+    
+  []
+  
+  For example, to insert the list of author IDs as a semicolon-separated
+  list enclosed in parentheses:
+  
++-----------------------------------------------------------------------
+"Authors: %{author_id|flatten('; ', '(', ')')}."
++-----------------------------------------------------------------------
+
+  Likewise, but with shortened IDs:
+  
++-----------------------------------------------------------------------
+"Authors: %{author_id|short|flatten(';', '(', ')')}."
++-----------------------------------------------------------------------
+
+  Note in that example that the <short> modifier must be used <before>
+  the <flatten> modifier, since the output of the <flatten> modifier is
+  a string that no longer looks like a IRI and therefore cannot be
+  shortened; the IDs must be shortened first, and then the list of
+  (shortened) IDs can be flattened into a string.
+  
+*** 6.5.4. <format>
+
+  This modifier allows to apply arbitrary formatting to a value. It
+  expects a single argument which should a a format string as expected
+  by Java’s <<<String.format()>>> method and containing a single format
+  specifier, which will be replaced by the value the modifier is applied
+  to.
+  
+  For example, to apply a custom formatting to the double-typed
+  <<<confidence>>> slot, you could use something like:
+  
++-----------------------------------------------------------------------
+"Confidence: %{confidence|format('%.03f')}"
++-----------------------------------------------------------------------
+  
+* 7. Grouping rules
+
+  If several actions need to be performed on the same selection of
+  mappings, they can be grouped into a bracket-enclosed group as
   follows:
   
 +-----------------------------------------------------------------------
 subject==CL:* -> {
-    invert();
-    application_specific_function1(arg);
-    application_specific_function2();
+    function1();
+    function2();
+    function3();
 }
 +-----------------------------------------------------------------------
 
   This is strictly equivalent to:
   
 +-----------------------------------------------------------------------
-subject==CL:* -> invert();
-subject==CL:* -> application_specific_function1(arg);
-subject==CL:* -> application_specific_function2();
+subject==CL:* -> function1();
+subject==CL:* -> function2();
+subject==CL:* -> function3();
 +-----------------------------------------------------------------------
 
   Likewise, filter expressions can be grouped too:
@@ -494,7 +934,7 @@ subject==CL:* {
             my_function("another action for high-confidence CL exact matches");
         }
         
-        mapping_justification=semapv:ManualMappingCuration -> my_function("single action for manually curated CL exact matches");
+        justification==semapv:ManualMappingCuration -> my_function("action for manually curated CL exact matches");
     }
     
     !predicate==skos:exactMatch -> my_function("action for any CL mapping that is not an exact match");
@@ -521,7 +961,7 @@ subject==CL:* {
 }
 +-----------------------------------------------------------------------
 
-* Tagging rules
+* 8. Tagging rules
 
   Rules in a SSSOM/Transform ruleset can be tagged. Tags are placed
   ahead of the filter expression, enclosed in square brackets and
@@ -555,51 +995,3 @@ subject==CL:* {
   up being tagged with the three tags <<<tag1>>>, <<<tag2>>>, and
   <<<tag3>>>. The rule that applies to broad matches is only tagged with
   <<<tag1>>> and <<<tag2>>>.
-  
-* Declaring prefixes
-
-  As illustrated many times in the example above, SSSOM/Transform rules
-  can use shortened identifiers, commonly known as <CURIEs>, to avoid
-  having to always write full-length identifiers. For example,
-  <<<predicate==skos:exactMatch>>> is actually a shortcut for
-  <<<http://www.w3.org/2004/02/skos/core#exactMatch>>>. But apart from a
-  handful of built-in prefixes (including <<<skos>>>), all prefixes must
-  be declared before they can be used in a SSSOM/Transform rule.
-  
-  Prefix declarations must appear at the beginning of a SSSOM/Transform
-  file, before any rule. They are of the form:
-  
-+-----------------------------------------------------------------------
-prefix PFX: <PREFIX_URL>
-+-----------------------------------------------------------------------
-
-  where <PFX> is the prefix name, as it appears in shortened
-  identifiers, and <PREFIX_URL> is the corresponding URL prefix to which
-  the prefix name should be expanded.
-  
-  The following prefixes are built-in and need not be declared:
-  
-+-----------------------------------------------------------------------
-prefix sssom:  <https://w3id.org/sssom/>
-prefix owl:    <http://www.w3.org/2002/07/owl#>
-prefix rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#>
-prefix skos:   <http://www.w3.org/2004/02/skos/core#>
-prefix semapv: <https://w3id.org/semapv/vocab/>
-+-----------------------------------------------------------------------
-
-* Directive actions
-
-  In addition to rules as described above, a SSSOM/Transform file may
-  also contain <directive actions>, which look like a rule without any
-  filter and without any tags:
-  
-+-----------------------------------------------------------------------
-my_directive("first argument", "second argument");
-+-----------------------------------------------------------------------
-
-  Directives can only occur at the beginning of a SSSOM/Transform file,
-  after the prefix declarations (if any) but before any rule.
-  
-  Which directives are available and what they do is entirely left at
-  the discretion of the application that is using SSSOM/Transform.
