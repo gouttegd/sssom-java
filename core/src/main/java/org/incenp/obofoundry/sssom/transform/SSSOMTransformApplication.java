@@ -27,6 +27,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionContainsFunction;
 import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionSlotValueFunction;
+import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionToExtFunction;
 
 /**
  * Represents a SSSOM/Transform application, that is, a specialisation of the
@@ -177,6 +178,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
 
         // Enable support for URI Expressions
         registerFilter(new SSSOMTUriExpressionContainsFunction<T>(this));
+        registerPreprocessor(new SSSOMTUriExpressionToExtFunction<T>(this));
         formatter.setModifier(new SSSOMTUriExpressionSlotValueFunction(pfxMgr));
     }
 

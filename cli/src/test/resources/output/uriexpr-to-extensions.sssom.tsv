@@ -1,0 +1,17 @@
+#curie_map:
+#  NETENT: https://example.net/entities/
+#  SCHEMA: https://example.org/schema/
+#mapping_set_id: https://example.org/sets/test-uriexpression-ids
+#mapping_set_title: Set between NET entities and composite COM and ORG entities
+#license: https://creativecommons.org/licenses/by/4.0/
+#extension_definitions:
+#  - slot_name: extra1
+#    property: SCHEMA:0001/field1
+#    type_hint: linkml:Uriorcurie
+#  - slot_name: extra2
+#    property: SCHEMA:0001/field2
+#    type_hint: linkml:Uriorcurie
+subject_id	predicate_id	object_id	mapping_justification	extra1	extra2
+SCHEMA:0001/(field1:'COMENT:0011',field2:'ORGENT:0001')	skos:exactMatch	NETENT:0111	semapv:ManualMappingCuration	COMENT:0011	ORGENT:0001
+SCHEMA:0001/(field1:'COMENT:0012',field2:'ORGENT:0002')	skos:exactMatch	NETENT:0112	semapv:ManualMappingCuration	COMENT:0012	ORGENT:0002
+SCHEMA:0001/(field1:'ORGENT:0013',field2:'COMENT:0003')	skos:exactMatch	NETENT:0113	semapv:ManualMappingCuration	ORGENT:0013	COMENT:0003

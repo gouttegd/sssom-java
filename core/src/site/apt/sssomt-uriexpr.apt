@@ -130,3 +130,36 @@ subject==SCHEMA:0001* -> create_axiom("%object_id EquivalentTo: %{subject_id|uri
 +-----------------------------------------------------------------------
 DO:3333 EquivalentTo: MONDO:1234 and (BFO:0000051 some HP:5678)
 +-----------------------------------------------------------------------
+
+4. <uriexpr_toext>
+
+  This is a preprocessor function that allows to encode the components
+  of a URI Expression into a mapping’s extension slots.
+  
+  It takes a single argument which is the URI Expression to encode.
+  Placeholders are expanded in that argument.
+  
+  If the argument does indeed contain a URI Expression, the value of
+  each component in that expression will be stored into a SSSOM
+  extension slot whose property name will be formed by concatenating the
+  name of the URI Expression schema and the name of the slot.
+  
+  The function has no effect is the argument does <not> contain a URI
+  Expression.
+  
+  For example, a mapping with the following subject ID:
+  
++-----------------------------------------------------------------------
+https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:4567')
++-----------------------------------------------------------------------
+
+  would be turned into an identical mapping but with two additional
+  extension slots:
+  
+  * a slot identified by the property <<<https://example.org/schema/0001/disease>>>,
+    containing the value <<<http://purl.obolibrary.org/obo/MONDO_1234>>>;
+    
+  * and a slot identified by the property <<<https://example.org/schema/0001/phenotype>>>,
+    containing the value <<<http://purl.obolibrary.org/obo/HP_4567>>>.
+    
+  []

@@ -72,4 +72,10 @@ public class SSSOMTEditingIT {
         TestUtils.runCommand(0, new String[] { "test-uriexpression-ids.sssom.tsv" }, "uriexpr-to-relaxed.sssom.tsv",
                 new String[] { "--ruleset", "../core/src/test/resources/rules/relax-uriexpr.rules" });
     }
+
+    @Test
+    void testMappingEditionUriExpressionToExtensions() throws IOException {
+        TestUtils.runCommand(0, new String[] { "test-uriexpression-ids.sssom.tsv" }, "uriexpr-to-extensions.sssom.tsv",
+                new String[] { "--include-all", "--rule", "predicate==* -> uriexpr_toext(%{subject_id})" });
+    }
 }

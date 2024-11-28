@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
@@ -97,5 +98,41 @@ public class UriExpressionSSSOMTSupportTest {
 
         f = formatter.getTransformer("%{subject_id|uriexpr_slot_value(field3)}");
         Assertions.assertEquals(uri, f.transform(m));
+    }
+
+    @Test
+    void testUriExpressionToExtFunction() {
+        String schema = "https://example.org/schema/0001";
+        String field1Key = schema + "/field1";
+        String field2Key = schema + "/field2";
+
+        Mapping m = new Mapping();
+        m.setSubjectId(schema + "/(field1:'ORGENT:0001',field2:'COMENT:0011')");
+
+        arguments.add("%{subject_id}");
+
+        try {
+            IMappingTransformer<Mapping> preproc = application.onPreprocessingAction("uriexpr_toext", arguments,
+                    keyedArguments);
+            Mapping m2 = preproc.transform(m);
+            Assertions.assertNotEquals(m, m2);
+
+            Map<String,ExtensionValue> extensions = m2.getExtensions();
+            Assertions.assertNotNull(extensions);
+            Assertions.assertEquals(2, extensions.size());
+
+            Assertions.assertTrue(extensions.containsKey(field1Key));
+            Assertions.assertEquals("https://example.org/entities/0001", extensions.get(field1Key).asString());
+            Assertions.assertTrue(extensions.get(field1Key).isIdentifier());
+            Assertions.assertTrue(extensions.containsKey(field2Key));
+            Assertions.assertEquals("https://example.com/entities/0011", extensions.get(field2Key).asString());
+            Assertions.assertTrue(extensions.get(field2Key).isIdentifier());
+
+            m.setSubjectId("https://example.org/entities/0002");
+            Mapping m3 = preproc.transform(m);
+            Assertions.assertEquals(m, m3);
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
     }
 }
