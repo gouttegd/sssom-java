@@ -22,8 +22,8 @@ URI Expression support in SSSOM/Transform
   offers some helper functions specifically intended to manipulate URI
   Expressions.
   
-  Of note, URI Expressions in SSSOM/Transform should be considered
-  <experimental>, and subject to changes in the future.
+  Of note, support for URI Expressions in SSSOM/Transform should be
+  considered <experimental>, and subject to changes in the future.
   
 %{toc|section=1|fromDepth=2|toDepth=3}
 
@@ -99,7 +99,7 @@ uriexpr_contains(%{subject_id}, 'disease', MONDO:*) -> ...;
     
   * and the template to use for URI Expressions that follow that schema;
     in that template, names enclosed in curly brackets (like this:
-    <<<\{name\}>>> represent the slots of the URI Expression.
+    <<<\{name\}>>>) represent the slots of the URI Expression.
     
   []
   
@@ -131,7 +131,7 @@ subject==SCHEMA:0001* -> create_axiom("%object_id EquivalentTo: %{subject_id|uri
 DO:3333 EquivalentTo: MONDO:1234 and (BFO:0000051 some HP:5678)
 +-----------------------------------------------------------------------
 
-4. <uriexpr_toext>
+* 4. <uriexpr_toext>
 
   This is a preprocessor function that allows to encode the components
   of a URI Expression into a mapping’s extension slots.

@@ -10,7 +10,7 @@ ROBOT commands
   
 * 1. Enabling the SSSOM commands in ROBOT
 
-  ROBOT 1.9.5 has {{{http://robot.obolibrary.org/plugins}built-in
+  ROBOT >= 1.9.5 has {{{http://robot.obolibrary.org/plugins}built-in
   support}} for pluggable commands. To enable the commands provided by
   this project in ROBOT, place the <<<sssom-robot-plugin-X.Y.Z.jar>>>
   file in a directory where ROBOT searches for plugins:
@@ -37,8 +37,9 @@ ROBOT commands
   ROBOT (1.9.5) in which the commands below will be available as
   built-in comands (in addition to all the standard commands).
   
-  Note that in the standalone version, the <<<inject>>> command is
-  renamed to <<<sssom-inject>>> for clarity.
+  Note that in the standalone version, the <<<inject>>> and <<<rename>>>
+  commands are renamed to <<<sssom-inject>>> and <<<sssom-rename>>>, for
+  clarity (and to avoid a clash with the standard <<<rename>>> command).
   
 * 2. Available commands
 

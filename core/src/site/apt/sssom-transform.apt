@@ -91,10 +91,10 @@ prefix semapv: <https://w3id.org/semapv/vocab/>
 
 ** 2.2. The directive section
 
-  In SSSOM/T, a <directive> is a function call (see below for the
-  generic syntax of function calls) that appears on its own in a
-  ruleset (not associated to any <filter>), just after the prefix
-  declarations (if any) but before any <rule>.
+  In SSSOM/T, a <directive> is a function call (see
+  {{{5. Function calls}below}} for the generic syntax of function calls)
+  that appears on its own in a ruleset (not associated to any <filter>),
+  just after the prefix declarations (if any) but before any <rule>.
   
   Directive are intended to pass informations to the SSSOM/T
   application, before the application proceeds with applying the
@@ -114,9 +114,10 @@ prefix semapv: <https://w3id.org/semapv/vocab/>
 FILTER -> ACTION;
 +-----------------------------------------------------------------------
 
-  where <FILTER> is an expression that will determine to which mappings
-  the rule is applied, and <ACTION> describes what will happen when the
-  rule is applied to those mappings.
+  where <FILTER> is an {{{3. Filters}expression}} that will determine to 
+  which mappings the rule is applied, and <ACTION> describes
+  {{{4. Action}what will happen}} when the rule is applied to those
+  mappings.
   
   Rules are applied in the order in which they appear in the SSSOM/T
   file.
@@ -231,6 +232,10 @@ mapping_tool=="mira"
   {{{https://mapping-commons.github.io/sssom/EntityTypeEnum/}EntityType enum}}
   in the SSSOM specification) contain whitespaces.
   
+  As for filters on ID fields, the value of a free-form text filter may
+  also end with an asterisk, to select mappings if the corresponding
+  field starts with the requested value.
+  
 *** 3.1.3. Filters on multi-valued slots
 
   For the filters that act on multi-valued slots (e.g. <<<creator_id>>>,
@@ -326,9 +331,8 @@ author==~
   Lastly, an atomic filter may also take the form of a call to a
   {{{6.2. Filter functions}filter function}}.
   
-  The base SSSOM/T language currently defines only one filter
-  function: {{{6.2.1. uriexpr_contains}uriexpr_contains}}. SSSOM/T
-  dialects may define their own filter functions.
+  The base SSSOM/T language currently does not define any filter
+  function, but SSSOM/T dialect may define their own filter functions.
   
 ** 3.2. Combining filters
 
@@ -425,7 +429,8 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   part (everything after the <<<-\>>>> sign) specifies what to do with
   it.
   
-  Each action takes the form of a single function call.
+  Each action takes the form of a single function call, followed by a
+  semi-colon which marks the end of the rule.
   
   There are three types of functions that may be used in the <ACTION>
   part of a rule:
@@ -446,7 +451,7 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   generator functions (since such functions are specific to a given
   SSSOM/T dialect). It defines a handful of
   {{{6.4. Preprocessor functions}preprocessor functions}}, as well as
-  one {{{6.3. Callback functions}call function}}. 
+  one {{{6.3. Callback functions}callback function}}. 
 
 * 5. Function calls
 
@@ -454,12 +459,11 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   <function calls>. A function call is of the form:
   
 +-----------------------------------------------------------------------
-FUNCTION(ARG1, ARG2, ...);
+FUNCTION(ARG1, ARG2, ...)
 +-----------------------------------------------------------------------
 
   That is, it comprises the name of the function (<FUNCTION>) followed
-  by parentheses which may contain a comma-separated list of arguments,
-  followed by a semi-colon.
+  by parentheses which may contain a comma-separated list of arguments.
   
 ** 5.1. Function arguments
   
@@ -471,7 +475,7 @@ FUNCTION(ARG1, ARG2, ...);
     <<<"my \"great\" argument">>>);
     
   * IRIs enclosed within angled brackets, such as
-    <<<https://w3id.org/semapv/vocab/crossSpeciesExactMatch>>>;
+    <<<\<https://w3id.org/semapv/vocab/crossSpeciesExactMatch\>>>>;
   
   * “naked” CURIEs, such as <<<BFO:0000050>>> (always using a prefix
     name that hasbeen duly <declared> beforehand!);
@@ -599,9 +603,9 @@ FUNCTION("Subject ID: %{subject_id|mod1(arg1, 'arg 2')|mod2}");
 
 *** 6.1.1. <set_var>
 
-  This directive allows to define an additional placeholder name that
-  can later be used in function arguments. It expects two arguments:
-  the name of the placeholder, and its value.
+  This directive allows to define an additional placeholder name (also
+  called a <variable>) that can later be used in function arguments. It
+  expects two arguments: the name of the placeholder, and its value.
   
   For example:
   
@@ -789,9 +793,6 @@ predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui="
   expressions.
 
 ** 6.5. Format modifier functions
-
-  Refer to {{{5.3. Format modifiers}section 5.3}} for more details about
-  format modifier functions and where they can be used.
   
 *** 6.5.1. <short>
 

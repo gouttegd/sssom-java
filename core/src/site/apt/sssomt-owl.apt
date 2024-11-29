@@ -202,21 +202,21 @@ is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "I am an
   far the rules are as follows:
   
   * if the mapping predicate is an annotation property, the mapping is
-    transformed into a _OWL Annotation Assertion_ axiom on the subject,
+    transformed into a <OWL Annotation Assertion> axiom on the subject,
     with the predicate as the annotation property and the object as the
     annotation value;
     
   * if the mapping predicate is an object property, the mapping is
-    transformed into a _SubClassOf_ axiom where the suclass is the
+    transformed into a <SubClassOf> axiom where the suclass is the
     subject, and the superclass is an existential restriction over the
     predicate and the object;
     
   * if the mapping predicate is <<<owl:equivalentClass>>>, the mapping
-    is transformed into a _EquivalentClasses_ axiom between the subject
+    is transformed into a <EquivalentClasses> axiom between the subject
     and the object;
     
   * if the mapping predicate is <<<rdfs:subClassOf>>>, the mapping is
-    tranformed into a _SubClassOf_ axiom where the subclass is the
+    tranformed into a <SubClassOf> axiom where the subclass is the
     subject and the superclass is the object.
     
   []
@@ -307,7 +307,7 @@ AnnotationAssertion(
   It accepts a single argument which is the expression representing the
   axiom to create. Placeholders are expanded in that argument.
   
-  For example, to create a simple _SubClassOf_ axiom between a mapping’s
+  For example, to create a simple <SubClassOf> axiom between a mapping’s
   subject and its object:
   
 +-----------------------------------------------------------------------
@@ -395,7 +395,7 @@ AnnotationAssertion(
 
 ** 4.3. <annotate>
 
-  The <annotate> function creates _annotation assertion_ axioms. It
+  The <annotate> function creates <annotation assertion> axioms. It
   takes three mandatory arguments, which are all subject to placeholder
   expansion:
   
@@ -413,9 +413,6 @@ AnnotationAssertion(
 +-----------------------------------------------------------------------
 ... -> annotate(%{subject_id}, oboInOwl:hasDbXref, %{object_id|short});
 +-----------------------------------------------------------------------
-
-  (Do I need to say it: this is assuming that the <<<oboInOwl>>> prefix
-  name has been duly declared!)
   
 *** 4.3.1. Annotation type
 
@@ -448,9 +445,9 @@ AnnotationAssertion(
 * 6. Backwards compatibility
 
   The SSSOM/T-OWL dialect has changed quite a bit since version 0.9.0 of
-  SSSOM-Java. This sections briefly describes some functions that are
-  still supported for backwards compatibility but that should preferably
-  no longer be used.
+  SSSOM-Java. This sections briefly describes some functions and
+  features that are still supported for backwards compatibility but that
+  should preferably no longer be used.
 
 ** 6.1. Directive functions
 
@@ -617,11 +614,12 @@ FBbt:X EquivalentTo: UBERON:Y and (BFO:0000066 some NCBITaxon:7227);
   
   To construct that bridge ontology, our source material is a SSSOM
   mapping set containing mappings between FBbt terms on one side, and
-  Uberon or CL terms on the other side. The <helper> ontology will be
-  a merge of Uberon and CL.
+  Uberon or CL terms on the other side. The <helper> ontology is a merge
+  of Uberon and CL (importantly, the helper ontology does <not> include
+  FBbt – this will matter when we’ll use the <exists> filter below).
   
   Rather than presenting the whole ruleset in one piece, we will
-  construct it piece by piece.
+  describe it piece by piece.
   
   First, as for all SSSOM/T ruleset, the prefix declarations:
   
@@ -723,12 +721,9 @@ subject==CL:* || subject==UBERON:* -> invert();
 +-----------------------------------------------------------------------
 
   (We cannot similarly check that the FBbt side of the mappings always
-  refer to a non-obsolete term, because the helper ontology we are using
-  does not include FBbt, so if we were to ask it whether a FBbt term
-  ”exists”, it would always answer by the negative. It would be possible
-  to construct a merge ontology that includes FBbt of course, but in the
-  context of building the Uberon cross-species bridges that was not
-  really an option.)
+  refers to a non-obsolete term, because the helper ontology we are
+  using does not include FBbt, so if we were to ask it whether a FBbt
+  term ”exists”, it would always answer by the negative.)
   
   One last check! It <could> happen that a single FBbt term is mapped to
   more than one Uberon term. In general there is nothing necessarily

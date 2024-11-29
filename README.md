@@ -80,7 +80,7 @@ found in the ontology (contrary to `sssom parse` or `runoak mappings`).
 ```
 subject==FBbt:* (object==CL:* || object==UBERON:*) {
     predicate==semapv:crossSpeciesExactMatch -> {
-        create_axiom("<%{subject_id}> EquivalentTo: <%{object_id}> and (BFO:0000050 some NCBITaxon:7227)");
+        create_axiom("%subject_id EquivalentTo: %object_id and (BFO:0000050 some NCBITaxon:7227)");
         annotate(%{subject_id}, IAO:00000589, "%{subject_label} (Drosophila)");
     }
 }

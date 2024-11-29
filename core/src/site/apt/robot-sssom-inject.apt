@@ -56,7 +56,8 @@ ROBOT inject command
   
   The option <<<--create>>> instructs the command to create a <new>
   ontology with the generated axioms. The newly created ontology becomes
-  ROBOT’s current ontology, and will passed down the command pipeline.
+  ROBOT’s current ontology, and will be passed down the command
+  pipeline.
   
 * 2. Mapping preprocessing
 

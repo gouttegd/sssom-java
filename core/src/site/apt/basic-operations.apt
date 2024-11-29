@@ -64,9 +64,11 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   form is considered a serialisation detail that the client code needs
   not know about.
   
-  The parser automatically propagates metadata from the mapping set down
-  to the individual mappings, unless that behaviour is explicitly
-  disabled with <<<setPropagationEnabled(false)>>>.
+  The parser automatically
+  {{{https://mapping-commons.github.io/sssom/spec-formats-tsv/#propagatable-slots}propagates}}
+  metadata from the mapping set down to the individual mappings, unless
+  that behaviour is explicitly disabled with
+  <<<setPropagationEnabled(false)>>>.
   
   The parser has a liberal behaviour, in that: a) slots that it does not
   recognise are silently ignored and do not cause a parsing failure; b)
@@ -184,12 +186,14 @@ TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv", "my-meta.yml");
   defined in the SSSOM specification are always used even if they are
   not explicitly listed in the CURIE map.
   
-  Some metadata slots are automatically “condensed” by the writer: if
-  all the mappings in the set have the same value for a given slot, the
-  value is written once in the mapping set metadata instead of being
-  written for all mappings. This ”condensation” is the opposite
-  operation of the “propagation” that happens upon parsing. Condensation
-  may be disabled by calling <<<setCondensationEnabled(false)>>>.
+  Some metadata slots are automatically
+  {{{https://mapping-commons.github.io/sssom/spec-formats-tsv/#propagatable-slots}condensed}}
+  by the writer: if all the mappings in the set have the same value for
+  a given slot, the value is written once in the mapping set metadata
+  instead of being written for all mappings. This ”condensation” is the
+  opposite operation of the “propagation” that happens upon parsing.
+  Condensation may be disabled by calling
+  <<<setCondensationEnabled(false)>>>.
   
 ** 2.2. JSON format
 
@@ -347,10 +351,11 @@ MappingCardinality.inferCardinality(mappingSet.getMappings());
   
 * 6. Dealing with non-standard slots
 
-  Currently, the SSSOM specification officially does not support the use
-  of any other metadata slots than the ones defined in the data model.
-  However, there is a proposition under discussion to add formal support
-  for “extension slots”, and this library supports this proposition.
+  The SSSOM specification defines a mechanism of
+  {{{https://mapping-commons.github.io/sssom/spec-model/#non-standard-slots}extension slots}}
+  to allow storing in a mapping set supplementary metadata beyond the
+  metadata defined by SSSOM itself. This mechanism if fully supported
+  by SSSOM-Java.
   
   Extension slots are represented, both in the <<<MappingSet>>> and the
   <<<Mapping>>> class, by a String dictionary that can be accessed with

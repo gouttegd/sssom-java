@@ -86,7 +86,7 @@ public class StandaloneRobot {
 
         m.addCommand("sssom-inject", new SSSOMInjectionCommand());
         m.addCommand("xref-extract", new XrefExtractCommand());
-        m.addCommand("rename", new RenameFromMappingsCommand());
+        m.addCommand("sssom-rename", new RenameFromMappingsCommand());
 
         new PluginManager().addPluggableCommands(m);
 

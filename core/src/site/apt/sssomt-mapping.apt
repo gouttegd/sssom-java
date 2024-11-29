@@ -52,7 +52,7 @@ The SSSOM/T-Mapping dialect
 
   (All prefix declarations omitted from the examples, for brevity.)
   
-  To To exclude all mappings with a subject in the CL namespace, while
+  To exclude all mappings with a subject in the CL namespace, while
   keeping all other mappings:
   
 +-----------------------------------------------------------------------
