@@ -1,0 +1,16 @@
+#curie_map:
+#  FBdv: http://purl.obolibrary.org/obo/FBdv_
+#  GO: http://purl.obolibrary.org/obo/GO_
+#  UBERON: http://purl.obolibrary.org/obo/UBERON_
+#  oboInOwl: http://www.geneontology.org/formats/oboInOwl#
+#mapping_set_id: http://purl.obolibrary.org/obo/fbdv/mappings.sssom.tsv
+#license: https://w3id.org/sssom/license/all-rights-reserved
+#subject_source: http://purl.obolibrary.org/obo/fbdv.owl
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+FBdv:00004886	oogenesis	oboInOwl:hasDbXref	GO:0048477	semapv:UnspecifiedMatching
+FBdv:00005337	first instar larval stage	oboInOwl:hasDbXref	UBERON:8000000	semapv:UnspecifiedMatching
+FBdv:00005338	second instar larval stage	oboInOwl:hasDbXref	UBERON:8000001	semapv:UnspecifiedMatching
+FBdv:00005339	third instar larval stage	oboInOwl:hasDbXref	UBERON:8000002	semapv:UnspecifiedMatching
+FBdv:00007000	spermatogenesis	oboInOwl:hasDbXref	GO:0007283	semapv:UnspecifiedMatching
+FBdv:00007009	developmental process	oboInOwl:hasDbXref	GO:0032502	semapv:UnspecifiedMatching
+FBdv:00007024	biological process	oboInOwl:hasDbXref	GO:0008150	semapv:UnspecifiedMatching

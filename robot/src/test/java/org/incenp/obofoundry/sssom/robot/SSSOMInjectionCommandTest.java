@@ -18,14 +18,9 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.obolibrary.robot.CommandManager;
-import org.obolibrary.robot.ConvertCommand;
 
 public class SSSOMInjectionCommandTest {
 
@@ -35,7 +30,7 @@ public class SSSOMInjectionCommandTest {
     @Test
     void testSampleBridge() throws IOException {
         // @formatter:off
-        runCommand("sssom-inject",
+        TestUtils.runCommand("sssom-inject",
                 "--input", "../core/src/test/resources/owl/uberon.ofn.gz",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
@@ -44,7 +39,7 @@ public class SSSOMInjectionCommandTest {
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/fbbt-bridge.ofn.out");
         // @formatter:on
-        checkOutput("fbbt-bridge.ofn");
+        TestUtils.checkOutput("fbbt-bridge.ofn");
     }
 
     /*
@@ -53,7 +48,7 @@ public class SSSOMInjectionCommandTest {
     @Test
     void testSampleBridgeLegacy() throws IOException {
         // @formatter:off
-        runCommand("sssom-inject",
+        TestUtils.runCommand("sssom-inject",
                 "--input", "../core/src/test/resources/owl/uberon.ofn.gz",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
@@ -62,7 +57,7 @@ public class SSSOMInjectionCommandTest {
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/fbbt-bridge.ofn.out");
         // @formatter:on
-        checkOutput("fbbt-bridge.ofn");
+        TestUtils.checkOutput("fbbt-bridge.ofn");
     }
 
     /*
@@ -71,7 +66,7 @@ public class SSSOMInjectionCommandTest {
     @Test
     void testSampleXref() throws IOException {
         // @formatter:off
-        runCommand("sssom-inject",
+        TestUtils.runCommand("sssom-inject",
                 "--input", "../core/src/test/resources/owl/uberon.ofn.gz",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
@@ -80,7 +75,7 @@ public class SSSOMInjectionCommandTest {
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/fbbt-xrefs.ofn.out");
         // @formatter:on
-        checkOutput("fbbt-xrefs.ofn");
+        TestUtils.checkOutput("fbbt-xrefs.ofn");
     }
 
     /*
@@ -89,7 +84,7 @@ public class SSSOMInjectionCommandTest {
     @Test
     void testSampleXrefLegacy() throws IOException {
         // @formatter:off
-        runCommand("sssom-inject",
+        TestUtils.runCommand("sssom-inject",
                 "--input", "../core/src/test/resources/owl/uberon.ofn.gz",
                 "--sssom", "../core/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../core/src/test/resources/sets/fbdv.sssom.tsv",
@@ -98,42 +93,32 @@ public class SSSOMInjectionCommandTest {
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/fbbt-xrefs.ofn.out");
         // @formatter:on
-        checkOutput("fbbt-xrefs.ofn");
+        TestUtils.checkOutput("fbbt-xrefs.ofn");
     }
 
     @Test
     void testUriExpressionExpansion() throws IOException {
         // @formatter:off
-        runCommand("sssom-inject",
+        TestUtils.runCommand("sssom-inject",
                 "--create",
                 "--sssom", "../core/src/test/resources/sets/test-uriexpression-ids.sssom.tsv",
                 "--ruleset", "../core/src/test/resources/rules/uriexpr-to-owl.rules",
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/uriexpr-bridge.ofn.out");
         // @formatter:on
-        checkOutput("uriexpr-bridge.ofn");
+        TestUtils.checkOutput("uriexpr-bridge.ofn");
     }
 
-    /*
-     * Run a ROBOT command.
-     */
-    private void runCommand(String... strings) {
-        CommandManager robot = new CommandManager();
-        robot.addCommand("sssom-inject", new SSSOMInjectionCommand());
-        robot.addCommand("convert", new ConvertCommand());
-        robot.main(strings);
-    }
-
-    /*
-     * Compare a file with its expected contents.
-     */
-    private void checkOutput(String filename) throws IOException {
-        File expected = new File("src/test/resources/output/" + filename);
-        File written = new File("src/test/resources/output/" + filename + ".out");
-        boolean same = FileUtils.contentEquals(expected, written);
-        Assertions.assertTrue(same);
-        if ( same ) {
-            written.delete();
-        }
+    @Test
+    void testDirectSerialisation() throws IOException {
+        // @formatter:off
+        TestUtils.runCommand("sssom-inject",
+                "--create",
+                "--sssom", "../core/src/test/resources/sets/exo2c.sssom.tsv",
+                "--direct",
+                "--bridge-format", "ofn",
+                "--bridge-file", "src/test/resources/output/exo2c-direct.ofn.out");
+        // @formatter:off
+        TestUtils.checkOutput("exo2c-direct.ofn");
     }
 }
