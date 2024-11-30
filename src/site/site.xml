@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0
+  http://maven.apache.org/xsd/decoration-1.8.0.xsd">
+  <body>
+    <menu name="SSSOM-Java" inherit="top">
+      <item name="About" href="index.html" />
+      <item name="Core Library" href="sssom-core/index.html" />
+      <item name="Extended Library" href="sssom-ext/index.html" />
+      <item name="Command-line tool" href="sssom-cli/index.html" />
+      <item name="ROBOT plugin" href="sssom-robot/index.html" />
+    </menu>
+    <footer><![CDATA[Copyright © 2024 Damien Goutte-Gattat]]></footer>
+  </body>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.9</version>
+  </skin>
+</project>

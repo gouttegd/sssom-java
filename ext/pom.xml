@@ -8,8 +8,8 @@
   </parent>
   <artifactId>sssom-ext</artifactId>
 
-  <name>SSSOM-Ext</name>
-  <description>SSSOM Java library</description>
+  <name>SSSOM Extended Library</name>
+  <description>SSSOM Extended Java library</description>
   <url>https://incenp.org/dvlpt/sssom-java/library.html</url>
   <scm>
     <url>https://github.com/gouttegd/sssom-java</url>

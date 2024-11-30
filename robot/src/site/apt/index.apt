@@ -1,8 +1,8 @@
-    --------------
-    ROBOT commands
-    --------------
+    --------------------------
+    The SSSOM plugin for ROBOT
+    --------------------------
 
-ROBOT commands
+The SSSOM plugin for ROBOT
 
   SSSOM-Java provides {{{http://robot.obolibrary.org/}ROBOT}} commands
   that are intended to allow manipulating SSSOM mapping sets as part of
@@ -45,11 +45,13 @@ ROBOT commands
 
   Currently, this project provides three commands:
   
-  * {{{./robot-xref-extract.html}xref-extract}} to extract mappings from
+  * {{{./xref-extract.html}xref-extract}} to extract mappings from
     cross-reference annotations in an ontology;
 
-  * {{{./robot-sssom-inject.html}inject}} to inject SSSOM-derived axioms
-    into an ontology;
+  * {{{./inject.html}inject}} to inject SSSOM-derived axioms into an
+    ontology;
     
-  * {{{./robot-rename.html}rename}} to rename entities in an ontology,
-    using a mapping set as data source.
+  * {{{./rename.html}rename}} to rename entities in an ontology, using
+    a mapping set as data source.
+  
+  []

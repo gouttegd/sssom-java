@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.8.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0
+  http://maven.apache.org/xsd/decoration-1.8.0.xsd">
+  <body>
+    <menu name="SSSOM Extended Library">
+      <item name="Introduction" href="index.html" />
+      <item name="Mapping transformations" href="transformations.html" />
+      <item name="SSSOM/Transform Language" href="sssom-transform.html">
+        <item name="SSSOM/T-OWL" href="sssomt-owl.html" />
+        <item name="SSSOM/T-Mapping" href="sssomt-mapping.html" />
+        <item name="URI Expressions support" href="sssomt-uriexpr.html" />
+      </item>
+      <item name="API Documentation" href="apidocs/index.html" />
+    </menu>
+  </body>
+</project>

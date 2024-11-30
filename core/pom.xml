@@ -8,7 +8,7 @@
   </parent>
   <artifactId>sssom-core</artifactId>
 
-  <name>SSSOM-Core</name>
+  <name>SSSOM Core Library</name>
   <description>SSSOM Java library</description>
   <url>https://incenp.org/dvlpt/sssom-java/library.html</url>
   <scm>
@@ -50,11 +50,6 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.12.1</version>
       </plugin>
     </plugins>
   </build>

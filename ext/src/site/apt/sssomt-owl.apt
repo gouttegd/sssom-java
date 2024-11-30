@@ -6,7 +6,7 @@ The SSSOM/T-OWL dialect
 
   SSSOM/T-OWL is the dialect of
   {{{./sssom-transform.html}SSSOM/Transform}} used by the
-  {{{./robot-sssom-inject.html}<inject> command}} of the ROBOT plugin
+  {{{../sssom-robot/inject.html}<inject> command}} of the ROBOT plugin
   to derive OWL axioms from mappings and inject them into an ontology.
   
   This page describes the specific functions of the SSSOM/T-OWL dialect.

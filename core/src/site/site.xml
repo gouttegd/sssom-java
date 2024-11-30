@@ -2,37 +2,13 @@
 <project xmlns="http://maven.apache.org/DECORATION/1.8.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.8.0
-                      http://maven.apache.org/xsd/decoration-1.8.0.xsd"
-  name="SSSOM-Java">
-  <bannerLeft>
-    <name>SSSOM-Java</name>
-  </bannerLeft>
+                      http://maven.apache.org/xsd/decoration-1.8.0.xsd">
   <body>
-    <menu name="SSSOM-Java">
-      <item name="About" href="index.html" />
-      <item name="Java library" href="library.html">
-        <item name="Basic operations" href="basic-operations.html" />
-        <item name="Transformations" href="transformations.html" />
-      </item>
-      <item name="SSSOM/Transform" href="sssom-transform.html">
-        <item name="SSSOM/T-OWL" href="sssomt-owl.html" />
-        <item name="SSSOM/T-Mapping" href="sssomt-mapping.html" />
-        <item name="URI Expressions support" href="sssomt-uriexpr.html" />
-      </item>
-      <item name="ROBOT commands" href="robot.html">
-        <item name="xref-extract" href="robot-xref-extract.html" />
-        <item name="inject" href="robot-sssom-inject.html" />
-        <item name="rename" href="robot-rename.html" />
-      </item>
-      <item name="SSSOM-CLI" href="sssom-cli.html" />
+    <menu name="SSSOM Core Library">
+      <item name="Introduction" href="index.html" />
+      <item name="Reading and writing mapping sets" href="io.html" />
+      <item name="Manipulating mappings" href="basic-operations.html" />
       <item name="API Documentation" href="apidocs/index.html" />
     </menu>
-    <menu ref="reports" />
-    <footer><![CDATA[Copyright © 2024 Damien Goutte-Gattat]]></footer>
   </body>
-  <skin>
-    <groupId>org.apache.maven.skins</groupId>
-    <artifactId>maven-fluido-skin</artifactId>
-    <version>1.9</version>
-  </skin>
 </project>

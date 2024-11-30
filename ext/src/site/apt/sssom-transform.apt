@@ -19,12 +19,12 @@ The SSSOM/Transform language
   SSSOM/T dialects:
   
   * {{{./sssomt-owl.html}SSSOM/T-OWL}}, used in the
-    {{{/robot-sssom-inject.html}SSSOM plugin}} for ROBOT and intended
+    {{{../sssom-robot/inject.html}SSSOM plugin}} for ROBOT and intended
     for producing OWL axioms from mappings;
     
   * {{{./sssomt-mapping.html}SSSOM/T-Mapping}}, used in the
-    {{{/sssom-cli.html}SSSOM-CLI}} command line tool, intended for
-    producing mappings from other mappings.
+    {{{../sssom-cli/index.html}SSSOM-CLI}} command line tool, intended
+    for producing mappings from other mappings.
     
   []
   

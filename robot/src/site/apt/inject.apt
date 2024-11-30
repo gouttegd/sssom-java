@@ -162,10 +162,10 @@ ROBOT inject command
   which mappings.
   
   Refer to the description of the
-  {{{./sssom-transform.html}SSSOM/Transform language}} for details about
-  the generic syntax of rules and filter expressions, and to the
-  description of the {{{./sssomt-owl.html}SSSOM/T-OWL dialect}} for the
-  details that are specific to the dialect used by <<<inject>>>.
+  {{{../sssom-ext/sssom-transform.html}SSSOM/Transform language}} for
+  details about the generic syntax of rules and filter expressions, and
+  to the description of the {{{../sssom-ext/sssomt-owl.html}SSSOM/T-OWL dialect}}
+  for the details that are specific to the dialect used by <<<inject>>>.
   
 *** 5.2.1. Prefixes in SSSOM/T-OWL
 
