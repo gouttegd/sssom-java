@@ -1,0 +1,21 @@
+    ----------------------
+    The SSSOM Java Library
+    ----------------------
+
+The SSSOM Java Library
+
+  The <SSSOM-Java> library allows bringing SSSOM support to applications
+  written in Java.
+  
+  The library is in fact spllit in two distinct libraries:
+  
+  * {{{./sssom-core/index.html}the ”core” library}} (<<<sssom-core>>>),
+    which is the proper implementation of the SSSOM specification;
+    
+  *  {{{./sssom-ext/index.html}the “extended library”}}
+    (<<<sssom-ext>>>), which provides additional features beyond what is
+    defined in the SSSOM specification. Notably, this is where the
+    {{{./sssom-ext/sssom-transform.html}SSSOM/Transform}} language is
+    implemented.
+    
+  []

@@ -8,7 +8,6 @@
       <item name="Introduction" href="index.html" />
       <item name="Reading and writing mapping sets" href="io.html" />
       <item name="Manipulating mappings" href="basic-operations.html" />
-      <item name="API Documentation" href="apidocs/index.html" />
     </menu>
   </body>
 </project>

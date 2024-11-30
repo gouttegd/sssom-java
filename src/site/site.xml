@@ -6,8 +6,11 @@
   <body>
     <menu name="SSSOM-Java" inherit="top">
       <item name="About" href="index.html" />
-      <item name="Core Library" href="sssom-core/index.html" />
-      <item name="Extended Library" href="sssom-ext/index.html" />
+      <item name="Library" href="library.html">
+        <item name="Core Library" href="sssom-core/index.html" />
+        <item name="Extended Library" href="sssom-ext/index.html" />
+        <item name="API Documentation" href="apidocs/index.html" />
+      </item>
       <item name="Command-line tool" href="sssom-cli/index.html" />
       <item name="ROBOT plugin" href="sssom-robot/index.html" />
     </menu>

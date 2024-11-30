@@ -16,5 +16,5 @@ The SSSOM Extended Library
   {{{./sssom-transform.html}SSSOM/Transform}} or <SSSOM/T>.
   
   It also provides helper classes to facilitate the exploitation of
-  mappings in a OWL context (in the {{{./apidocs/org/incenp/obofoundry/sssom/owl/package-summary.html}
+  mappings in a OWL context (in the {{{../apidocs/org/incenp/obofoundry/sssom/owl/package-summary.html}
   org.incenp.obofoundry.sssom.owl}} package).

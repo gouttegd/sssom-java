@@ -9,7 +9,7 @@ Maniulating mappings
 * 1. Basic manipulations
 
   A mapping set is represented by the
-  {{{./apidocs/org/incenp/obofoundry/sssom/model/MappingSet.html}MappingSet}}
+  {{{../apidocs/org/incenp/obofoundry/sssom/model/MappingSet.html}MappingSet}}
   class. That class has read/write accessors for all metadata slots
   defined in the SSSOM schema. When obtaining a mapping set from a TSV
   file, any slot not explicitly set in the file will be set to
@@ -17,7 +17,7 @@ Maniulating mappings
   
   Get the individual mappings of a mapping set with
   <<<MappingSet.getMappings()>>>. An individual mapping is represented
-  by the {{{./apidocs/org/incenp/obofoundry/sssom/model/Mapping.html}Mapping}}
+  by the {{{../apidocs/org/incenp/obofoundry/sssom/model/Mapping.html}Mapping}}
   class. Again, that class has read/write accessors for all
   mapping-level metadata slot defined in the SSSOM schema.
   
@@ -69,7 +69,7 @@ Mapping mapping2 = mapping.toBuilder()
   SSSOM object.
   
   To use that pattern, you must first create an implementation of the
-  {{{./apidocs/org/incenp/obofoundry/sssom/SlotVisitor.html}SlotVisitor}}
+  {{{../apidocs/org/incenp/obofoundry/sssom/SlotVisitor.html}SlotVisitor}}
   interface. That interface is generic and has two type parameters: the
   type of objects whose slots you want to visit (either <<<Mapping>>> or
   <<<MappingSet>>>), and the type of objects your visitor should return
@@ -79,7 +79,7 @@ Mapping mapping2 = mapping.toBuilder()
   slots, Double-typed slot, etc.).
   
   Then, you must obtain a
-  {{{./apidocs/org/incenp/obofoundry/sssom/SlotHelper.html}SlotHelper}}
+  {{{../apidocs/org/incenp/obofoundry/sssom/SlotHelper.html}SlotHelper}}
   object using one of the static methods on that class (either
   <<<getMappingHelper()>>> or <<<getMappingSetHelper()>>>, depending on
   whether you want to visit the slots of a mapping or of a mapping set),
@@ -112,7 +112,7 @@ Mapping inverted = mapping.invert("custom predicate");
   
   To compute the <cardinality> of mappings in a set, use the
   <<<inferCardinality()>>> static method in
-  {{{./apidocs/org/incenp/obofoundry/sssom/model/MappingCardinality.html}MappingCardinality}}:
+  {{{../apidocs/org/incenp/obofoundry/sssom/model/MappingCardinality.html}MappingCardinality}}:
   
 +-----------------------------------------------------------------------
 import org.incenp.obofoundry.sssom.model.MappingCardinality;

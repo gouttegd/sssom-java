@@ -7,18 +7,14 @@
   Java language – just a hobby, won’t be big and professional like
   <<<sssom-py>>>.
   
-  It provides a {{{./sssom-core/index.html}core library}} of Java
-  classes to represent and manipulate SSSOM mappings and mapping sets,
-  and read and write them to and from the SSSOM TSV and JSON
-  serialisation formats.
-  
-  It also provides a {{{./sssom-ext/index.html}extended library}},
-  built on top the core library and which provide additional features
-  beyond what is defined in the SSSOM specification. Notably, that
-  library proposes an ad-hoc filtering and transformation language,
-  named {{{./sssom-ext/sssom-transform.html}SSSOM/Transform}} or
-  SSSOM/T, to allow rule-based arbitrary transformation of mappings
-  into any kind of objects.
+  It provides a {{{./library.html}library}} of Java classes to
+  represent and manipulate SSSOM mappings and mapping sets, and read and
+  write them to and from the SSSOM TSV and JSON serialisation formats.
+  It also includes several additional features; notably, the library
+  proposes an ad-hoc filtering and transformation language, named
+  {{{./sssom-ext/sssom-transform.html}SSSOM/Transform}} or SSSOM/T, to
+  allow rule-based arbitrary transformation of mappings into any kind of
+  objects.
   
   Lastly, it also provides a {{{./sssom-robot/index.html}ROBOT plugin}}
   to use or generate SSSOM mapping sets as part of a pipeline of ROBOT

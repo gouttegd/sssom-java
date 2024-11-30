@@ -8,12 +8,12 @@ The SSSOM-Core Java library
   <<<sssom-core>>>) provides the implementation of the SSSOM
   specification proper, without additional features.
   
-  The top-level {{{./apidocs/org/incenp/obofoundry/sssom/package-summary.html}
+  The top-level {{{../apidocs/org/incenp/obofoundry/sssom/package-summary.html}
   org.incenp.obofoundry.sssom}} package is intended to provide
   general-purpose classes to deal with the SSSOM standard. Mostly, it
   provides classes to {{{./io.html}read and write}} mapping sets.
   
-  The {{{./apidocs/org/incenp/obofoundry/sssom/model/package-summary.html}
+  The {{{../apidocs/org/incenp/obofoundry/sssom/model/package-summary.html}
   org.incenp.obofoundry.sssom.model}} package provides the classes that
   make up the object model for SSSOM. Those classes are, for most of
   them, directly derived from the LinkML schema that formally describes

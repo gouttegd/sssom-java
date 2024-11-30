@@ -16,7 +16,7 @@ Reading and writing SSSOM mapping sets
   commented header) and the ”external” variant (where the metadata are in a
   distinct file) are supported.
   
-  Use the {{{./apidocs/org/incenp/obofoundry/sssom/TSVReader.html}TSVReader}}
+  Use the {{{../apidocs/org/incenp/obofoundry/sssom/TSVReader.html}TSVReader}}
   class to read a mapping set from a TSV file:
   
 +-----------------------------------------------------------------------
@@ -38,7 +38,7 @@ try {
   will automatically look for a file with the same name as the TSV file
   but with a <<<yml>>> extension, and read the metadata from that file.
   If no such file exists, the reader will throw a
-  {{{./apidocs/org/incenp/obofoundry/sssom/SSSOMFormatException.html}SSSOMFormatException}}.
+  {{{../apidocs/org/incenp/obofoundry/sssom/SSSOMFormatException.html}SSSOMFormatException}}.
   
   Use the two-arguments variant of the constructor to explicitly specify
   the name of an external metadata file:
@@ -96,7 +96,7 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
 
   The {{{https://mapping-commons.github.io/sssom/spec-formats-json/}JSON format}}
   is mostly a direct JSON rendering of the SSSOM data model. It is
-  supported by the {{{./apidocs/org/incenp/obofoundry/sssom/JSONReader.html}JSONReader}}
+  supported by the {{{../apidocs/org/incenp/obofoundry/sssom/JSONReader.html}JSONReader}}
   class.
   
   Note that the JSON format is currently not precisely defined by the
@@ -153,7 +153,7 @@ try {
 
 ** 2.1. TSV format
   
-  Use the {{{./apidocs/org/incenp/obofoundry/sssom/TSVWriter.html}TSVWriter}}
+  Use the {{{../apidocs/org/incenp/obofoundry/sssom/TSVWriter.html}TSVWriter}}
   class to write a mapping set to a file:
   
 +-----------------------------------------------------------------------
@@ -196,7 +196,7 @@ TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv", "my-meta.yml");
   
 ** 2.2. JSON format
 
-  Use the {{{./apidocs/org/incenp/obofoundry/sssom/JSONWriter.html}JSONWriter}}
+  Use the {{{../apidocs/org/incenp/obofoundry/sssom/JSONWriter.html}JSONWriter}}
   class to write a mapping set to a file:
   
 +-----------------------------------------------------------------------
