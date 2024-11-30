@@ -30,4 +30,9 @@
     <menu ref="reports" />
     <footer><![CDATA[Copyright © 2024 Damien Goutte-Gattat]]></footer>
   </body>
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.9</version>
+  </skin>
 </project>
