@@ -20,6 +20,4 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build package
-      run: mvn -B package
-    - name: Build website
-      run: mvn -B -pl core site
+      run: mvn -B package site
