@@ -28,7 +28,7 @@ public class XrefExtractCommandTest {
     void testExtractUberonXrefs() throws IOException {
         // @formatter:off
         TestUtils.runCommand("xref-extract",
-                "--input", "../core/src/test/resources/owl/fbdv.ofn",
+                "--input", "../ext/src/test/resources/owl/fbdv.ofn",
                 "--mapping-file", "src/test/resources/output/fbdv-xrefs.sssom.tsv.out",
                 "--all-xrefs");
         // @formatter:on

@@ -19,7 +19,7 @@
   <dependencies>
     <dependency>
       <groupId>org.incenp</groupId>
-      <artifactId>sssom-core</artifactId>
+      <artifactId>sssom-ext</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>

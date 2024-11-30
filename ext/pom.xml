@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.incenp</groupId>
+    <artifactId>sssom-java</artifactId>
+    <version>0.9.1-SNAPSHOT</version>
+  </parent>
+  <artifactId>sssom-ext</artifactId>
+
+  <name>SSSOM-Ext</name>
+  <description>SSSOM Java library</description>
+  <url>https://incenp.org/dvlpt/sssom-java/library.html</url>
+  <scm>
+    <url>https://github.com/gouttegd/sssom-java</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.incenp</groupId>
+      <artifactId>sssom-core</artifactId>
+      <version>${project.parent.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>4.13.2</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.owlapi</groupId>
+      <artifactId>owlapi-distribution</artifactId>
+      <version>4.5.29</version>
+    </dependency>
+    <dependency>
+      <groupId>io.github.liveontologies</groupId>
+      <artifactId>elk-owlapi</artifactId>
+      <version>0.6.0</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr4-maven-plugin</artifactId>
+        <version>4.13.2</version>
+        <configuration>
+          <visitor>true</visitor>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

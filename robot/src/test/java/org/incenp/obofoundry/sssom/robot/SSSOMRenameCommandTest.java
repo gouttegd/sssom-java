@@ -28,8 +28,8 @@ public class SSSOMRenameCommandTest {
     void testSimpleRename() throws IOException {
         // @formatter:off
         TestUtils.runCommand("sssom-rename",
-                "--input", "../core/src/test/resources/owl/fbdv.ofn",
-                "--sssom", "../core/src/test/resources/sets/fbdv-renames.sssom.tsv",
+                "--input", "../ext/src/test/resources/owl/fbdv.ofn",
+                "--sssom", "../ext/src/test/resources/sets/fbdv-renames.sssom.tsv",
                 "convert",
                 "--format", "ofn",
                 "--output", "src/test/resources/output/fbdv-renaming-test.ofn.out");

@@ -40,7 +40,8 @@ public class TestUtils {
      * @param inputs A list of SSSOM/TSV files to be used as input. May be
      *               {@code null} (e.g. to read from stdin, or to pass custom
      *               {@code --input} options). This method will look for the files
-     *               in the {@code src/test/resources/sets} folder first, then in
+     *               in the {@code src/test/resources/sets} directory first, then in
+     *               in {@code ../ext/src/test/resources/sets} directory, then in
      *               the module’s top-level directory.
      * @param output The filename where the output should be sent. May be
      *               {@code null}. If not {@code null} and the return code is zero,
@@ -57,6 +58,9 @@ public class TestUtils {
         if ( inputs != null ) {
             for ( String input : inputs ) {
                 File f = new File("../core/src/test/resources/sets/" + input);
+                if ( !f.exists() ) {
+                    f = new File("../ext/src/test/resources/sets/" + input);
+                }
                 if ( !f.exists() ) {
                     f = new File("src/test/resources/sets/" + input);
                 }

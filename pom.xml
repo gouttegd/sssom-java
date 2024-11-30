@@ -69,6 +69,7 @@
 
   <modules>
     <module>core</module>
+    <module>ext</module>
     <module>robot</module>
     <module>cli</module>
   </modules>

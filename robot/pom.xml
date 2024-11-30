@@ -19,7 +19,7 @@
   <dependencies>
     <dependency>
       <groupId>org.incenp</groupId>
-      <artifactId>sssom-core</artifactId>
+      <artifactId>sssom-ext</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
     <dependency>
@@ -79,6 +79,7 @@
               <artifactSet>
                 <includes>
                   <include>org.incenp:sssom-core</include>
+                  <include>org.incenp:sssom-ext</include>
                   <include>org.projectlombok:lombok</include>
                   <include>com.fasterxml.jackson.dataformat:jackson-dataformat-csv</include>
                   <include>org.antlr:antlr4-runtime</include>
