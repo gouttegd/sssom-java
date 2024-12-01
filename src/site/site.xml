@@ -14,6 +14,13 @@
       <item name="Command-line tool" href="sssom-cli/index.html" />
       <item name="ROBOT plugin" href="sssom-robot/index.html" />
     </menu>
+    <menu name="Links" inherit="bottom">
+      <item name="Issue tracker" href="https://github.com/gouttegd/sssom-java/issues" />
+      <item name="Current release downloads" href="https://github.com/gouttegd/sssom-java/releases/tag/sssom-java-${this.version}/">
+        <item name="SSSOM-CLI" href="https://github.com/gouttegd/sssom-java/releases/download/sssom-java-${this.version}/sssom-cli-${this.version}.jar" />
+        <item name="ROBOT plugin" href="https://github.com/gouttegd/sssom-java/releases/download/sssom-java-${this.version}/sssom-robot-plugin-${this.version}.jar" />
+      </item>
+    </menu>
     <footer><![CDATA[Copyright © 2024 Damien Goutte-Gattat]]></footer>
   </body>
   <skin>

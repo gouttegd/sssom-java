@@ -691,9 +691,9 @@ is_a(%{object_id}, UBERON:0000105) -> set_var("RELATION", BFO:0000066);
   the other way around. Some mappings may also involve entities that
   belong neither to FBbt nor to Uberon/CL.
   
-  So, first, if there any mappings with a subject that is a Uberon or CL
-  term, we invert them, so that Uberon/CL terms are consistently on the
-  object side:
+  So, first, if there are any mappings with a subject that is a Uberon
+  or CL term, we invert them, so that Uberon/CL terms are consistently
+  on the object side:
   
 +-----------------------------------------------------------------------
 subject==CL:* || subject==UBERON:* -> invert();
@@ -742,7 +742,7 @@ subject==CL:* || subject==UBERON:* -> invert();
   
 +-----------------------------------------------------------------------
 subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch ->
-    create_axiom("%subject_id EquivalentTo: %object_id and (%TAXREL some NCBITaxon:7227))");
+    create_axiom("%subject_id EquivalentTo: %object_id and (%RELATION some NCBITaxon:7227)");
 +-----------------------------------------------------------------------
 
   We filter on the subject side to make sure we are only dealing with
@@ -781,7 +781,7 @@ subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch ->
   
 +-----------------------------------------------------------------------
 subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch -> {
-    create_axiom("%subject_id EquivalentTo: %object_id and (%TAXREL some NCBITaxon:7227))");
+    create_axiom("%subject_id EquivalentTo: %object_id and (%RELATION some NCBITaxon:7227)");
     annotate(%{object_id}, oboInOwl:hasDbXref, "%{subject_id|short}");
     annotate(%{subject_id}, IAO:0000589, "%{object_label} (Drosophila)");
 }
