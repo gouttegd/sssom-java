@@ -10,14 +10,14 @@
   It provides a {{{./library.html}library}} of Java classes to
   represent and manipulate SSSOM mappings and mapping sets, and read and
   write them to and from the SSSOM TSV and JSON serialisation formats.
-  It also includes several additional features; notably, the library
-  proposes an ad-hoc filtering and transformation language, named
+  The library includes several additional features; notably, it proposes
+  an ad-hoc filtering and transformation language, named
   {{{./sssom-ext/sssom-transform.html}SSSOM/Transform}} or SSSOM/T, to
   allow rule-based arbitrary transformation of mappings into any kind of
   objects.
   
-  Lastly, it also provides a {{{./sssom-robot/index.html}ROBOT plugin}}
-  to use or generate SSSOM mapping sets as part of a pipeline of ROBOT
+  It also provides a {{{./sssom-robot/index.html}ROBOT plugin}} to use
+  or generate SSSOM mapping sets as part of a pipeline of ROBOT
   commands, and a {{{./sssom-cli/index.html}command-line tool}} to
   manipulate mapping sets from the command line.
 

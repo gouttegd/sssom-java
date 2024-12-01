@@ -25,7 +25,7 @@ The SSSOM/T-OWL dialect
   will execute the ruleset has access to a OWL ontology, which is
   hereafter referred to as as the <helper ontology>.
   
-  With the {{{./robot-sssom-inject.html}<inject> command}} of the ROBOT
+  With the {{{../sssom-robot/inject.html}<inject> command}} of the ROBOT
   plugin, this is ROBOT’s current ontology – the one that has been
   loaded by a previous <<<--input>>> or <<<--input-iri>>> option. This
   is typically the ontology into which the axioms produced by the
@@ -548,7 +548,8 @@ object==UBERON:* && !exists(%{object_id}) -> stop();
   
   Those placeholders are still supported, but it should now be preferred
   to use the standard <<<subject_id>>> and <<<object_id>>> placeholders,
-  combined with the {{{6.5.1. short}<short>}} format modifier.
+  combined with the {{{./sssom-transform.html#a6.5.1._short}<short>}}
+  format modifier.
   
 ** 6.5. Annotating the generated axioms
 
@@ -756,7 +757,7 @@ subject==FBbt:* && predicate==semapv:crossSpeciesExactMatch ->
   annotate(%{object_id}, oboInOwl:hasDbXref, "%{subject_id|short}");
 +-----------------------------------------------------------------------
 
-  Note here the use of the {{{./sssom-transform.html#a6.4.1_short}<short>}}
+  Note here the use of the {{{./sssom-transform.html#a6.5.1_short}<short>}}
   format modifier, so that the value of the cross-reference annotation
   is the subject ID in its “CURIEfied” form (as typically expected for
   OBO cross-references.)

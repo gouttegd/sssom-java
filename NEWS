@@ -1,3 +1,19 @@
+Changes in sssom-java-1.0.0
+---------------------------
+
+    * sssom-core:
+      * Library split in two components: sssom-core and sssom-ext.
+    * SSSOM/T:
+      * Add filter and callback functions.
+      * Add support for optional, named arguments in function calls.
+      * Add the possibility to define variables.
+      * Add placeholder substitution in function arguments.
+      * Add experimental support for URI Expressions.
+    * SSSOM/T-OWL:
+      * Add the exists and is_a filter functions.
+      * Add the annotate function.
+
+
 Changes in sssom-java-0.9.0
 ---------------------------
 

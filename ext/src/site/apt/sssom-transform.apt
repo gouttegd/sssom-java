@@ -116,7 +116,7 @@ FILTER -> ACTION;
 
   where <FILTER> is an {{{3. Filters}expression}} that will determine to 
   which mappings the rule is applied, and <ACTION> describes
-  {{{4. Action}what will happen}} when the rule is applied to those
+  {{{4. Actions}what will happen}} when the rule is applied to those
   mappings.
   
   Rules are applied in the order in which they appear in the SSSOM/T

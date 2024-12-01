@@ -211,10 +211,10 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
 * 4. Transformations
 
-  The {{{./sssomt-mapping.html}SSSOM/T-Mapping dialect}} of the
-  {{{./sssom-transform.html}SSSOM/Transform language}} can be used to
-  apply arbitrary transformations to the mapping set before it is
-  written to output.
+  The {{{../sssom-ext/sssomt-mapping.html}SSSOM/T-Mapping dialect}} of
+  the {{{../sssom-ext/sssom-transform.html}SSSOM/Transform language}}
+  can be used to apply arbitrary transformations to the mapping set
+  before it is written to output.
   
   The ruleset must contain at least one rule that uses the
   <<<include()>>> function, otherwise the resulting set will be

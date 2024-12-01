@@ -24,7 +24,8 @@ ROBOT inject command
   
   The command will generate OWL axioms according to instructions
   provided by other command line options (see
-  {{Specifying the axioms to generate}} below). The default behaviour is
+  {{{5.Specifying the axioms to generate}Specifying the axioms to generate}}
+  below). The default behaviour is
   then to inject (merge) those axioms into the ontology that is
   currently manipulated by the ROBOT pipeline.
   
@@ -51,8 +52,8 @@ ROBOT inject command
   
   Using <<<--no-merge>>> alone makes little sense as it will result in
   the axioms being sent to nowhere (unless a
-  {{{Write generated axiom to different files}dispatch table}} is also
-  used, when generating axioms from a ruleset).
+  {{{6.2. Write generated axiom to different files}dispatch table}} is
+  also used, when generating axioms from a ruleset).
   
   The option <<<--create>>> instructs the command to create a <new>
   ontology with the generated axioms. The newly created ontology becomes
@@ -114,10 +115,10 @@ ROBOT inject command
 
   There are two ways of instructing the command of the axioms it is
   supposed to generate from the mappings: with ad-hoc options or with a
-  <ruleset> written in the {{{./sssomt-owl.html}SSSOM/T-OWL}} dialect of
-  the {{{./sssom-transform.html}SSSOM/Transform}} language. They are not
-  mutually exclusive: a single invocation of the command can make use of
-  both an ad-hoc option <and> a ruleset.
+  <ruleset> written in the {{{../sssom-ext/sssomt-owl.html}SSSOM/T-OWL}}
+  dialect of the {{{../sssom-ext/sssom-transform.html}SSSOM/Transform}}
+  language. They are not mutually exclusive: a single invocation of the
+  command can make use of both an ad-hoc option <and> a ruleset.
   
 ** 5.1. Ad-hoc options
 
@@ -232,8 +233,8 @@ subject==FBbt:* -> annotate(%{object_id}, oio:hasDbXref, "%{subject|short}");
 
   When using a SSSOM/Transform ruleset (with the <<<--ruleset>>>
   option), if the ruleset contains
-  {{{./sssom-transform.html#a8._Tagging_rules}tags}}, two more features
-  are available to <<<inject>>>.
+  {{{../sssom-ext/sssom-transform.html#a8._Tagging_rules}tags}}, two
+  more features are available to <<<inject>>>.
   
 ** 6.1. Selectively enable or disabled tagged rules
 

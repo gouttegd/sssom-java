@@ -105,12 +105,14 @@ the source of truth for which entity should be renamed and into what.
 
 Building
 --------
-Build by running `mvn clean package`. This will produce four distinct
+Build by running `mvn clean package`. This will produce five distinct
 Jar files:
 
 * `sssom-core-x.y.z.jar` (in `core/target`): a minimal Java library,
-  containing only the classes from this project proper (dependencies
-  _not_ included).
+  containing only the classes implementing the SSSOM specification.
+* `sssom-ext-x.y.z.jar` (in `ext/target`): an extended library, built
+  on top of `sssom-core` and providing more classes to facilitate the
+  manipulation of mappings.
 * `sssom-robot-plugin-x.y.z.jar` (in `robot/target`): a file usable as a
   ROBOT plugin.
 * `sssom-robot-standalone-x.y.z.jar` (in `robot/target`): a standalone
@@ -122,7 +124,8 @@ Jar files:
 To use the library in a Java project, use the following identifiers:
 
 * _group ID_: `org.incenp`;
-* _artifact ID_: `sssom-core`.
+* _artifact ID_: `sssom-core` for the core library, or `sssom-ext` for
+  extended library (which will bring in `sssom-core` as a dependency).
 
 Homepage and repository
 -----------------------
