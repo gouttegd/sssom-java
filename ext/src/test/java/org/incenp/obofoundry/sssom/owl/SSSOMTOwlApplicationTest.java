@@ -52,6 +52,9 @@ public class SSSOMTOwlApplicationTest {
     private final static String UBERON_0000105 = "http://purl.obolibrary.org/obo/UBERON_0000105";
     private final static String UBERON_0014405 = "http://purl.obolibrary.org/obo/UBERON_0014405";
     private final static String UBERON_6000002 = "http://purl.obolibrary.org/obo/UBERON_6000002";
+    private final static String PART_OF = "http://purl.obolibrary.org/obo/BFO_0000050";
+    private final static String TRUNK_PART_OF = "http://purl.obolibrary.org/obo/uberon/core#trunk_part_of";
+    private final static String OIO_CONSIDER = "http://www.geneontology.org/formats/oboInOwl#consider";
 
     private SSSOMTOwlApplication app;
     private List<String> arguments = new ArrayList<String>();
@@ -182,13 +185,90 @@ public class SSSOMTOwlApplicationTest {
 
     @Test
     void testIsAFunction() {
+        IMappingFilter f;
         arguments.add("%{subject_id}");
-        arguments.add(UBERON_0000105);
 
+        arguments.add(UBERON_0000105);
         try {
-            IMappingFilter f = app.onFilter("is_a", arguments, keyedArguments);
+            f = app.onFilter("is_a", arguments, keyedArguments);
             Assertions.assertInstanceOf(SSSOMTIsAFunction.class, f);
             Assertions.assertTrue(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(TRUNK_PART_OF).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        arguments.set(1, PART_OF);
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertTrue(f.filter(Mapping.builder().subjectId(TRUNK_PART_OF).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        keyedArguments.put("type", "class");
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(TRUNK_PART_OF).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testIsAFunctionToTestEntityType() {
+        IMappingFilter f;
+
+        arguments.add("%{subject_id}");
+        arguments.add(app.getPrefixManager().expandIdentifier("owl:Thing"));
+
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertTrue(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(PART_OF).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(OIO_CONSIDER).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        arguments.set(1, app.getPrefixManager().expandIdentifier("owl:Class"));
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertTrue(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(PART_OF).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(OIO_CONSIDER).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        arguments.set(1, app.getPrefixManager().expandIdentifier("owl:topObjectProperty"));
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertTrue(f.filter(Mapping.builder().subjectId(PART_OF).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(OIO_CONSIDER).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        arguments.set(1, app.getPrefixManager().expandIdentifier("owl:ObjectProperty"));
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertTrue(f.filter(Mapping.builder().subjectId(PART_OF).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(OIO_CONSIDER).build()));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        arguments.set(1, app.getPrefixManager().expandIdentifier("owl:AnnotationProperty"));
+        try {
+            f = app.onFilter("is_a", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
+            Assertions.assertFalse(f.filter(Mapping.builder().subjectId(PART_OF).build()));
+            Assertions.assertTrue(f.filter(Mapping.builder().subjectId(OIO_CONSIDER).build()));
         } catch ( SSSOMTransformError e ) {
             Assertions.fail(e);
         }

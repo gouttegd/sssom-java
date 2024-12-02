@@ -37,7 +37,9 @@ import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
@@ -55,6 +57,7 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
     private OWLLiteral falseValue;
     private EditableEntityChecker entityChecker;
     private Map<String, Set<String>> subClassesOf = new HashMap<String, Set<String>>();
+    private Map<String, Set<String>> subPropertiesOf = new HashMap<String, Set<String>>();
     private UriExpressionRegistry uriExprRegistry = new UriExpressionRegistry();
 
     /**
@@ -176,13 +179,13 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
     }
 
     /**
-     * Gets list of all descendants of a given class.
+     * Gets a list of all descendants of a given class.
      * <p>
      * Implementation detail: the results are cached, so that calling this method
      * several times for the same parent will query the ontology only once.
      * 
      * @param root The name of the parent class.
-     * @return A set containing all the descendant of the parent class (including
+     * @return A set containing all the descendants of the parent class (including
      *         the parent class itself).
      */
     public Set<String> getSubClassesOf(String root) {
@@ -205,6 +208,49 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         }
 
         return classes;
+    }
+
+    /**
+     * Gets a list of all descendants of a given property.
+     * <p>
+     * Implementation details: the results are cached, so that calling this method
+     * several times for the same parent will query the ontology only once.
+     * 
+     * @param root The name of the parent property.
+     * @return A set containing all the descendants of the parent property
+     *         (including the parent property itself).
+     */
+    public Set<String> getSubPropertiesOf(String root) {
+        Set<String> properties = subPropertiesOf.get(root);
+        if ( properties == null ) {
+            properties = new HashSet<String>();
+            properties.add(root);
+
+            if ( reasoner == null ) {
+                reasoner = reasonerFactory.createReasoner(ontology);
+            }
+
+            IRI rootIRI = IRI.create(root);
+            if ( ontology.containsObjectPropertyInSignature(rootIRI) ) {
+                for ( OWLObjectPropertyExpression pe : reasoner
+                        .getSubObjectProperties(factory.getOWLObjectProperty(rootIRI), false).getFlattened() ) {
+                    if ( !pe.isBottomEntity() && pe.isNamed() ) {
+                        properties.add(pe.asOWLObjectProperty().getIRI().toString());
+                    }
+                }
+            } else if ( ontology.containsDataPropertyInSignature(rootIRI) ) {
+                for ( OWLDataProperty dp : reasoner.getSubDataProperties(factory.getOWLDataProperty(rootIRI), false)
+                        .getFlattened() ) {
+                    if ( !dp.isBottomEntity() ) {
+                        properties.add(dp.getIRI().toString());
+                    }
+                }
+            }
+
+            subPropertiesOf.put(root, properties);
+        }
+
+        return properties;
     }
 
     /**

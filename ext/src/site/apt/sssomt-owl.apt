@@ -158,10 +158,6 @@ exists(ENT:1234) -> ...;
   descendant of another entity, in the helper ontology. Both asserted
   and inferred classifications are taken into account.
   
-  Note that currently, this function only works on <classes>; it cannot
-  be used to test whether an object property, for example, is a
-  subproperty of another object property.
-  
   The function takes two arguments: the first is the entity whose
   ascendency is to be checked, and the second is the putative ascendant.
   Placeholders are expanded in both arguments.
@@ -182,7 +178,39 @@ is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "I am an
 +-----------------------------------------------------------------------
 !object==BFO:0000003 && is_a(%{object_id}, BFO:0000003) ->
     annotate(%{object_id}, rdfs:comment, "I am an occurrent, but not THE occurrent!");
-+----------------------------------------------------------------------- 
++-----------------------------------------------------------------------
+
+  The function works on both classes and object and data properties. If
+  the second argument is declared in the helper ontology as an object or
+  data property, the function tests whether the first argument is a
+  subproperty; otherwise, it assumes the second argument is a class, and
+  tests whether the first argument is a subclass. Use the optional
+  <<</type=>>> named argument to force the function to treat its second
+  argument as a class (<<</type="class">>>) or as a property
+  (<<</type="property">>>).
+  
+  The function can also be used to test the type of the entity in the
+  first argument, by setting the second argument to one of the following
+  values:
+  
+  * <<<owl:Thing>>> (or <<<owl:Class>>>): tests whether the first
+    argument is a class;
+    
+  * <<<owl:topObjectProperty>>> (or <<<owl:ObjectProperty>>>): tests
+    whether it is an object property;
+    
+  * <<<owl:topDataProperty>>> (or <<<owl:DataProperty>>>): tests whether
+    it is a data property;
+    
+  * <<<owl:AnnotationProperty>>>: tests whether it is an annotation
+    property.
+    
+  []
+  
+  Be mindful that the outcome of those tests is always dependent on the
+  contents of the helper ontology. You might not get the results you
+  would expect if the helper ontology happens <not> to contain
+  declaration axioms for all the entities you wish to test.
 
 * 4. Generator functions
 
