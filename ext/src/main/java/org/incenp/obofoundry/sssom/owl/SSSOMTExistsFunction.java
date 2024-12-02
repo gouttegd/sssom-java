@@ -77,7 +77,7 @@ public class SSSOMTExistsFunction implements ISSSOMTFunction<IMappingFilter>, IM
 
     @Override
     public boolean filter(Mapping mapping) {
-        return app.classExists(entity.transform(mapping));
+        return app.entityExists(entity.transform(mapping));
     }
 
 }

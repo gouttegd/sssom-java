@@ -83,10 +83,12 @@ public class SSSOMTOwlApplicationTest {
     }
 
     @Test
-    void testClassExists() {
-        Assertions.assertTrue(app.classExists("http://purl.obolibrary.org/obo/UBERON_0001062"));
-        Assertions.assertFalse(app.classExists("http://purl.obolibrary.org/obo/UBERON_doesnotexist"));
-        Assertions.assertFalse(app.classExists("http://purl.obolibrary.org/obo/UBERON_0000032"));
+    void testEntityExists() {
+        Assertions.assertTrue(app.entityExists("http://purl.obolibrary.org/obo/UBERON_0001062"));
+        Assertions.assertFalse(app.entityExists("http://purl.obolibrary.org/obo/UBERON_doesnotexist"));
+        Assertions.assertFalse(app.entityExists("http://purl.obolibrary.org/obo/UBERON_0000032"));
+        Assertions.assertTrue(app.entityExists(PART_OF));
+        Assertions.assertTrue(app.entityExists(OIO_CONSIDER));
     }
 
     @Test

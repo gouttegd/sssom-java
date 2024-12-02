@@ -158,15 +158,33 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
      * @param cls The name of the class to check.
      * @return {@code true} if the class exists and is not deprecated, otherwise
      *         {@code false}.
+     * 
+     * @deprecated Use {@link #entityExists(String)} instead.
      */
+    @Deprecated
     public boolean classExists(String cls) {
+        return entityExists(cls);
+    }
+
+    /**
+     * Checks if a given entity exists in the helper ontology and if it is not
+     * obsolete.
+     * <p>
+     * For this method, “exists” means that the entity is present in the ontology’s
+     * signature.
+     * 
+     * @param entity The name of the entity to check.
+     * @return {@code true} if the entity exists and is not deprecated, otherwise
+     *         {@code false}.
+     */
+    public boolean entityExists(String entity) {
         if ( falseValue == null ) {
             falseValue = factory.getOWLLiteral(false);
         }
 
-        IRI clsIRI = IRI.create(cls);
-        if ( ontology.containsClassInSignature(clsIRI) ) {
-            for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(clsIRI) ) {
+        IRI entityIRI = IRI.create(entity);
+        if ( ontology.containsEntityInSignature(entityIRI) ) {
+            for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(entityIRI) ) {
                 if ( ax.getProperty().isDeprecated() ) {
                     if ( ax.getValue().asLiteral().or(falseValue).parseBoolean() ) {
                         return false;
