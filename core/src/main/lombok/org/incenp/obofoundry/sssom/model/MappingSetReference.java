@@ -17,9 +17,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @EqualsAndHashCode(callSuper=false)
 public class MappingSetReference  {
     @JsonProperty("mapping_set_id")
+    @URI
     private String mappingSetId;
 
     @JsonProperty("mirror_from")
+    @URI
     private String mirrorFrom;
 
     @JsonProperty("registry_confidence")

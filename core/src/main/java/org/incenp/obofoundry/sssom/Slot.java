@@ -22,8 +22,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityReference;
 import org.incenp.obofoundry.sssom.model.Propagatable;
+import org.incenp.obofoundry.sssom.model.SlotURI;
+import org.incenp.obofoundry.sssom.model.URI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -69,6 +72,21 @@ public class Slot<T> {
     }
 
     /**
+     * Gets the URI of the slot.
+     * <p>
+     * For most slots, this is simply the slot’s name appended to the SSSOM IRI
+     * prefix (e.g. {@code https://w3id.org/sssom/subject_label}), but some slots
+     * use a URI borrowed from another specification instead (for example, the URI
+     * for the {@code creator_id} is {@code http://purl.org/dc/terms/creator}).
+     * 
+     * @return The URI associated with the slot.
+     */
+    public String getURI() {
+        SlotURI uriAnnotation = field.getDeclaredAnnotation(SlotURI.class);
+        return uriAnnotation != null ? uriAnnotation.value() : BuiltinPrefix.SSSOM.getPrefix() + getName();
+    }
+
+    /**
      * Indicates whether the slot is intended to hold an entity reference. Entity
      * references are represented as strings but need to be treated differently.
      * 
@@ -86,6 +104,16 @@ public class Slot<T> {
      */
     public boolean isPropagatable() {
         return field.isAnnotationPresent(Propagatable.class);
+    }
+
+    /**
+     * Indicates whether the slot is expected to contain a URI.
+     * 
+     * @return {@code true} if the slot is defined as having a URI range, otherwise
+     *         {@code false}.
+     */
+    public boolean isURI() {
+        return field.isAnnotationPresent(URI.class);
     }
 
     /**

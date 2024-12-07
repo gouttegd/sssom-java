@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class Mapping  {
     @JsonProperty("subject_id")
     @EntityReference
+    @SlotURI("http://www.w3.org/2002/07/owl#annotatedSource")
     private String subjectId;
 
     @JsonProperty("subject_label")
@@ -30,6 +31,7 @@ public class Mapping  {
 
     @JsonProperty("predicate_id")
     @EntityReference
+    @SlotURI("http://www.w3.org/2002/07/owl#annotatedProperty")
     private String predicateId;
 
     @JsonProperty("predicate_label")
@@ -40,6 +42,7 @@ public class Mapping  {
 
     @JsonProperty("object_id")
     @EntityReference
+    @SlotURI("http://www.w3.org/2002/07/owl#annotatedTarget")
     private String objectId;
 
     @JsonProperty("object_label")
@@ -54,6 +57,7 @@ public class Mapping  {
 
     @JsonProperty("author_id")
     @EntityReference
+    @SlotURI("http://purl.org/pav/authoredBy")
     private List<String> authorId;
 
     @JsonProperty("author_label")
@@ -68,11 +72,14 @@ public class Mapping  {
 
     @JsonProperty("creator_id")
     @EntityReference
+    @SlotURI("http://purl.org/dc/terms/creator")
     private List<String> creatorId;
 
     @JsonProperty("creator_label")
     private List<String> creatorLabel;
 
+    @SlotURI("http://purl.org/dc/terms/license")
+    @URI
     private String license;
 
     @JsonProperty("subject_type")
@@ -96,6 +103,7 @@ public class Mapping  {
     private String objectSourceVersion;
 
     @JsonProperty("mapping_provider")
+    @URI
     private String mappingProvider;
 
     @JsonProperty("mapping_source")
@@ -112,9 +120,11 @@ public class Mapping  {
     private String mappingToolVersion;
 
     @JsonProperty("mapping_date")
+    @SlotURI("http://purl.org/pav/authoredOn")
     private LocalDate mappingDate;
 
     @JsonProperty("publication_date")
+    @SlotURI("http://purl.org/dc/terms/created")
     private LocalDate publicationDate;
 
     @Setter(AccessLevel.NONE)
@@ -154,6 +164,7 @@ public class Mapping  {
     private String similarityMeasure;
 
     @JsonProperty("see_also")
+    @SlotURI("http://www.w3.org/2000/01/rdf-schema#seeAlso")
     private List<String> seeAlso;
 
     @JsonProperty("issue_tracker_item")
@@ -162,6 +173,7 @@ public class Mapping  {
 
     private String other;
 
+    @SlotURI("http://www.w3.org/2000/01/rdf-schema#comment")
     private String comment;
 
     public void setConfidence(Double value) {

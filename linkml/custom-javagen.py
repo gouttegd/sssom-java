@@ -41,6 +41,12 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     {%- if cls.name == 'MappingSet' and gen.is_propagatable(f.source_slot.name) %}
     @Propagatable
     {%- endif %}
+    {%- if f.source_slot.slot_uri %}
+    @SlotURI("{{ gen.expand_curie(f.source_slot.slot_uri) }}")
+    {%- endif %}
+    {%- if f.source_slot.range == 'uri' %}
+    @URI
+    {%- endif %}
     {%- if gen.is_slot_constrained(f) %}
     @Setter(AccessLevel.NONE)
     {%- endif %}
@@ -205,6 +211,9 @@ class CustomJavaGenerator(JavaGenerator):
         if d is not None:
             return "propagated" in d
         return False
+
+    def expand_curie(self, curie):
+        return self.schemaview.expand_curie(curie)
 
     def is_slot_constrained(self, slot):
         """Check if the slot has special constraints.

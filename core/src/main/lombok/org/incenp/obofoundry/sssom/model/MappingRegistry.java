@@ -26,15 +26,19 @@ public class MappingRegistry  {
     @JsonProperty("mapping_registry_description")
     private String mappingRegistryDescription;
 
+    @URI
     private List<String> imports;
 
     @JsonProperty("mapping_set_references")
     private List<MappingSetReference> mappingSetReferences;
 
+    @URI
     private String documentation;
 
+    @URI
     private String homepage;
 
     @JsonProperty("issue_tracker")
+    @URI
     private String issueTracker;
 }

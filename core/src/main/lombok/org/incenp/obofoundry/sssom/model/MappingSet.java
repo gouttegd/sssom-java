@@ -23,27 +23,36 @@ public class MappingSet  {
     private List<Mapping> mappings;
 
     @JsonProperty("mapping_set_id")
+    @URI
     private String mappingSetId;
 
     @JsonProperty("mapping_set_version")
+    @SlotURI("http://www.w3.org/2002/07/owl#versionInfo")
     private String mappingSetVersion;
 
     @JsonProperty("mapping_set_source")
+    @SlotURI("http://www.w3.org/ns/prov#wasDerivedFrom")
+    @URI
     private List<String> mappingSetSource;
 
     @JsonProperty("mapping_set_title")
+    @SlotURI("http://purl.org/dc/terms/title")
     private String mappingSetTitle;
 
     @JsonProperty("mapping_set_description")
+    @SlotURI("http://purl.org/dc/terms/description")
     private String mappingSetDescription;
 
     @JsonProperty("creator_id")
     @EntityReference
+    @SlotURI("http://purl.org/dc/terms/creator")
     private List<String> creatorId;
 
     @JsonProperty("creator_label")
     private List<String> creatorLabel;
 
+    @SlotURI("http://purl.org/dc/terms/license")
+    @URI
     private String license;
 
     @JsonProperty("subject_type")
@@ -74,6 +83,7 @@ public class MappingSet  {
 
     @JsonProperty("mapping_provider")
     @Propagatable
+    @URI
     private String mappingProvider;
 
     @JsonProperty("mapping_tool")
@@ -86,9 +96,11 @@ public class MappingSet  {
 
     @JsonProperty("mapping_date")
     @Propagatable
+    @SlotURI("http://purl.org/pav/authoredOn")
     private LocalDate mappingDate;
 
     @JsonProperty("publication_date")
+    @SlotURI("http://purl.org/dc/terms/created")
     private LocalDate publicationDate;
 
     @JsonProperty("subject_match_field")
@@ -112,13 +124,16 @@ public class MappingSet  {
     private List<String> objectPreprocessing;
 
     @JsonProperty("see_also")
+    @SlotURI("http://www.w3.org/2000/01/rdf-schema#seeAlso")
     private List<String> seeAlso;
 
     @JsonProperty("issue_tracker")
+    @URI
     private String issueTracker;
 
     private String other;
 
+    @SlotURI("http://www.w3.org/2000/01/rdf-schema#comment")
     private String comment;
 
     @JsonProperty("extension_definitions")
