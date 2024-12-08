@@ -35,6 +35,7 @@ import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.SlotVisitor;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -143,7 +144,16 @@ public class RDFConverter {
 
         @Override
         public Void visit(Slot<T> slot, T object, Object value) {
-            // TODO
+            IRI predicate = Values.iri(slot.getURI());
+            if ( EntityType.class.isInstance(value) ) {
+                EntityType et = EntityType.class.cast(value);
+                String valIRI = et.getIRI();
+                if ( valIRI != null ) {
+                    model.add(subject, predicate, Values.iri(valIRI));
+                    return null;
+                }
+            }
+            model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
             return null;
         }
 

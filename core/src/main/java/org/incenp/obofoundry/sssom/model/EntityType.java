@@ -28,17 +28,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  * Represents the type of an entity that is being mapped.
  */
 public enum EntityType {
-    OWL_CLASS,
-    OWL_OBJECT_PROPERTY,
-    OWL_DATA_PROPERTY,
-    OWL_ANNOTATION_PROPERTY,
-    OWL_NAMED_INDIVIDUAL,
-    SKOS_CONCEPT,
-    RDFS_RESOURCE,
-    RDFS_CLASS,
-    RDFS_LITERAL,
-    RDFS_DATATYPE,
-    RDF_PROPERTY;
+    OWL_CLASS("http://www.w3.org/2002/07/owl#Class"),
+    OWL_OBJECT_PROPERTY("http://www.w3.org/2002/07/owl#ObjectProperty"),
+    OWL_DATA_PROPERTY("http://www.w3.org/2002/07/owl#DataProperty"),
+    OWL_ANNOTATION_PROPERTY("http://www.w3.org/2002/07/owl#AnnotationProperty"),
+    OWL_NAMED_INDIVIDUAL("http://www.w3.org/2002/07/owl#NamedIndividual"),
+    SKOS_CONCEPT("http://www.w3.org/2004/02/skos/core#Concept"),
+    RDFS_RESOURCE("http://www.w3.org/2000/01/rdf-schema#Resource"),
+    RDFS_CLASS("http://www.w3.org/2000/01/rdf-schema#Class"),
+    RDFS_LITERAL("http://www.w3.org/2000/01/rdf-schema#Literal"),
+    RDFS_DATATYPE("http://www.w3.org/2000/01/rdf-schema#Datatype"),
+    RDF_PROPERTY("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
 
     private final static Map<String, EntityType> MAP;
 
@@ -51,9 +51,25 @@ public enum EntityType {
         MAP = Collections.unmodifiableMap(map);
     }
 
+    private String iri;
+
+    EntityType(String iri) {
+        this.iri = iri;
+    }
+
     @Override
     public String toString() {
         return name().toLowerCase().replace('_', ' ');
+    }
+
+    /**
+     * Gets the IRI associated to the enum value.
+     * 
+     * @return The IRI used to represent the enum value, if any (may be
+     *         {@code null}).
+     */
+    public String getIRI() {
+        return iri;
     }
 
     /**
