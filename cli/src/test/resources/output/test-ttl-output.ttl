@@ -1,0 +1,77 @@
+@prefix COMENT: <https://example.com/entities/> .
+@prefix COMPID: <https://example.com/people/> .
+@prefix ORGENT: <https://example.org/entities/> .
+@prefix ORGPID: <https://example.org/people/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix linkml: <https://w3id.org/linkml/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix semapv: <https://w3id.org/semapv/vocab/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sssom: <https://w3id.org/sssom/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+[] a sssom:MappingSet;
+  dcterms:created "2023-09-13"^^xsd:date;
+  dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
+  dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
+  dcterms:title "O2C set";
+  sssom:mapping_set_id "https://example.org/sets/exo2c"^^xsd:anyURI;
+  sssom:mappings [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0001;
+      owl:annotatedTarget COMENT:0011;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "alpha";
+      sssom:subject_label "alice"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0002;
+      owl:annotatedTarget COMENT:0012;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "beta";
+      sssom:subject_label "bob"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0004;
+      owl:annotatedTarget COMENT:0014;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "delta";
+      sssom:subject_label "daphne"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0005;
+      owl:annotatedTarget COMENT:0015;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "epsilon";
+      sssom:subject_label "eve"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0006;
+      owl:annotatedTarget COMENT:0016;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "zeta";
+      sssom:subject_label "fanny"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:exactMatch;
+      owl:annotatedSource ORGENT:0007;
+      owl:annotatedTarget COMENT:0013;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "gamma";
+      sssom:subject_label "gavin"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0008;
+      owl:annotatedTarget COMENT:0017;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "eta";
+      sssom:subject_label "hector"
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:exactMatch;
+      owl:annotatedSource ORGENT:0009;
+      owl:annotatedTarget COMENT:0019;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "iota";
+      sssom:subject_label "ivan"
+    ] .

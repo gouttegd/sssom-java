@@ -29,7 +29,9 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.incenp.obofoundry.sssom.BaseWriter;
+import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
 /**
@@ -82,6 +84,17 @@ public class RDFWriter extends BaseWriter {
         // Add all effectively used prefixes
         for ( String prefixName : getUsedPrefixes(mappingSet, true) ) {
             rdfSet.setNamespace(prefixName, prefixManager.getPrefix(prefixName));
+        }
+        if ( extraPolicy == ExtraMetadataPolicy.UNDEFINED ) {
+            // We need to make sure we have the prefixes for the properties representing the
+            // non-standard slots. In DEFINED mode, the ExtensionManager takes care of that
+            // of us, but not in UNDEFINED mode.
+            for ( ExtensionDefinition ed : extensionManager.getDefinitions(false, false) ) {
+                String prefixName = prefixManager.getPrefixName(ed.getProperty());
+                if ( prefixName != null ) {
+                    rdfSet.setNamespace(prefixName, prefixManager.getPrefix(prefixName));
+                }
+            }
         }
 
         // For now, we systematically add all the builtin prefixes, whether they are

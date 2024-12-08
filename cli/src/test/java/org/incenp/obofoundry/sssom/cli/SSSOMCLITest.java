@@ -238,6 +238,21 @@ public class SSSOMCLITest {
                 new String[] { "--sssompy-json" });
     }
 
+    @Test
+    void testOutputFormat() throws IOException {
+        // Check that --output-format TSV is the same as the default
+        TestUtils.runCommand(0, new String[] { "exo2n.sssom.tsv" }, "exo2n.sssom.tsv",
+                new String[] { "--output-format", "TSV" });
+
+        // Check that --output-format JSON is the same as --json-output
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output.sssom.json",
+                new String[] { "--output-format", "JSON" });
+
+        // Check that we can get RDF Turtle output
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-ttl-output.ttl",
+                new String[] { "--output-format", "TTL" });
+    }
+
     /*
      * Playing with propagation/condensation
      */
