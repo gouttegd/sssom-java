@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -48,8 +49,7 @@ public class RDFWriter extends BaseWriter {
      *                               some reason.
      */
     public RDFWriter(File file) throws FileNotFoundException {
-        writer = Rio.createWriter(RDFFormat.TURTLE, new FileOutputStream(file));
-        writer.getWriterConfig().set(BasicWriterSettings.INLINE_BLANK_NODES, true);
+        this(new FileOutputStream(file));
     }
 
     /**
@@ -62,6 +62,16 @@ public class RDFWriter extends BaseWriter {
      */
     public RDFWriter(String filename) throws FileNotFoundException {
         this(new File(filename));
+    }
+
+    /**
+     * Creates a new instance that will write data to the specified stream.
+     * 
+     * @param stream The stream to write the mapping set to.
+     */
+    public RDFWriter(OutputStream stream) {
+        writer = Rio.createWriter(RDFFormat.TURTLE, stream);
+        writer.getWriterConfig().set(BasicWriterSettings.INLINE_BLANK_NODES, true);
     }
 
     @Override

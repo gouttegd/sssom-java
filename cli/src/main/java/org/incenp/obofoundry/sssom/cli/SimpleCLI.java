@@ -42,6 +42,7 @@ import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
+import org.incenp.obofoundry.sssom.rdf.RDFWriter;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
@@ -151,8 +152,14 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "--no-condensation" }, description = "Disable condensation of propagatable slots.")
         boolean disableCondensation;
 
+        @Option(names = { "-f",
+                "--output-format" }, description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.")
+        OutputFormat outputFormat = OutputFormat.TSV;
+
         @Option(names = { "-j", "--json-output" }, description = "Write the mapping set in SSSOM/JSON format.")
-        boolean useJSON;
+        private void useJSON(boolean value) {
+            outputFormat = OutputFormat.JSON;
+        }
 
         @Option(names = { "--json-short-iris" }, description = "Shorten IRIs when writing in JSON format.")
         boolean jsonShortenIRIs;
@@ -164,7 +171,7 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "--sssompy-json" },
                 description = "Write the mapping set in the JSON-LD format expected by SSSOM-Py.")
         private void enableSSSOMPyJSON(boolean arg) {
-            useJSON = arg;
+            outputFormat = OutputFormat.JSON;
             jsonShortenIRIs = arg;
             jsonWriteContext = arg;
         }
@@ -484,7 +491,7 @@ public class SimpleCLI implements Runnable {
             MappingSet splitSet = ms.toBuilder().mappings(null).build();
             splitSet.setMappings(mappingsBySplit.get(splitId));
 
-            String extension = outputOpts.useJSON ? ".sssom.json" : ".sssom.tsv";
+            String extension = "." + outputOpts.outputFormat.extension;
             File output = new File(dir, splitId + extension);
             try {
                 BaseWriter writer = getWriter(output.getPath(), null);
@@ -499,29 +506,41 @@ public class SimpleCLI implements Runnable {
 
     private BaseWriter getWriter(String filename, String metaFilename) throws IOException {
         boolean stdout = filename.equals("-");
-        if ( outputOpts.useJSON ) {
-            JSONWriter writer = null;
+        switch ( outputOpts.outputFormat ) {
+        case JSON:
+            JSONWriter jsonWriter = null;
             if ( stdout ) {
-                writer = new JSONWriter(System.out);
+                jsonWriter = new JSONWriter(System.out);
             } else {
-                writer = new JSONWriter(filename);
+                jsonWriter = new JSONWriter(filename);
             }
-            writer.setShortenIRIs(outputOpts.jsonShortenIRIs);
-            writer.setWriteCurieMapInContext(outputOpts.jsonWriteContext);
+            jsonWriter.setShortenIRIs(outputOpts.jsonShortenIRIs);
+            jsonWriter.setWriteCurieMapInContext(outputOpts.jsonWriteContext);
 
-            return writer;
-        } else {
-            TSVWriter writer = null;
+            return jsonWriter;
+
+        case TTL:
+            RDFWriter ttlWriter = null;
+            if ( stdout ) {
+                ttlWriter = new RDFWriter(System.out);
+            } else {
+                ttlWriter = new RDFWriter(filename);
+            }
+            return ttlWriter;
+
+        case TSV:
+        default:
+            TSVWriter tsvWriter = null;
             if ( stdout ) {
                 FileOutputStream metaStream = null;
                 if ( metaFilename != null ) {
                     metaStream = new FileOutputStream(metaFilename);
                 }
-                writer = new TSVWriter(System.out, metaStream);
+                tsvWriter = new TSVWriter(System.out, metaStream);
             } else {
-                writer = new TSVWriter(filename, metaFilename);
+                tsvWriter = new TSVWriter(filename, metaFilename);
             }
-            return writer;
+            return tsvWriter;
         }
     }
 
@@ -598,6 +617,18 @@ public class SimpleCLI implements Runnable {
                 processor.addRule(new MappingProcessingRule<Mapping>(null, null, (mapping) -> mapping));
             }
             ms.setMappings(processor.process(ms.getMappings()));
+        }
+    }
+
+    private enum OutputFormat {
+        TSV("sssom.tsv"),
+        JSON("sssom.json"),
+        TTL("ttl");
+
+        private String extension;
+
+        OutputFormat(String extension) {
+            this.extension = extension;
         }
     }
 }
