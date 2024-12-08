@@ -207,8 +207,8 @@ public class JSONWriterTest {
                 .build());
         // @formatter:on
 
-        ms.getCurieMap().put("ORGENT", "https://example.org/entities");
-        ms.getCurieMap().put("COMENT", "https://example.com/entities");
+        ms.getCurieMap().put("ORGENT", "https://example.org/entities/");
+        ms.getCurieMap().put("COMENT", "https://example.com/entities/");
         ms.getCurieMap().put("ORGPID", "https://example.org/people/");
         ms.getCurieMap().put("COMPID", "https://example.com/people/");
 

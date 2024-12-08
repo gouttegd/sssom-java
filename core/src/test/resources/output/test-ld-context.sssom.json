@@ -1,8 +1,8 @@
 {
   "@context": {
-    "COMENT": "https://example.com/entities",
+    "COMENT": "https://example.com/entities/",
     "COMPID": "https://example.com/people/",
-    "ORGENT": "https://example.org/entities",
+    "ORGENT": "https://example.org/entities/",
     "ORGPID": "https://example.org/people/"
   },
   "mapping_set_id": "https://example.org/sets/exo2c",
@@ -14,18 +14,18 @@
   "subject_type": "owl class",
   "mappings": [
     {
-      "subject_id": "ORGENT:/0001",
+      "subject_id": "ORGENT:0001",
       "subject_label": "alice",
       "predicate_id": "http://www.w3.org/2004/02/skos#closeMatch",
-      "object_id": "COMENT:/0011",
+      "object_id": "COMENT:0011",
       "object_label": "alpha",
       "mapping_justification": "semapv:ManualMappingCuration"
     },
     {
-      "subject_id": "ORGENT:/0002",
+      "subject_id": "ORGENT:0002",
       "subject_label": "bob",
       "predicate_id": "http://www.w3.org/2004/02/skos#closeMatch",
-      "object_id": "COMENT:/0012",
+      "object_id": "COMENT:0012",
       "object_label": "beta",
       "mapping_justification": "semapv:ManualMappingCuration",
       "confidence": 0.7
