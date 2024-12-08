@@ -82,7 +82,7 @@ public class RDFConverter {
         Model model = new TreeModel();
 
         BNode set = Values.bnode();
-        IRI mappingSetIRI = Values.iri(SSSOM_NS, "mapping_set");
+        IRI mappingSetIRI = Values.iri(SSSOM_NS, "MappingSet");
         model.add(set, RDF.TYPE, mappingSetIRI);
 
         // Add mapping set metadata slots
