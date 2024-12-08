@@ -129,16 +129,27 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<--split>>> option, which accepts the name of a directory where the
   split sets will be written.
   
-** 2.5. JSON output
+** 2.5. Output format
 
   SSSOM-CLI writes the output set in the SSSOM/TSV format by default. To
-  output the set in the JSON format, use the <<<--json-output>>> option.
-  Note that the JSON format is currently unspecified, so the output
-  produced by that option may change in the future.
+  write the set in another format, use the <<<--output-format>>> option,
+  which currently accepts the following values:
   
-  In JSON mode, the <<<--output-metadata>>> option above is ignored,
-  since the JSON format does not allow the use of an external metadata
-  file.
+  [TSV] Write output in SSSOM/TSV format (this is already the default).
+  
+  [JSON] Write output in SSSOM/JSON format.
+  
+  [TTL] Write output in RDF Turtle format.
+  
+  []
+  
+  Note that both the JSON and RDF formats are currently poorly
+  specified, so the output produced by those options may change in the
+  future.
+  
+  In both JSON and RDF modes, the <<<--output-metadata>>> option above
+  is ignored, since those formats do not allow the use of an external
+  metadata file.
   
   Two more options control the behaviour of the JSON mode:
   
@@ -155,7 +166,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
   For convenience, another option, <<<--sssompy-json>>>, can be used to
   trigger JSON output tailored for SSSOM-Py compatibility. Using that
-  option is equivalent to using <<<--json-output>>>,
+  option is equivalent to using <<<--output-format JSON>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
 * 3. Checking a set against an ontology
