@@ -119,20 +119,36 @@ public abstract class BaseWriter {
     protected abstract void doWrite(MappingSet mappingSet) throws IOException;
 
     /**
-     * Gets the prefix names that are actually used in the given set.
+     * Gets the prefix names that are actually used in the given set. This excludes
+     * prefix names that are considered builtin.
      * 
      * @param mappingSet The mapping set to query for used prefix names.
      * @return A set of all prefix names that are effectively needed to condense all
      *         identifiers in the mapping set.
      */
     protected Set<String> getUsedPrefixes(MappingSet mappingSet) {
+        return getUsedPrefixes(mappingSet, false);
+    }
+
+    /**
+     * Gets the prefix names that are actually used in the given set, possibly
+     * including the builtin prefix names.
+     * 
+     * @param mappingSet     The mapping set to query for used prefix names.
+     * @param includeBuiltin If {@code true}, builtin prefix names will be included.
+     * @return A set of all prefix names that are effectively needed to condense all
+     *         identifiers in the mapping set.
+     */
+    protected Set<String> getUsedPrefixes(MappingSet mappingSet, boolean includeBuiltin) {
         HashSet<String> usedPrefixes = new HashSet<String>();
         SlotHelper.getMappingSetHelper().visitSlots(mappingSet, new PrefixUsageVisitor<MappingSet>(usedPrefixes));
         PrefixUsageVisitor<Mapping> puv = new PrefixUsageVisitor<Mapping>(usedPrefixes);
         mappingSet.getMappings().forEach(m -> SlotHelper.getMappingHelper().visitSlots(m, puv));
         usedPrefixes.addAll(extensionManager.getUsedPrefixes());
-        for ( BuiltinPrefix bp : BuiltinPrefix.values() ) {
-            usedPrefixes.remove(bp.getPrefixName());
+        if ( !includeBuiltin ) {
+            for ( BuiltinPrefix bp : BuiltinPrefix.values() ) {
+                usedPrefixes.remove(bp.getPrefixName());
+            }
         }
 
         return usedPrefixes;
