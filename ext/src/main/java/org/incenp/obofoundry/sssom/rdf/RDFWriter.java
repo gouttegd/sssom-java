@@ -76,7 +76,7 @@ public class RDFWriter extends BaseWriter {
 
     @Override
     protected void doWrite(MappingSet mappingSet) throws IOException {
-        RDFConverter converter = new RDFConverter();
+        RDFConverter converter = new RDFConverter(extraPolicy);
         Model rdfSet = converter.toRDF(mappingSet);
 
         // Add all effectively used prefixes
@@ -84,14 +84,15 @@ public class RDFWriter extends BaseWriter {
             rdfSet.setNamespace(prefixName, prefixManager.getPrefix(prefixName));
         }
 
-        // Those two prefixes are always used in any RDF conversion
-        rdfSet.setNamespace(BuiltinPrefix.SSSOM.getPrefixName(), BuiltinPrefix.SSSOM.getPrefix());
-        rdfSet.setNamespace(BuiltinPrefix.OWL.getPrefixName(), BuiltinPrefix.OWL.getPrefix());
+        // For now, we systematically add all the builtin prefixes, whether they are
+        // needed or not.
+        for ( BuiltinPrefix bp : BuiltinPrefix.values() ) {
+            rdfSet.setNamespace(bp.getPrefixName(), bp.getPrefix());
+        }
 
-        // FIXME Those two prefixes MAY be used, but for now we systematically include
-        // them instead of taking the time to check whether they are needed or not.
+        // Likewise for dcterms:, which MAY be needed depending on which metadata slots
+        // are filled on the mapping set object.
         rdfSet.setNamespace("dcterms", DCTERMS_NS);
-        rdfSet.setNamespace(BuiltinPrefix.XSD.getPrefixName(), BuiltinPrefix.XSD.getPrefix());
 
         Rio.write(rdfSet, writer);
     }

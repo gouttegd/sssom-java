@@ -31,6 +31,7 @@ import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.SlotVisitor;
@@ -48,6 +49,28 @@ public class RDFConverter {
 
     private static final String SSSOM_NS = BuiltinPrefix.SSSOM.getPrefix();
     private static final String OWL_NS = BuiltinPrefix.OWL.getPrefix();
+
+    private ExtraMetadataPolicy extraPolicy;
+
+    /**
+     * Creates a new instance.
+     * <p>
+     * The new converter serialises non-standard metadata slots in their
+     * <em>defined</em> form.
+     */
+    public RDFConverter() {
+        extraPolicy = ExtraMetadataPolicy.DEFINED;
+    }
+
+    /**
+     * Creates a new instance with the indicated policy for serialising non-standard
+     * metadata.
+     * 
+     * @param policy The non-standard metadata policy.
+     */
+    public RDFConverter(ExtraMetadataPolicy policy) {
+        extraPolicy = policy;
+    }
 
     /**
      * Converts a mapping set to a RDF model.
@@ -159,13 +182,72 @@ public class RDFConverter {
 
         @Override
         public Void visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
-            // TODO
+            if ( extraPolicy != ExtraMetadataPolicy.DEFINED ) {
+                return null;
+            }
+
+            for ( ExtensionDefinition ed : values ) {
+                BNode edNode = Values.bnode();
+                // FIXME: The SSSOM spec does not say how extension definitions should be
+                // serialised in RDF. The following IRIs (sssom:extension_slot_property,
+                // sssom:extension_slot_name, and sssom:extension_slot_type_hint) have been made
+                // up on the spot!
+                model.add(edNode, Values.iri(SSSOM_NS, "extension_slot_property"), Values.iri(ed.getProperty()));
+                if ( ed.getSlotName() != null ) {
+                    model.add(edNode, Values.iri(SSSOM_NS, "extension_slot_name"), Values.literal(ed.getSlotName()));
+                }
+                if ( ed.getTypeHint() != null ) {
+                    model.add(edNode, Values.iri(SSSOM_NS, "extension_slot_type_hint"), Values.iri(ed.getTypeHint()));
+                }
+
+                model.add(subject, Values.iri(SSSOM_NS, "extension_definitions"), edNode);
+            }
             return null;
         }
 
         @Override
         public Void visitExtensions(T object, Map<String, ExtensionValue> values) {
-            // TODO
+            if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
+                return null;
+            }
+
+            for ( String property : values.keySet() ) {
+                ExtensionValue ev = values.get(property);
+                if ( ev == null ) {
+                    continue;
+                }
+                IRI predicate = Values.iri(property);
+                Value rdfValue = null;
+                switch ( ev.getType() ) {
+                case BOOLEAN:
+                    rdfValue = Values.literal(ev.asBoolean());
+                    break;
+                case DATE:
+                    rdfValue = Values.literal(ev.asDate());
+                    break;
+                case DATETIME:
+                    rdfValue = Values.literal(ev.asDatetime());
+                    break;
+                case DOUBLE:
+                    rdfValue = Values.literal(ev.asDouble());
+                    break;
+                case IDENTIFIER:
+                    rdfValue = Values.iri(ev.asString());
+                    break;
+                case INTEGER:
+                    rdfValue = Values.literal(ev.asInteger());
+                    break;
+                case OTHER:
+                case STRING:
+                    rdfValue = Values.literal(ev.asString());
+                    break;
+                default:
+                    // Should not happen
+                    break;
+                }
+
+                model.add(subject, predicate, rdfValue);
+            }
             return null;
         }
     }
