@@ -40,6 +40,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 public class RDFWriter extends BaseWriter {
     
     private static final String DCTERMS_NS = "http://purl.org/dc/terms/";
+    private static final String PAV_NS = "http://purl.org/pav/";
 
     private org.eclipse.rdf4j.rio.RDFWriter writer;
 
@@ -103,9 +104,10 @@ public class RDFWriter extends BaseWriter {
             rdfSet.setNamespace(bp.getPrefixName(), bp.getPrefix());
         }
 
-        // Likewise for dcterms:, which MAY be needed depending on which metadata slots
-        // are filled on the mapping set object.
+        // Likewise for dcterms: and pav:, which MAY be needed depending on which
+        // metadata slots are filled on the mapping set object.
         rdfSet.setNamespace("dcterms", DCTERMS_NS);
+        rdfSet.setNamespace("pav", PAV_NS);
 
         Rio.write(rdfSet, writer);
     }
