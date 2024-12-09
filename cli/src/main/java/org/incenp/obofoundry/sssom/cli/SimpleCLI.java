@@ -147,7 +147,13 @@ public class SimpleCLI implements Runnable {
         @Option(names = "--write-extra-metadata",
                 paramLabel = "POLICY",
                 description = "How to write non-standard metadata in the output set. Allowed values: ${COMPLETION-CANDIDATES}.")
-        ExtraMetadataPolicy writeExtraMetadata = ExtraMetadataPolicy.DEFINED;
+        ExtraMetadataPolicy writeExtraMetadata = null;
+
+        ExtraMetadataPolicy defaultWriteExtraMetadata = ExtraMetadataPolicy.DEFINED;
+
+        ExtraMetadataPolicy getExtraMetadataPolicy() {
+            return writeExtraMetadata != null ? writeExtraMetadata : defaultWriteExtraMetadata;
+        }
 
         @Option(names = { "--no-condensation" }, description = "Disable condensation of propagatable slots.")
         boolean disableCondensation;
@@ -457,7 +463,7 @@ public class SimpleCLI implements Runnable {
         boolean stdout = outputOpts.file.equals("-");
         try {
             BaseWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
-            writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
+            writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
             writer.setCondensationEnabled(!outputOpts.disableCondensation);
             writer.write(set);
         } catch ( IOException ioe ) {
@@ -495,7 +501,7 @@ public class SimpleCLI implements Runnable {
             File output = new File(dir, splitId + extension);
             try {
                 BaseWriter writer = getWriter(output.getPath(), null);
-                writer.setExtraMetadataPolicy(outputOpts.writeExtraMetadata);
+                writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
                 writer.setCondensationEnabled(!outputOpts.disableCondensation);
                 writer.write(splitSet);
             } catch ( IOException ioe ) {
@@ -526,6 +532,7 @@ public class SimpleCLI implements Runnable {
             } else {
                 ttlWriter = new RDFWriter(filename);
             }
+            outputOpts.defaultWriteExtraMetadata = ExtraMetadataPolicy.UNDEFINED;
             return ttlWriter;
 
         case TSV:
