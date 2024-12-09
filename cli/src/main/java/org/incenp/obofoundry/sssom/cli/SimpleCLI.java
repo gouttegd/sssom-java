@@ -260,7 +260,8 @@ public class SimpleCLI implements Runnable {
     public static int run(String[] args) {
         SimpleCLI cli = new SimpleCLI();
         int rc = new picocli.CommandLine(cli).setExecutionExceptionHandler(cli.helper)
-                .setUsageHelpLongOptionsMaxWidth(23).setUsageHelpAutoWidth(true).execute(args);
+                .setCaseInsensitiveEnumValuesAllowed(true).setUsageHelpLongOptionsMaxWidth(23)
+                .setUsageHelpAutoWidth(true).execute(args);
         return rc;
     }
 
