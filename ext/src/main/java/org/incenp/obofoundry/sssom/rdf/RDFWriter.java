@@ -42,6 +42,7 @@ import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.SlotVisitor;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -220,6 +221,13 @@ public class RDFWriter extends BaseWriter {
         @Override
         public Void visit(Slot<T> slot, T object, Object value) {
             maybeAddPrefix(slot.getURI());
+            if ( EntityType.class.isInstance(value) ) {
+                EntityType et = EntityType.class.cast(value);
+                String iri = et.getIRI();
+                if ( iri != null ) {
+                    maybeAddPrefix(iri);
+                }
+            }
             return null;
         }
 
