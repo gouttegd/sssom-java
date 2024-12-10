@@ -6,9 +6,6 @@
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix linkml: <https://w3id.org/linkml/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix pav: <http://purl.org/pav/> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix semapv: <https://w3id.org/semapv/vocab/> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix sssom: <https://w3id.org/sssom/> .
@@ -22,6 +19,10 @@
   <http://sssom.invalid/ext_undeclared_foo> "Foo B";
   EXPROP:fooProperty "Foo A";
   sssom:extension_definitions [
+      sssom:extension_slot_name "ext_foo";
+      sssom:extension_slot_property EXPROP:fooProperty;
+      sssom:extension_slot_type_hint xsd:string
+    ], [
       sssom:extension_slot_name "ext_undeclared_baz";
       sssom:extension_slot_property <http://sssom.invalid/ext_undeclared_baz>;
       sssom:extension_slot_type_hint xsd:string
@@ -37,10 +38,6 @@
       sssom:extension_slot_name "ext_baz";
       sssom:extension_slot_property EXPROP:bazProperty;
       sssom:extension_slot_type_hint linkml:Uriorcurie
-    ], [
-      sssom:extension_slot_name "ext_foo";
-      sssom:extension_slot_property EXPROP:fooProperty;
-      sssom:extension_slot_type_hint xsd:string
     ];
   sssom:mapping_set_id "https://example.org/sets/exo2c-with-extensions"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;

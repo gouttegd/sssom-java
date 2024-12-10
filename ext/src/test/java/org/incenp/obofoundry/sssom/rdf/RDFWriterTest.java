@@ -82,7 +82,7 @@ public class RDFWriterTest {
                 .subjectId("https://example.org/entities/0001")
                 .subjectLabel("alice")
                 .subjectType(EntityType.OWL_CLASS)
-                .predicateId("http://www.w3.org/2004/02/skos#closeMatch")
+                .predicateId("http://www.w3.org/2004/02/skos/core#closeMatch")
                 .objectId("https://example.com/entities/0011")
                 .objectLabel("alpha")
                 .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
@@ -91,11 +91,17 @@ public class RDFWriterTest {
                 .subjectId("https://example.org/entities/0002")
                 .subjectLabel("bob")
                 .subjectType(EntityType.OWL_CLASS)
-                .predicateId("http://www.w3.org/2004/02/skos#closeMatch")
+                .predicateId("http://www.w3.org/2004/02/skos/core#closeMatch")
                 .objectId("https://example.com/entities/0012")
                 .objectLabel("beta")
                 .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
                 .confidence(0.7)
+                .build());
+        ms.getMappings().add(Mapping.builder()
+                .subjectId("http://purl.obolibrary.org/obo/FBbt_12345678")
+                .predicateId("http://www.w3.org/2004/02/skos/core#closeMatch")
+                .objectId("http://purl.obolibrary.org/obo/UBERON_1234567")
+                .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration")
                 .build());
         // @formatter:on
 
@@ -103,6 +109,8 @@ public class RDFWriterTest {
         ms.getCurieMap().put("COMENT", "https://example.com/entities/");
         ms.getCurieMap().put("ORGPID", "https://example.org/people/");
         ms.getCurieMap().put("COMPID", "https://example.com/people/");
+        ms.getCurieMap().put("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
+        ms.getCurieMap().put("UBERON", "http://purl.obolibrary.org/obo/UBERON_");
 
         ms.getCreatorId().add("https://example.org/people/0000-0000-0001-1234");
         ms.getCreatorId().add("https://example.com/people/0000-0000-0002-5678");
