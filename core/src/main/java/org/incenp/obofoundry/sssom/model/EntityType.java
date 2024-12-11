@@ -38,7 +38,8 @@ public enum EntityType {
     RDFS_CLASS("http://www.w3.org/2000/01/rdf-schema#Class"),
     RDFS_LITERAL("http://www.w3.org/2000/01/rdf-schema#Literal"),
     RDFS_DATATYPE("http://www.w3.org/2000/01/rdf-schema#Datatype"),
-    RDF_PROPERTY("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property");
+    RDF_PROPERTY("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"),
+    COMPOSED_ENTITY_EXPRESSION(null);
 
     private final static Map<String, EntityType> MAP;
 

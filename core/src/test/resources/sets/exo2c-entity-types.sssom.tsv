@@ -1,0 +1,17 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/exo2c-entity-types
+#mapping_set_title: O2C set with various entity types
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	subject_type
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	owl class
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration	owl object property
+ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	semapv:ManualMappingCuration	owl annotation property
+ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	semapv:ManualMappingCuration	owl named individual
+ORGENT:0006	fanny	skos:closeMatch	COMENT:0016	zeta	semapv:ManualMappingCuration	skos concept
+ORGENT:0007	gavin	skos:exactMatch	COMENT:0013	gamma	semapv:ManualMappingCuration	rdfs resource
+ORGENT:0008	hector	skos:closeMatch	COMENT:0017	eta	semapv:ManualMappingCuration	rdfs class
+ORGENT:0009	ivan	skos:exactMatch	COMENT:0019	iota	semapv:ManualMappingCuration	rdfs datatype
+ORGENT:0010	khan	skos:exactMatch	COMENT:0020	kappa	semapv:ManualMappingCuration	rdf property
+ORGENT:0011	lena	skos:exactMatch	COMENT:0021	lambda	semapv:ManualMappingCuration	composed entity expression

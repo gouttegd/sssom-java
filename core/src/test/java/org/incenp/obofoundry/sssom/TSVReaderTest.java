@@ -556,6 +556,24 @@ public class TSVReaderTest {
     }
 
     @Test
+    void testEntityTypeValues() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-entity-types.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(EntityType.OWL_CLASS, ms.getMappings().get(0).getSubjectType());
+        Assertions.assertEquals(EntityType.OWL_OBJECT_PROPERTY, ms.getMappings().get(1).getSubjectType());
+        Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(2).getSubjectType());
+        Assertions.assertEquals(EntityType.OWL_NAMED_INDIVIDUAL, ms.getMappings().get(3).getSubjectType());
+        Assertions.assertEquals(EntityType.SKOS_CONCEPT, ms.getMappings().get(4).getSubjectType());
+        Assertions.assertEquals(EntityType.RDFS_RESOURCE, ms.getMappings().get(5).getSubjectType());
+        Assertions.assertEquals(EntityType.RDFS_CLASS, ms.getMappings().get(6).getSubjectType());
+        Assertions.assertEquals(EntityType.RDFS_DATATYPE, ms.getMappings().get(7).getSubjectType());
+        Assertions.assertEquals(EntityType.RDF_PROPERTY, ms.getMappings().get(8).getSubjectType());
+        Assertions.assertEquals(EntityType.COMPOSED_ENTITY_EXPRESSION, ms.getMappings().get(9).getSubjectType());
+
+    }
+
+    @Test
     void testFailOnOutOfRangeDoubleValues() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-out-of-range-double-values.sssom.tsv");
         SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
