@@ -574,6 +574,14 @@ public class TSVReaderTest {
     }
 
     @Test
+    void testReadingFileWithTrailingTabsInHeader() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-trailing-tabs-in-header.sssom.tsv");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals("https://example.org/sets/exo2c", ms.getMappingSetId());
+    }
+
+    @Test
     void testFailOnOutOfRangeDoubleValues() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-out-of-range-double-values.sssom.tsv");
         SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());

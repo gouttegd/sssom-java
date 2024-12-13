@@ -364,30 +364,83 @@ public class TSVReader extends BaseReader {
     private String extractMetadata(BufferedReader reader) throws IOException {
         StringBuilder sb = new StringBuilder();
         boolean done = false;
-        boolean newLine = true;
+        int trailingTabs = 0;
+        YamlExtractorState state = YamlExtractorState.NEWLINE;
 
         while ( !done ) {
             int c = reader.read();
             if ( c == -1 ) {
                 done = true;
             } else {
-                if ( newLine ) {
-                    newLine = false;
+                switch ( state ) {
+                case TEXT:
+                    if ( c == '\n' ) {
+                        sb.append((char) c);
+                        state = YamlExtractorState.NEWLINE;
+                        reader.mark(1);
+                    } else if ( c == '\t' ) {
+                        // Possible trailing tabs that we might need to ignore.
+                        state = YamlExtractorState.TRAILING;
+                        trailingTabs = 1;
+                    } else {
+                        sb.append((char) c);
+                    }
+                    break;
+
+                case TRAILING:
+                    /*
+                     * Common spreadsheet software (e.g. LibreOffice Calc) will write the lines of
+                     * the metadata block as if they were normal data lines, with the YAML contents
+                     * in the first column followed by empty "columns" (trailing tab characters). We
+                     * need to remove those trailing tab characters for the YAML parser to be able
+                     * to correctly parse the extracted block.
+                     */
+                    if ( c == '\n' ) {
+                        // We were indeed in trailing tabs; discard them and go the next line.
+                        trailingTabs = 0;
+                        sb.append((char) c);
+                        state = YamlExtractorState.NEWLINE;
+                        reader.mark(1);
+                    } else if ( c == '\t' ) {
+                        // Still in trailing tabs, keep counting.
+                        trailingTabs += 1;
+                    } else if ( c == '\r' ) {
+                        // Some macOS or Windows/DOS cruft, just ignore.
+                    } else {
+                        // Those were not the trailing tabs we were looking for, there is still some
+                        // text coming in on the line; inject the tabs we have counted and go back to
+                        // reading normal text.
+                        for ( int i = 0; i < trailingTabs; i++ ) {
+                            sb.append('\t');
+                        }
+                        trailingTabs = 0;
+                        state = YamlExtractorState.TEXT;
+                    }
+                    break;
+
+                case NEWLINE:
                     if ( c != '#' ) {
                         done = true;
                         reader.reset();
+                    } else {
+                        state = YamlExtractorState.TEXT;
                     }
-                } else {
-                    sb.append((char) c);
-                    if ( c == '\n' ) {
-                        newLine = true;
-                        reader.mark(1);
-                    }
+                    break;
                 }
             }
         }
 
         return sb.toString();
+    }
+
+    /*
+     * Used by extractMetadata to keep track of where we are when reading the YAML
+     * block.
+     */
+    private enum YamlExtractorState {
+        TEXT,
+        TRAILING,
+        NEWLINE
     }
 
     /*
