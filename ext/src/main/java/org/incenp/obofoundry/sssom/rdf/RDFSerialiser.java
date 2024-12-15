@@ -33,6 +33,7 @@ import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.incenp.obofoundry.sssom.DefaultMappingComparator;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.Slot;
@@ -51,6 +52,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 public class RDFSerialiser {
 
     private ExtraMetadataPolicy extraPolicy;
+    int bnodeCounter = 0;
 
     /**
      * Creates a new instance with the default policy for serialising non-standard
@@ -141,7 +143,7 @@ public class RDFSerialiser {
         Set<String> usedPrefixes = prefixManager != null ? new HashSet<String>() : null;
 
         // Create the mapping set node
-        BNode set = Values.bnode();
+        BNode set = Values.bnode(String.valueOf(bnodeCounter++));
         model.add(set, RDF.TYPE, Constants.SSSOM_MAPPING_SET);
 
         // Add the set-level metadata
@@ -149,9 +151,10 @@ public class RDFSerialiser {
         SlotHelper.getMappingSetHelper().visitSlots(ms, setVisitor);
 
         RDFSlotVisitor<Mapping> mappingVisitor = new RDFSlotVisitor<Mapping>(model, null, prefixManager, usedPrefixes);
+        ms.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : ms.getMappings() ) {
             // Add individual mapping
-            BNode mappingNode = Values.bnode();
+            BNode mappingNode = Values.bnode(String.valueOf(bnodeCounter++));
             model.add(mappingNode, RDF.TYPE, Constants.OWL_AXIOM);
             model.add(set, Constants.SSSOM_MAPPINGS, mappingNode);
 
@@ -287,8 +290,9 @@ public class RDFSerialiser {
                 return null;
             }
 
+            values.sort((a, b) -> a.getProperty().compareTo(b.getProperty()));
             for ( ExtensionDefinition ed : values ) {
-                BNode edNode = Values.bnode();
+                BNode edNode = Values.bnode(String.valueOf(bnodeCounter++));
                 // FIXME: The SSSOM spec does not say how extension definitions should be
                 // serialised in RDF.
                 model.add(edNode, Constants.SSSOM_EXT_PROPERTY, Values.iri(ed.getProperty()));
