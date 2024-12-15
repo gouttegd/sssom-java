@@ -169,6 +169,47 @@ public class TSVReader extends BaseReader {
         this.metaReader = metaReader;
     }
 
+    /**
+     * Creates a new instance that will read data from the specified reader.
+     * <p>
+     * This constructor behaves similarly to {@link #TSVReader(Reader, Reader)}, but
+     * allows providing the filename of the TSV file in the third argument, which
+     * will be used to try locating the external metadata file if (1) the TSV file
+     * does not contain an embedded metadata block and (2) the {@code metaReader}
+     * argument is {@code null}.
+     * 
+     * @param tsvReader  The main reader, containing the TSV data. May be
+     *                   {@code null} if one only wants to read the metadata (in
+     *                   which case the second argument cannot also be {@code null}.
+     * @param metaReader The accompanying metadata reader. If {@code null}, the
+     *                   metadata must either be embedded with the TSV section or be
+     *                   in a file in the same directory and with the same basename
+     *                   than the name provided in the third argument.
+     * @param filename   The name of the file containing the TSV section; that name
+     *                   is not used to actually read the TSV section, but to try
+     *                   locating the external metadata file if needed (if the TSV
+     *                   file contains no embedded metadata and the second argument
+     *                   is {@code null}).
+     */
+    public TSVReader(Reader tsvReader, Reader metaReader, String filename) {
+        this(tsvReader, metaReader);
+        if ( filename != null ) {
+            tsvFile = new File(filename);
+        }
+    }
+
+    /**
+     * Creates a new instance that will read data from the specified reader.
+     * <p>
+     * The metadata must be embedded with the TSV section; the reader cannot
+     * automatically locate an external metadata file. To read from a Reader object
+     * while still being able to automatically locate and use an external metadata
+     * file, use {@link #TSVReader(Reader, Reader, String)} with the second argument
+     * set to {@code null} and the third argument set to the filename of the TSV
+     * section.
+     * 
+     * @param tsvReader The single reader to read from.
+     */
     public TSVReader(Reader tsvReader) {
         this(tsvReader, null);
     }

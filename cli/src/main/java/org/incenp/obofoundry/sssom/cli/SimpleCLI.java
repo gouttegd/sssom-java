@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.xml.catalog.CatalogException;
 
+import org.incenp.obofoundry.sssom.BaseReader;
 import org.incenp.obofoundry.sssom.BaseWriter;
 import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
@@ -48,6 +49,8 @@ import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
+import org.incenp.obofoundry.sssom.util.ReaderFactory;
+import org.incenp.obofoundry.sssom.util.SerialisationFormat;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -55,6 +58,7 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -158,13 +162,15 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "--no-condensation" }, description = "Disable condensation of propagatable slots.")
         boolean disableCondensation;
 
-        @Option(names = { "-f",
-                "--output-format" }, description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.")
-        OutputFormat outputFormat = OutputFormat.TSV;
+        @Option(names = { "-f", "--output-format" },
+                description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.",
+                converter = SerialisationFormatConverter.class,
+                completionCandidates = SerialisationFormatCompletionCandidates.class)
+        SerialisationFormat outputFormat = SerialisationFormat.TSV;
 
         @Option(names = { "-j", "--json-output" }, description = "Write the mapping set in SSSOM/JSON format.")
         private void useJSON(boolean value) {
-            outputFormat = OutputFormat.JSON;
+            outputFormat = SerialisationFormat.JSON;
         }
 
         @Option(names = { "--json-short-iris" }, description = "Shorten IRIs when writing in JSON format.")
@@ -177,7 +183,7 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "--sssompy-json" },
                 description = "Write the mapping set in the JSON-LD format expected by SSSOM-Py.")
         private void enableSSSOMPyJSON(boolean arg) {
-            outputFormat = OutputFormat.JSON;
+            outputFormat = SerialisationFormat.JSON;
             jsonShortenIRIs = arg;
             jsonWriteContext = arg;
         }
@@ -247,6 +253,23 @@ public class SimpleCLI implements Runnable {
         String xmlCatalog;
     }
 
+    private static class SerialisationFormatConverter implements ITypeConverter<SerialisationFormat> {
+
+        @Override
+        public SerialisationFormat convert(String value) throws Exception {
+            return SerialisationFormat.fromName(value);
+        }
+    }
+
+    private static class SerialisationFormatCompletionCandidates extends ArrayList<String> {
+        private static final long serialVersionUID = 1L;
+
+        @SuppressWarnings("unused")
+        SerialisationFormatCompletionCandidates() {
+            super(SerialisationFormat.getShortNames());
+        }
+    }
+
     private CommandHelper helper = new CommandHelper();
 
     public static void main(String[] args) {
@@ -283,13 +306,13 @@ public class SimpleCLI implements Runnable {
         if ( inputOpts.files.isEmpty() ) {
             inputOpts.files.add("-");
         }
+        ReaderFactory readerFactory = new ReaderFactory();
         for ( String input : inputOpts.files ) {
             String[] items = input.split(":", 2);
             String tsvFile = items[0];
             String metaFile = items.length == 2 ? items[1] : null;
             try {
-                boolean stdin = tsvFile.equals("-");
-                TSVReader reader = stdin ? new TSVReader(System.in) : new TSVReader(tsvFile, metaFile);
+                BaseReader reader = readerFactory.getReader(tsvFile, metaFile, true);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(!inputOpts.disablePropagation);
                 if ( ms == null ) {
@@ -498,7 +521,7 @@ public class SimpleCLI implements Runnable {
             MappingSet splitSet = ms.toBuilder().mappings(null).build();
             splitSet.setMappings(mappingsBySplit.get(splitId));
 
-            String extension = "." + outputOpts.outputFormat.extension;
+            String extension = "." + outputOpts.outputFormat.getExtension();
             File output = new File(dir, splitId + extension);
             try {
                 BaseWriter writer = getWriter(output.getPath(), null);
@@ -526,7 +549,7 @@ public class SimpleCLI implements Runnable {
 
             return jsonWriter;
 
-        case TTL:
+        case RDF_TURTLE:
             RDFWriter ttlWriter = null;
             if ( stdout ) {
                 ttlWriter = new RDFWriter(System.out);
@@ -625,18 +648,6 @@ public class SimpleCLI implements Runnable {
                 processor.addRule(new MappingProcessingRule<Mapping>(null, null, (mapping) -> mapping));
             }
             ms.setMappings(processor.process(ms.getMappings()));
-        }
-    }
-
-    private enum OutputFormat {
-        TSV("sssom.tsv"),
-        JSON("sssom.json"),
-        TTL("ttl");
-
-        private String extension;
-
-        OutputFormat(String extension) {
-            this.extension = extension;
         }
     }
 }

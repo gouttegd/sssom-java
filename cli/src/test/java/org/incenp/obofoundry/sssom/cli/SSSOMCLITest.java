@@ -89,6 +89,13 @@ public class SSSOMCLITest {
         TestUtils.runCommand(1, new String[] { "pom.xml" }, null, null);
     }
 
+    @Test
+    void testReadingInAnyFormat() throws IOException {
+        TestUtils.runCommand(0, new String[] { "src/test/resources/sets/exo2c.ttl" }, "exo2c.sssom.tsv", null);
+        TestUtils.runCommand(0, new String[] { "src/test/resources/sets/exo2c.sssom.json" },
+                "exo2c.sssom.tsv", null);
+    }
+
     /*
      * Tests for mangling IRIs with an extended prefix map
      */
@@ -242,15 +249,15 @@ public class SSSOMCLITest {
     void testOutputFormat() throws IOException {
         // Check that --output-format TSV is the same as the default
         TestUtils.runCommand(0, new String[] { "exo2n.sssom.tsv" }, "exo2n.sssom.tsv",
-                new String[] { "--output-format", "TSV" });
+                new String[] { "--output-format", "tsv" });
 
         // Check that --output-format JSON is the same as --json-output
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output.sssom.json",
-                new String[] { "--output-format", "JSON" });
+                new String[] { "--output-format", "json" });
 
         // Check that we can get RDF Turtle output
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-ttl-output.ttl",
-                new String[] { "--output-format", "TTL" });
+                new String[] { "--output-format", "ttl" });
     }
 
     /*

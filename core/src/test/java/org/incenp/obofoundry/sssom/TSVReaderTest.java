@@ -18,8 +18,11 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -137,6 +140,19 @@ public class TSVReaderTest {
     void testReadExternalMetadataAuto() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-external-metadata.sssom.tsv");
         MappingSet ms = reader.read();
+        Assertions.assertEquals("https://example.org/sets/test-external-metadata", ms.getMappingSetId());
+    }
+
+    /*
+     * Likewise, but reading from a Reader object while providing the filename
+     * separately.
+     */
+    @Test
+    void testReadExternalMetadataAutoWithReader() throws IOException, SSSOMFormatException {
+        String tsvFilename = "src/test/resources/sets/test-external-metadata.sssom.tsv";
+        Reader reader = new FileReader(new File(tsvFilename));
+        TSVReader tsvReader = new TSVReader(reader, null, tsvFilename);
+        MappingSet ms = tsvReader.read();
         Assertions.assertEquals("https://example.org/sets/test-external-metadata", ms.getMappingSetId());
     }
 

@@ -25,8 +25,8 @@ import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.BaseReader;
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -41,6 +41,7 @@ import org.incenp.obofoundry.sssom.transform.IMappingProcessorListener;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
+import org.incenp.obofoundry.sssom.util.ReaderFactory;
 import org.obolibrary.robot.Command;
 import org.obolibrary.robot.CommandLineHelper;
 import org.obolibrary.robot.CommandState;
@@ -158,9 +159,10 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         MappingSet mappingSet = null;
+        ReaderFactory readerFactory = new ReaderFactory();
         if ( line.hasOption("sssom") ) {
             for ( String sssomFile : line.getOptionValues("sssom") ) {
-                TSVReader reader = new TSVReader(sssomFile, line.getOptionValue("sssom-metadata"));
+                BaseReader reader = readerFactory.getReader(sssomFile, line.getOptionValue("sssom-metadata"));
                 if ( mappingSet == null ) {
                     mappingSet = reader.read();
                 } else {
