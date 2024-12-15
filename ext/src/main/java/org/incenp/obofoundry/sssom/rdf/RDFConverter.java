@@ -19,236 +19,222 @@
 package org.incenp.obofoundry.sssom.rdf;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Literal;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
-import org.eclipse.rdf4j.model.impl.TreeModel;
-import org.eclipse.rdf4j.model.util.Values;
+import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
+import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
-import org.incenp.obofoundry.sssom.SlotVisitor;
-import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityType;
-import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
-import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 
 /**
- * A helper class to convert SSSOM objects to a RDF model in the Rdf4J API.
+ * A helper class to convert SSSOM objects from a RDF model in the Rdf4J API.
  */
 public class RDFConverter {
 
-    private static final String SSSOM_NS = BuiltinPrefix.SSSOM.getPrefix();
-    private static final String OWL_NS = BuiltinPrefix.OWL.getPrefix();
-
-    private ExtraMetadataPolicy extraPolicy;
-
     /**
-     * Creates a new instance.
-     * <p>
-     * The new converter serialises non-standard metadata slots in their
-     * <em>defined</em> form.
-     */
-    public RDFConverter() {
-        extraPolicy = ExtraMetadataPolicy.DEFINED;
-    }
-
-    /**
-     * Creates a new instance with the indicated policy for serialising non-standard
-     * metadata.
+     * Converts a RDF model to a MappingSet object.
      * 
-     * @param policy The non-standard metadata policy.
+     * @param model The Rdf4J model to convert.
+     * @return The corresponding mapping set.
+     * @throws SSSOMFormatException If the contents of the model does not match what
+     *                              is expected for a SSSOM MappingSet object.
      */
-    public RDFConverter(ExtraMetadataPolicy policy) {
-        extraPolicy = policy;
-    }
-
-    /**
-     * Converts a mapping set to a RDF model.
-     * 
-     * @param ms The mapping set to convert.
-     * @return The corresponding Rdf4J model.
-     */
-    public Model toRDF(MappingSet ms) {
-        Model model = new TreeModel();
-
-        BNode set = Values.bnode();
-        IRI mappingSetIRI = Values.iri(SSSOM_NS, "MappingSet");
-        model.add(set, RDF.TYPE, mappingSetIRI);
-
-        // Add mapping set metadata slots
-        RDFSlotVisitor<MappingSet> visitor = new RDFSlotVisitor<MappingSet>(model, set);
-        SlotHelper.getMappingSetHelper().visitSlots(ms, visitor);
-
-        RDFSlotVisitor<Mapping> mappingVisitor = new RDFSlotVisitor<Mapping>(model, null);
-        for ( Mapping mapping : ms.getMappings() ) {
-            // Add individual mapping
-            BNode mappingNode = Values.bnode();
-            model.add(mappingNode, RDF.TYPE, Values.iri(OWL_NS, "Axiom"));
-            model.add(set, Values.iri(SSSOM_NS, "mappings"), mappingNode);
-
-            // Add mapping metadata slot
-            mappingVisitor.subject = mappingNode;
-            SlotHelper.getMappingHelper().visitSlots(mapping, mappingVisitor);
+    public MappingSet convertMappingSet(Model model) throws SSSOMFormatException {
+        Model root = model.filter(null, RDF.TYPE, Constants.SSSOM_MAPPING_SET);
+        Optional<BNode> set = Models.subjectBNode(root);
+        if ( set.isEmpty() ) {
+            throw new SSSOMFormatException("RDF model does not contain a SSSOM mapping set");
         }
 
-        return model;
-    }
+        MappingSet ms = new MappingSet();
+        ms.setMappings(new ArrayList<Mapping>());
 
-    private class RDFSlotVisitor<T> implements SlotVisitor<T, Void> {
-
-        Model model;
-        Resource subject;
-
-        RDFSlotVisitor(Model model, Resource subject) {
-            this.model = model;
-            this.subject = subject;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, String value) {
-            Value rdfValue = null;
-            if ( slot.isEntityReference() ) {
-                rdfValue = Values.iri(value);
-            } else if ( slot.isURI() ) {
-                rdfValue = Values.literal(value, XSD.ANYURI);
-            } else {
-                rdfValue = Values.literal(value);
+        // Process all statements about the mapping set node
+        for ( Statement st : model.filter(set.get(), null, null) ) {
+            if ( st.getPredicate().equals(Constants.SSSOM_EXT_DEFINITIONS) ) {
+                // Statement is an extension definition; we do not support those for now
+                continue;
             }
-            model.add(subject, Values.iri(slot.getURI()), rdfValue);
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, List<String> values) {
-            boolean isEntityReference = slot.isEntityReference();
-            boolean isURI = slot.isURI();
-            IRI predicate = Values.iri(slot.getURI());
-            for ( String value : values ) {
-                Value rdfValue = null;
-                if ( isEntityReference ) {
-                    rdfValue = Values.iri(value);
-                } else if ( isURI ) {
-                    rdfValue = Values.literal(value, XSD.ANYURI);
+            Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByURI(st.getPredicate().stringValue());
+            if ( slot != null ) {
+                // Statement is a mapping set metadata slot
+                setSlotFromRDF(ms, slot, st.getObject());
+            } else if ( st.getPredicate().equals(Constants.SSSOM_MAPPINGS) ) {
+                // Statement is an individual mapping
+                Value o = st.getObject();
+                if ( o instanceof BNode ) {
+                    ms.getMappings().add(convertMapping(model.filter((BNode) o, null, null)));
                 } else {
-                    rdfValue = Values.literal(value);
-                }
-                model.add(subject, predicate, rdfValue);
-            }
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, Double value) {
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, Map<String, String> value) {
-            // Nothing to do here.
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, LocalDate value) {
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, Object value) {
-            IRI predicate = Values.iri(slot.getURI());
-            if ( EntityType.class.isInstance(value) ) {
-                EntityType et = EntityType.class.cast(value);
-                String valIRI = et.getIRI();
-                if ( valIRI != null ) {
-                    model.add(subject, predicate, Values.iri(valIRI));
-                    return null;
+                    onTypingError("mappings");
                 }
             }
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
-            return null;
         }
 
-        @Override
-        public Void visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
-            if ( extraPolicy != ExtraMetadataPolicy.DEFINED ) {
-                return null;
-            }
-
-            for ( ExtensionDefinition ed : values ) {
-                BNode edNode = Values.bnode();
-                // FIXME: The SSSOM spec does not say how extension definitions should be
-                // serialised in RDF. The following IRIs (sssom:extension_slot_property,
-                // sssom:extension_slot_name, and sssom:extension_slot_type_hint) have been made
-                // up on the spot!
-                model.add(edNode, Values.iri(SSSOM_NS, "extension_slot_property"), Values.iri(ed.getProperty()));
-                if ( ed.getSlotName() != null ) {
-                    model.add(edNode, Values.iri(SSSOM_NS, "extension_slot_name"), Values.literal(ed.getSlotName()));
-                }
-                if ( ed.getTypeHint() != null ) {
-                    model.add(edNode, Values.iri(SSSOM_NS, "extension_slot_type_hint"), Values.iri(ed.getTypeHint()));
-                }
-
-                model.add(subject, Values.iri(SSSOM_NS, "extension_definitions"), edNode);
-            }
-            return null;
+        // Fill in the Curie map from the model's namespaces
+        ms.setCurieMap(new HashMap<String, String>());
+        for ( Namespace ns : model.getNamespaces() ) {
+            ms.getCurieMap().put(ns.getPrefix(), ns.getName());
         }
 
-        @Override
-        public Void visitExtensions(T object, Map<String, ExtensionValue> values) {
-            if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
-                return null;
-            }
+        return ms;
+    }
 
-            for ( String property : values.keySet() ) {
-                ExtensionValue ev = values.get(property);
-                if ( ev == null ) {
-                    continue;
-                }
-                IRI predicate = Values.iri(property);
-                Value rdfValue = null;
-                switch ( ev.getType() ) {
-                case BOOLEAN:
-                    rdfValue = Values.literal(ev.asBoolean());
-                    break;
-                case DATE:
-                    rdfValue = Values.literal(ev.asDate());
-                    break;
-                case DATETIME:
-                    rdfValue = Values.literal(ev.asDatetime());
-                    break;
-                case DOUBLE:
-                    rdfValue = Values.literal(ev.asDouble());
-                    break;
-                case IDENTIFIER:
-                    rdfValue = Values.iri(ev.asString());
-                    break;
-                case INTEGER:
-                    rdfValue = Values.literal(ev.asInteger());
-                    break;
-                case OTHER:
-                case STRING:
-                    rdfValue = Values.literal(ev.asString());
-                    break;
-                default:
-                    // Should not happen
-                    break;
-                }
-
-                model.add(subject, predicate, rdfValue);
-            }
-            return null;
+    /**
+     * Converts a RDF model to a Mapping object.
+     * 
+     * @param model The Rdf4J model to convert.
+     * @return The corresponding mapping.
+     * @throws SSSOMFormatException If the contents of the model does not match what
+     *                              is expected for a SSSOM Mapping object.
+     */
+    public Mapping convertMapping(Model model) throws SSSOMFormatException {
+        Model root = model.filter(null, RDF.TYPE, Constants.OWL_AXIOM);
+        Optional<BNode> mappingNode = Models.subjectBNode(root);
+        if ( mappingNode.isEmpty() ) {
+            throw new SSSOMFormatException("RDF model does not contain a Mapping object");
         }
+
+        Mapping mapping = new Mapping();
+        for ( Statement st : model.filter(mappingNode.get(), null, null) ) {
+            Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(st.getPredicate().stringValue());
+            if ( slot != null ) {
+                // Statement is a mapping metadata slot
+                setSlotFromRDF(mapping, slot, st.getObject());
+            }
+        }
+
+        return mapping;
+    }
+
+    /*
+     * Helper methods to convert RDF objects to SSSOM objects.
+     */
+
+    /*
+     * Assigns a value to a SSSOM metadata slot from a RDF value.
+     */
+    private <T> void setSlotFromRDF(T target, Slot<T> slot, Value rdfValue) throws SSSOMFormatException {
+        if ( slot.getType().equals(String.class) ) {
+            slot.setValue(target, getStringValue(slot, rdfValue));
+        } else if ( slot.getType().equals(List.class) ) {
+            String value = getStringValue(slot, rdfValue);
+            @SuppressWarnings("unchecked")
+            List<String> list = List.class.cast(slot.getValue(target));
+            if ( list == null ) {
+                list = new ArrayList<String>();
+                slot.setValue(target, list);
+            }
+            list.add(value);
+        } else if ( slot.getType().equals(LocalDate.class) ) {
+            try {
+                String rawDate = getLiteralValue(slot.getName(), rdfValue).stringValue();
+                if ( rawDate.contains("T") ) {
+                    slot.setValue(target, LocalDateTime.parse(rawDate).toLocalDate());
+                } else {
+                    slot.setValue(target, LocalDate.parse(rawDate));
+                }
+            } catch ( DateTimeParseException e ) {
+                onTypingError(slot.getName(), e);
+            }
+        } else if ( slot.getType().equals(Double.class) ) {
+            try {
+                slot.setValue(target, getLiteralValue(slot.getName(), rdfValue).doubleValue());
+            } catch ( NumberFormatException e ) {
+                onTypingError(slot.getName(), e);
+            } catch ( IllegalArgumentException e ) {
+                throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
+            }
+        } else if ( slot.getType().equals(EntityType.class) ) {
+            EntityType value = null;
+            if ( rdfValue instanceof IRI ) {
+                value = EntityType.fromIRI(rdfValue.stringValue());
+            } else if ( rdfValue instanceof Literal ) {
+                value = EntityType.fromString(rdfValue.stringValue());
+            }
+            if ( value == null ) {
+                onTypingError(slot.getName());
+            }
+            slot.setValue(target, value);
+        } else if ( slot.getType().equals(MappingCardinality.class) ) {
+            MappingCardinality value = MappingCardinality
+                    .fromString(getLiteralValue(slot.getName(), rdfValue).stringValue());
+            if ( value == null ) {
+                onTypingError(slot.getName());
+            }
+            slot.setValue(target, value);
+        } else if ( slot.getType().equals(PredicateModifier.class) ) {
+            PredicateModifier value = PredicateModifier
+                    .fromString(getLiteralValue(slot.getName(), rdfValue).stringValue());
+            if ( value == null ) {
+                onTypingError(slot.getName());
+            }
+            slot.setValue(target, value);
+        }
+    }
+
+    /*
+     * Converts a RDF value to a value suitable for a string-typed slot, taking into
+     * accounts whether the slot represents an entity reference, an URI, or a
+     * literal string.
+     */
+    private <T> String getStringValue(Slot<T> slot, Value rdfValue) throws SSSOMFormatException {
+        if ( slot.isEntityReference() ) {
+            if ( !(rdfValue instanceof IRI) ) {
+                onTypingError(slot.getName());
+            }
+            return ((IRI) rdfValue).getNamespace() + ((IRI) rdfValue).getLocalName();
+        } else if ( slot.isURI() ) {
+            Literal litValue = getLiteralValue(slot.getName(), rdfValue);
+            if ( !litValue.getDatatype().equals(XSD.ANYURI) ) {
+                onTypingError(slot.getName());
+            }
+            return litValue.stringValue();
+        } else {
+            return getLiteralValue(slot.getName(), rdfValue).stringValue();
+        }
+    }
+
+    /*
+     * Ensures a RDF value is a literal value, or throws a format error.
+     */
+    private Literal getLiteralValue(String slotName, Value rdfValue) throws SSSOMFormatException {
+        if ( !(rdfValue instanceof Literal) ) {
+            onTypingError(slotName);
+        }
+        return (Literal) rdfValue;
+    }
+
+    /*
+     * Called upon a mismatch between the contents of the RDF model and what is
+     * expected by the SSSOM data model.
+     */
+    private void onTypingError(String slotName, Throwable innerException) throws SSSOMFormatException {
+        throw new SSSOMFormatException(String.format("Typing error when parsing '%s'", slotName), innerException);
+    }
+
+    /*
+     * Same, but without an exception as the cause for the mismatch.
+     */
+    private void onTypingError(String slotName) throws SSSOMFormatException {
+        onTypingError(slotName, null);
     }
 }
