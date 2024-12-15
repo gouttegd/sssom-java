@@ -42,14 +42,20 @@ public enum EntityType {
     COMPOSED_ENTITY_EXPRESSION(null);
 
     private final static Map<String, EntityType> MAP;
+    private final static Map<String, EntityType> URI_MAP;
 
     static {
         Map<String, EntityType> map = new HashMap<String, EntityType>();
+        Map<String, EntityType> uri_map = new HashMap<String, EntityType>();
         for ( EntityType value : EntityType.values() ) {
             map.put(value.toString(), value);
+            if ( value.iri != null ) {
+                uri_map.put(value.iri, value);
+            }
         }
 
         MAP = Collections.unmodifiableMap(map);
+        URI_MAP = Collections.unmodifiableMap(uri_map);
     }
 
     private String iri;
@@ -83,5 +89,19 @@ public enum EntityType {
     @JsonCreator
     public static EntityType fromString(String v) {
         return MAP.get(v);
+    }
+
+    /**
+     * Parses an IRI into the corresponding entity type enum value.
+     * <p>
+     * Do note that currently, not all values for the EntityTpe enumeration have an
+     * associated IRI.
+     * 
+     * @param iri The IRI to parse.
+     * @return The corresponding enumeration value, or {@code null} if the provided
+     *         IRI does not match any entity type.
+     */
+    public static EntityType fromIRI(String iri) {
+        return URI_MAP.get(iri);
     }
 }

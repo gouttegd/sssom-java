@@ -63,6 +63,7 @@ public class SlotHelper<T> {
 
     private List<Slot<T>> slots = new ArrayList<Slot<T>>();
     private Map<String, Slot<T>> slotsByName = new HashMap<String, Slot<T>>();
+    private Map<String, Slot<T>> slotsByURI = new HashMap<String, Slot<T>>();
 
     private SlotHelper(Class<T> type) {
         for ( Field f : type.getDeclaredFields() ) {
@@ -74,6 +75,7 @@ public class SlotHelper<T> {
             Slot<T> slot = new Slot<T>(type, name);
             slots.add(slot);
             slotsByName.put(slot.getName(), slot);
+            slotsByURI.put(slot.getURI(), slot);
         }
     }
 
@@ -203,6 +205,28 @@ public class SlotHelper<T> {
             names.add(slot.getName());
         }
         return names;
+    }
+
+    /**
+     * Finds a slot by its name.
+     * 
+     * @param name The name of the slot to find, as per the SSSOM specification.
+     * @return The corresponding slot, or {@code null} if the given name is not a
+     *         valid slot name.
+     */
+    public Slot<T> getSlotByName(String name) {
+        return slotsByName.get(name);
+    }
+
+    /**
+     * Finds a slot by its associated URI.
+     * 
+     * @param uri The URI of the slot to find.
+     * @return The corresponding slot, or {@code null} if the given URI is not the
+     *         URI of a SSSOM slot.
+     */
+    public Slot<T> getSlotByURI(String uri) {
+        return slotsByURI.get(uri);
     }
 
     /**
