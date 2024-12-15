@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.rdf;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -287,7 +288,11 @@ public class RDFSerialiser {
                 return null;
             }
 
-            for ( ExtensionDefinition ed : values ) {
+            ArrayList<ExtensionDefinition> sorted = new ArrayList<ExtensionDefinition>();
+            sorted.addAll(values);
+            sorted.sort((a, b) -> a.getProperty().compareTo(b.getProperty()));
+
+            for ( ExtensionDefinition ed : sorted ) {
                 BNode edNode = Values.bnode();
                 // FIXME: The SSSOM spec does not say how extension definitions should be
                 // serialised in RDF.
