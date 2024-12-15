@@ -12,6 +12,7 @@
         <item name="SSSOM/T-Mapping" href="sssomt-mapping.html" />
         <item name="URI Expressions support" href="sssomt-uriexpr.html" />
       </item>
+      <item name="Extended I/O" href="extio.html" />
     </menu>
   </body>
 </project>

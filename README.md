@@ -61,6 +61,9 @@ try {
 
 * Reading/writing a mapping set from/to the JSON serialisation format.
 
+* Reading/writing a mapping set from/to the RDF/Turtle serialisation
+  format.
+
 * Extracting SSSOM mappings from a OWL ontology with ROBOT:
 
 ```sh

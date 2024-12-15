@@ -21,8 +21,8 @@ Command-line tool
   no positional argument is specified, SSSOM-CLI will attempt to read
   a set from its standard input.
   
-  Both the SSSOM/TSV and the JSON formats are supported. SSSOM-CLI will
-  automatically detect the format.
+  The SSSOM/TSV, SSSOM/JSON, and RDF/Turtle formats are supported.
+  SSSOM-CLI will automatically detect the format.
   
   To read both from the standard input and from one or several file(s),
   use the special value <<<->>> as a positional argument. For example,
@@ -50,8 +50,8 @@ sssom-cli set.sssom.tsv:metadata.yaml
 +-----------------------------------------------------------------------
 
   The metadata file, if specified, is ignored if the input file is a
-  JSON file, since the JSON format does not allow the use of an external
-  metadata file.
+  JSON file or Turtle file, since those formats do not allow the use of
+  an external metadata file.
   
   In previous versions of SSSOM-CLI, input files were specified using
   <<<--input>>> options instead of positional arguments. Such options
@@ -135,11 +135,11 @@ sssom-cli set.sssom.tsv:metadata.yaml
   write the set in another format, use the <<<--output-format>>> option,
   which currently accepts the following values:
   
-  [TSV] Write output in SSSOM/TSV format (this is already the default).
+  [tsv] Write output in SSSOM/TSV format (this is already the default).
   
-  [JSON] Write output in SSSOM/JSON format.
+  [json] Write output in SSSOM/JSON format.
   
-  [TTL] Write output in RDF Turtle format.
+  [ttl] Write output in RDF Turtle format.
   
   []
   
@@ -166,7 +166,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
   For convenience, another option, <<<--sssompy-json>>>, can be used to
   trigger JSON output tailored for SSSOM-Py compatibility. Using that
-  option is equivalent to using <<<--output-format JSON>>>,
+  option is equivalent to using <<<--output-format json>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
 * 3. Checking a set against an ontology

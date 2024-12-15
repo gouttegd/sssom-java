@@ -18,3 +18,7 @@ The SSSOM Extended Library
   It also provides helper classes to facilitate the exploitation of
   mappings in a OWL context (in the {{{../apidocs/org/incenp/obofoundry/sssom/owl/package-summary.html}
   org.incenp.obofoundry.sssom.owl}} package).
+  
+  Lastly, it provides {{{./extio.html}support}} for more serialisation
+  formats than the SSSOM/TSV and SSSOM/JSON formats supported by the
+  core library.
