@@ -19,7 +19,6 @@
 package org.incenp.obofoundry.sssom.rdf;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +33,7 @@ import org.eclipse.rdf4j.model.impl.TreeModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.incenp.obofoundry.sssom.DefaultMappingComparator;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.Slot;
@@ -150,6 +150,7 @@ public class RDFSerialiser {
         SlotHelper.getMappingSetHelper().visitSlots(ms, setVisitor);
 
         RDFSlotVisitor<Mapping> mappingVisitor = new RDFSlotVisitor<Mapping>(model, null, prefixManager, usedPrefixes);
+        ms.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : ms.getMappings() ) {
             // Add individual mapping
             BNode mappingNode = Values.bnode();
@@ -288,11 +289,8 @@ public class RDFSerialiser {
                 return null;
             }
 
-            ArrayList<ExtensionDefinition> sorted = new ArrayList<ExtensionDefinition>();
-            sorted.addAll(values);
-            sorted.sort((a, b) -> a.getProperty().compareTo(b.getProperty()));
-
-            for ( ExtensionDefinition ed : sorted ) {
+            values.sort((a, b) -> a.getProperty().compareTo(b.getProperty()));
+            for ( ExtensionDefinition ed : values ) {
                 BNode edNode = Values.bnode();
                 // FIXME: The SSSOM spec does not say how extension definitions should be
                 // serialised in RDF.

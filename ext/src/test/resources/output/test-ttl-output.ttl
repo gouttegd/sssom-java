@@ -17,6 +17,11 @@
   sssom:mapping_set_id "https://example.org/sets/exo2c"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
       owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource FBbt:12345678;
+      owl:annotatedTarget UBERON:1234567;
+      sssom:mapping_justification semapv:ManualMappingCuration
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
       owl:annotatedSource ORGENT:0001;
       owl:annotatedTarget COMENT:0011;
       sssom:mapping_justification semapv:ManualMappingCuration;
@@ -32,9 +37,4 @@
       sssom:object_label "beta";
       sssom:subject_label "bob";
       sssom:subject_type owl:Class
-    ], [ a owl:Axiom;
-      owl:annotatedProperty skos:closeMatch;
-      owl:annotatedSource FBbt:12345678;
-      owl:annotatedTarget UBERON:1234567;
-      sssom:mapping_justification semapv:ManualMappingCuration
     ] .

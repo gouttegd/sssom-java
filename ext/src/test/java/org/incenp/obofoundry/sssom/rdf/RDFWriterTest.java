@@ -49,17 +49,33 @@ public class RDFWriterTest {
     }
 
     @Test
-    void testWriteNonStandardMetadata() throws SSSOMFormatException, IOException {
+    void testWriteNoStandardMetadata() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("../core/src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
+        assertWrittenAsExpected(ms, "test-ttl-output-extensions-none", null,
+                (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE));
+    }
+
+    @Test
+    void testWriteDefinedNonStandardMetadata() throws SSSOMFormatException, IOException {
         TSVReader reader = new TSVReader("../core/src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         MappingSet ms = reader.read();
 
         assertWrittenAsExpected(ms, "test-ttl-output-extensions-defined", null,
                 (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED));
+    }
+
+    @Test
+    void testWriteUnDefinedNonStandardMetadata() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("../core/src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
         assertWrittenAsExpected(ms, "test-ttl-output-extensions-undefined", null,
                 (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED));
-        assertWrittenAsExpected(ms, "test-ttl-output-extensions-none", null,
-                (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE));
     }
 
     private void assertWrittenAsExpected(MappingSet ms, String expectedBasename, String actualBasename,

@@ -19,10 +19,6 @@
   <http://sssom.invalid/ext_undeclared_foo> "Foo B";
   EXPROP:fooProperty "Foo A";
   sssom:extension_definitions [
-      sssom:property EXPROP:fooProperty;
-      sssom:slot_name "ext_foo";
-      sssom:type_hint xsd:string
-    ], [
       sssom:property <http://sssom.invalid/ext_undeclared_baz>;
       sssom:slot_name "ext_undeclared_baz";
       sssom:type_hint xsd:string
@@ -38,6 +34,10 @@
       sssom:property EXPROP:bazProperty;
       sssom:slot_name "ext_baz";
       sssom:type_hint linkml:Uriorcurie
+    ], [
+      sssom:property EXPROP:fooProperty;
+      sssom:slot_name "ext_foo";
+      sssom:type_hint xsd:string
     ];
   sssom:mapping_set_id "https://example.org/sets/exo2c-with-extensions"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
