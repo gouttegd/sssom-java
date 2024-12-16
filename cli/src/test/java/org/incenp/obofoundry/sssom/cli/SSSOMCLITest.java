@@ -253,11 +253,11 @@ public class SSSOMCLITest {
 
         // Check that --output-format JSON is the same as --json-output
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-json-output.sssom.json",
-                new String[] { "--output-format", "json" });
+                new String[] { "--output-format", "JSON" });
 
         // Check that we can get RDF Turtle output
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-ttl-output.ttl",
-                new String[] { "--output-format", "ttl" });
+                new String[] { "--output-format", "tTl" });
     }
 
     /*

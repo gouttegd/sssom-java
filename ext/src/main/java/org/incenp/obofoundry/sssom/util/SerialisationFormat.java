@@ -54,7 +54,7 @@ public enum SerialisationFormat {
 
         for ( SerialisationFormat value : SerialisationFormat.values() ) {
             byNames.put(value.shortName, value);
-            byNames.put(value.name, value);
+            byNames.put(value.name.toLowerCase(), value);
             byExtensions.put(value.extension, value);
             shortNames.add(value.shortName);
         }
@@ -126,7 +126,7 @@ public enum SerialisationFormat {
      *         match any known format.
      */
     public static SerialisationFormat fromName(String name) {
-        return NAMES_MAP.get(name);
+        return NAMES_MAP.get(name.toLowerCase());
     }
 
     /**
