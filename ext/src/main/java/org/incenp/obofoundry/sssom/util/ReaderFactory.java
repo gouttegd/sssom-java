@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.incenp.obofoundry.sssom.BaseReader;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.JSONReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
@@ -49,7 +49,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(File file) throws IOException, SSSOMFormatException {
+    public SSSOMReader getReader(File file) throws IOException, SSSOMFormatException {
         return getReader(new BufferedReader(new FileReader(file)), file.getPath());
     }
 
@@ -64,7 +64,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(InputStream stream) throws IOException, SSSOMFormatException {
+    public SSSOMReader getReader(InputStream stream) throws IOException, SSSOMFormatException {
         return getReader(new BufferedReader(new InputStreamReader(stream)));
     }
 
@@ -80,7 +80,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(String filename) throws IOException, SSSOMFormatException {
+    public SSSOMReader getReader(String filename) throws IOException, SSSOMFormatException {
         return getReader(new BufferedReader(new FileReader(new File(filename))), filename);
     }
 
@@ -99,7 +99,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(String filename, boolean allowStdin) throws IOException, SSSOMFormatException {
+    public SSSOMReader getReader(String filename, boolean allowStdin) throws IOException, SSSOMFormatException {
         if ( allowStdin && filename.equals("-") ) {
             return getReader(System.in);
         }
@@ -122,7 +122,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(String filename, String metaFilename) throws IOException, SSSOMFormatException {
+    public SSSOMReader getReader(String filename, String metaFilename) throws IOException, SSSOMFormatException {
         if ( metaFilename != null ) {
             return new TSVReader(filename, metaFilename);
         } else {
@@ -149,7 +149,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(String filename, String metaFilename, boolean allowStdin)
+    public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin)
             throws IOException, SSSOMFormatException {
         if ( metaFilename != null ) {
             if ( allowStdin ) {
@@ -181,7 +181,7 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(Reader reader) throws IOException, SSSOMFormatException {
+    public SSSOMReader getReader(Reader reader) throws IOException, SSSOMFormatException {
         return getReader(reader, null);
     }
 
@@ -201,8 +201,8 @@ public class ReaderFactory {
      * @throws SSSOMFormatException If no known serialisation format could be
      *                              recognised.
      */
-    public BaseReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
-        BaseReader br = null;
+    public SSSOMReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
+        SSSOMReader br = null;
         switch ( inferFormat(reader) ) {
         case RDF_TURTLE:
             br = new RDFReader(reader);

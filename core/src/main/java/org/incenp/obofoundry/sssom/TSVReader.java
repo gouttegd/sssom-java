@@ -68,7 +68,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
  * }
  * </pre>
  */
-public class TSVReader extends BaseReader {
+public class TSVReader extends SSSOMReader {
 
     private File tsvFile;
     private BufferedReader tsvReader;

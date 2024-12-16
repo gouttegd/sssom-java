@@ -31,7 +31,7 @@ import java.util.Map;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import org.incenp.obofoundry.sssom.BaseReader;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -40,7 +40,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  * A parser to read a SSSOM mapping set from the RDF Turtle serialisation
  * format.
  */
-public class RDFReader extends BaseReader {
+public class RDFReader extends SSSOMReader {
 
     private Reader reader;
 

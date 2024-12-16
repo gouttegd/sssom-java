@@ -29,8 +29,8 @@ import java.util.Map;
 
 import javax.xml.catalog.CatalogException;
 
-import org.incenp.obofoundry.sssom.BaseReader;
-import org.incenp.obofoundry.sssom.BaseWriter;
+import org.incenp.obofoundry.sssom.SSSOMReader;
+import org.incenp.obofoundry.sssom.SSSOMWriter;
 import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.JSONWriter;
@@ -312,7 +312,7 @@ public class SimpleCLI implements Runnable {
             String tsvFile = items[0];
             String metaFile = items.length == 2 ? items[1] : null;
             try {
-                BaseReader reader = readerFactory.getReader(tsvFile, metaFile, true);
+                SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(!inputOpts.disablePropagation);
                 if ( ms == null ) {
@@ -486,7 +486,7 @@ public class SimpleCLI implements Runnable {
         }
         boolean stdout = outputOpts.file.equals("-");
         try {
-            BaseWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
+            SSSOMWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
             writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
             writer.setCondensationEnabled(!outputOpts.disableCondensation);
             writer.write(set);
@@ -524,7 +524,7 @@ public class SimpleCLI implements Runnable {
             String extension = "." + outputOpts.outputFormat.getExtension();
             File output = new File(dir, splitId + extension);
             try {
-                BaseWriter writer = getWriter(output.getPath(), null);
+                SSSOMWriter writer = getWriter(output.getPath(), null);
                 writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
                 writer.setCondensationEnabled(!outputOpts.disableCondensation);
                 writer.write(splitSet);
@@ -534,7 +534,7 @@ public class SimpleCLI implements Runnable {
         }
     }
 
-    private BaseWriter getWriter(String filename, String metaFilename) throws IOException {
+    private SSSOMWriter getWriter(String filename, String metaFilename) throws IOException {
         boolean stdout = filename.equals("-");
         switch ( outputOpts.outputFormat ) {
         case JSON:

@@ -35,7 +35,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  * This class should be derived into specialised classes that implement a
  * precise serialisation format.
  */
-public abstract class BaseWriter {
+public abstract class SSSOMWriter {
 
     protected ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
     protected PropagationPolicy condensationPolicy = PropagationPolicy.NeverReplace;

@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * this reader expects a “pure” JSON format that is merely a direct JSON
  * rendering of the internal SSSOM data model.
  */
-public class JSONReader extends BaseReader {
+public class JSONReader extends SSSOMReader {
 
     private Reader reader;
     private YAMLConverter converter = new YAMLConverter();

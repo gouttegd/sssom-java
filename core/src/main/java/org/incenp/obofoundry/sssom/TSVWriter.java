@@ -60,7 +60,7 @@ import org.incenp.obofoundry.sssom.model.ValueType;
  * }
  * </pre>
  */
-public class TSVWriter extends BaseWriter {
+public class TSVWriter extends SSSOMWriter {
 
     private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
 

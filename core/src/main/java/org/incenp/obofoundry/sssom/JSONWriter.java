@@ -45,7 +45,7 @@ import org.incenp.obofoundry.sssom.model.ValueType;
  * unspecified. Instead, this writer produces a “pure” JSON format that is
  * merely a direct JSON rendering of the internal SSSOM data model.
  */
-public class JSONWriter extends BaseWriter {
+public class JSONWriter extends SSSOMWriter {
 
     private Writer writer;
     private StringBuilder buffer = new StringBuilder();

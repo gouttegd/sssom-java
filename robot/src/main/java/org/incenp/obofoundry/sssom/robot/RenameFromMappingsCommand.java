@@ -23,7 +23,7 @@ import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.incenp.obofoundry.sssom.BaseReader;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -102,7 +102,7 @@ public class RenameFromMappingsCommand implements Command {
         MappingSet ms = null;
         ReaderFactory readerFactory = new ReaderFactory();
         for ( String sssomFile : line.getOptionValues('s') ) {
-            BaseReader reader = readerFactory.getReader(sssomFile);
+            SSSOMReader reader = readerFactory.getReader(sssomFile);
             if ( ms == null ) {
                 ms = reader.read();
             } else {

@@ -25,7 +25,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.incenp.obofoundry.sssom.BaseReader;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.JSONReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.TSVReader;
@@ -61,28 +61,28 @@ public class ReaderFactoryTest {
     @Test
     void testGetReaderFromFile() throws IOException, SSSOMFormatException {
         ReaderFactory factory = new ReaderFactory();
-        BaseReader reader = factory.getReader(new File(sampleTSVFile));
+        SSSOMReader reader = factory.getReader(new File(sampleTSVFile));
         Assertions.assertInstanceOf(TSVReader.class, reader);
     }
 
     @Test
     void testGetReaderFromStream() throws IOException, SSSOMFormatException {
         ReaderFactory factory = new ReaderFactory();
-        BaseReader reader = factory.getReader(new FileInputStream(sampleJSONFile));
+        SSSOMReader reader = factory.getReader(new FileInputStream(sampleJSONFile));
         Assertions.assertInstanceOf(JSONReader.class, reader);
     }
 
     @Test
     void testGetReaderFromFilename() throws IOException, SSSOMFormatException {
         ReaderFactory factory = new ReaderFactory();
-        BaseReader reader = factory.getReader(sampleTTFFile);
+        SSSOMReader reader = factory.getReader(sampleTTFFile);
         Assertions.assertInstanceOf(RDFReader.class, reader);
     }
 
     @Test
     void testGetReaderFromFilenameWithExternalMetdata() throws IOException, SSSOMFormatException {
         ReaderFactory factory = new ReaderFactory();
-        BaseReader reader = factory.getReader(
+        SSSOMReader reader = factory.getReader(
                 "../core/src/test/resources/sets/test-external-metadata.sssom.tsv",
                 "../core/src/test/resources/sets/test-explicit-external-metadata.sssom.yml", true);
         Assertions.assertInstanceOf(TSVReader.class, reader);
@@ -93,7 +93,7 @@ public class ReaderFactoryTest {
     @Test
     void testGetReaderFromFilenameNoExternalMetadata() throws IOException, SSSOMFormatException {
         ReaderFactory factory = new ReaderFactory();
-        BaseReader reader = factory.getReader(sampleJSONFile, null, false);
+        SSSOMReader reader = factory.getReader(sampleJSONFile, null, false);
         Assertions.assertInstanceOf(JSONReader.class, reader);
     }
 }

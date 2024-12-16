@@ -30,13 +30,13 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 import org.eclipse.rdf4j.rio.turtle.TurtleWriter;
-import org.incenp.obofoundry.sssom.BaseWriter;
+import org.incenp.obofoundry.sssom.SSSOMWriter;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
 /**
  * A writer to serialise a SSSOM mapping set into the RDF Turtle format.
  */
-public class RDFWriter extends BaseWriter {
+public class RDFWriter extends SSSOMWriter {
     
     private static final String DCTERMS_NS = "http://purl.org/dc/terms/";
     private static final String PAV_NS = "http://purl.org/pav/";
