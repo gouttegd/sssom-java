@@ -50,7 +50,7 @@ URI Expression support in SSSOM/Transform
   For example, a mapping with the following subject ID:
   
 +-----------------------------------------------------------------------
-https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:4567')
+https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:5678')
 +-----------------------------------------------------------------------
 
   would be selected by the following filter (assuming the <MONDO> prefix
@@ -78,7 +78,7 @@ uriexpr_contains(%{subject_id}, 'disease', MONDO:*) -> ...;
 "%{subject_id|uriexpr_slot_value(phenotype)}"
 +-----------------------------------------------------------------------
 
-  will insert the value <<<HP:4567>>>. Note that if the <<<HP>>> prefix
+  will insert the value <<<HP:5678>>>. Note that if the <<<HP>>> prefix
   name is declared, the value of the slot will be expanded to its
   full-length form. Append the <short> modifier if you specifically want
   the short form of the identifier.
@@ -150,7 +150,7 @@ DO:3333 EquivalentTo: MONDO:1234 and (BFO:0000051 some HP:5678)
   For example, a mapping with the following subject ID:
   
 +-----------------------------------------------------------------------
-https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:4567')
+https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:5678')
 +-----------------------------------------------------------------------
 
   would be turned into an identical mapping but with two additional
@@ -160,6 +160,6 @@ https://example.org/schema/0001/(disease:'MONDO:1234',phenotype:'HP:4567')
     containing the value <<<http://purl.obolibrary.org/obo/MONDO_1234>>>;
     
   * and a slot identified by the property <<<https://example.org/schema/0001/phenotype>>>,
-    containing the value <<<http://purl.obolibrary.org/obo/HP_4567>>>.
+    containing the value <<<http://purl.obolibrary.org/obo/HP_5678>>>.
     
   []

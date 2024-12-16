@@ -206,7 +206,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 MappingSet ms = new MappingSet();
 // Fill the mapping set...
 try {
-    JSONWriter writer = new JSONWriter("my-new-mappings.sssom.tsv");
+    JSONWriter writer = new JSONWriter("my-new-mappings.sssom.json");
     writer.write(ms);
 } catch (IOException ioe) {
     // A non-SSSOM I/O error occured

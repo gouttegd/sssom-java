@@ -79,7 +79,7 @@ ROBOT inject command
   These options are applied before any other processing. Inversion, if
   specified, is always performed first. 
   
-* 3. Checking for the existence of the subject and/or object
+** 2.1. Checking for the existence of the subject and/or object
 
   By default, <<<inject>>> will generate axioms regardless of whether
   the subject and object of a mapping exist in the current ontology (if
@@ -100,7 +100,7 @@ ROBOT inject command
   what will really be checked is the existence of the original <object>
   side of the mapping.
   
-* 4. Dropping “duplicate” mappings
+** 2.2. Dropping “duplicate” mappings
 
   Use the <<<--drop-duplicate-subjects>>> option to drop any mapping
   that has the same subject ID as a previously processed mapping. With
@@ -111,7 +111,7 @@ ROBOT inject command
   Use the <<<--drop-duplicate-objects>>> option to do the same, but for
   the object side of mappings.
   
-* 5. Specifying the axioms to generate
+* 3. Specifying the axioms to generate
 
   There are two ways of instructing the command of the axioms it is
   supposed to generate from the mappings: with ad-hoc options or with a
@@ -120,7 +120,7 @@ ROBOT inject command
   language. They are not mutually exclusive: a single invocation of the
   command can make use of both an ad-hoc option <and> a ruleset.
   
-** 5.1. Ad-hoc options
+** 3.1. Ad-hoc options
 
   These options are typically tailored for one particular use case and
   do not offer a lot of control on what is happening. There are
@@ -156,7 +156,7 @@ ROBOT inject command
   annotations (<<<oboInOwl:hasDbXref>>>) on the subject with the
   shortened identifier of the object as value.
   
-** 5.2. Using a SSSOM/T-OWL ruleset
+** 3.2. Using a SSSOM/T-OWL ruleset
   
   Use the <<<--ruleset>>> option to specify the name of a
   SSSOM/T-OWL file describing precisely which axioms to generate from
@@ -168,7 +168,7 @@ ROBOT inject command
   to the description of the {{{../sssom-ext/sssomt-owl.html}SSSOM/T-OWL dialect}}
   for the details that are specific to the dialect used by <<<inject>>>.
   
-*** 5.2.1. Prefixes in SSSOM/T-OWL
+*** 3.2.1. Prefixes in SSSOM/T-OWL
 
   By default, all prefixes that are known to ROBOT (either because they
   are declared in the current ontology, or because they have been
@@ -195,7 +195,7 @@ ROBOT inject command
   Use the <<<--error-on-unshortenable-iris>>> option to force the
   command to error out if that happens.
   
-*** 5.2.2. Examples
+*** 3.2.2. Examples
   
   Below are some example of axiom-producing SSSOM/Transform rules (the
   prefix declarations are omitted for brevity).
@@ -229,14 +229,14 @@ subject==FBbt:* -> annotate(%{subject_id}, IAO:0000589,  "%{subject_label} (Dros
 subject==FBbt:* -> annotate(%{object_id}, oio:hasDbXref, "%{subject|short}");
 +-----------------------------------------------------------------------
 
-* 6. Exploiting tags in a ruleset
+* 4. Exploiting tags in a ruleset
 
   When using a SSSOM/Transform ruleset (with the <<<--ruleset>>>
   option), if the ruleset contains
   {{{../sssom-ext/sssom-transform.html#a8._Tagging_rules}tags}}, two
   more features are available to <<<inject>>>.
   
-** 6.1. Selectively enable or disabled tagged rules
+** 4.1. Selectively enable or disabled tagged rules
 
   By default, all SSSOM/Transform rules found within a ruleset will be
   used when processing the mapping.
@@ -256,7 +256,7 @@ subject==FBbt:* -> annotate(%{object_id}, oio:hasDbXref, "%{subject|short}");
   rule marked with the specified tag. As for its inclusive counterpart,
   it may be used as many times as needed to exclude more than one tag.
   
-** 6.2. Write generated axiom to different files
+** 4.2. Write generated axiom to different files
 
   For some applications, having all the axioms generated from the
   mappings in a single output file (the file specified with the

@@ -77,7 +77,7 @@ subject==* -> include();
   
 +-----------------------------------------------------------------------
 subject==CL:* -> stop();
-# At the point ALL mappings with a CL subject have been dropped already,
+# At this point ALL mappings with a CL subject have been dropped already,
 # so the following rule has nothing to work on and will have no effect.
 subject==CL:1111 -> include();
 +-----------------------------------------------------------------------

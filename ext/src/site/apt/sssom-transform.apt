@@ -313,8 +313,8 @@ mapping_tool==""
 +-----------------------------------------------------------------------
 
   Note that this is different from using the <<<*>>> special value,
-  which will accept any mapping regardless of whether they a value or
-  not in the slot.
+  which will accept any mapping regardless of whether they have a value
+  or not in the slot.
   
   For slots that expects identifiers, selecting mappings with an empty
   value is done by using the special value <<<~>>>, as in:
@@ -478,7 +478,7 @@ FUNCTION(ARG1, ARG2, ...)
     <<<\<https://w3id.org/semapv/vocab/crossSpeciesExactMatch\>>>>;
   
   * “naked” CURIEs, such as <<<BFO:0000050>>> (always using a prefix
-    name that hasbeen duly <declared> beforehand!);
+    name that has been duly <declared> beforehand!);
   
   * and <flags>, which are named arguments starting with a <<</>>>
     character and followed by a value which can itself be a string,

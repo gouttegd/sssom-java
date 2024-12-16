@@ -121,7 +121,7 @@ declare(NCBITaxon:6893, NCBITaxon:6939, NCBITaxon:44484);
   For example:
   
 +-----------------------------------------------------------------------
-exists(%{subject_id}) -> annotate(%{subject_id}, rdfs:comment, "I exist!");
+exists(%{subject_id}) -> annotate(%{subject_id}, rdfs:comment, "My subject exists!");
 +-----------------------------------------------------------------------
 
   will annotate the entities referenced by the subject of each mapping,
@@ -165,7 +165,7 @@ exists(ENT:1234) -> ...;
   For example:
   
 +-----------------------------------------------------------------------
-is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "I am an occurent!");
+is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "My object is an occurent!");
 +-----------------------------------------------------------------------
 
   This will annotate the entities referenced by the object of each
@@ -177,7 +177,7 @@ is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "I am an
   
 +-----------------------------------------------------------------------
 !object==BFO:0000003 && is_a(%{object_id}, BFO:0000003) ->
-    annotate(%{object_id}, rdfs:comment, "I am an occurrent, but not THE occurrent!");
+    annotate(%{object_id}, rdfs:comment, "My object is an occurrent, but not THE occurrent!");
 +-----------------------------------------------------------------------
 
   The function works on both classes and object and data properties. If
@@ -223,7 +223,7 @@ is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "I am an
   It takes a single optional argument, which describes how the generated
   axioms should be annotated with the mapping metadata.
   
-*** 4.1.2. OWL serialisation rules
+*** 4.1.1. OWL serialisation rules
   
   Of note, those rules are not fully specified yet and therefore the
   precise behaviour of this function may change in the future, but so
@@ -330,7 +330,7 @@ AnnotationAssertion(
 
   The <create_axiom> is arguably the most important function of the
   SSSOM/T-OWL dialect. It allows to create an arbitrary axiom by
-  specifying as an expression in OWL Manchester Syntax.
+  specifying it as an expression in OWL Manchester Syntax.
   
   It accepts a single argument which is the expression representing the
   axiom to create. Placeholders are expanded in that argument.

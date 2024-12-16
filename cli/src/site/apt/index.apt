@@ -147,7 +147,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   specified, so the output produced by those options may change in the
   future.
   
-  In both JSON and RDF modes, the <<<--output-metadata>>> option above
+  In both JSON and RDF modes, the <<<--metadata-output>>> option above
   is ignored, since those formats do not allow the use of an external
   metadata file.
   

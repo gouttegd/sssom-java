@@ -42,7 +42,7 @@ IMappingFilter filter = (mapping) -> mapping.getPredicateId().equals("http://www
   returns an inverted copy of it:
   
 +-----------------------------------------------------------------------
-IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapping);
+IMappingTransformer<Mapping> inverter = (mapping) -> mapping.invert();
 +-----------------------------------------------------------------------
 
 * 2. Processing rule
@@ -134,7 +134,7 @@ IMappingTransformer<Mapping> inverter = (mapping) -> CommonPredicate.invert(mapp
   []
   
   Once all rules have been applied, the processor will return a list of
-  the products collected at step 1.1.5.
+  the products collected at step 1.2.5.
   
   The following example (somewhat contrived) shows a processor that
   generates text representations of mappings (as <<<String>>> objects).
