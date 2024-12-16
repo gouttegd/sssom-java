@@ -671,12 +671,15 @@ predicate==skos:broadMatch -> set_var("MY_VARIABLE", "value for broad matches");
 *** 6.4.2. <invert>
 
   This function <inverts> the current mapping, so that the subject
-  becomes the object and vice-versa. It does not take any argument.
+  becomes the object and vice-versa. It takes an optional argument,
+  which is the predicate to use for the inverted mapping. The argument
+  may contain placeholders.
   
-  Note that not all mappings can be inverted (the predicate needs to be
-  invertible); if a given mapping cannot be inverted, it will be
-  excluded from any further processing (as if it has been the target of
-  the {{{The stop function}stop}} function).
+  If no argument is given, the function will try inverting the mapping
+  using some built-in knowledge about which predicates are invertible;
+  if it fails (because the original predicate has no known inverse
+  predicate), the mapping will be excluded from any further processing
+  (as if it has been the target of the {{{6.4.1. stop}stop}} function).
   
   See the
   {{{https://mapping-commons.github.io/sssom/chaining-rules/#inverse}SSSOM documentation}}

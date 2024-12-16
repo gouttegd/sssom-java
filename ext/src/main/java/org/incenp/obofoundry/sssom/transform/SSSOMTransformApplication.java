@@ -171,7 +171,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         registerDirective(new SSSOMTSetvarFunction(this));
         registerCallback(new SSSOMTSetvarCallbackFunction(this));
         registerPreprocessor(new SSSOMTStopFunction());
-        registerPreprocessor(new SSSOMTInvertFunction());
+        registerPreprocessor(new SSSOMTInvertFunction(this));
         registerPreprocessor(new SSSOMTAssignFunction(this));
         registerPreprocessor(new SSSOMTReplaceFunction(this));
         registerPreprocessor(new SSSOMTEditFunction(this));

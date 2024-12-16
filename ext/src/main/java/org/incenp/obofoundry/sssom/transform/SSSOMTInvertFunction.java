@@ -26,12 +26,27 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 /**
  * Represents the SSSOM/T standard preprocessor function "invert".
  * <p>
- * This function does not take any argument. It simply returns an inverted copy
- * of the original mapping, or drops the mapping if it cannot be inverted
- * (because the predicate has no known inverse).
+ * This function simply returns an inverted copy of the original mapping. It
+ * takes one optional argument, which is the predicate to use in the inverted
+ * mapping. Placeholders are supported in this argument.
+ * <p>
+ * If called without any argument, the function will invert the mapping if it
+ * knows the correct inverse predicate; if it does not, the mapping will be
+ * dropped.
  */
 public class SSSOMTInvertFunction
         implements ISSSOMTFunction<IMappingTransformer<Mapping>>, IMappingTransformer<Mapping> {
+
+    private IMappingTransformer<String> predicate;
+    MappingFormatter formatter;
+
+    public <T> SSSOMTInvertFunction(SSSOMTransformApplication<T> application) {
+        formatter = application.getFormatter();
+    }
+
+    private SSSOMTInvertFunction(IMappingTransformer<String> predicate) {
+        this.predicate = predicate;
+    }
 
     @Override
     public String getName() {
@@ -40,17 +55,25 @@ public class SSSOMTInvertFunction
 
     @Override
     public String getSignature() {
-        return "";
+        return "S?";
     }
 
     @Override
     public IMappingTransformer<Mapping> call(List<String> arguments, Map<String, String> keyedArguments)
             throws SSSOMTransformError {
-        return this;
+        if ( arguments.size() == 1 ) {
+            return new SSSOMTInvertFunction(formatter.getTransformer(arguments.get(0)));
+        } else {
+            return this;
+        }
     }
 
     @Override
     public Mapping transform(Mapping mapping) {
-        return mapping.invert();
+        if ( predicate != null ) {
+            return mapping.invert(predicate.transform(mapping));
+        } else {
+            return mapping.invert();
+        }
     }
 }

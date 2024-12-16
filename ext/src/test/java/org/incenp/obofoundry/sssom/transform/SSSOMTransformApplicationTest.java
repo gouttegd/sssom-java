@@ -108,17 +108,33 @@ public class SSSOMTransformApplicationTest {
 
     @Test
     void testInvertPreprocessor() {
+        Mapping m = new Mapping();
+        m.setSubjectId("https://example.org/entities/0001");
+        m.setObjectId("https://example.com/entities/0011");
+        m.setPredicateId("http://www.w3.org/2004/02/skos/core#exactMatch");
+
         try {
             IMappingTransformer<Mapping> o = application.onPreprocessingAction("invert", arguments, keyedArguments);
             Assertions.assertInstanceOf(SSSOMTInvertFunction.class, o);
 
-            Mapping m = new Mapping();
-            m.setSubjectId("https://example.org/entities/0001");
-            m.setObjectId("https://example.com/entities/0011");
-            m.setPredicateId("http://www.w3.org/2004/02/skos/core#exactMatch");
+            Mapping inverted = o.transform(m);
+            Assertions.assertEquals(m.getSubjectId(), inverted.getObjectId());
+            Assertions.assertEquals("http://www.w3.org/2004/02/skos/core#exactMatch", inverted.getPredicateId());
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+
+        m.setAuthorId(new ArrayList<String>());
+        m.getAuthorId().add("http://www.w3.org/2004/02/skos/core#closeMatch");
+        arguments.add("%{author_id|list_item(1)}");
+
+        try {
+            IMappingTransformer<Mapping> o = application.onPreprocessingAction("invert", arguments, keyedArguments);
+            Assertions.assertInstanceOf(SSSOMTInvertFunction.class, o);
 
             Mapping inverted = o.transform(m);
             Assertions.assertEquals(m.getSubjectId(), inverted.getObjectId());
+            Assertions.assertEquals("http://www.w3.org/2004/02/skos/core#closeMatch", inverted.getPredicateId());
         } catch ( SSSOMTransformError e ) {
             Assertions.fail(e);
         }
