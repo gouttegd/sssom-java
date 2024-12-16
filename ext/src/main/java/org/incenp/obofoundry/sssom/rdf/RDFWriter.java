@@ -104,14 +104,52 @@ public class RDFWriter extends BaseWriter {
         protected void writeURI(IRI uri) throws IOException {
             // We delegate all the IRI shortening logic to our own PrefixManager class.
             String original = uri.stringValue();
-            String shortIRI = prefixManager.shortenIdentifier(original);
-            if ( original == shortIRI ) {
+            String prefixName = prefixManager.getPrefixName(original);
+            if ( prefixName == null ) {
                 writer.write("<");
                 StringUtil.simpleEscapeIRI(original, writer, false);
                 writer.write(">");
             } else {
-                writer.write(shortIRI);
+                int prefixLen = prefixManager.getPrefix(prefixName).length();
+                writer.write(prefixName);
+                writer.write(":");
+                writer.write(escapeShortIRI(original.substring(prefixLen)));
             }
+        }
+
+        private String escapeShortIRI(String localName) {
+            /* ~.-!$&'()*+,;=/?#@%_ */
+            StringBuffer sb = new StringBuffer();
+            int len = localName.length();
+            for ( int i = 0; i < len; i++ ) {
+                char c = localName.charAt(i);
+                switch ( c ) {
+                case '~':
+                case '!':
+                case '$':
+                case '&':
+                case '\'':
+                case '(':
+                case ')':
+                case '*':
+                case '+':
+                case ',':
+                case ';':
+                case '=':
+                case '/':
+                case '?':
+                case '#':
+                case '@':
+                case '%':
+                    sb.append('\\');
+                    sb.append(c);
+                    break;
+
+                default:
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
         }
     }
 }

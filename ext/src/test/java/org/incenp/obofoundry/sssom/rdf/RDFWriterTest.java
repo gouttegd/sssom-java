@@ -49,6 +49,14 @@ public class RDFWriterTest {
     }
 
     @Test
+    void testWriteShortIRIsWithEscapedCharacters() throws IOException {
+        MappingSet ms = getTestSet();
+        ms.getCreatorId().add("https://example.com/people/0000+0000?0002@5678");
+
+        assertWrittenAsExpected(ms, "test-ttl-output-escaped-short-iris", null, null);
+    }
+
+    @Test
     void testWriteDefinedNonStandardMetadata() throws SSSOMFormatException, IOException {
         TSVReader reader = new TSVReader("../core/src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
