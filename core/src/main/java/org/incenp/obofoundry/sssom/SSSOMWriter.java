@@ -28,6 +28,7 @@ import java.util.UUID;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
 
 /**
  * Base class to serialise a mapping set.
@@ -173,7 +174,7 @@ public abstract class SSSOMWriter {
      * record the IRI prefixes used by entity references. This excludes extension
      * slots.
      */
-    private class PrefixUsageVisitor<T> extends SlotVisitorBase<T, Void> {
+    private class PrefixUsageVisitor<T> extends SlotVisitorBase<T> {
         
         Set<String> usedPrefixes;
         
@@ -182,27 +183,21 @@ public abstract class SSSOMWriter {
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, String value) {
-            if ( slot.isEntityReference() ) {
+        public void visit(EntityReferenceSlot<T> slot, T object, String value) {
+            String prefix = prefixManager.getPrefixName(value);
+            if ( prefix != null ) {
+                usedPrefixes.add(prefix);
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T object, List<String> values) {
+            for ( String value : values ) {
                 String prefix = prefixManager.getPrefixName(value);
                 if ( prefix != null ) {
                     usedPrefixes.add(prefix);
                 }
             }
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, List<String> values) {
-            if ( slot.isEntityReference() ) {
-                for ( String value : values ) {
-                    String prefix = prefixManager.getPrefixName(value);
-                    if ( prefix != null ) {
-                        usedPrefixes.add(prefix);
-                    }
-                }
-            }
-            return null;
         }
     }
 }

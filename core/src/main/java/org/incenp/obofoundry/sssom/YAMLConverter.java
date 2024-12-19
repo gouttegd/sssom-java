@@ -19,7 +19,6 @@
 package org.incenp.obofoundry.sssom;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -32,13 +31,13 @@ import org.incenp.obofoundry.sssom.compatibility.LiteralProfileConverter;
 import org.incenp.obofoundry.sssom.compatibility.MatchTermTypeConverter;
 import org.incenp.obofoundry.sssom.compatibility.MatchTypeConverter;
 import org.incenp.obofoundry.sssom.compatibility.SemanticSimilarityConverter;
-import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
 
 /**
  * A helper class to convert generic YAML dictionaries into SSSOM objects.
@@ -47,8 +46,6 @@ public class YAMLConverter {
 
     private PrefixManager prefixManager;
     private List<IYAMLPreprocessor> preprocessors;
-    private Map<String, Slot<MappingSet>> setSlotMaps;
-    private Map<String, Slot<Mapping>> mappingSlotMaps;
     private ExtensionSlotManager extensionManager;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
 
@@ -64,19 +61,6 @@ public class YAMLConverter {
         preprocessors.add(new JsonLDConverter());
         preprocessors.add(new SemanticSimilarityConverter());
         preprocessors.add(new LiteralProfileConverter());
-
-        setSlotMaps = new HashMap<String, Slot<MappingSet>>();
-        for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
-            String slotName = slot.getName();
-            if ( !slotName.equals("curie_map") && !slotName.equals("mappings") ) {
-                setSlotMaps.put(slotName, slot);
-            }
-        }
-
-        mappingSlotMaps = new HashMap<String, Slot<Mapping>>();
-        for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
-            mappingSlotMaps.put(slot.getName(), slot);
-        }
     }
 
     /**
@@ -173,7 +157,7 @@ public class YAMLConverter {
             prefixManager.add(curieMap);
             rawMap.remove("curie_map");
         } else {
-            onTypingError("curie_map");
+            throw getTypingError("curie_map");
         }
 
         // Process extension definitions
@@ -181,13 +165,25 @@ public class YAMLConverter {
         processDefinitions(rawMap);
 
         // Process the bulk of the metadata slots
+        SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>();
         Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
         for ( String key : rawMap.keySet() ) {
             if ( key.equals("mappings") ) { // To be processed separately
                 continue;
             }
-            if ( setSlotMaps.containsKey(key) ) {
-                setSlotValue(setSlotMaps.get(key), ms, rawMap.get(key));
+
+            Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByName(key);
+            if ( slot != null ) {
+                Object rawValue = rawMap.get(key);
+                if ( rawValue == null ) {
+                    slot.setValue(ms, rawValue);
+                } else {
+                    visitor.rawValue = rawValue;
+                    slot.accept(visitor, ms, null);
+                    if ( visitor.error != null ) {
+                        throw visitor.error;
+                    }
+                }
             } else {
                 processUnknownSlot(extensionSlots, key, rawMap.get(key));
             }
@@ -208,7 +204,7 @@ public class YAMLConverter {
                 }
                 ms.setMappings(mappings);
             } else {
-                onTypingError("mappings");
+                throw getTypingError("mappings");
             }
 
             // Finalise the set now that mappings are processed
@@ -236,9 +232,21 @@ public class YAMLConverter {
             preprocessor.process(rawMap);
         }
 
+        SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
+
         for ( String key : rawMap.keySet() ) {
-            if ( mappingSlotMaps.containsKey(key) ) {
-                setSlotValue(mappingSlotMaps.get(key), m, rawMap.get(key));
+            Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByName(key);
+            if ( slot != null ) {
+                Object rawValue = rawMap.get(key);
+                if ( rawValue == null ) {
+                    slot.setValue(m, rawValue);
+                } else {
+                    visitor.rawValue = rawMap.get(key);
+                    slot.accept(visitor, m, null);
+                    if ( visitor.error != null ) {
+                        throw visitor.error;
+                    }
+                }
             } else {
                 processUnknownSlot(extensionSlots, key, rawMap.get(key));
             }
@@ -267,18 +275,19 @@ public class YAMLConverter {
     }
 
     /*
-     * Called upon a mismatch between the contents of a dictionary and what is
-     * expected by the SSSOM data model.
+     * Gets the standard exception and error message for when there is a mismatch
+     * between the contents of a dictionary and what is expected by the SSSOM data
+     * model.
      */
-    private void onTypingError(String slotName, Throwable innerException) throws SSSOMFormatException {
-        throw new SSSOMFormatException(String.format("Typing error when parsing '%s'", slotName), innerException);
+    private SSSOMFormatException getTypingError(String slotName, Throwable innerException) {
+        return new SSSOMFormatException(String.format("Typing error when parsing '%s'", slotName), innerException);
     }
 
     /*
-     * Same, but without an exception as the cause for the mismatch.
+     * Likewise, but without an inner exception as the root cause for the mismatch.
      */
-    private void onTypingError(String slotName) throws SSSOMFormatException {
-        onTypingError(slotName, null);
+    private SSSOMFormatException getTypingError(String slotName) {
+        return getTypingError(slotName, null);
     }
 
     /*
@@ -294,109 +303,38 @@ public class YAMLConverter {
         } else if ( !List.class.isInstance(o) && !Map.class.isInstance(o) ) {
             return o.toString();
         } else {
-            onTypingError(name);
-            return null;
+            throw getTypingError(name);
         }
     }
 
     /*
-     * Assigns a value to a SSSOM metadata slot.
+     * Converts a YAML object into a list of strings.
      */
-    private <T> void setSlotValue(Slot<T> slot, T object, Object rawValue) throws SSSOMFormatException {
-        if ( rawValue == null ) {
-            slot.setValue(object, rawValue);
-            return;
-        }
-
-        Class<?> type = slot.getType();
-        if ( type == String.class ) {
-            String value = stringify(rawValue, slot.getName());
-            if ( slot.isEntityReference() ) {
-                value = prefixManager.expandIdentifier(value);
-            }
-            slot.setValue(object, value);
-        } else if ( type == List.class ) {
-            List<String> value = new ArrayList<String>();
-            if ( List.class.isInstance(rawValue) ) {
-                @SuppressWarnings("unchecked")
-                List<Object> rawList = List.class.cast(rawValue);
-                for ( Object rawItem : rawList ) {
-                    value.add(stringify(rawItem, slot.getName()));
-                }
-            } else if ( !Map.class.isInstance(rawValue) ) {
-                /*
-                 * The TSV serialisation format stores list values as a single string, from
-                 * which list values must be extracted by splitting the string around '|'
-                 * characters.
-                 * 
-                 * This has the side effect of allowing list-valued slots to be (mis)used as if
-                 * they were single-valued, which is strictly speaking but happens in the wild
-                 * (including in the examples shown in the SSSOM documentation!).
-                 */
-                for ( String item : rawValue.toString().split("\\|") ) {
-                    value.add(item);
-                }
-            } else {
-                onTypingError(slot.getName());
-            }
-
-            if ( slot.isEntityReference() ) {
-                prefixManager.expandIdentifiers(value, true);
-            }
-            slot.setValue(object, value);
-        } else if ( type == Map.class && isMapOf(rawValue, String.class) ) {
+    private List<String> getListOfStrings(String slotName, Object rawValue) throws SSSOMFormatException {
+        List<String> value = new ArrayList<String>();
+        if ( List.class.isInstance(rawValue) ) {
             @SuppressWarnings("unchecked")
-            Map<String, String> value = Map.class.cast(rawValue);
-            slot.setValue(object, value);
-        } else if ( type == LocalDate.class && String.class.isInstance(rawValue) ) {
-            try {
-                String rawDate = String.class.cast(rawValue);
-                if ( rawDate.contains("T") ) {
-                    slot.setValue(object, LocalDateTime.parse(rawDate).toLocalDate());
-                } else {
-                    slot.setValue(object, LocalDate.parse(rawDate));
-                }
-            } catch ( DateTimeParseException e ) {
-                onTypingError(slot.getName(), e);
+            List<Object> rawList = (List<Object>) rawValue;
+            for ( Object rawItem : rawList ) {
+                value.add(stringify(rawItem, slotName));
             }
-        } else if ( type == Double.class && String.class.isInstance(rawValue) ) {
-            try {
-                slot.setValue(object, Double.valueOf(String.class.cast(rawValue)));
-            } catch ( NumberFormatException e ) {
-                onTypingError(slot.getName(), e);
-            } catch ( IllegalArgumentException e ) {
-                throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
-            }
-        } else if ( type == Double.class && Double.class.isInstance(rawValue) ) {
-            try {
-                slot.setValue(object, rawValue);
-            } catch ( IllegalArgumentException e ) {
-                throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
-            }
-        } else if ( type == EntityType.class && String.class.isInstance(rawValue) ) {
-            EntityType value = EntityType.fromString(String.class.cast(rawValue));
-            if ( value != null ) {
-                slot.setValue(object, value);
-            } else {
-                onTypingError(slot.getName());
-            }
-        } else if ( type == MappingCardinality.class && String.class.isInstance(rawValue) ) {
-            MappingCardinality value = MappingCardinality.fromString(String.class.cast(rawValue));
-            if ( value != null ) {
-                slot.setValue(object, value);
-            } else {
-                onTypingError(slot.getName());
-            }
-        } else if ( type == PredicateModifier.class && String.class.isInstance(rawValue) ) {
-            PredicateModifier value = PredicateModifier.fromString(String.class.cast(rawValue));
-            if ( value != null ) {
-                slot.setValue(object, value);
-            } else {
-                onTypingError(slot.getName());
+        } else if ( !Map.class.isInstance(rawValue) ) {
+            /*
+             * The TSV serialisation format stores list values as a single string, from
+             * which list values must be extracted by splitting the string around '|'
+             * characters.
+             * 
+             * This has the side effect of allowing list-valued slots to be (mis)used as if
+             * they were single-valued, which is strictly speaking but happens in the wild
+             * (including in the examples shown in the SSSOM documentation!).
+             */
+            for ( String item : rawValue.toString().split("\\|") ) {
+                value.add(item);
             }
         } else {
-            onTypingError(slot.getName());
+            throw getTypingError(slotName);
         }
+        return value;
     }
 
     /*
@@ -429,11 +367,11 @@ public class YAMLConverter {
                         extensionManager.addDefinition(slotName, property, typeHint);
                     }
                 } else {
-                    onTypingError("extension_definitions");
+                    throw getTypingError("extension_definitions");
                 }
             }
         } else {
-            onTypingError("extension_definitions");
+            throw getTypingError("extension_definitions");
         }
     }
 
@@ -461,10 +399,10 @@ public class YAMLConverter {
                     try {
                         parsedValue = new ExtensionValue(Integer.parseInt(String.class.cast(rawValue)));
                     } catch ( NumberFormatException nfe ) {
-                        onTypingError(slotName, nfe);
+                        throw getTypingError(slotName, nfe);
                     }
                 } else if ( rawValue != null ) {
-                    onTypingError(slotName);
+                    throw getTypingError(slotName);
                 }
                 break;
 
@@ -475,10 +413,10 @@ public class YAMLConverter {
                     try {
                         parsedValue = new ExtensionValue(Double.parseDouble(String.class.cast(rawValue)));
                     } catch ( NumberFormatException nfe ) {
-                        onTypingError(slotName, nfe);
+                        throw getTypingError(slotName, nfe);
                     }
                 } else if ( rawValue != null ) {
-                    onTypingError(slotName);
+                    throw getTypingError(slotName);
                 }
                 break;
 
@@ -492,10 +430,10 @@ public class YAMLConverter {
                     } else if ( value.equals("false") ) {
                         parsedValue = new ExtensionValue(false);
                     } else {
-                        onTypingError(slotName);
+                        throw getTypingError(slotName);
                     }
                 } else if ( rawValue != null ) {
-                    onTypingError(slotName);
+                    throw getTypingError(slotName);
                 }
                 break;
 
@@ -504,10 +442,10 @@ public class YAMLConverter {
                     try {
                         parsedValue = new ExtensionValue(LocalDate.parse(String.class.cast(rawValue)));
                     } catch ( DateTimeParseException dtpe ) {
-                        onTypingError(slotName, dtpe);
+                        throw getTypingError(slotName, dtpe);
                     }
                 } else if ( rawValue != null ) {
-                    onTypingError(slotName);
+                    throw getTypingError(slotName);
                 }
                 break;
 
@@ -516,10 +454,10 @@ public class YAMLConverter {
                     try {
                         parsedValue = new ExtensionValue(ZonedDateTime.parse(String.class.cast(rawValue)));
                     } catch ( DateTimeParseException dtpe ) {
-                        onTypingError(slotName, dtpe);
+                        throw getTypingError(slotName, dtpe);
                     }
                 } else if ( rawValue != null ) {
-                    onTypingError(slotName);
+                    throw getTypingError(slotName);
                 }
                 break;
 
@@ -527,7 +465,7 @@ public class YAMLConverter {
                 if ( String.class.isInstance(rawValue) ) {
                     parsedValue = new ExtensionValue(prefixManager.expandIdentifier(String.class.cast(rawValue)), true);
                 } else if ( rawValue != null ) {
-                    onTypingError(slotName);
+                    throw getTypingError(slotName);
                 }
                 break;
 
@@ -537,6 +475,92 @@ public class YAMLConverter {
             }
 
             extensions.put(definition.getProperty(), parsedValue);
+        }
+    }
+
+    /*
+     * Helper visitor to set slot values from the YAML contents.
+     */
+    class SlotSetterVisitor<T> extends SlotVisitorBase<T> {
+
+        SSSOMFormatException error;
+        Object rawValue;
+
+        // Covers all enum-based slots
+        @Override
+        public void visit(Slot<T> slot, T object, Object unused) {
+            if ( String.class.isInstance(rawValue) ) {
+                try {
+                    slot.setValue(object, String.class.cast(rawValue));
+                } catch ( IllegalArgumentException e ) {
+                    error = getTypingError(slot.getName());
+                }
+            } else {
+                error = getTypingError(slot.getName());
+            }
+        }
+
+        // Covers both string- and URI-typed mono-valued slots
+        @Override
+        public void visit(StringSlot<T> slot, T object, String unused) {
+            try {
+                String value = stringify(rawValue, slot.getName());
+                slot.setValue(object, value);
+            } catch ( SSSOMFormatException e ) {
+                error = e;
+            }
+        }
+
+        // Covers both string- and URI-typed multi-valued slots
+        @Override
+        public void visit(StringSlot<T> slot, T object, List<String> unused) {
+            try {
+                slot.setValue(object, getListOfStrings(slot.getName(), rawValue));
+            } catch ( SSSOMFormatException e ) {
+                error = e;
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T object, String unused) {
+            try {
+                String value = prefixManager.expandIdentifier(stringify(rawValue, slot.getName()));
+                slot.setValue(object, value);
+            } catch ( SSSOMFormatException e ) {
+                error = e;
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T object, List<String> unused) {
+            try {
+                List<String> values = getListOfStrings(slot.getName(), rawValue);
+                prefixManager.expandIdentifiers(values, true);
+                slot.setValue(object, values);
+            } catch ( SSSOMFormatException e ) {
+                error = e;
+            }
+        }
+
+        @Override
+        public void visit(DoubleSlot<T> slot, T object, Double unused) {
+            if ( String.class.isInstance(rawValue) ) {
+                try {
+                    slot.setValue(object, String.class.cast(rawValue));
+                } catch ( NumberFormatException e ) {
+                    error = getTypingError(slot.getName());
+                } catch ( IllegalArgumentException e ) {
+                    error = new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
+                }
+            } else if ( Double.class.isInstance(rawValue) ) {
+                try {
+                    slot.setValue(object, rawValue);
+                } catch ( IllegalArgumentException e ) {
+                    error = new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
+                }
+            } else {
+                error = getTypingError(slot.getName());
+            }
         }
     }
 }

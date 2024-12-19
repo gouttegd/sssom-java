@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.SimpleSlotVisitor;
+import org.incenp.obofoundry.sssom.ISimpleSlotVisitor;
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.EntityType;
@@ -67,7 +67,7 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
  * editor.addReplacement("subject_id", "https://meshb.nlm.nih.gov/record/ui[?]ui=", "http://id.nlm.nih.gov/mesh/");
  * </pre>
  */
-public class MappingEditor implements IMappingTransformer<Mapping>, SimpleSlotVisitor<Mapping, Void> {
+public class MappingEditor implements IMappingTransformer<Mapping>, ISimpleSlotVisitor<Mapping, Void> {
 
     private static HashMap<String, Slot<Mapping>> slotsDict = new HashMap<String, Slot<Mapping>>();
 

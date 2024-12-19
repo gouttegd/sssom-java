@@ -41,6 +41,13 @@ import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.ValueType;
+import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
+import org.incenp.obofoundry.sssom.slots.DateSlot;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
 
 /**
  * A writer to serialise a SSSOM mapping set into the TSV format.
@@ -207,9 +214,10 @@ public class TSVWriter extends SSSOMWriter {
         MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(extraSlots);
         mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
-            List<String> values = helper.visitSlots(mapping, mappingVisitor, true);
-            tsvWriter.append(String.join("\t", values));
+            helper.visitSlots(mapping, mappingVisitor, true);
+            tsvWriter.append(String.join("\t", mappingVisitor.results));
             tsvWriter.append('\n');
+            mappingVisitor.results.clear();
         }
 
         tsvWriter.close();
@@ -219,7 +227,7 @@ public class TSVWriter extends SSSOMWriter {
      * Visits all slots in a MappingSet to get the lines that will make up the
      * metadata block.
      */
-    private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet, Void> {
+    private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet> {
         StringBuilder sb = new StringBuilder();
         DecimalFormat floatFormatter;
         String linePrefix;
@@ -238,17 +246,25 @@ public class TSVWriter extends SSSOMWriter {
         }
 
         @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet set, String value) {
+        public void visit(StringSlot<MappingSet> slot, MappingSet set, String value) {
             sb.append(linePrefix);
             sb.append(slot.getName());
             sb.append(": ");
             escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
             sb.append('\n');
-            return null;
         }
 
         @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet set, List<String> values) {
+        public void visit(EntityReferenceSlot<MappingSet> slot, MappingSet set, String value) {
+            sb.append(linePrefix);
+            sb.append(slot.getName());
+            sb.append(": ");
+            escapeYAML(sb, prefixManager.shortenIdentifier(value));
+            sb.append('\n');
+        }
+
+        @Override
+        public void visit(StringSlot<MappingSet> slot, MappingSet set, List<String> values) {
             if ( values.size() > 0 ) {
                 sb.append(linePrefix);
                 sb.append(slot.getName());
@@ -256,28 +272,39 @@ public class TSVWriter extends SSSOMWriter {
                 for ( String value : values ) {
                     sb.append(linePrefix);
                     sb.append("  - ");
-                    escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
+                    escapeYAML(sb, value);
                     sb.append("\n");
                 }
             }
-            return null;
         }
 
         @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet set, Map<String, String> values) {
-            String name = slot.getName();
-            if ( name.equals("curie_map") ) {
-                // We ignore the Curie map provided in the mapping set to write the effective
-                // map instead.
-                values = new HashMap<String, String>();
-                for ( String prefixName : usedPrefixes ) {
-                    values.put(prefixName, prefixManager.getPrefix(prefixName));
+        public void visit(EntityReferenceSlot<MappingSet> slot, MappingSet set, List<String> values) {
+            if ( values.size() > 0 ) {
+                sb.append(linePrefix);
+                sb.append(slot.getName());
+                sb.append(":\n");
+                for ( String value : values ) {
+                    sb.append(linePrefix);
+                    sb.append("  - ");
+                    escapeYAML(sb, prefixManager.shortenIdentifier(value));
+                    sb.append("\n");
                 }
+            }
+        }
+
+        @Override
+        public void visit(CurieMapSlot<MappingSet> slot, MappingSet set, Map<String, String> values) {
+            // We ignore the Curie map provided in the mapping set to write the effective
+            // map instead.
+            values = new HashMap<String, String>();
+            for ( String prefixName : usedPrefixes ) {
+                values.put(prefixName, prefixManager.getPrefix(prefixName));
             }
 
             if ( !values.isEmpty() ) {
                 sb.append(linePrefix);
-                sb.append(name);
+                sb.append(slot.getName());
                 sb.append(":\n");
                 List<String> keys = new ArrayList<String>(values.keySet());
                 keys.sort((s1, s2) -> s1.compareTo(s2));
@@ -290,34 +317,30 @@ public class TSVWriter extends SSSOMWriter {
                     sb.append("\n");
                 }
             }
-
-            return null;
         }
 
         @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet set, Double value) {
+        public void visit(DoubleSlot<MappingSet> slot, MappingSet set, Double value) {
             sb.append(floatFormatter.format(value));
-            return null;
         }
 
         @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet set, LocalDate value) {
+        public void visit(DateSlot<MappingSet> slot, MappingSet set, LocalDate value) {
             // The SSSOM specification says nothing on how to serialise dates, but LinkML
             // says “for xsd dates, datetimes, and times, AtomicValue must be a string
             // conforming to the relevant ISO type”. I assume this means ISO-8601.
             sb.append(
                     String.format("%s%s: %s\n", linePrefix, slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
-            return null;
         }
 
         @Override
-        public Void visit(Slot<MappingSet> slot, MappingSet set, Object value) {
+        public void visit(Slot<MappingSet> slot, MappingSet set, Object value) {
             sb.append(String.format("%s%s: %s\n", linePrefix, slot.getName(), value.toString()));
-            return null;
         }
 
         @Override
-        public Void visitExtensionDefinitions(MappingSet set, List<ExtensionDefinition> definitions) {
+        public void visit(ExtensionDefinitionSlot<MappingSet> slot, MappingSet set,
+                List<ExtensionDefinition> definitions) {
             if ( extraPolicy == ExtraMetadataPolicy.DEFINED && !definitions.isEmpty() ) {
                 sb.append(linePrefix);
                 sb.append("extension_definitions:\n");
@@ -338,11 +361,10 @@ public class TSVWriter extends SSSOMWriter {
                     }
                 }
             }
-            return null;
         }
 
         @Override
-        public Void visitExtensions(MappingSet set, Map<String, ExtensionValue> extensions) {
+        public void visit(ExtensionSlot<MappingSet> slot, MappingSet set, Map<String, ExtensionValue> extensions) {
             if (extraPolicy != ExtraMetadataPolicy.NONE &&  extensions != null) {
                 for ( ExtensionDefinition definition : extensionManager.getDefinitions(true, false) ) {
                     ExtensionValue value = extensions.get(definition.getProperty());
@@ -356,8 +378,6 @@ public class TSVWriter extends SSSOMWriter {
                     }
                 }
             }
-
-            return null;
         }
 
         /*
@@ -557,84 +577,88 @@ public class TSVWriter extends SSSOMWriter {
     /*
      * Visits all slots in a mapping to render their values as a TSV cell.
      */
-    private class MappingSlotVisitor extends SlotVisitorBase<Mapping, String> {
+    private class MappingSlotVisitor extends SlotVisitorBase<Mapping> {
         private List<ExtensionDefinition> definitions;
         private DecimalFormat floatFormatter;
+        List<String> results;
 
         MappingSlotVisitor(List<ExtensionDefinition> extraSlots) {
             definitions = extraSlots;
             floatFormatter = new DecimalFormat("#.###");
             floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
+            results = new ArrayList<String>();
         }
 
         @Override
-        public String visit(Slot<Mapping> slot, Mapping object, String value) {
-            if ( value == null ) {
-                return "";
-            } else if ( slot.isEntityReference() ) {
-                return escapeTSV(prefixManager.shortenIdentifier(value));
-            } else {
-                return escapeTSV(value);
-            }
+        public void visit(Slot<Mapping> slot, Mapping object, Object value) {
+            results.add(value == null ? "" : escapeTSV(value.toString()));
         }
 
         @Override
-        public String visit(Slot<Mapping> slot, Mapping object, List<String> values) {
+        public void visit(EntityReferenceSlot<Mapping> slot, Mapping object, String value) {
+            results.add(value == null ? "" : escapeTSV(prefixManager.shortenIdentifier(value)));
+        }
+
+        @Override
+        public void visit(StringSlot<Mapping> slot, Mapping object, List<String> values) {
             if ( values == null ) {
-                return "";
+                results.add("");
+                return;
             }
 
             StringBuilder sb = new StringBuilder();
             for ( int i = 0, n = values.size(); i < n; i++ ) {
                 String value = values.get(i);
-                sb.append(slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
+                sb.append(escapeTSV(value));
                 if ( i < n - 1 ) {
                     sb.append('|');
                 }
             }
-            return escapeTSV(sb.toString());
+            results.add(sb.toString());
         }
 
         @Override
-        public String visit(Slot<Mapping> slot, Mapping object, Double value) {
-            if ( value == null ) {
-                return "";
-            } else {
-                return floatFormatter.format(value);
+        public void visit(EntityReferenceSlot<Mapping> slot, Mapping object, List<String> values) {
+            if ( values == null ) {
+                results.add("");
+                return;
             }
-        }
 
-        @Override
-        public String visit(Slot<Mapping> slot, Mapping object, LocalDate value) {
-            if ( value == null ) {
-                return "";
-            } else {
-                return value.format(DateTimeFormatter.ISO_DATE);
+            StringBuilder sb = new StringBuilder();
+            for ( int i = 0, n = values.size(); i < n; i++ ) {
+                String value = values.get(i);
+                sb.append(escapeTSV(prefixManager.shortenIdentifier(value)));
+                if ( i < n - 1 ) {
+                    sb.append('|');
+                }
             }
+            results.add(sb.toString());
         }
 
         @Override
-        public String visit(Slot<Mapping> slot, Mapping object, Object value) {
-            return value != null ? value.toString() : "";
+        public void visit(DoubleSlot<Mapping> slot, Mapping object, Double value) {
+            results.add(value == null ? "" : floatFormatter.format(value));
         }
 
         @Override
-        public String visitExtensions(Mapping object, Map<String, ExtensionValue> extensions) {
+        public void visit(DateSlot<Mapping> slot, Mapping object, LocalDate value) {
+            results.add(value == null ? "" : value.format(DateTimeFormatter.ISO_DATE));
+        }
+
+        @Override
+        public void visit(ExtensionSlot<Mapping> slot, Mapping object, Map<String, ExtensionValue> extensions) {
             if ( extraPolicy == ExtraMetadataPolicy.NONE || extensions == null ) {
-                return null;
+                return;
             }
 
-            ArrayList<String> items = new ArrayList<String>();
             for ( ExtensionDefinition definition : definitions ) {
                 ExtensionValue ev = extensions.get(definition.getProperty());
                 if ( ev != null ) {
-                    items.add(ev.isIdentifier() ? prefixManager.shortenIdentifier(ev.asString()) : ev.toString());
+                    results.add(ev.isIdentifier() ? prefixManager.shortenIdentifier(ev.asString()) : ev.toString());
                 } else {
-                    items.add("");
+                    results.add("");
                 }
             }
-
-            return String.join("\t", items);
         }
 
         /*

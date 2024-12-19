@@ -34,6 +34,9 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -240,26 +243,20 @@ public class ExtendedPrefixMap {
 
     // Visitor object to update EntityReference-typed slots in mappings and mapping
     // sets
-    class Visitor<T> extends SlotVisitorBase<T, Void> {
+    class Visitor<T> extends SlotVisitorBase<T> {
 
         @Override
-        public Void visit(Slot<T> slot, T object, String value) {
-            if ( slot.isEntityReference() ) {
-                slot.setValue(object, canonicalise(value));
-            }
-            return null;
+        public void visit(EntityReferenceSlot<T> slot, T object, String value) {
+            slot.setValue(object, canonicalise(value));
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, List<String> values) {
-            if ( slot.isEntityReference() ) {
-                canonicalise(values, true);
-            }
-            return null;
+        public void visit(EntityReferenceSlot<T> slot, T object, List<String> values) {
+            canonicalise(values, true);
         }
 
         @Override
-        public Void visitExtensions(T object, Map<String, ExtensionValue> values) {
+        public void visit(ExtensionSlot<T> slot, T object, Map<String, ExtensionValue> values) {
             values.replaceAll((k, v) -> {
                 if ( v.isIdentifier() ) {
                     return new ExtensionValue(canonicalise(v.asString()), true);
@@ -267,16 +264,14 @@ public class ExtendedPrefixMap {
                     return v;
                 }
             });
-            return null;
         }
 
         @Override
-        public Void visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
+        public void visit(ExtensionDefinitionSlot<T> slot, T object, List<ExtensionDefinition> values) {
             values.replaceAll((def) -> {
                 return new ExtensionDefinition(def.getSlotName(), canonicalise(def.getProperty()),
                         canonicalise(def.getTypeHint()));
             });
-            return null;
         }
     }
 }

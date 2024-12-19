@@ -36,15 +36,26 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.incenp.obofoundry.sssom.DefaultMappingComparator;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
-import org.incenp.obofoundry.sssom.SlotVisitor;
+import org.incenp.obofoundry.sssom.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.slots.DateSlot;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.EntityTypeSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.MappingCardinalitySlot;
+import org.incenp.obofoundry.sssom.slots.PredicateModifierSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.URISlot;
 
 /**
  * A helper class to convert SSSOM objects to a RDF model in the Rdf4J API.
@@ -177,7 +188,11 @@ public class RDFSerialiser {
         return model;
     }
 
-    private class RDFSlotVisitor<T> implements SlotVisitor<T, Void> {
+    /*
+     * Helper visitor to fill in the RDF model (including namespaces) from slot
+     * values.
+     */
+    private class RDFSlotVisitor<T> extends SlotVisitorBase<T> {
 
         Model model;
         Resource subject;
@@ -207,87 +222,95 @@ public class RDFSerialiser {
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, String value) {
+        public void visit(StringSlot<T> slot, T object, String value) {
             recordUsedIRI(slot.getURI());
-            Value rdfValue = null;
-            if ( slot.isEntityReference() ) {
-                rdfValue = Values.iri(value);
+            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
+        }
+
+        @Override
+        public void visit(URISlot<T> slot, T object, String value) {
+            recordUsedIRI(slot.getURI());
+            recordUsedPrefix(BuiltinPrefix.XSD);
+            model.add(subject, Values.iri(slot.getURI()), Values.literal(value, XSD.ANYURI));
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T object, String value) {
+            recordUsedIRI(slot.getURI());
+            recordUsedIRI(value);
+            model.add(subject, Values.iri(slot.getURI()), Values.iri(value));
+        }
+
+        @Override
+        public void visit(StringSlot<T> slot, T object, List<String> values) {
+            recordUsedIRI(slot.getURI());
+            for ( String value : values ) {
+                model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
+            }
+        }
+
+        @Override
+        public void visit(URISlot<T> slot, T object, List<String> values) {
+            recordUsedIRI(slot.getURI());
+            recordUsedPrefix(BuiltinPrefix.XSD);
+            for ( String value : values ) {
+                model.add(subject, Values.iri(slot.getURI()), Values.literal(value, XSD.ANYURI));
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T object, List<String> values) {
+            recordUsedIRI(slot.getURI());
+            for ( String value : values ) {
                 recordUsedIRI(value);
-            } else if ( slot.isURI() ) {
-                rdfValue = Values.literal(value, XSD.ANYURI);
-                recordUsedPrefix(BuiltinPrefix.XSD);
+                model.add(subject, Values.iri(slot.getURI()), Values.iri(value));
+            }
+        }
+
+        @Override
+        public void visit(DoubleSlot<T> slot, T object, Double value) {
+            recordUsedIRI(slot.getURI());
+            recordUsedPrefix(BuiltinPrefix.XSD);
+            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
+        }
+
+        @Override
+        public void visit(DateSlot<T> slot, T object, LocalDate value) {
+            recordUsedIRI(slot.getURI());
+            recordUsedPrefix(BuiltinPrefix.XSD);
+            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
+        }
+
+        @Override
+        public void visit(EntityTypeSlot<T> slot, T object, EntityType value) {
+            recordUsedIRI(slot.getURI());
+            String valIRI = value.getIRI();
+            Value rdfValue = null;
+            if ( valIRI != null ) {
+                rdfValue = Values.iri(valIRI);
+                recordUsedIRI(valIRI);
             } else {
-                rdfValue = Values.literal(value);
+                rdfValue = Values.literal(value.toString());
             }
             model.add(subject, Values.iri(slot.getURI()), rdfValue);
-            return null;
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, List<String> values) {
+        public void visit(MappingCardinalitySlot<T> slot, T object, MappingCardinality value) {
             recordUsedIRI(slot.getURI());
-            boolean isEntityReference = slot.isEntityReference();
-            boolean isURI = slot.isURI();
-            IRI predicate = Values.iri(slot.getURI());
-            for ( String value : values ) {
-                Value rdfValue = null;
-                if ( isEntityReference ) {
-                    rdfValue = Values.iri(value);
-                    recordUsedIRI(value);
-                } else if ( isURI ) {
-                    rdfValue = Values.literal(value, XSD.ANYURI);
-                    recordUsedPrefix(BuiltinPrefix.XSD);
-                } else {
-                    rdfValue = Values.literal(value);
-                }
-                model.add(subject, predicate, rdfValue);
-            }
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, Double value) {
-            recordUsedIRI(slot.getURI());
-            recordUsedPrefix(BuiltinPrefix.XSD);
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, Map<String, String> value) {
-            recordUsedIRI(slot.getURI());
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, LocalDate value) {
-            recordUsedIRI(slot.getURI());
-            recordUsedPrefix(BuiltinPrefix.XSD);
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value));
-            return null;
-        }
-
-        @Override
-        public Void visit(Slot<T> slot, T object, Object value) {
-            recordUsedIRI(slot.getURI());
-            IRI predicate = Values.iri(slot.getURI());
-            if ( EntityType.class.isInstance(value) ) {
-                EntityType et = EntityType.class.cast(value);
-                String valIRI = et.getIRI();
-                if ( valIRI != null ) {
-                    model.add(subject, predicate, Values.iri(valIRI));
-                    recordUsedIRI(valIRI);
-                    return null;
-                }
-            }
             model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
-            return null;
         }
 
         @Override
-        public Void visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
+        public void visit(PredicateModifierSlot<T> slot, T object, PredicateModifier value) {
+            recordUsedIRI(slot.getURI());
+            model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
+        }
+
+        @Override
+        public void visit(ExtensionDefinitionSlot<T> slot, T object, List<ExtensionDefinition> values) {
             if ( extraPolicy != ExtraMetadataPolicy.DEFINED ) {
-                return null;
+                return;
             }
 
             values.sort((a, b) -> a.getProperty().compareTo(b.getProperty()));
@@ -307,13 +330,12 @@ public class RDFSerialiser {
 
                 model.add(subject, Constants.SSSOM_EXT_DEFINITIONS, edNode);
             }
-            return null;
         }
 
         @Override
-        public Void visitExtensions(T object, Map<String, ExtensionValue> values) {
+        public void visit(ExtensionSlot<T> slot, T object, Map<String, ExtensionValue> values) {
             if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
-                return null;
+                return;
             }
 
             for ( String property : values.keySet() ) {
@@ -360,7 +382,6 @@ public class RDFSerialiser {
 
                 model.add(subject, predicate, rdfValue);
             }
-            return null;
         }
     }
 }

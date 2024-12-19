@@ -36,6 +36,13 @@ import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.ValueType;
+import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
+import org.incenp.obofoundry.sssom.slots.DateSlot;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
 
 /**
  * A writer to serialise a SSSOM mapping set into a JSON format.
@@ -279,17 +286,35 @@ public class JSONWriter extends SSSOMWriter {
     /*
      * Visit all slots in a mapping or mapping set to render their values in JSON.
      */
-    private class SlotVisitor<T> extends SlotVisitorBase<T, Void> {
+    private class SlotVisitor<T> extends SlotVisitorBase<T> {
 
         @Override
-        public Void visit(Slot<T> slot, T object, String value) {
+        public void visit(Slot<T> slot, T object, Object value) {
             addKey(slot.getName());
-            addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
-            return null;
+            addValue(value.toString());
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, List<String> values) {
+        public void visit(EntityReferenceSlot<T> slot, T object, String value) {
+            addKey(slot.getName());
+            addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
+        }
+
+        @Override
+        public void visit(StringSlot<T> slot, T object, List<String> values) {
+            if ( values.size() > 0 ) {
+                addKey(slot.getName());
+                startList();
+                for ( String value : values ) {
+                    addItem();
+                    addValue(value);
+                }
+                endList();
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T object, List<String> values) {
             if ( values.size() > 0 ) {
                 addKey(slot.getName());
                 startList();
@@ -299,33 +324,27 @@ public class JSONWriter extends SSSOMWriter {
                 }
                 endList();
             }
-
-            return null;
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, Double value) {
+        public void visit(DoubleSlot<T> slot, T object, Double value) {
             addKey(slot.getName());
             addValue(value);
-            return null;
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, LocalDate value) {
+        public void visit(DateSlot<T> slot, T object, LocalDate value) {
             addKey(slot.getName());
             addValue(value.format(DateTimeFormatter.ISO_DATE));
-            return null;
         }
 
         @Override
-        public Void visit(Slot<T> slot, T object, Object value) {
-            addKey(slot.getName());
-            addValue(value.toString());
-            return null;
+        public void visit(CurieMapSlot<T> slot, T object, Map<String, String> curieMap) {
+            // Nothing to do, we wrote the Curie map (if needed) already
         }
 
         @Override
-        public Void visitExtensionDefinitions(T object, List<ExtensionDefinition> definitions) {
+        public void visit(ExtensionDefinitionSlot<T> slot, T object, List<ExtensionDefinition> definitions) {
             if ( extraPolicy == ExtraMetadataPolicy.DEFINED && !definitions.isEmpty() ) {
                 addKey("extension_definitions");
                 startList();
@@ -346,11 +365,10 @@ public class JSONWriter extends SSSOMWriter {
                 }
                 endList();
             }
-            return null;
         }
 
         @Override
-        public Void visitExtensions(T object, Map<String, ExtensionValue> extensions) {
+        public void visit(ExtensionSlot<T> slot, T object, Map<String, ExtensionValue> extensions) {
             if ( extraPolicy != ExtraMetadataPolicy.NONE ) {
                 for ( ExtensionDefinition definition : extensionManager.getDefinitions(true, false) ) {
                     ExtensionValue value = extensions.get(definition.getProperty());
@@ -379,12 +397,10 @@ public class JSONWriter extends SSSOMWriter {
                         default:
                             addValue(value.toString());
                             break;
-
                         }
                     }
                 }
             }
-            return null;
         }
     }
 }

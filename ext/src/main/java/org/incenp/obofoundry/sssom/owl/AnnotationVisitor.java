@@ -25,10 +25,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotVisitorBase;
+import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.slots.DateSlot;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -42,7 +47,7 @@ import org.semanticweb.owlapi.vocab.XSDVocabulary;
  * A mapping slots visitor that converts mapping metadata to OWL axiom
  * annotations.
  */
-public class AnnotationVisitor extends SlotVisitorBase<Mapping, Void> {
+public class AnnotationVisitor extends SlotVisitorBase<Mapping> {
 
     private OWLDataFactory factory;
     private IMetadataTransformer<Mapping, IRI> transformer;
@@ -85,46 +90,54 @@ public class AnnotationVisitor extends SlotVisitorBase<Mapping, Void> {
     }
 
     @Override
-    public Void visit(Slot<Mapping> slot, Mapping mapping, String value) {
-        annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
-                slot.isEntityReference() ? IRI.create(value) : factory.getOWLLiteral(value)));
-        return null;
-    }
-
-    @Override
-    public Void visit(Slot<Mapping> slot, Mapping mapping, List<String> values) {
-        OWLAnnotationProperty p = factory.getOWLAnnotationProperty(transformer.transform(slot));
-        for ( String value : values ) {
-            annots.add(factory.getOWLAnnotation(p,
-                    slot.isEntityReference() ? IRI.create(value) : factory.getOWLLiteral(value)));
-        }
-        return null;
-    }
-
-    @Override
-    public Void visit(Slot<Mapping> slot, Mapping mapping, Double value) {
+    public void visit(StringSlot<Mapping> slot, Mapping mapping, String value) {
         annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
                 factory.getOWLLiteral(value)));
-        return null;
     }
 
     @Override
-    public Void visit(Slot<Mapping> slot, Mapping mapping, LocalDate value) {
+    public void visit(StringSlot<Mapping> slot, Mapping mapping, List<String> values) {
+        OWLAnnotationProperty p = factory.getOWLAnnotationProperty(transformer.transform(slot));
+        for ( String value : values ) {
+            annots.add(factory.getOWLAnnotation(p, factory.getOWLLiteral(value)));
+        }
+    }
+
+    @Override
+    public void visit(EntityReferenceSlot<Mapping> slot, Mapping mapping, String value) {
+        annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
+                IRI.create(value)));
+    }
+
+    @Override
+    public void visit(EntityReferenceSlot<Mapping> slot, Mapping mapping, List<String> values) {
+        OWLAnnotationProperty p = factory.getOWLAnnotationProperty(transformer.transform(slot));
+        for ( String value : values ) {
+            annots.add(factory.getOWLAnnotation(p, IRI.create(value)));
+        }
+    }
+
+    @Override
+    public void visit(DoubleSlot<Mapping> slot, Mapping mapping, Double value) {
+        annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
+                factory.getOWLLiteral(value)));
+    }
+
+    @Override
+    public void visit(DateSlot<Mapping> slot, Mapping mapping, LocalDate value) {
         annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
                 factory.getOWLLiteral(value.format(DateTimeFormatter.ISO_DATE),
                         factory.getOWLDatatype(XSDVocabulary.DATE.getIRI()))));
-        return null;
     }
 
     @Override
-    public Void visit(Slot<Mapping> slot, Mapping mapping, Object value) {
+    public void visit(Slot<Mapping> slot, Mapping mapping, Object value) {
         annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
                 factory.getOWLLiteral(value.toString())));
-        return null;
     }
 
     @Override
-    public Void visitExtensions(Mapping mapping, Map<String, ExtensionValue> values) {
+    public void visit(ExtensionSlot<Mapping> slot, Mapping mapping, Map<String, ExtensionValue> values) {
         for ( String property : values.keySet() ) {
             ExtensionValue value = values.get(property);
             OWLAnnotationValue annotValue = null;
@@ -158,6 +171,5 @@ public class AnnotationVisitor extends SlotVisitorBase<Mapping, Void> {
                         factory.getOWLAnnotation(factory.getOWLAnnotationProperty(IRI.create(property)), annotValue));
             }
         }
-        return null;
     }
 }

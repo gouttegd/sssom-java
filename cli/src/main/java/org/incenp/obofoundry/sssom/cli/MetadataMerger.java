@@ -24,17 +24,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.incenp.obofoundry.sssom.Slot;
-import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.SlotVisitorBase;
+import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
 
 /**
  * Helper class to merge set-level metadata.
  */
-public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
+public class MetadataMerger extends SlotVisitorBase<MappingSet> {
 
     private MappingSet internal;
 
@@ -51,7 +54,7 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
     }
 
     @Override
-    public Void visit(Slot<MappingSet> slot, MappingSet object, List<String> values) {
+    public void visit(StringSlot<MappingSet> slot, MappingSet object, List<String> values) {
         @SuppressWarnings("unchecked")
         List<String> dstValues = (List<String>) slot.getValue(internal);
         if ( dstValues == null ) {
@@ -64,11 +67,10 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
                 }
             }
         }
-        return null;
     }
 
     @Override
-    public Void visit(Slot<MappingSet> slot, MappingSet object, Map<String, String> values) {
+    public void visit(CurieMapSlot<MappingSet> slot, MappingSet object, Map<String, String> values) {
         @SuppressWarnings("unchecked")
         Map<String, String> dstValues = (Map<String, String>) slot.getValue(internal);
         if ( dstValues == null ) {
@@ -77,11 +79,10 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
             // Values from the source set takes precedence
             dstValues.putAll(values);
         }
-        return null;
     }
 
     @Override
-    public Void visitExtensionDefinitions(MappingSet object, List<ExtensionDefinition> values) {
+    public void visit(ExtensionDefinitionSlot<MappingSet> slot, MappingSet object, List<ExtensionDefinition> values) {
         List<ExtensionDefinition> dstValues = internal.getExtensionDefinitions();
         if ( dstValues == null ) {
             internal.setExtensionDefinitions(values);
@@ -134,11 +135,10 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
                 }
             }
         }
-        return null;
     }
 
     @Override
-    public Void visitExtensions(MappingSet object, Map<String, ExtensionValue> values) {
+    public void visit(ExtensionSlot<MappingSet> slot, MappingSet object, Map<String, ExtensionValue> values) {
         Map<String, ExtensionValue> dstValues = internal.getExtensions();
         if ( dstValues == null ) {
             internal.setExtensions(values);
@@ -146,6 +146,5 @@ public class MetadataMerger extends SlotVisitorBase<MappingSet, Void> {
             // Values from the source set take precedence
             dstValues.putAll(values);
         }
-        return null;
     }
 }

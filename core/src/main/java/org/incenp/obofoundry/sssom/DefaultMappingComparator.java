@@ -18,7 +18,9 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 
@@ -33,23 +35,31 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  */
 public class DefaultMappingComparator implements Comparator<Mapping> {
 
-    private SlotVisitor<Mapping, String> visitor = new StringifyVisitor();
+    private StringifyVisitor visitor = new StringifyVisitor();
 
     @Override
     public int compare(Mapping o1, Mapping o2) {
         // We create a rough string representation of the mappings that we can then just
         // compare directly.
-        String s1 = String.join(",", SlotHelper.getMappingHelper().visitSlots(o1, visitor, true));
-        String s2 = String.join(",", SlotHelper.getMappingHelper().visitSlots(o2, visitor, true));
+        String s1 = stringifyMapping(o1);
+        String s2 = stringifyMapping(o2);
 
         return s1.compareTo(s2);
     }
 
-    private class StringifyVisitor extends SlotVisitorBase<Mapping, String> {
-        @Override
-        protected String getDefault(Slot<Mapping> slot, Mapping mapping, Object value) {
-            return value != null ? value.toString() : "";
-        }
+    private String stringifyMapping(Mapping m) {
+        visitor.strings.clear();
+        SlotHelper.getMappingHelper().visitSlots(m, visitor, true);
+        return String.join(",", visitor.strings);
     }
 
+    private class StringifyVisitor extends SlotVisitorBase<Mapping> {
+
+        List<String> strings = new ArrayList<String>();
+
+        @Override
+        public void visit(Slot<Mapping> slot, Mapping mapping, Object value) {
+            strings.add(value != null ? value.toString() : "");
+        }
+    }
 }

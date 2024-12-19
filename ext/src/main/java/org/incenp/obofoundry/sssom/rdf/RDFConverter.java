@@ -18,9 +18,6 @@
 
 package org.incenp.obofoundry.sssom.rdf;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,11 +36,13 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.SlotHelper;
-import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.URISlot;
 
 /**
  * A helper class to convert SSSOM objects from a RDF model in the Rdf4J API.
@@ -67,24 +66,25 @@ public class RDFConverter {
 
         MappingSet ms = new MappingSet();
         ms.setMappings(new ArrayList<Mapping>());
+        SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>();
 
         // Process all statements about the mapping set node
         for ( Statement st : model.filter(set.get(), null, null) ) {
-            if ( st.getPredicate().equals(Constants.SSSOM_EXT_DEFINITIONS) ) {
-                // Statement is an extension definition; we do not support those for now
-                continue;
-            }
             Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByURI(st.getPredicate().stringValue());
             if ( slot != null ) {
                 // Statement is a mapping set metadata slot
-                setSlotFromRDF(ms, slot, st.getObject());
+                visitor.rdfValue = st.getObject();
+                slot.accept(visitor, ms, null);
+                if ( visitor.error != null ) {
+                    throw visitor.error;
+                }
             } else if ( st.getPredicate().equals(Constants.SSSOM_MAPPINGS) ) {
                 // Statement is an individual mapping
                 Value o = st.getObject();
                 if ( o instanceof BNode ) {
                     ms.getMappings().add(convertMapping(model.filter((BNode) o, null, null)));
                 } else {
-                    onTypingError("mappings");
+                    throw getTypingError("mappings");
                 }
             }
         }
@@ -114,11 +114,16 @@ public class RDFConverter {
         }
 
         Mapping mapping = new Mapping();
+        SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
         for ( Statement st : model.filter(mappingNode.get(), null, null) ) {
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(st.getPredicate().stringValue());
             if ( slot != null ) {
                 // Statement is a mapping metadata slot
-                setSlotFromRDF(mapping, slot, st.getObject());
+                visitor.rdfValue = st.getObject();
+                slot.accept(visitor, mapping, null);
+                if ( visitor.error != null ) {
+                    throw visitor.error;
+                }
             }
         }
 
@@ -126,115 +131,105 @@ public class RDFConverter {
     }
 
     /*
-     * Helper methods to convert RDF objects to SSSOM objects.
-     */
-
-    /*
-     * Assigns a value to a SSSOM metadata slot from a RDF value.
-     */
-    private <T> void setSlotFromRDF(T target, Slot<T> slot, Value rdfValue) throws SSSOMFormatException {
-        if ( slot.getType().equals(String.class) ) {
-            slot.setValue(target, getStringValue(slot, rdfValue));
-        } else if ( slot.getType().equals(List.class) ) {
-            String value = getStringValue(slot, rdfValue);
-            @SuppressWarnings("unchecked")
-            List<String> list = List.class.cast(slot.getValue(target));
-            if ( list == null ) {
-                list = new ArrayList<String>();
-                slot.setValue(target, list);
-            }
-            list.add(value);
-        } else if ( slot.getType().equals(LocalDate.class) ) {
-            try {
-                String rawDate = getLiteralValue(slot.getName(), rdfValue).stringValue();
-                if ( rawDate.contains("T") ) {
-                    slot.setValue(target, LocalDateTime.parse(rawDate).toLocalDate());
-                } else {
-                    slot.setValue(target, LocalDate.parse(rawDate));
-                }
-            } catch ( DateTimeParseException e ) {
-                onTypingError(slot.getName(), e);
-            }
-        } else if ( slot.getType().equals(Double.class) ) {
-            try {
-                slot.setValue(target, getLiteralValue(slot.getName(), rdfValue).doubleValue());
-            } catch ( NumberFormatException e ) {
-                onTypingError(slot.getName(), e);
-            } catch ( IllegalArgumentException e ) {
-                throw new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
-            }
-        } else if ( slot.getType().equals(EntityType.class) ) {
-            EntityType value = null;
-            if ( rdfValue instanceof IRI ) {
-                value = EntityType.fromIRI(rdfValue.stringValue());
-            } else if ( rdfValue instanceof Literal ) {
-                value = EntityType.fromString(rdfValue.stringValue());
-            }
-            if ( value == null ) {
-                onTypingError(slot.getName());
-            }
-            slot.setValue(target, value);
-        } else if ( slot.getType().equals(MappingCardinality.class) ) {
-            MappingCardinality value = MappingCardinality
-                    .fromString(getLiteralValue(slot.getName(), rdfValue).stringValue());
-            if ( value == null ) {
-                onTypingError(slot.getName());
-            }
-            slot.setValue(target, value);
-        } else if ( slot.getType().equals(PredicateModifier.class) ) {
-            PredicateModifier value = PredicateModifier
-                    .fromString(getLiteralValue(slot.getName(), rdfValue).stringValue());
-            if ( value == null ) {
-                onTypingError(slot.getName());
-            }
-            slot.setValue(target, value);
-        }
-    }
-
-    /*
-     * Converts a RDF value to a value suitable for a string-typed slot, taking into
-     * accounts whether the slot represents an entity reference, an URI, or a
-     * literal string.
-     */
-    private <T> String getStringValue(Slot<T> slot, Value rdfValue) throws SSSOMFormatException {
-        if ( slot.isEntityReference() ) {
-            if ( !(rdfValue instanceof IRI) ) {
-                onTypingError(slot.getName());
-            }
-            return ((IRI) rdfValue).getNamespace() + ((IRI) rdfValue).getLocalName();
-        } else if ( slot.isURI() ) {
-            Literal litValue = getLiteralValue(slot.getName(), rdfValue);
-            if ( !litValue.getDatatype().equals(XSD.ANYURI) ) {
-                onTypingError(slot.getName());
-            }
-            return litValue.stringValue();
-        } else {
-            return getLiteralValue(slot.getName(), rdfValue).stringValue();
-        }
-    }
-
-    /*
-     * Ensures a RDF value is a literal value, or throws a format error.
-     */
-    private Literal getLiteralValue(String slotName, Value rdfValue) throws SSSOMFormatException {
-        if ( !(rdfValue instanceof Literal) ) {
-            onTypingError(slotName);
-        }
-        return (Literal) rdfValue;
-    }
-
-    /*
      * Called upon a mismatch between the contents of the RDF model and what is
      * expected by the SSSOM data model.
      */
-    private void onTypingError(String slotName, Throwable innerException) throws SSSOMFormatException {
-        throw new SSSOMFormatException(String.format("Typing error when parsing '%s'", slotName), innerException);
+    private SSSOMFormatException getTypingError(String slotName, Throwable innerException) {
+        return new SSSOMFormatException(String.format("Typing error when parsing '%s'", slotName), innerException);
     }
 
     /*
      * Same, but without an exception as the cause for the mismatch.
      */
-    private void onTypingError(String slotName) throws SSSOMFormatException {
-        onTypingError(slotName, null);
+    private SSSOMFormatException getTypingError(String slotName) {
+        return getTypingError(slotName, null);
+    }
+
+    /*
+     * Helper visitor to set slot values from the contents of the RDF model.
+     */
+    private class SlotSetterVisitor<T> extends SlotVisitorBase<T> {
+
+        Value rdfValue;
+        SSSOMFormatException error;
+
+        @Override
+        public void visit(StringSlot<T> slot, T target, String unused) {
+            if ( !(rdfValue instanceof Literal) ) {
+                error = getTypingError(slot.getName());
+            } else {
+                slot.setValue(target, rdfValue.stringValue());
+            }
+        }
+
+        @Override
+        public void visit(StringSlot<T> slot, T target, List<String> unused) {
+            if ( !(rdfValue instanceof Literal) ) {
+                error = getTypingError(slot.getName());
+            } else {
+                slot.setValue(target, rdfValue.stringValue());
+            }
+        }
+
+        @Override
+        public void visit(URISlot<T> slot, T target, String unused) {
+            if ( !(rdfValue instanceof Literal) || !((Literal) rdfValue).getDatatype().equals(XSD.ANYURI) ) {
+                error = getTypingError(slot.getName());
+            } else {
+                slot.setValue(target, rdfValue.stringValue());
+            }
+        }
+
+        @Override
+        public void visit(URISlot<T> slot, T target, List<String> unused) {
+            if ( !(rdfValue instanceof Literal) || !((Literal) rdfValue).getDatatype().equals(XSD.ANYURI) ) {
+                error = getTypingError(slot.getName());
+            } else {
+                slot.setValue(target, rdfValue.stringValue());
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T target, String unused) {
+            if ( !(rdfValue instanceof IRI) ) {
+                error = getTypingError(slot.getName());
+            } else {
+                slot.setValue(target, rdfValue.stringValue());
+            }
+        }
+
+        @Override
+        public void visit(EntityReferenceSlot<T> slot, T target, List<String> unused) {
+            if ( !(rdfValue instanceof IRI) ) {
+                error = getTypingError(slot.getName());
+            } else {
+                slot.setValue(target, rdfValue.stringValue());
+            }
+        }
+
+        public void visit(DoubleSlot<T> slot, T target, Double unused) {
+            if ( !(rdfValue instanceof Literal) ) {
+                error = getTypingError(slot.getName());
+                return;
+            }
+            Literal litValue = (Literal) rdfValue;
+            try {
+                slot.setValue(target, litValue.doubleValue());
+            } catch ( NumberFormatException e ) {
+                error = getTypingError(slot.getName());
+            } catch ( IllegalArgumentException e ) {
+                error = new SSSOMFormatException(String.format("Out-of-range value for '%s'", slot.getName()));
+            }
+        }
+
+        // Covers all enum-based slots
+        @Override
+        public void visit(Slot<T> slot, T target, Object unused) {
+            try {
+                slot.setValue(target, rdfValue.stringValue());
+            } catch ( IllegalArgumentException e ) {
+                error = new SSSOMFormatException(String.format("Typing error when parsing '%s'", slot.getName()));
+            }
+        }
     }
 }
