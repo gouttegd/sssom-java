@@ -210,7 +210,7 @@ public class SlotPropagator {
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
         setHelper.setSlots(slots);
         Set<String> condensedSlots = new HashSet<String>();
-        SimpleSlotVisitor<MappingSet, Void> v = (slot, ms, value) -> {
+        ISimpleSlotVisitor<MappingSet, Void> v = (slot, ms, value) -> {
             String slotName = slot.getName();
             if ( values.containsKey(slotName) && values.get(slotName).size() == 1
                     && !values.get(slotName).contains(null) ) {
@@ -249,12 +249,11 @@ public class SlotPropagator {
         return condensedSlots;
     }
 
-    private class NullifyVisitor<T> implements SimpleSlotVisitor<T, Void> {
+    private class NullifyVisitor<T> extends SlotVisitorBase<T> {
 
         @Override
-        public Void visit(Slot<T> slot, T object, Object value) {
-            slot.setValue(object, null);
-            return null;
+        public void visit(Slot<T> slot, T object, Object value) {
+            slot.setValue(object, (Object) null);
         }
 
     }

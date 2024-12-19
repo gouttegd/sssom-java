@@ -19,8 +19,6 @@
 package org.incenp.obofoundry.sssom;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -28,13 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.model.EntityType;
-import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
-import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.slots.SlotFactory;
 
 /**
  * A class to facilitate the manipulation of SSSOM slots. This class is mostly
@@ -46,7 +40,7 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
  * {@link Mapping} object, serialise them as strings, and collect said strings:
  * 
  * <pre>
- * SlotVisitor&lt;Mapping,String&gt; myVisitor = ...;
+ * ISlotVisitor&lt;Mapping,String&gt; myVisitor = ...;
  * Mapping mapping = ...;
  * 
  * List&lt;String&gt; slotsAsStrings = SlotHelper.getMappingHelper().visitSlots(mapping, myVisitor);
@@ -54,7 +48,7 @@ import org.incenp.obofoundry.sssom.model.PredicateModifier;
  * 
  * @param <T> The SSSOM object (Mapping or MappingSet) this class is intended to
  *            ease the manipulation of.
- * @see SlotVisitor
+ * @see ISlotVisitor
  */
 public class SlotHelper<T> {
 
@@ -67,15 +61,12 @@ public class SlotHelper<T> {
 
     private SlotHelper(Class<T> type) {
         for ( Field f : type.getDeclaredFields() ) {
-            String name = f.getName();
-            if ( name.equals("mappings") ) {
-                // We never visit these slots
-                continue;
+            Slot<T> slot = SlotFactory.fromField(f);
+            if ( slot != null ) {
+                slots.add(slot);
+                slotsByName.put(slot.getName(), slot);
+                slotsByURI.put(slot.getURI(), slot);
             }
-            Slot<T> slot = new Slot<T>(type, name);
-            slots.add(slot);
-            slotsByName.put(slot.getName(), slot);
-            slotsByURI.put(slot.getURI(), slot);
         }
     }
 
@@ -232,93 +223,41 @@ public class SlotHelper<T> {
     /**
      * Visits the slots of a given object.
      * 
-     * @param <V>     The type of object the visitor should return for each slot.
      * @param object  The object whose slots should be visited.
      * @param visitor The visitor to use.
-     * @return A list of all values returned by the visitor for each slot.
      */
-    public <V> List<V> visitSlots(T object, SlotVisitor<T, V> visitor) {
-        return visitSlots(object, visitor, false);
+    public void visitSlots(T object, ISlotVisitor<T> visitor) {
+        visitSlots(object, visitor, false);
     }
 
     /**
      * Visits the slots of a given object.
      * 
-     * @param <V>       The type of objects the visitor should return for each slot.
      * @param object    The object whose slots should be visited.
      * @param visitor   The visitor to use.
      * @param visitNull If {@code true}, slots with a {@code null} value will be
      *                  visited as well.
-     * @return A list of all values returned by the visitor for each slot.
      */
-    public <V> List<V> visitSlots(T object, SlotVisitor<T, V> visitor, boolean visitNull) {
-        List<V> visited = new ArrayList<V>();
+    public void visitSlots(T object, ISlotVisitor<T> visitor, boolean visitNull) {
         for ( Slot<T> slot : slots ) {
             Object slotValue = slot.getValue(object);
             if ( slotValue == null && !visitNull ) {
                 continue;
             }
-
-            Type fieldType = slot.getType();
-            V value = null;
-            if ( fieldType.equals(String.class) ) {
-                String text = String.class.cast(slotValue);
-                value = visitor.visit(slot, object, text);
-            } else if ( fieldType.equals(List.class) ) {
-                if ( slot.getName().equals("extension_definitions") ) {
-                    @SuppressWarnings("unchecked")
-                    List<ExtensionDefinition> list = List.class.cast(slotValue);
-                    value = visitor.visitExtensionDefinitions(object, list);
-                } else {
-                    @SuppressWarnings("unchecked")
-                    List<String> list = List.class.cast(slotValue);
-                    value = visitor.visit(slot, object, list);
-                }
-            } else if ( fieldType.equals(Map.class) ) {
-                if ( slot.getName().equals("extensions") ) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, ExtensionValue> map = Map.class.cast(slotValue);
-                    value = visitor.visitExtensions(object, map);
-                } else {
-                    @SuppressWarnings("unchecked")
-                    Map<String, String> map = Map.class.cast(slotValue);
-                    value = visitor.visit(slot, object, map);
-                }
-            } else if ( fieldType.equals(Double.class) ) {
-                Double dbl = Double.class.cast(slotValue);
-                value = visitor.visit(slot, object, dbl);
-            } else if ( fieldType.equals(LocalDate.class) ) {
-                LocalDate date = LocalDate.class.cast(slotValue);
-                value = visitor.visit(slot, object, date);
-            } else if ( fieldType.equals(EntityType.class) ) {
-                EntityType et = EntityType.class.cast(slotValue);
-                value = visitor.visit(slot, object, et);
-            } else if ( fieldType.equals(MappingCardinality.class) ) {
-                MappingCardinality mc = MappingCardinality.class.cast(slotValue);
-                value = visitor.visit(slot, object, mc);
-            } else if ( fieldType.equals(PredicateModifier.class) ) {
-                PredicateModifier pm = PredicateModifier.class.cast(slotValue);
-                value = visitor.visit(slot, object, pm);
-            }
-
-            if ( value != null ) {
-                visited.add(value);
-            }
+            slot.accept(visitor, object, slotValue);
         }
-
-        return visited;
     }
 
     /**
      * Visits the slots of a given object, with a visitor that does not distinguish
      * between slot types.
      * 
-     * @param <V>     The type of objects the visitor should return for each slot.
+     * @param <V>     The type of object the visitor should return for each slot.
      * @param object  The object whose slots should be visited.
      * @param visitor The visitor to use.
      * @return A list of all values returned by the visitor for each slot.
      */
-    public <V> List<V> visitSlots(T object, SimpleSlotVisitor<T, V> visitor) {
+    public <V> List<V> visitSlots(T object, ISimpleSlotVisitor<T, V> visitor) {
         return visitSlots(object, visitor, false);
     }
 
@@ -333,7 +272,7 @@ public class SlotHelper<T> {
      *                  visited as well.
      * @return A list of all values returned by the visitor for each slot.
      */
-    public <V> List<V> visitSlots(T object, SimpleSlotVisitor<T, V> visitor, boolean visitNull) {
+    public <V> List<V> visitSlots(T object, ISimpleSlotVisitor<T, V> visitor, boolean visitNull) {
         List<V> visited = new ArrayList<V>();
         for ( Slot<T> slot : slots ) {
             Object slotValue = slot.getValue(object);
@@ -341,7 +280,8 @@ public class SlotHelper<T> {
                 continue;
             }
 
-            V value = visitor.visit(slot, object, slotValue);
+            // V value = visitor.visit(slot, object, slotValue);
+            V value = slot.accept(visitor, object, slotValue);
             if ( value != null ) {
                 visited.add(value);
             }

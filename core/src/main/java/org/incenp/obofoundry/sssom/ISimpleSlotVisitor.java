@@ -19,8 +19,8 @@
 package org.incenp.obofoundry.sssom;
 
 /**
- * A pseudo-visitor interface to visit the different metadata slot of a SSSOM
- * Java object. This is similar to the {@link SlotVisitor} interface but with a
+ * A visitor interface to visit the different metadata slot of a SSSOM Java
+ * object. This is similar to the {@link ISlotVisitor} interface but with a
  * single method that does not distinguish between slot types, but has the
  * benefit (since it defines only one method) that it can be implemented as a
  * lambda.
@@ -28,7 +28,16 @@ package org.incenp.obofoundry.sssom;
  * @param <T> The SSSOM object whose slots this visitor will visit.
  * @param <V> The type of objects the visitor returns upon visiting a slot.
  */
-public interface SimpleSlotVisitor<T, V> {
+public interface ISimpleSlotVisitor<T, V> {
 
+    /**
+     * Visits a SSSOM slot.
+     * 
+     * @param slot   The slot that is being visited.
+     * @param object The object to which the slot is attached.
+     * @param value  The value of the slot.
+     * @return Whatever value the visitor wishes to return once the slot has been
+     *         visited.
+     */
     public V visit(Slot<T> slot, T object, Object value);
 }

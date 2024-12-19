@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -42,11 +43,12 @@ public class SlotHelperTest {
     void testMappingSetVisitor() {
         MappingSet ms = getSampleMappingSet();
         
-        List<String> visitedValues = SlotHelper.getMappingSetHelper().visitSlots(ms, new MappingSetTestVisitor());
-        Assertions.assertEquals("license=A license", visitedValues.get(0));
-        Assertions.assertEquals("mapping_tool=A mapping tool", visitedValues.get(1));
-        Assertions.assertEquals("publication_date=2023-09-13", visitedValues.get(2));
-        Assertions.assertEquals("comment=A comment", visitedValues.get(3));
+        MappingSetTestVisitor visitor = new MappingSetTestVisitor();
+        SlotHelper.getMappingSetHelper().visitSlots(ms, visitor, false);
+        Assertions.assertEquals("license=A license", visitor.visitedValues.get(0));
+        Assertions.assertEquals("mapping_tool=A mapping tool", visitor.visitedValues.get(1));
+        Assertions.assertEquals("publication_date=2023-09-13", visitor.visitedValues.get(2));
+        Assertions.assertEquals("comment=A comment", visitor.visitedValues.get(3));
     }
     
     @Test
@@ -54,18 +56,21 @@ public class SlotHelperTest {
         MappingSet ms = getSampleMappingSet();
         SlotHelper<MappingSet> helper = SlotHelper.getMappingSetHelper(true);
         helper.setAlphabeticalOrder();
-        
-        List<String> visitedValues = helper.visitSlots(ms, new MappingSetTestVisitor());
-        Assertions.assertEquals("comment=A comment", visitedValues.get(0));
-        Assertions.assertEquals("license=A license", visitedValues.get(1));
-        Assertions.assertEquals("mapping_tool=A mapping tool", visitedValues.get(2));
-        Assertions.assertEquals("publication_date=2023-09-13", visitedValues.get(3));
+
+        MappingSetTestVisitor visitor = new MappingSetTestVisitor();
+        helper.visitSlots(ms, visitor, false);
+        Assertions.assertEquals("comment=A comment", visitor.visitedValues.get(0));
+        Assertions.assertEquals("license=A license", visitor.visitedValues.get(1));
+        Assertions.assertEquals("mapping_tool=A mapping tool", visitor.visitedValues.get(2));
+        Assertions.assertEquals("publication_date=2023-09-13", visitor.visitedValues.get(3));
     }
     
-    private class MappingSetTestVisitor extends SlotVisitorBase<MappingSet, String> {
+    private class MappingSetTestVisitor extends SlotVisitorBase<MappingSet> {
+        List<String> visitedValues = new ArrayList<String>();
+
         @Override
-        protected String getDefault(Slot<MappingSet> slot, MappingSet mappingSet, Object value) {
-            return String.format("%s=%s", slot.getName(), value.toString());
+        public void visit(Slot<MappingSet> slot, MappingSet mappingSet, Object value) {
+            visitedValues.add(String.format("%s=%s", slot.getName(), value.toString()));
         }
     }
 }

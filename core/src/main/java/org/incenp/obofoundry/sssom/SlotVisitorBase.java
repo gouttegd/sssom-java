@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2023,2024 Damien Goutte-Gattat
+ * Copyright © 2024 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the Gnu General Public License
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -22,73 +22,104 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
+import org.incenp.obofoundry.sssom.slots.DateSlot;
+import org.incenp.obofoundry.sssom.slots.DoubleSlot;
+import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.EntityTypeSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
+import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.MappingCardinalitySlot;
+import org.incenp.obofoundry.sssom.slots.PredicateModifierSlot;
+import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.URISlot;
 
 /**
- * A default implementation of the {@link SlotVisitor} interface that returns
- * {@code null} for every slot. Client code can extend this class and override
- * only the method they need instead of implementing {@link SlotVisitor}
+ * A default implementation of the {@link ISlotVisitor} interface that does
+ * nothing for every slot type. Client code can extend this class and override
+ * only the method they need instead of implementing {@link ISlotVisitor}
  * directly.
  * 
  * @param <T> The SSSOM object whose slots this visitor will visit.
- * @param <V> The type of objects the methods of this visitor will return.
  */
-public class SlotVisitorBase<T, V> implements SlotVisitor<T, V> {
+public class SlotVisitorBase<T> implements ISlotVisitor<T> {
 
-    /**
-     * Gets a default value for non-implemented visitor methods.
-     * <p>
-     * Note that the {@link #visitExtensionDefinitions(Object, List)} and
-     * {@link #visitExtensions(Object, Map)} methods of this object do <em>not</em>
-     * call this method.
-     * 
-     * @param slot   The slot that is being visited.
-     * @param object The object to which the slot is attached.
-     * @param value  The value of the slot.
-     * @return Whatever value the visitor wishes to return.
-     */
-    protected V getDefault(Slot<T> slot, T object, Object value) {
-        return null;
+    @Override
+    public void visit(Slot<T> slot, T object, Object value) {
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, String value) {
-        return getDefault(slot, object, value);
+    public void visit(StringSlot<T> slot, T object, String value) {
+        visit((Slot<T>) slot, object, value);
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, List<String> values) {
-        return getDefault(slot, object, values);
+    public void visit(StringSlot<T> slot, T object, List<String> values) {
+        visit((Slot<T>) slot, object, values);
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, Double value) {
-        return getDefault(slot, object, value);
+    public void visit(URISlot<T> slot, T object, String value) {
+        visit((StringSlot<T>) slot, object, value);
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, Map<String, String> values) {
-        return getDefault(slot, object, values);
+    public void visit(URISlot<T> slot, T object, List<String> values) {
+        visit((StringSlot<T>) slot, object, values);
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, LocalDate value) {
-        return getDefault(slot, object, value);
+    public void visit(EntityReferenceSlot<T> slot, T object, String value) {
+        visit((StringSlot<T>) slot, object, value);
     }
 
     @Override
-    public V visit(Slot<T> slot, T object, Object value) {
-        return getDefault(slot, object, value);
+    public void visit(EntityReferenceSlot<T> slot, T object, List<String> values) {
+        visit((StringSlot<T>) slot, object, values);
     }
 
     @Override
-    public V visitExtensionDefinitions(T object, List<ExtensionDefinition> values) {
-        return null;
+    public void visit(DoubleSlot<T> slot, T object, Double value) {
+        visit((Slot<T>) slot, object, value);
     }
 
     @Override
-    public V visitExtensions(T object, Map<String, ExtensionValue> values) {
-        return null;
+    public void visit(DateSlot<T> slot, T object, LocalDate value) {
+        visit((Slot<T>) slot, object, value);
+    }
+
+    @Override
+    public void visit(EntityTypeSlot<T> slot, T object, EntityType value) {
+        visit((Slot<T>) slot, object, value);
+    }
+
+    @Override
+    public void visit(MappingCardinalitySlot<T> slot, T object, MappingCardinality value) {
+        visit((Slot<T>) slot, object, value);
+    }
+
+    @Override
+    public void visit(PredicateModifierSlot<T> slot, T object, PredicateModifier value) {
+        visit((Slot<T>) slot, object, value);
+    }
+
+    @Override
+    public void visit(CurieMapSlot<T> slot, T object, Map<String, String> value) {
+        visit((Slot<T>) slot, object, value);
+    }
+
+    @Override
+    public void visit(ExtensionDefinitionSlot<T> slot, T object, List<ExtensionDefinition> values) {
+        visit((Slot<T>) slot, object, values);
+    }
+
+    @Override
+    public void visit(ExtensionSlot<T> slot, T object, Map<String, ExtensionValue> value) {
+        visit((Slot<T>) slot, object, value);
     }
 }

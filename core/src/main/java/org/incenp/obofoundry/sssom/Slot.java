@@ -43,16 +43,10 @@ public class Slot<T> {
     /**
      * Creates a new instance.
      * 
-     * @param type      The type of SSSOM object the slot is associated with,
-     * @param fieldName The name of the Java field that store the slot's data in the
-     *                  object.
+     * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public Slot(Class<T> type, String fieldName) {
-        try {
-            field = type.getDeclaredField(fieldName);
-        } catch ( NoSuchFieldException e ) {
-            throw new IllegalArgumentException(String.format("Invalid field name: %s", fieldName));
-        }
+    public Slot(Field field) {
+        this.field = field;
 
         JsonProperty jsonAnnotation = field.getDeclaredAnnotation(JsonProperty.class);
         name = jsonAnnotation != null ? jsonAnnotation.value() : field.getName();
@@ -126,6 +120,32 @@ public class Slot<T> {
     }
 
     /**
+     * Accepts a visitor.
+     * 
+     * @param visitor The visitor to accept.
+     * @param target  The object this slot is attached to.
+     * @param value   The value of the slot.
+     */
+    public void accept(ISlotVisitor<T> visitor, T target, Object value) {
+        visitor.visit(this, target, value);
+    }
+
+    /**
+     * Accepts a simple visitor. A “simple” visitor is one that does not distinguish
+     * between the different types of slots, i.e. the same method is used to visit
+     * all slots.
+     * 
+     * @param <V>     The type of object returned by the visitor.
+     * @param visitor The visitor to accept.
+     * @param target  The object this slot is attached to.
+     * @param value   The value of the slot.
+     * @return The valued returned by the visitor.
+     */
+    public <V> V accept(ISimpleSlotVisitor<T, V> visitor, T target, Object value) {
+        return visitor.visit(this, target, value);
+    }
+
+    /**
      * Gets the value of the slot for a given object.
      * 
      * @param object The object (e.g. a mapping or a mapping set) from which to
@@ -167,6 +187,28 @@ public class Slot<T> {
                 throw IllegalArgumentException.class.cast(e.getCause());
             }
             // Should never happen (IAE is the only exception thrown by setters)
+        }
+    }
+
+    /**
+     * Tries setting the value of the slot for a given object, using a string as
+     * input.
+     * <p>
+     * This method only works for String-typed slots, but classes for other slot
+     * types can override it to allow parsing a string into another type of value.
+     * 
+     * @param object The object (e.g. a mapping or a mapping set) for which the slot
+     *               should be set.
+     * @param value  The value to assign to the slot on the given object.
+     * 
+     * @throws UnsupportedOperationException When this method is called on a slot
+     *                                       that is not string-typed.
+     */
+    public void setValue(T object, String value) {
+        if ( field.getType().equals(String.class) ) {
+            setValue(object, (Object) value);
+        } else {
+            throw new UnsupportedOperationException();
         }
     }
 }
