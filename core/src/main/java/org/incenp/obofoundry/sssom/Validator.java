@@ -38,6 +38,7 @@ public class Validator {
     public static final String MISSING_OBJECT_ID = "Missing object_id";
     public static final String MISSING_PREDICATE = "Missing predicate_id";
     public static final String MISSING_JUSTIFICATION = "Missing mapping_justification";
+    public static final String INVALID_PREDICATE_TYPE = "Invalid predicate_type";
 
     /**
      * Validates an individual mapping. This method checks that the slots that are
@@ -73,6 +74,11 @@ public class Validator {
 
         if ( mapping.getMappingJustification() == null || mapping.getMappingJustification().isEmpty() ) {
             return MISSING_JUSTIFICATION;
+        }
+
+        if ( mapping.getPredicateType() == EntityType.RDFS_LITERAL
+                || mapping.getPredicateType() == EntityType.COMPOSED_ENTITY_EXPRESSION ) {
+            return INVALID_PREDICATE_TYPE;
         }
 
         return null;

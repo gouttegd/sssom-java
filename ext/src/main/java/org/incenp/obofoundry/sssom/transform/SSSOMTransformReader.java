@@ -989,6 +989,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
         case "subject_type":
             filter = (mapping) -> mapping.getSubjectType() == et;
             break;
+
+        case "predicate_type":
+            filter = (mapping) -> mapping.getPredicateType() == et;
+            break;
         }
 
         return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));

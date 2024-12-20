@@ -1,0 +1,10 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/test-predicate-types
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	predicate_type
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	owl object property
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration	owl annotation property
+ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	semapv:ManualMappingCuration	rdfs literal
+ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	semapv:ManualMappingCuration	composed entity expression

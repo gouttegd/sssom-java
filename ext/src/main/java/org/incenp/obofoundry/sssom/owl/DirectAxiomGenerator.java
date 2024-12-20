@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.owl;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.semanticweb.owlapi.model.IRI;
@@ -74,10 +75,31 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
     public OWLAxiom transform(Mapping mapping) {
         OWLAxiom axiom = null;
         String predicate = mapping.getPredicateId();
+        EntityType predicateType = mapping.getPredicateType();
         IRI subject = IRI.create(mapping.getSubjectId());
         IRI object = IRI.create(mapping.getObjectId());
 
-        if ( predicate.equals(OWL_EQUIVALENT_CLASS) ) {
+        /*
+         * The type of axiom to generate is dictated by the type of the predicate, which
+         * we obtain from (by order of precedence):
+         * 
+         * (1) the mapping itself, if it has a `predicate_type` slot set to either `owl
+         * annotation property` or `owl object property`;
+         * 
+         * (2) some built-in knowledge for a handful of predicates (owl:equivalentClass,
+         * rdfs:subClassOf, and the predicates listed in ANNOTATION_PREDICATES);
+         * 
+         * (3) the helper ontology, it it declares an annotation or object property with
+         * a matching IRI.
+         */
+
+        if ( predicateType == EntityType.OWL_ANNOTATION_PROPERTY ) {
+            axiom = factory.getOWLAnnotationAssertionAxiom(factory.getOWLAnnotationProperty(IRI.create(predicate)),
+                    subject, object);
+        } else if ( predicateType == EntityType.OWL_OBJECT_PROPERTY ) {
+            axiom = factory.getOWLSubClassOfAxiom(factory.getOWLClass(subject), factory.getOWLObjectSomeValuesFrom(
+                    factory.getOWLObjectProperty(IRI.create(predicate)), factory.getOWLClass(object)));
+        } else if ( predicate.equals(OWL_EQUIVALENT_CLASS) ) {
             axiom = factory.getOWLEquivalentClassesAxiom(factory.getOWLClass(object), factory.getOWLClass(object));
         } else if ( predicate.equals(RDFS_SUBCLASS_OF) ) {
             axiom = factory.getOWLSubClassOfAxiom(factory.getOWLClass(subject), factory.getOWLClass(object));

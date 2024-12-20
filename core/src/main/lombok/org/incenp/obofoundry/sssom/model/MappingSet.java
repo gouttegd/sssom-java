@@ -81,6 +81,10 @@ public class MappingSet  {
     @Propagatable
     private String objectSourceVersion;
 
+    @JsonProperty("predicate_type")
+    @Propagatable
+    private EntityType predicateType;
+
     @JsonProperty("mapping_provider")
     @Propagatable
     @URI

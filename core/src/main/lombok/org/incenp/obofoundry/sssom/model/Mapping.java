@@ -102,6 +102,9 @@ public class Mapping  {
     @JsonProperty("object_source_version")
     private String objectSourceVersion;
 
+    @JsonProperty("predicate_type")
+    private EntityType predicateType;
+
     @JsonProperty("mapping_provider")
     @URI
     private String mappingProvider;

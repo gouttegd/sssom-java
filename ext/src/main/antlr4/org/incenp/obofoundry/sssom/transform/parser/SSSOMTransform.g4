@@ -99,6 +99,7 @@ cardField : 'mapping_cardinality' | 'cardinality';
 
 entField  : 'object_type'
           | 'subject_type'
+          | 'predicate_type'
           ;
 
 idValue   : CURIE
