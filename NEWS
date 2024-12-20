@@ -1,3 +1,21 @@
+Changes in sssom-java-1.1.0
+---------------------------
+
+    * sssom-core:
+      * Support new `entity_type` value `composed entity expression`.
+      * Support new `predicate_type` slot.
+      * SSSOM/TSV reader: Strip trailing tabs in embedded YAML metadata block.
+    * sssom-ext:
+      * Add RDF/Turtle read and write support.
+    * SSSOM-CLI:
+      * Add reading from RDF/Turtle files.
+      * Add RDF/Turtle output format.
+    * SSSOM/T:
+      * Allow passing an explicit inverse predicate to the `invert` function.
+    * SSSOM/T-OWL:
+      * Allow using the `is_a` and `exists` function on properties.
+
+
 Changes in sssom-java-1.0.0
 ---------------------------
 
