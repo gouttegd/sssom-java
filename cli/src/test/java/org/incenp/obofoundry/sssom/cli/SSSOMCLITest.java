@@ -103,7 +103,7 @@ public class SSSOMCLITest {
     @Test
     void testManglingWithEPM() throws IOException {
         TestUtils.runCommand(0, new String[] { "fbbt-uncanonical-urls.sssom.tsv" }, "fbbt-canonicalised-urls.sssom.tsv",
-                new String[] { "--mangle-iris", "../core/src/main/resources/obo.epm.json" });
+                new String[] { "--mangle-iris", "../ext/src/main/resources/obo.epm.json" });
     }
 
     @Test

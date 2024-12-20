@@ -31,7 +31,6 @@ import javax.xml.catalog.CatalogException;
 
 import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.SSSOMWriter;
-import org.incenp.obofoundry.sssom.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.JSONWriter;
 import org.incenp.obofoundry.sssom.PrefixManager;
@@ -49,6 +48,7 @@ import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
+import org.incenp.obofoundry.sssom.util.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.util.ReaderFactory;
 import org.incenp.obofoundry.sssom.util.SerialisationFormat;
 import org.semanticweb.owlapi.apibinding.OWLManager;
