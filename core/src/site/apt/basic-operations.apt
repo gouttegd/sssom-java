@@ -69,17 +69,15 @@ Mapping mapping2 = mapping.toBuilder()
   SSSOM object.
   
   To use that pattern, you must first create an implementation of the
-  {{{../apidocs/org/incenp/obofoundry/sssom/SlotVisitor.html}SlotVisitor}}
-  interface. That interface is generic and has two type parameters: the
+  {{{../apidocs/org/incenp/obofoundry/sssom/slots/ISlotVisitor.html}ISlotVisitor}}
+  interface. The interface is generic with one type parameter for the
   type of objects whose slots you want to visit (either <<<Mapping>>> or
-  <<<MappingSet>>>), and the type of objects your visitor should return
-  after visiting a slot (may be <<<Void>>> if your visitor does not need
-  to return anything). The interface must implement a <<<visit()>>>
-  method for each possible type of slot (String-typed slot, Date-typed
-  slots, Double-typed slot, etc.).
+  <<<MappingSet>>>). It must implement a <<<visit()>>> method for each
+  possible type of slot (String-typed slot, URI-typed slot, Date-typed
+  slot, Double-typed slots, etc.).
   
   Then, you must obtain a
-  {{{../apidocs/org/incenp/obofoundry/sssom/SlotHelper.html}SlotHelper}}
+  {{{../apidocs/org/incenp/obofoundry/sssom/slots/SlotHelper.html}SlotHelper}}
   object using one of the static methods on that class (either
   <<<getMappingHelper()>>> or <<<getMappingSetHelper()>>>, depending on
   whether you want to visit the slots of a mapping or of a mapping set),
