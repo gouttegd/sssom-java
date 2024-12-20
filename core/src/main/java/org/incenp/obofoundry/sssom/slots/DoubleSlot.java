@@ -20,9 +20,6 @@ package org.incenp.obofoundry.sssom.slots;
 
 import java.lang.reflect.Field;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
-
 /**
  * Represents a metadata slot that holds a numerical value.
  * 
@@ -35,7 +32,7 @@ public class DoubleSlot<T> extends Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public DoubleSlot(Field field) {
+    DoubleSlot(Field field) {
         super(field);
     }
 

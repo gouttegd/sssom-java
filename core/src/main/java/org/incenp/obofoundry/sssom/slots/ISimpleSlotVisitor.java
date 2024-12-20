@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.slots;
 
 /**
  * A visitor interface to visit the different metadata slot of a SSSOM Java

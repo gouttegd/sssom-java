@@ -21,8 +21,6 @@ package org.incenp.obofoundry.sssom.slots;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 
 /**
@@ -38,7 +36,7 @@ public class ExtensionSlot<T> extends Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public ExtensionSlot(Field field) {
+    ExtensionSlot(Field field) {
         super(field);
     }
 

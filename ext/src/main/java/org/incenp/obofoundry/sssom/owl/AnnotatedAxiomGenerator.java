@@ -20,8 +20,8 @@ package org.incenp.obofoundry.sssom.owl;
 
 import java.util.Collection;
 
-import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;

@@ -18,8 +18,8 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
 

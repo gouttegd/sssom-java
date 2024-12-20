@@ -16,9 +16,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.slots;
 
 import java.lang.reflect.Field;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,9 +27,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.model.EntityReference;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.slots.SlotFactory;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.model.URI;
 
 /**
  * A class to facilitate the manipulation of SSSOM slots. This class is mostly
@@ -61,7 +67,7 @@ public class SlotHelper<T> {
 
     private SlotHelper(Class<T> type) {
         for ( Field f : type.getDeclaredFields() ) {
-            Slot<T> slot = SlotFactory.fromField(f);
+            Slot<T> slot = fromField(f);
             if ( slot != null ) {
                 slots.add(slot);
                 slotsByName.put(slot.getName(), slot);
@@ -394,5 +400,47 @@ public class SlotHelper<T> {
 
         added.removeAll(removed);
         return added;
+    }
+
+    /*
+     * Create a slot object from a Java field.
+     */
+    private static <T> Slot<T> fromField(Field field) {
+        if ( field.isAnnotationPresent(EntityReference.class) ) {
+            return new EntityReferenceSlot<T>(field);
+        } else if ( field.isAnnotationPresent(URI.class) ) {
+            return new URISlot<T>(field);
+        }
+
+        Class<?> javaType = field.getType();
+        String name = field.getName();
+        if ( javaType.equals(String.class) ) {
+            return new StringSlot<T>(field);
+        } else if ( javaType.equals(Double.class) ) {
+            return new DoubleSlot<T>(field);
+        } else if ( javaType.equals(LocalDate.class) ) {
+            return new DateSlot<T>(field);
+        } else if ( javaType.equals(EntityType.class) ) {
+            return new EntityTypeSlot<T>(field);
+        } else if ( javaType.equals(MappingCardinality.class) ) {
+            return new MappingCardinalitySlot<T>(field);
+        } else if ( javaType.equals(PredicateModifier.class) ) {
+            return new PredicateModifierSlot<T>(field);
+        } else if ( javaType.equals(List.class) ) {
+            if ( name.equals("extensionDefinitions") ) {
+                return new ExtensionDefinitionSlot<T>(field);
+            } else if ( !name.equals("mappings") ) {
+                return new StringSlot<T>(field);
+            }
+        } else if ( javaType.equals(Map.class) ) {
+            if ( name.equals("curieMap") ) {
+                return new CurieMapSlot<T>(field);
+            } else if ( name.equals("extensions") ) {
+                return new ExtensionSlot<T>(field);
+            }
+        }
+
+        // The field is not a field that holds a metadata slot.
+        return null;
     }
 }

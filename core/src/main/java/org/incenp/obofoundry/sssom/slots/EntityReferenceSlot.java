@@ -21,8 +21,6 @@ package org.incenp.obofoundry.sssom.slots;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-
 /**
  * Represents a metadata slot that is intended to hold an entity reference
  * (which is internally represented by a String).
@@ -36,7 +34,7 @@ public class EntityReferenceSlot<T> extends StringSlot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public EntityReferenceSlot(Field field) {
+    EntityReferenceSlot(Field field) {
         super(field);
     }
 

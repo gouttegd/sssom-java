@@ -16,13 +16,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.slots;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -18,7 +18,7 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import org.incenp.obofoundry.sssom.Slot;
+import org.incenp.obofoundry.sssom.slots.Slot;
 
 /**
  * An interface to transform a metadata slot into another object.

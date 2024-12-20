@@ -20,8 +20,6 @@ package org.incenp.obofoundry.sssom.slots;
 
 import java.lang.reflect.Field;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 
 /**

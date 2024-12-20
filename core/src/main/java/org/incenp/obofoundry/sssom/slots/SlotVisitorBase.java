@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.slots;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,17 +27,6 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
-import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
-import org.incenp.obofoundry.sssom.slots.DateSlot;
-import org.incenp.obofoundry.sssom.slots.DoubleSlot;
-import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
-import org.incenp.obofoundry.sssom.slots.EntityTypeSlot;
-import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
-import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
-import org.incenp.obofoundry.sssom.slots.MappingCardinalitySlot;
-import org.incenp.obofoundry.sssom.slots.PredicateModifierSlot;
-import org.incenp.obofoundry.sssom.slots.StringSlot;
-import org.incenp.obofoundry.sssom.slots.URISlot;
 
 /**
  * A default implementation of the {@link ISlotVisitor} interface that does

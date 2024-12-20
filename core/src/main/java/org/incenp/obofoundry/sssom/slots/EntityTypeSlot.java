@@ -20,8 +20,6 @@ package org.incenp.obofoundry.sssom.slots;
 
 import java.lang.reflect.Field;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.model.EntityType;
 
 /**
@@ -36,7 +34,7 @@ public class EntityTypeSlot<T> extends Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public EntityTypeSlot(Field field) {
+    EntityTypeSlot(Field field) {
         super(field);
     }
 

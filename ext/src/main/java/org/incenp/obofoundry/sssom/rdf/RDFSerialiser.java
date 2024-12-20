@@ -36,8 +36,6 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.incenp.obofoundry.sssom.DefaultMappingComparator;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.SlotHelper;
-import org.incenp.obofoundry.sssom.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
@@ -54,6 +52,8 @@ import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
 import org.incenp.obofoundry.sssom.slots.MappingCardinalitySlot;
 import org.incenp.obofoundry.sssom.slots.PredicateModifierSlot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.slots.URISlot;
 

@@ -42,6 +42,10 @@ import org.incenp.obofoundry.sssom.slots.DoubleSlot;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotPropagator;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 
 /**

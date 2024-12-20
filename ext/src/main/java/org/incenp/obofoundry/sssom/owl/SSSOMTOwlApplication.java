@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
-import org.incenp.obofoundry.sssom.SlotHelper;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
@@ -278,7 +278,7 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
      * @param innerTransformer The original axiom generator.
      * @param spec             A list of SSSOM metadata slot names to annotate the
      *                         produced axiom with. See
-     *                         {@link org.incenp.obofoundry.sssom.SlotHelper#getMappingSlotList(String)}
+     *                         {@link org.incenp.obofoundry.sssom.slots.SlotHelper#getMappingSlotList(String)}
      *                         for details about the expected format of that
      *                         argument.
      * @return The modified axiom generator.

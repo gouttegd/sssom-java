@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom;
+package org.incenp.obofoundry.sssom.slots;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -45,7 +45,7 @@ public class Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public Slot(Field field) {
+    Slot(Field field) {
         this.field = field;
 
         JsonProperty jsonAnnotation = field.getDeclaredAnnotation(JsonProperty.class);

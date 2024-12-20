@@ -23,6 +23,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 
 /**
  * Comparator for mapping objects. This class allows to sort mappings in the

@@ -37,6 +37,8 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonFactory;

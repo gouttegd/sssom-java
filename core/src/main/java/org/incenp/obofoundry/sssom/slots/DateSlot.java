@@ -23,9 +23,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
-
 /**
  * Represents a metadata slot that holds a date.
  * 
@@ -38,7 +35,7 @@ public class DateSlot<T> extends Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public DateSlot(Field field) {
+    DateSlot(Field field) {
         super(field);
     }
 

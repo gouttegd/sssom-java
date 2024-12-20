@@ -22,9 +22,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
-
 /**
  * Represents a metadata slot that is backed by a String-typed field.
  * 
@@ -37,7 +34,7 @@ public class StringSlot<T> extends Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public StringSlot(Field field) {
+    StringSlot(Field field) {
         super(field);
     }
 

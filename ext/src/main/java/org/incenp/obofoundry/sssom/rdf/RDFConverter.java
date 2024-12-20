@@ -34,13 +34,13 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
-import org.incenp.obofoundry.sssom.Slot;
-import org.incenp.obofoundry.sssom.SlotHelper;
-import org.incenp.obofoundry.sssom.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.slots.URISlot;
 

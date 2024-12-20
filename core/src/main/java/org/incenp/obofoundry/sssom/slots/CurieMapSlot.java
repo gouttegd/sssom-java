@@ -21,9 +21,6 @@ package org.incenp.obofoundry.sssom.slots;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.ISlotVisitor;
-import org.incenp.obofoundry.sssom.Slot;
-
 /**
  * Represents a metadata slot that holds the prefix (or curie) map used by a
  * mapping set.
@@ -39,7 +36,7 @@ public class CurieMapSlot<T> extends Slot<T> {
      * 
      * @param field The Java field that store the slot's data in a SSSOM object.
      */
-    public CurieMapSlot(Field field) {
+    CurieMapSlot(Field field) {
         super(field);
     }
 

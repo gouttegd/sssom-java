@@ -25,14 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.incenp.obofoundry.sssom.SlotVisitorBase;
-import org.incenp.obofoundry.sssom.Slot;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.slots.DateSlot;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
