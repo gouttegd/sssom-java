@@ -89,7 +89,7 @@ public class RDFReader extends SSSOMReader {
         Model model = Rio.parse(reader, RDFFormat.TURTLE);
         reader.close();
 
-        MappingSet ms = converter.convertMappingSet(model);
+        MappingSet ms = converter.fromRDF(model);
 
         Map<String, String> curieMap = ms.getCurieMap();
         if ( curieMap != null ) {

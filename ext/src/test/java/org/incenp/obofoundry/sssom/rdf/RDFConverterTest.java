@@ -29,43 +29,59 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RDFSerialiserTest {
+public class RDFConverterTest {
 
     @Test
     void testNamespaceDeclarations() throws SSSOMFormatException, IOException {
         MappingSet ms = getSampleSet();
-        RDFSerialiser serialiser = new RDFSerialiser();
+        RDFConverter converter = new RDFConverter();
 
-        Assertions.assertTrue(serialiser.toRDF(ms).getNamespaces().isEmpty());
-        Assertions.assertTrue(serialiser.toRDF(ms, false).getNamespaces().isEmpty());
+        Assertions.assertTrue(converter.toRDF(ms).getNamespaces().isEmpty());
+        Assertions.assertTrue(converter.toRDF(ms, false).getNamespaces().isEmpty());
 
-        Model model = serialiser.toRDF(ms, true);
+        Model model = converter.toRDF(ms, true);
         Assertions.assertTrue(model.getNamespace("ORGENT").isPresent());
     }
 
     @Test
     void testCustomNamespaceDeclarations() throws SSSOMFormatException, IOException {
         MappingSet ms = getSampleSet();
-        RDFSerialiser serialiser = new RDFSerialiser();
+        RDFConverter converter = new RDFConverter();
 
         HashMap<String, String> prefixMap = new HashMap<String, String>();
         prefixMap.put("UNUSED", "http://example.org/unused/prefix/");
 
-        Model model = serialiser.toRDF(ms, prefixMap);
+        Model model = converter.toRDF(ms, prefixMap);
         Assertions.assertTrue(model.getNamespace("owl").isPresent());
         Assertions.assertTrue(model.getNamespace("UNUSED").isEmpty());
         Assertions.assertTrue(model.getNamespace("ORGENT").isEmpty());
 
         PrefixManager pm = new PrefixManager();
         pm.add(prefixMap);
-        model = serialiser.toRDF(ms, pm);
+        model = converter.toRDF(ms, pm);
         Assertions.assertTrue(model.getNamespace("owl").isPresent());
         Assertions.assertTrue(model.getNamespace("UNUSED").isEmpty());
         Assertions.assertTrue(model.getNamespace("ORGENT").isEmpty());
     }
 
+    @Test
+    void testRoundtripConversion() throws SSSOMFormatException, IOException {
+        MappingSet ms = getSampleSet();
+        RDFConverter converter = new RDFConverter();
+
+        Model model = converter.toRDF(ms, true);
+        MappingSet back = converter.fromRDF(model);
+
+        Assertions.assertEquals(ms, back);
+    }
+
     private MappingSet getSampleSet() throws SSSOMFormatException, IOException {
         TSVReader reader = new TSVReader("../core/src/test/resources/sets/exo2c.sssom.tsv");
-        return reader.read();
+        MappingSet ms = reader.read();
+
+        // We force the creator_id slot to be lexicographically sorted
+        ms.getCreatorId().sort((a, b) -> a.compareTo(b));
+
+        return ms;
     }
 }
