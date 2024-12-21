@@ -163,6 +163,7 @@ public class SimpleCLI implements Runnable {
         boolean disableCondensation;
 
         @Option(names = { "-f", "--output-format" },
+                paramLabel = "FMT",
                 description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.",
                 converter = SerialisationFormatConverter.class,
                 completionCandidates = SerialisationFormatCompletionCandidates.class)
