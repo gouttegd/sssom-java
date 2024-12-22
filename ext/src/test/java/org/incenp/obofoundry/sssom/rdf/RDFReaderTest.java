@@ -20,13 +20,19 @@ package org.incenp.obofoundry.sssom.rdf;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.model.ValueType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -61,5 +67,78 @@ public class RDFReaderTest {
         Assertions.assertEquals(EntityType.OWL_CLASS, m.getSubjectType());
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, m.getMappingCardinality());
         Assertions.assertEquals(PredicateModifier.NOT, m.getPredicateModifier());
+    }
+
+    @Test
+    void testReadDefinedExtensions() throws SSSOMFormatException, IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/exo2c-with-extensions.ttl");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
+        MappingSet ms = reader.read();
+
+        Map<String, ExtensionDefinition> defs = new HashMap<String, ExtensionDefinition>();
+        for ( ExtensionDefinition def : ms.getExtensionDefinitions() ) {
+            defs.put(def.getSlotName(), def);
+        }
+
+        ExtensionDefinition def = defs.get("ext_foo");
+        Assertions.assertNotNull(def);
+        Assertions.assertEquals("https://example.org/properties/foo", def.getProperty());
+        Assertions.assertEquals("http://www.w3.org/2001/XMLSchema#integer", def.getTypeHint());
+        Assertions.assertEquals(ValueType.INTEGER, def.getEffectiveType());
+
+        def = defs.get("ext_bar");
+        Assertions.assertNotNull(def);
+        Assertions.assertEquals("https://example.org/properties/bar", def.getProperty());
+        Assertions.assertEquals("https://w3id.org/linkml/Uriorcurie", def.getTypeHint());
+        Assertions.assertEquals(ValueType.IDENTIFIER, def.getEffectiveType());
+
+        ExtensionValue ev = ms.getMappings().get(0).getExtensions().get("https://example.org/properties/foo");
+        Assertions.assertNotNull(ev);
+        Assertions.assertTrue(ev.isInteger());
+        Assertions.assertEquals(11, ev.asInteger());
+
+        ev = ms.getMappings().get(0).getExtensions().get("https://example.org/properties/bar");
+        Assertions.assertNotNull(ev);
+        Assertions.assertTrue(ev.isIdentifier());
+        Assertions.assertEquals("https://example.com/entities/BAR_0001", ev.asString());
+    }
+
+    @Test
+    void testReadUndefinedExtensions() throws SSSOMFormatException, IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/exo2c-with-extensions.ttl");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
+        Map<String, ExtensionDefinition> defs = new HashMap<String, ExtensionDefinition>();
+        for ( ExtensionDefinition def : ms.getExtensionDefinitions() ) {
+            defs.put(def.getSlotName(), def);
+        }
+
+        ExtensionDefinition def = defs.get("ext_foo");
+        Assertions.assertNotNull(def);
+        Assertions.assertEquals("https://example.org/properties/foo", def.getProperty());
+        Assertions.assertEquals("http://www.w3.org/2001/XMLSchema#integer", def.getTypeHint());
+        Assertions.assertEquals(ValueType.INTEGER, def.getEffectiveType());
+
+        def = defs.get("ext_bar");
+        Assertions.assertNotNull(def);
+        Assertions.assertEquals("https://example.org/properties/bar", def.getProperty());
+        Assertions.assertEquals("https://w3id.org/linkml/Uriorcurie", def.getTypeHint());
+        Assertions.assertEquals(ValueType.IDENTIFIER, def.getEffectiveType());
+
+        ExtensionValue ev = ms.getMappings().get(0).getExtensions().get("https://example.org/properties/foo");
+        Assertions.assertNotNull(ev);
+        Assertions.assertTrue(ev.isInteger());
+        Assertions.assertEquals(11, ev.asInteger());
+
+        ev = ms.getMappings().get(0).getExtensions().get("https://example.org/properties/bar");
+        Assertions.assertNotNull(ev);
+        Assertions.assertTrue(ev.isIdentifier());
+        Assertions.assertEquals("https://example.com/entities/BAR_0001", ev.asString());
+
+        ev = ms.getMappings().get(0).getExtensions().get("http://sssom.invalid/ext_baz");
+        Assertions.assertNotNull(ev);
+        Assertions.assertTrue(ev.isString());
+        Assertions.assertEquals("Baz 0001", ev.asString());
     }
 }

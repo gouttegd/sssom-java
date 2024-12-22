@@ -31,8 +31,8 @@ import java.util.Map;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
-import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 
@@ -85,7 +85,7 @@ public class RDFReader extends SSSOMReader {
 
     @Override
     public MappingSet read() throws SSSOMFormatException, IOException {
-        RDFConverter converter = new RDFConverter();
+        RDFConverter converter = new RDFConverter(extraPolicy);
         Model model = Rio.parse(reader, RDFFormat.TURTLE);
         reader.close();
 

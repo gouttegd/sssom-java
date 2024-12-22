@@ -19,6 +19,8 @@
 package org.incenp.obofoundry.sssom.rdf;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +43,7 @@ import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.incenp.obofoundry.sssom.DefaultMappingComparator;
+import org.incenp.obofoundry.sssom.ExtensionSlotManager;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
@@ -52,6 +55,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.model.ValueType;
 import org.incenp.obofoundry.sssom.slots.DateSlot;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
@@ -73,7 +77,8 @@ import org.incenp.obofoundry.sssom.slots.URISlot;
 public class RDFConverter {
 
     private ExtraMetadataPolicy extraPolicy;
-    int bnodeCounter;
+    private ExtensionSlotManager extMgr;
+    private int bnodeCounter;
 
     /**
      * Creates a new instance with the default policy for converting non-standard
@@ -227,6 +232,10 @@ public class RDFConverter {
         ms.setMappings(new ArrayList<Mapping>());
         SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>();
 
+        // Parse extension definitions ahead, so that definitions are available if/when
+        // we encounter an extension slot when looping over all the statements
+        extensionsFromRDF(ms, model, set.get());
+
         // Process all statements about the mapping set node
         for ( Statement st : model.filter(set.get(), null, null) ) {
             Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByURI(st.getPredicate().stringValue());
@@ -245,6 +254,8 @@ public class RDFConverter {
                 } else {
                     throw getTypingError("mappings");
                 }
+            } else if ( !st.getPredicate().equals(RDF.TYPE) ) {
+                extensionValueFromRDF(ms, st);
             }
         }
 
@@ -285,6 +296,8 @@ public class RDFConverter {
                 if ( visitor.error != null ) {
                     throw visitor.error;
                 }
+            } else if ( !st.getPredicate().equals(RDF.TYPE) ) {
+                extensionValueFromRDF(mapping, st);
             }
         }
 
@@ -308,6 +321,164 @@ public class RDFConverter {
      */
     private SSSOMFormatException getTypingError(String slotName) {
         return getTypingError(slotName, null);
+    }
+
+    /*
+     * Extracts extension definitions from the RDF model, if extensions are enabled
+     * by policy.
+     */
+    private void extensionsFromRDF(MappingSet ms, Model model, BNode set) {
+        if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
+            return;
+        }
+
+        extMgr = new ExtensionSlotManager(extraPolicy);
+        for ( Statement st : model.filter(set, Constants.SSSOM_EXT_DEFINITIONS, null) ) {
+            if ( st.getObject().isResource() ) {
+                Resource defNode = (Resource) st.getObject();
+
+                IRI prop = Models.objectIRI(model.filter(defNode, Constants.SSSOM_EXT_PROPERTY, null)).orElse(null);
+                IRI hint = Models.objectIRI(model.filter(defNode, Constants.SSSOM_EXT_TYPEHINT, null)).orElse(null);
+                Literal name = Models.objectLiteral(model.filter(defNode, Constants.SSSOM_EXT_SLOTNAME, null))
+                        .orElse(null);
+
+                if ( prop != null && name != null ) {
+                    String typeHint = hint != null ? hint.stringValue() : null;
+                    extMgr.addDefinition(name.stringValue(), prop.stringValue(), typeHint);
+                }
+            }
+        }
+        if ( !extMgr.isEmpty() ) {
+            ms.setExtensionDefinitions(extMgr.getDefinitions(false, false));
+        }
+    }
+
+    /*
+     * Interprets a RDF statement as a SSSOM non-standard metadata on a MappingSet.
+     */
+    private void extensionValueFromRDF(MappingSet ms, Statement statement) throws SSSOMFormatException {
+        String property = statement.getPredicate().stringValue();
+        ExtensionValue value = extensionValueFromRDF(property, statement.getObject());
+        if ( value != null ) {
+            Map<String, ExtensionValue> extensions = ms.getExtensions();
+            if ( extensions == null ) {
+                extensions = new HashMap<String, ExtensionValue>();
+                ms.setExtensions(extensions);
+            }
+            extensions.put(property, value);
+        }
+    }
+
+    /*
+     * Likewise, but for a Mapping object.
+     */
+    private void extensionValueFromRDF(Mapping m, Statement statement) throws SSSOMFormatException {
+        String property = statement.getPredicate().stringValue();
+        ExtensionValue value = extensionValueFromRDF(property, statement.getObject());
+        if ( value != null ) {
+            Map<String, ExtensionValue> extensions = m.getExtensions();
+            if ( extensions == null ) {
+                extensions = new HashMap<String, ExtensionValue>();
+                m.setExtensions(extensions);
+            }
+            extensions.put(property, value);
+        }
+    }
+
+    /*
+     * Converts a RDF value into a non-standard metadata. This method does the bulk
+     * of the work for the two wrapper methods above.
+     */
+    private ExtensionValue extensionValueFromRDF(String property, Value rdfValue) throws SSSOMFormatException {
+        if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
+            // Extension support disabled by policy
+            return null;
+        } else if ( extraPolicy == ExtraMetadataPolicy.DEFINED ) {
+            if ( extMgr == null ) {
+                // Could happen if we convert a single Mapping instead of a MappingSet; without
+                // a MappingSet, we cannot have extension definitions, so we just ignore
+                return null;
+            }
+
+            ExtensionDefinition definition = extMgr.getDefinitionForProperty(property);
+            if ( definition == null ) {
+                // Ignore undefined extension, as per policy
+                return null;
+            }
+
+            // This is a valid extension, so check that its type matches the type hint; if
+            // it does not, this is an error rather than something to ignore
+            ValueType valueType = definition.getEffectiveType();
+            if ( valueType == ValueType.IDENTIFIER ) {
+                // The value must be an IRI
+                if ( !rdfValue.isIRI() ) {
+                    throw getTypingError(property);
+                }
+            } else {
+                // The value must be a literal
+                if ( !rdfValue.isLiteral() ) {
+                    throw getTypingError(property);
+                }
+
+                // The value must also match the expected type
+                String actualType = ((Literal) rdfValue).getDatatype().stringValue();
+                if ( valueType == ValueType.OTHER ) {
+                    if ( !actualType.equals(definition.getTypeHint()) ) {
+                        throw getTypingError(property);
+                    }
+                } else {
+                    if ( valueType != ValueType.fromIRI(actualType) ) {
+                        throw getTypingError(property);
+                    }
+                }
+            }
+        }
+
+        ExtensionValue ev = null;
+        if ( rdfValue.isIRI() ) {
+            ev = new ExtensionValue(rdfValue.stringValue(), true);
+        } else if ( rdfValue.isLiteral() ) {
+            Literal litValue = (Literal) rdfValue;
+            ValueType valueType = ValueType.fromIRI(litValue.getDatatype().stringValue());
+            try {
+                switch ( valueType ) {
+                case BOOLEAN:
+                    ev = new ExtensionValue(litValue.booleanValue());
+                    break;
+                case DATE:
+                    ev = new ExtensionValue(LocalDate.parse(litValue.stringValue()));
+                    break;
+                case DATETIME:
+                    ev = new ExtensionValue(ZonedDateTime.parse(litValue.stringValue()));
+                    break;
+                case DOUBLE:
+                    ev = new ExtensionValue(litValue.doubleValue());
+                    break;
+                case IDENTIFIER:
+                    // Should not really happen, unless someone explicitly types a literal as a
+                    // linkml:Uriorcurie
+                    ev = new ExtensionValue(litValue.stringValue(), true);
+                    break;
+                case INTEGER:
+                    ev = new ExtensionValue(litValue.intValue());
+                    break;
+                case OTHER:
+                    ev = new ExtensionValue((Object) litValue.stringValue());
+                    break;
+                case STRING:
+                    ev = new ExtensionValue(litValue.stringValue());
+                    break;
+                }
+            } catch ( IllegalArgumentException | DateTimeParseException e ) {
+                // In DEFINED mode, an invalid value is an error; otherwise, we can just ignore
+                // the extension altogether
+                if ( extraPolicy == ExtraMetadataPolicy.DEFINED ) {
+                    throw getTypingError(property, e);
+                }
+            }
+        }
+
+        return ev;
     }
 
     /*
@@ -395,6 +566,11 @@ public class RDFConverter {
             } catch ( IllegalArgumentException e ) {
                 error = new SSSOMFormatException(String.format("Typing error when parsing '%s'", slot.getName()));
             }
+        }
+
+        @Override
+        public void visit(ExtensionDefinitionSlot<T> slot, T target, List<ExtensionDefinition> values) {
+            // Nothing to do, handled elsewhere
         }
     }
 
