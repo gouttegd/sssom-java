@@ -26,13 +26,21 @@ import java.util.Map;
  * Represents the type of an extension value.
  */
 public enum ValueType {
-    STRING("http://www.w3.org/2001/XMLSchema#string"),
-    INTEGER("http://www.w3.org/2001/XMLSchema#integer"),
-    DOUBLE("http://www.w3.org/2001/XMLSchema#double"),
+    STRING("http://www.w3.org/2001/XMLSchema#string",
+            "http://www.w3.org/2001/XMLSchema#normalizedString",
+            "http://www.w3.org/2001/XMLSchema#token"),
+    INTEGER("http://www.w3.org/2001/XMLSchema#integer",
+            "http://www.w3.org/2001/XMLSchema#int",
+            "http://www.w3.org/2001/XMLSchema#long",
+            "http://www.w3.org/2001/XMLSchema#short",
+            "http://www.w3.org/2001/XMLSchema#byte"),
+    DOUBLE("http://www.w3.org/2001/XMLSchema#double",
+           "http://www.w3.org/2001/XMLSchema#float"),
     BOOLEAN("http://www.w3.org/2001/XMLSchema#boolean"),
     DATE("http://www.w3.org/2001/XMLSchema#date"),
     DATETIME("http://www.w3.org/2001/XMLSchema#datetime"),
-    IDENTIFIER("https://w3id.org/linkml/Uriorcurie", "https://w3id.org/linkml/uriOrCurie"),
+    IDENTIFIER("https://w3id.org/linkml/Uriorcurie",
+               "https://w3id.org/linkml/uriOrCurie"),
     OTHER(null);
 
     private final static Map<String, ValueType> MAP;
@@ -42,8 +50,10 @@ public enum ValueType {
         for ( ValueType vt : ValueType.values() ) {
             if ( vt != ValueType.OTHER ) {
                 map.put(vt.iri, vt);
-                if ( vt.alias != null ) {
-                    map.put(vt.alias, vt);
+                if ( vt.aliases != null ) {
+                    for ( String alias : vt.aliases ) {
+                        map.put(alias, vt);
+                    }
                 }
             }
         }
@@ -52,16 +62,16 @@ public enum ValueType {
     }
 
     private final String iri;
-    private final String alias;
+    private String[] aliases;
 
     ValueType(String iri) {
         this.iri = iri;
-        this.alias = null;
+        this.aliases = null;
     }
 
-    ValueType(String iri, String alias) {
+    ValueType(String iri, String... aliases) {
         this.iri = iri;
-        this.alias = alias;
+        this.aliases = aliases;
     }
 
     @Override
