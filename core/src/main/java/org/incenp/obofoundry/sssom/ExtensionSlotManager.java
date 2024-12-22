@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -47,7 +48,7 @@ public class ExtensionSlotManager {
      * The default type for extensions that are either undefined or that do not have
      * an explicit type.
      */
-    public static final String DEFAULT_TYPE_HINT = "xsd:string";
+    public static final String DEFAULT_TYPE_HINT = BuiltinPrefix.XSD.getPrefix() + "string";
 
     // Slot names must match this pattern to be valid.
     private static final Pattern slotNamePattern = Pattern.compile("^\\p{Alnum}[\\p{Alnum}._-]*$");
@@ -59,6 +60,20 @@ public class ExtensionSlotManager {
     private HashMap<String, ExtensionDefinition> definedExtensionsByProperty = new HashMap<String, ExtensionDefinition>();
     private HashSet<String> usedPrefixes = new HashSet<String>();
     private HashSet<String> mappingLevelProperties = new HashSet<String>();
+
+    /**
+     * Creates a new instance without a prefix manager. Such an instance can be used
+     * when working with full-length identifiers only.
+     * 
+     * @param policy The policy that determines how to deal with non-standard
+     *               metadata slots. When the policy is set to
+     *               {@link ExtraMetadataPolicy#NONE}, most operations of this
+     *               object are no-op.
+     */
+    public ExtensionSlotManager(ExtraMetadataPolicy policy) {
+        this.policy = policy;
+        prefixManager = null;
+    }
 
     /**
      * Creates a new instance.
@@ -108,8 +123,14 @@ public class ExtensionSlotManager {
             definedExtensionsByProperty.remove(existingDef.getSlotName());
         }
 
-        ExtensionDefinition def = new ExtensionDefinition(slotName, prefixManager.expandIdentifier(property),
-                prefixManager.expandIdentifier(typeHint));
+        if ( prefixManager != null ) {
+            property = prefixManager.expandIdentifier(property);
+            if ( typeHint != DEFAULT_TYPE_HINT ) {
+                typeHint = prefixManager.expandIdentifier(typeHint);
+            }
+        }
+
+        ExtensionDefinition def = new ExtensionDefinition(slotName, property, typeHint);
         definedExtensionsBySlotName.put(slotName, def);
         definedExtensionsByProperty.put(property, def);
 
@@ -140,6 +161,22 @@ public class ExtensionSlotManager {
         }
 
         return definition;
+    }
+
+    /**
+     * Looks up for an existing definition for the specified property.
+     * 
+     * @param property The property of the slot for which a definition is requested.
+     * @return The slot definition. May be {@code null} if the policy is set to
+     *         {@link ExtraMetadataPolicy#NONE}, or if no definition for the
+     *         specified property exists.
+     */
+    public ExtensionDefinition getDefinitionForProperty(String property) {
+        if ( policy == ExtraMetadataPolicy.NONE ) {
+            return null;
+        }
+
+        return definedExtensionsByProperty.get(property);
     }
 
     /**
@@ -211,7 +248,7 @@ public class ExtensionSlotManager {
                 continue;
             }
 
-            if (policy == ExtraMetadataPolicy.DEFINED) {
+            if ( policy == ExtraMetadataPolicy.DEFINED && prefixManager != null ) {
                 // Extensions will be defined, so make sure we have the prefix for every property
                 String prefix = prefixManager.getPrefixName(property);
                 if ( prefix != null ) {
@@ -300,7 +337,7 @@ public class ExtensionSlotManager {
             for ( String property : extensions.keySet() ) {
                 ExtensionValue value = extensions.get(property);
                 if ( value != null ) {
-                    if ( value.isIdentifier() ) {
+                    if ( value.isIdentifier() && prefixManager != null ) {
                         String prefix = prefixManager.getPrefixName(value.asString());
                         if ( prefix != null ) {
                             usedPrefixes.add(prefix);
