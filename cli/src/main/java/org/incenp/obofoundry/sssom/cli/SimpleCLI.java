@@ -59,8 +59,11 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.Spec;
 
 /**
  * A command-line interface to manipulate mapping sets.
@@ -77,6 +80,9 @@ public class SimpleCLI implements Runnable {
     /*
      * Command line options
      */
+
+    @Spec
+    private static CommandSpec spec;
 
     @ArgGroup(validate = false, heading = "%nInput options:%n")
     private InputOptions inputOpts = new InputOptions();
@@ -163,8 +169,15 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--condensation", negatable = true,
                 defaultValue = "true", fallbackValue = "true",
-                description = "Enable/disable condensation of propagatable slots. This is enabled by default.")
+                description = "Enable/disable condensation of propagatable slots. This is enabled by default, except for RDF output.")
         boolean enableCondensation;
+
+        boolean defaultEnableCondensation = true;
+
+        boolean isCondensationEnabled() {
+            ParseResult pr = spec.commandLine().getParseResult();
+            return pr.hasMatchedOption("condensation") ? enableCondensation : defaultEnableCondensation;
+        }
 
         @Option(names = { "-f", "--output-format" },
                 paramLabel = "FMT",
@@ -493,7 +506,7 @@ public class SimpleCLI implements Runnable {
         try {
             SSSOMWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
             writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
-            writer.setCondensationEnabled(outputOpts.enableCondensation);
+            writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
@@ -531,7 +544,7 @@ public class SimpleCLI implements Runnable {
             try {
                 SSSOMWriter writer = getWriter(output.getPath(), null);
                 writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
-                writer.setCondensationEnabled(outputOpts.enableCondensation);
+                writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
                 writer.write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());
@@ -562,6 +575,7 @@ public class SimpleCLI implements Runnable {
                 ttlWriter = new RDFWriter(filename);
             }
             outputOpts.defaultWriteExtraMetadata = ExtraMetadataPolicy.UNDEFINED;
+            outputOpts.defaultEnableCondensation = false;
             return ttlWriter;
 
         case TSV:
