@@ -1,3 +1,10 @@
+Changes in sssom-java-1.1.1
+---------------------------
+
+    * Add support for propagation/condensation of slots in RDF/Turtle format.
+    * Add support for reading non-standard metadata from RDF/Turtle.
+
+
 Changes in sssom-java-1.1.0
 ---------------------------
 
