@@ -83,6 +83,7 @@ public class RDFWriter extends SSSOMWriter {
         prefixManager.add("dcterms", DCTERMS_NS);
         prefixManager.add("pav", PAV_NS);
 
+        condenseSet(mappingSet);
         RDFConverter converter = new RDFConverter(extraPolicy);
         Model rdfSet = converter.toRDF(mappingSet, prefixManager);
 

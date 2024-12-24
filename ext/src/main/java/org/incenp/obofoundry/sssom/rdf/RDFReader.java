@@ -35,6 +35,7 @@ import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 
 /**
  * A parser to read a SSSOM mapping set from the RDF Turtle serialisation
@@ -90,6 +91,7 @@ public class RDFReader extends SSSOMReader {
         reader.close();
 
         MappingSet ms = converter.fromRDF(model);
+        new SlotPropagator(propagationPolicy).propagate(ms);
 
         Map<String, String> curieMap = ms.getCurieMap();
         if ( curieMap != null ) {
