@@ -19,13 +19,6 @@ RDFWriter writer = new RDFWriter("my-mapping-set.ttl");
 writer.write(myMappingSet);
 +-----------------------------------------------------------------------
 
-  Note that the RDFWriter currently does not support condensation, and
-  the corresponding <<<setCondensationEnabled(boolean)>>> method has no
-  effect. This is by design, as condensation is a SSSOM-specific
-  concept and RDF tools are not expected to be able to perform
-  propagation of condensed slots, so it makes little sense to produce
-  RDF files containing condensed slots.
-
 * 2. RDF read support
 
   Use the {{{../apidocs/org/incenp/obofoundry/sssom/rdf/RDFReader.html}RDFReader}}
@@ -35,10 +28,6 @@ writer.write(myMappingSet);
 RDFReader reader = new RDFReader("my-mapping-set.ttl");
 MappingSet myMappingSet = reader.read();
 +-----------------------------------------------------------------------
-
-  The RDFReader currently does not support propagation. It also does not
-  support any kind of non-standard metadata (“extension slots”), whether
-  defined or undefined.
   
 * 3. Easily reading from any supported format.
 

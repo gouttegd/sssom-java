@@ -79,6 +79,7 @@ public class RDFConverter {
     private ExtraMetadataPolicy extraPolicy;
     private ExtensionSlotManager extMgr;
     private int bnodeCounter;
+    private Set<String> excludedSlots;
 
     /**
      * Creates a new instance with the default policy for converting non-standard
@@ -101,6 +102,19 @@ public class RDFConverter {
     /*
      * SSSOM to RDF conversions
      */
+
+    /**
+     * When converting from SSSOM to RDF, do not convert the mapping slots in the
+     * provided list.
+     * <p>
+     * This is mainly intended to avoid converting the slots that have been
+     * condensed to the set level.
+     * 
+     * @param slots A list of slot names to exclude from the RDF conversion.
+     */
+    public void excludeMappingSlots(Set<String> slots) {
+        excludedSlots = slots;
+    }
 
     /**
      * Converts a MappingSet to a Rdf4J model.
@@ -184,6 +198,7 @@ public class RDFConverter {
         RDFBuilderVisitor<Mapping> mappingVisitor = new RDFBuilderVisitor<Mapping>(model, null, prefixManager,
                 usedPrefixes);
         ms.getMappings().sort(new DefaultMappingComparator());
+        SlotHelper<Mapping> mappingHelper = getMappingHelper();
         for ( Mapping mapping : ms.getMappings() ) {
             // Add individual mapping
             BNode mappingNode = Values.bnode(String.valueOf(bnodeCounter++));
@@ -192,7 +207,7 @@ public class RDFConverter {
 
             // Add mapping metadata slots
             mappingVisitor.subject = mappingNode;
-            SlotHelper.getMappingHelper().visitSlots(mapping, mappingVisitor);
+            mappingHelper.visitSlots(mapping, mappingVisitor);
         }
 
         // Add namespace declarations
@@ -321,6 +336,20 @@ public class RDFConverter {
      */
     private SSSOMFormatException getTypingError(String slotName) {
         return getTypingError(slotName, null);
+    }
+
+    /*
+     * Gets the helper to use for visiting mapping slots.
+     */
+    private SlotHelper<Mapping> getMappingHelper() {
+        SlotHelper<Mapping> helper;
+        if ( excludedSlots == null || excludedSlots.isEmpty() ) {
+            helper = SlotHelper.getMappingHelper();
+        } else {
+            helper = SlotHelper.getMappingHelper(true);
+            helper.excludeSlots(excludedSlots);
+        }
+        return helper;
     }
 
     /*
