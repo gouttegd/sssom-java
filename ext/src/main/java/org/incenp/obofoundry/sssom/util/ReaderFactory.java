@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.JSONReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.rdf.RDFReader;
 
@@ -203,7 +203,11 @@ public class ReaderFactory {
      */
     public SSSOMReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
         SSSOMReader br = null;
-        switch ( inferFormat(reader) ) {
+        SerialisationFormat format = inferFormat(reader);
+        if ( format == null ) {
+            throw new SSSOMFormatException("Unrecognised SSSOM serialisation format");
+        }
+        switch ( format ) {
         case RDF_TURTLE:
             br = new RDFReader(reader);
             break;
@@ -213,8 +217,6 @@ public class ReaderFactory {
         case TSV:
             br = new TSVReader(reader, null, filename);
             break;
-        default:
-            throw new SSSOMFormatException("Unrecognised SSSOM serialisation format");
         }
         return br;
     }
