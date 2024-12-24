@@ -29,12 +29,12 @@ import java.util.Map;
 
 import javax.xml.catalog.CatalogException;
 
-import org.incenp.obofoundry.sssom.SSSOMReader;
-import org.incenp.obofoundry.sssom.SSSOMWriter;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.JSONWriter;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.SSSOMReader;
+import org.incenp.obofoundry.sssom.SSSOMWriter;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -111,8 +111,10 @@ public class SimpleCLI implements Runnable {
                 description = "Whether to accept non-standard metadata in the input set(s). Allowed values: ${COMPLETION-CANDIDATES}.")
         ExtraMetadataPolicy acceptExtraMetadata = ExtraMetadataPolicy.NONE;
 
-        @Option(names = { "--no-propagation" }, description = "Disable propagation of propagatable slots.")
-        boolean disablePropagation;
+        @Option(names = "--propagation", negatable = true,
+                defaultValue = "true", fallbackValue = "true",
+                description = "Enable/disable propagation of propagatable slots. This is enabled by default.")
+        boolean enablePropagation;
     }
 
     @ArgGroup(validate = false, heading = "%nOutput options:%n")
@@ -159,8 +161,10 @@ public class SimpleCLI implements Runnable {
             return writeExtraMetadata != null ? writeExtraMetadata : defaultWriteExtraMetadata;
         }
 
-        @Option(names = { "--no-condensation" }, description = "Disable condensation of propagatable slots.")
-        boolean disableCondensation;
+        @Option(names = "--condensation", negatable = true,
+                defaultValue = "true", fallbackValue = "true",
+                description = "Enable/disable condensation of propagatable slots. This is enabled by default.")
+        boolean enableCondensation;
 
         @Option(names = { "-f", "--output-format" },
                 paramLabel = "FMT",
@@ -315,7 +319,7 @@ public class SimpleCLI implements Runnable {
             try {
                 SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
-                reader.setPropagationEnabled(!inputOpts.disablePropagation);
+                reader.setPropagationEnabled(inputOpts.enablePropagation);
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
@@ -489,7 +493,7 @@ public class SimpleCLI implements Runnable {
         try {
             SSSOMWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
             writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
-            writer.setCondensationEnabled(!outputOpts.disableCondensation);
+            writer.setCondensationEnabled(outputOpts.enableCondensation);
             writer.write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
@@ -527,7 +531,7 @@ public class SimpleCLI implements Runnable {
             try {
                 SSSOMWriter writer = getWriter(output.getPath(), null);
                 writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
-                writer.setCondensationEnabled(!outputOpts.disableCondensation);
+                writer.setCondensationEnabled(outputOpts.enableCondensation);
                 writer.write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());
