@@ -251,6 +251,9 @@ public class ReaderFactory {
                 format = SerialisationFormat.JSON;
             } else if ( c == '@' || c == '[' ) {
                 format = SerialisationFormat.RDF_TURTLE;
+            } else if ( Character.isLowerCase(c) ) {
+                // Assume a TSV file without an embedded metadata block
+                format = SerialisationFormat.TSV;
             }
         }
         reader.reset();
