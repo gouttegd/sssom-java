@@ -25,8 +25,8 @@ import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.PrefixManager;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -159,7 +159,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
         }
 
         MappingSet mappingSet = null;
-        ReaderFactory readerFactory = new ReaderFactory();
+        ReaderFactory readerFactory = new ReaderFactory(true);
         if ( line.hasOption("sssom") ) {
             for ( String sssomFile : line.getOptionValues("sssom") ) {
                 SSSOMReader reader = readerFactory.getReader(sssomFile, line.getOptionValue("sssom-metadata"));

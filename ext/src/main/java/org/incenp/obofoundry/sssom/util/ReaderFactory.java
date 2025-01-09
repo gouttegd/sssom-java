@@ -38,6 +38,27 @@ import org.incenp.obofoundry.sssom.rdf.RDFReader;
  */
 public class ReaderFactory {
 
+    private boolean useExtension;
+
+    /**
+     * Creates a new instance.
+     */
+    public ReaderFactory() {
+        useExtension = false;
+    }
+
+    /**
+     * Creates a new instance that may optionally use a filename’s extension to
+     * infer the format of the file.
+     * 
+     * @param useExtension If {@code true}, the factory will first try to infer the
+     *                     format of a file based on its extension, before peeking
+     *                     at the file’s contents.
+     */
+    public ReaderFactory(boolean useExtension) {
+        this.useExtension = useExtension;
+    }
+
     /**
      * Gets a SSSOM reader suitable for the format used in the provided file.
      * 
@@ -203,7 +224,13 @@ public class ReaderFactory {
      */
     public SSSOMReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
         SSSOMReader br = null;
-        SerialisationFormat format = inferFormat(reader);
+        SerialisationFormat format = null;
+        if ( useExtension && filename != null ) {
+            format = inferFormat(filename);
+        }
+        if ( format == null ) {
+            format = inferFormat(reader);
+        }
         if ( format == null ) {
             throw new SSSOMFormatException("Unrecognised SSSOM serialisation format");
         }
@@ -259,5 +286,14 @@ public class ReaderFactory {
         reader.reset();
 
         return format;
+    }
+
+    private SerialisationFormat inferFormat(String filename) {
+        for ( SerialisationFormat format : SerialisationFormat.values() ) {
+            if ( filename.endsWith(format.getExtension()) ) {
+                return format;
+            }
+        }
+        return null;
     }
 }

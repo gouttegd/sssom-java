@@ -25,9 +25,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.JSONReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.rdf.RDFReader;
@@ -95,5 +95,21 @@ public class ReaderFactoryTest {
         ReaderFactory factory = new ReaderFactory();
         SSSOMReader reader = factory.getReader(sampleJSONFile, null, false);
         Assertions.assertInstanceOf(JSONReader.class, reader);
+    }
+
+    @Test
+    void testGetReaderFromExtension() throws IOException, SSSOMFormatException {
+        ReaderFactory factory = new ReaderFactory(true);
+        SSSOMReader reader = factory.getReader(sampleTSVFile);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
+    }
+
+    @Test
+    void testGetReaderFromExtensionFallbackToPeeking() throws IOException, SSSOMFormatException {
+        Reader reader = new BufferedReader(new FileReader(new File(sampleTSVFile)));
+        ReaderFactory factory = new ReaderFactory(true);
+        SSSOMReader sssomReader = factory.getReader(reader, "anything.txt");
+        Assertions.assertInstanceOf(TSVReader.class, sssomReader);
+        reader.close();
     }
 }

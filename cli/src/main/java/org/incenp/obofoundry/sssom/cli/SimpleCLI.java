@@ -324,7 +324,7 @@ public class SimpleCLI implements Runnable {
         if ( inputOpts.files.isEmpty() ) {
             inputOpts.files.add("-");
         }
-        ReaderFactory readerFactory = new ReaderFactory();
+        ReaderFactory readerFactory = new ReaderFactory(true);
         for ( String input : inputOpts.files ) {
             String[] items = input.split(":", 2);
             String tsvFile = items[0];
