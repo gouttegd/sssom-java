@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2023,2024 Damien Goutte-Gattat
+ * Copyright © 2023,2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ public class CommandHelper implements IVersionProvider, IExecutionExceptionHandl
     public String[] getVersion() {
         return new String[] {
                 "sssom-cli (SSSOM-Java " + CommandHelper.class.getPackage().getImplementationVersion() + ")",
-                "Copyright © 2023,2024 Damien Goutte-Gattat", "",
+                "Copyright © 2023,2024,2025 Damien Goutte-Gattat", "",
                 "This program is released under the GNU General Public License.",
                 "See the COPYING file or <http://www.gnu.org/licenses/gpl.html>." };
     }

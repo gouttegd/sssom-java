@@ -131,9 +131,16 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
 ** 2.5. Output format
 
-  SSSOM-CLI writes the output set in the SSSOM/TSV format by default. To
-  write the set in another format, use the <<<--output-format>>> option,
-  which currently accepts the following values:
+  SSSOM-CLI can write the output set in the SSSOM/TSV format, the
+  SSSOM/JSON format, or the RDF Turtle format.
+  
+  By default, it uses the extension of the output filename, if
+  specified, to automatically determine the output format. Without an
+  output filename (when writing to standard output), or if the extension
+  is not recognised, the default output format is SSSOM/TSV.
+  
+  The output format can always be explicitly specified with the
+  <<<--output-format>>> option, which accepts the following values:
   
   [tsv] Write output in SSSOM/TSV format (this is already the default).
   

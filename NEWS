@@ -1,3 +1,10 @@
+Changes in sssom-java-1.1.2
+---------------------------
+
+    * Correctly recognise a SSSOM/TSV file without an embedded metadata block.
+    * Try using the filename extension to infer the format of a file.
+
+
 Changes in sssom-java-1.1.1
 ---------------------------
 

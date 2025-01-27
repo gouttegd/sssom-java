@@ -21,7 +21,7 @@
         <item name="ROBOT plugin" href="https://github.com/gouttegd/sssom-java/releases/download/sssom-java-${this.version}/sssom-robot-plugin-${this.version}.jar" />
       </item>
     </menu>
-    <footer><![CDATA[Copyright © 2024 Damien Goutte-Gattat]]></footer>
+    <footer><![CDATA[Copyright © 2024,2025 Damien Goutte-Gattat]]></footer>
   </body>
   <skin>
     <groupId>org.apache.maven.skins</groupId>
