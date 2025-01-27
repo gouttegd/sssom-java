@@ -184,7 +184,7 @@ public class SimpleCLI implements Runnable {
                 description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.",
                 converter = SerialisationFormatConverter.class,
                 completionCandidates = SerialisationFormatCompletionCandidates.class)
-        SerialisationFormat outputFormat = SerialisationFormat.TSV;
+        SerialisationFormat outputFormat = null;
 
         @Option(names = { "-j", "--json-output" }, description = "Write the mapping set in SSSOM/JSON format.")
         private void useJSON(boolean value) {
@@ -504,7 +504,7 @@ public class SimpleCLI implements Runnable {
         }
         boolean stdout = outputOpts.file.equals("-");
         try {
-            SSSOMWriter writer = getWriter(outputOpts.file, outputOpts.metaFile);
+            SSSOMWriter writer = getWriter(outputOpts.file, outputOpts.metaFile, outputOpts.outputFormat);
             writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
             writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
             writer.write(set);
@@ -539,10 +539,12 @@ public class SimpleCLI implements Runnable {
             MappingSet splitSet = ms.toBuilder().mappings(null).build();
             splitSet.setMappings(mappingsBySplit.get(splitId));
 
-            String extension = "." + outputOpts.outputFormat.getExtension();
+            SerialisationFormat fmt = outputOpts.outputFormat != null ? outputOpts.outputFormat
+                    : SerialisationFormat.TSV;
+            String extension = "." + fmt.getExtension();
             File output = new File(dir, splitId + extension);
             try {
-                SSSOMWriter writer = getWriter(output.getPath(), null);
+                SSSOMWriter writer = getWriter(output.getPath(), null, fmt);
                 writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
                 writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
                 writer.write(splitSet);
@@ -552,9 +554,12 @@ public class SimpleCLI implements Runnable {
         }
     }
 
-    private SSSOMWriter getWriter(String filename, String metaFilename) throws IOException {
+    private SSSOMWriter getWriter(String filename, String metaFilename, SerialisationFormat fmt) throws IOException {
         boolean stdout = filename.equals("-");
-        switch ( outputOpts.outputFormat ) {
+        if ( fmt == null ) {
+            fmt = getOutputFormat(filename);
+        }
+        switch ( fmt ) {
         case JSON:
             JSONWriter jsonWriter = null;
             if ( stdout ) {
@@ -592,6 +597,15 @@ public class SimpleCLI implements Runnable {
             }
             return tsvWriter;
         }
+    }
+
+    private SerialisationFormat getOutputFormat(String filename) {
+        for ( SerialisationFormat fmt : SerialisationFormat.values() ) {
+            if ( filename.endsWith(fmt.getExtension()) ) {
+                return fmt;
+            }
+        }
+        return SerialisationFormat.TSV;
     }
 
     /*
