@@ -127,6 +127,10 @@ public class MappingSet  {
     @Propagatable
     private List<String> objectPreprocessing;
 
+    @JsonProperty("similarity_measure")
+    @Propagatable
+    private String similarityMeasure;
+
     @JsonProperty("see_also")
     @SlotURI("http://www.w3.org/2000/01/rdf-schema#seeAlso")
     private List<String> seeAlso;
