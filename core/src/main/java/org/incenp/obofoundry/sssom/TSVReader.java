@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2023,2024 Damien Goutte-Gattat
+ * Copyright © 2023,2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
@@ -271,9 +272,7 @@ public class TSVReader extends SSSOMReader {
      *                     this parameter.
      * @return A SSSOM mapping set, with or without any mappings depending on the
      *         parameter.
-     * @throws SSSOMFormatException If encountering invalid SSSOM data. This
-     *                              includes the case where the metadata cannot be
-     *                              found.
+     * @throws SSSOMFormatException If encountering invalid SSSOM data.
      * @throws IOException          If any kind of non-SSSOM-related I/O error
      *                              occurs.
      */
@@ -290,9 +289,9 @@ public class TSVReader extends SSSOMReader {
                 metaReader = new StringReader(extractMetadata(tsvReader));
             } else if ( tsvFile != null ) {
                 File metaFile = findMetadata(tsvFile);
-                metaReader = new FileReader(metaFile);
-            } else {
-                throw new SSSOMFormatException("No embedded metadata and external metadata not specified");
+                if ( metaFile != null ) {
+                    metaReader = new FileReader(metaFile);
+                }
             }
         }
         converter.setExtraMetadataPolicy(extraPolicy);
@@ -340,7 +339,6 @@ public class TSVReader extends SSSOMReader {
 
         validate(ms.getMappings());
 
-        metaReader.close();
         if ( tsvReader != null ) {
             tsvReader.close();
         }
@@ -372,7 +370,7 @@ public class TSVReader extends SSSOMReader {
     /*
      * Locate an external metadata file.
      */
-    private File findMetadata(File file) throws SSSOMFormatException {
+    private File findMetadata(File file) {
         String originalFilename = file.getName();
         int lastDot = originalFilename.lastIndexOf('.');
         if ( lastDot != -1 ) {
@@ -393,7 +391,7 @@ public class TSVReader extends SSSOMReader {
             metaFile = new File(file.getParent(), metaFilename);
 
             if ( !metaFile.exists() ) {
-                throw new SSSOMFormatException("External metadata file not found");
+                return null;
             }
         }
 
@@ -491,23 +489,29 @@ public class TSVReader extends SSSOMReader {
     private MappingSet readMetadata(Reader reader) throws SSSOMFormatException, IOException {
         MappingSet ms;
 
-        // Parse the metadata block into a generic map
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        try {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> rawSet = mapper.readValue(reader, Map.class);
-            ms = converter.convertMappingSet(rawSet);
-        } catch ( JsonParseException | JsonMappingException e ) {
-            throw new SSSOMFormatException("Invalid YAML metadata", e);
-        }
-
-        // Check the CURIE map for re-defined prefixes
-        Map<String, String> curieMap = ms.getCurieMap();
-        for ( String prefix : curieMap.keySet() ) {
-            BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
-            if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
-                throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
+        if ( reader != null ) {
+            // Parse the metadata block into a generic map
+            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+            try {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> rawSet = mapper.readValue(reader, Map.class);
+                ms = converter.convertMappingSet(rawSet);
+            } catch ( JsonParseException | JsonMappingException e ) {
+                throw new SSSOMFormatException("Invalid YAML metadata", e);
             }
+
+            // Check the CURIE map for re-defined prefixes
+            Map<String, String> curieMap = ms.getCurieMap();
+            for ( String prefix : curieMap.keySet() ) {
+                BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
+                if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
+                    throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
+                }
+            }
+            reader.close();
+        } else {
+            ms = new MappingSet();
+            ms.setCurieMap(new HashMap<>());
         }
 
         return ms;

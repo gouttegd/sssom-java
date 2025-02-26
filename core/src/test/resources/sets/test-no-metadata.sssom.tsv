@@ -1,0 +1,10 @@
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification
+https://example.org/entities/0001	alice	skos:closeMatch	https://example.net/entities/0111	alpha	semapv:ManualMappingCuration
+https://example.org/entities/0002	bob	skos:closeMatch	https://example.net/entities/0112	bravo	semapv:ManualMappingCuration
+https://example.org/entities/0003	charlie	skos:exactMatch	https://example.net/entities/0113	charlie	semapv:ManualMappingCuration
+https://example.org/entities/0004	daphne	skos:closeMatch	https://example.net/entities/0114	delta	semapv:ManualMappingCuration
+https://example.org/entities/0005	eve	skos:closeMatch	https://example.net/entities/0115	echo	semapv:ManualMappingCuration
+https://example.org/entities/0006	fanny	skos:closeMatch	https://example.net/entities/0116	foxtrot	semapv:ManualMappingCuration
+https://example.org/entities/0007	gavin	skos:closeMatch	https://example.net/entities/0117	golf	semapv:ManualMappingCuration
+https://example.org/entities/0008	hector	skos:exactMatch	https://example.net/entities/0118	hotel	semapv:ManualMappingCuration
+https://example.org/entities/0009	ivan	skos:exactMatch	https://example.net/entities/0119	india	semapv:ManualMappingCuration

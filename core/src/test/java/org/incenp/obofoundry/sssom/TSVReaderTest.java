@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2023,2024 Damien Goutte-Gattat
+ * Copyright © 2023,2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -170,16 +170,22 @@ public class TSVReaderTest {
     }
 
     /*
-     * Check that we fail if we can't find the metadata.
+     * Check that we can read a file that does not have any metadata block.
      */
     @Test
-    void testFailIfNoMetadata() throws IOException {
-        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-metadata.sssom.tsv");
+    void testNoMetadata() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-no-metadata.sssom.tsv");
+        MappingSet ms = reader.read();
+        Assertions.assertNotNull(ms.getCurieMap());
+
+        // But we must still fail if the missing metadata (more precisely, the curie
+        // map) would be required to properly interpret the set.
+        reader = new TSVReader("src/test/resources/sets/test-missing-metadata.sssom.tsv");
         try {
             reader.read();
-            Assertions.fail("SSSOMFormatException not thrown for missing metadata");
+            Assertions.fail("SSSOMFormatException not thrown for missing needed CURIE map");
         } catch ( SSSOMFormatException sfe ) {
-            Assertions.assertEquals("External metadata file not found", sfe.getMessage());
+            Assertions.assertTrue(sfe.getMessage().startsWith("Some prefixes are undeclared:"));
         }
     }
 
@@ -224,14 +230,6 @@ public class TSVReaderTest {
         MappingSet ms = reader.read();
         Assertions.assertEquals("https://example.org/sets/exo2c", ms.getMappingSetId());
         Assertions.assertEquals(8, ms.getMappings().size());
-
-        reader = new TSVReader(new FileInputStream("src/test/resources/sets/test-external-metadata.sssom.tsv"));
-        try {
-            reader.read();
-            Assertions.fail("SSSOMFormatException not thrown for missing metadata when reading from stream");
-        } catch ( SSSOMFormatException sfe ) {
-            Assertions.assertEquals("No embedded metadata and external metadata not specified", sfe.getMessage());
-        }
     }
 
     /*

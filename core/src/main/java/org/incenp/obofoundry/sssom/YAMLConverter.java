@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2023,2024 Damien Goutte-Gattat
+ * Copyright © 2023,2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -271,10 +271,22 @@ public class YAMLConverter {
      * @param ms The mapping set to finalise.
      */
     public void postMappings(MappingSet ms) {
-        if ( !extensionManager.isEmpty() ) {
+        if ( !getExtensionManager().isEmpty() ) {
             // Sets the effective list of defined extensions
-            ms.setExtensionDefinitions(extensionManager.getDefinitions(false, false));
+            ms.setExtensionDefinitions(getExtensionManager().getDefinitions(false, false));
         }
+    }
+
+    /*
+     * We access the extension manager through this method because it may not have
+     * been initialised if convertMappingSet has never been called (which can happen
+     * if we're reading a TSV set that doesn't have any metadata block).
+     */
+    private ExtensionSlotManager getExtensionManager() {
+        if ( extensionManager == null ) {
+            extensionManager = new ExtensionSlotManager(extraPolicy, new PrefixManager());
+        }
+        return extensionManager;
     }
 
     /*
@@ -385,7 +397,7 @@ public class YAMLConverter {
             throws SSSOMFormatException {
         // Look up the definition for the unknown slot. If we accept undefined slots,
         // we'll get an auto-generated definition.
-        ExtensionDefinition definition = extensionManager.getDefinitionForSlot(slotName);
+        ExtensionDefinition definition = getExtensionManager().getDefinitionForSlot(slotName);
         if ( definition != null ) {
             ExtensionValue parsedValue = null;
             switch ( definition.getEffectiveType() ) {
