@@ -622,6 +622,27 @@ public class TSVReaderTest {
                 mapping.getMappingJustification());
     }
 
+    @Test
+    void testReadCSVInput() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.csv");
+        reader.enableCSV(true);
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", ms.getCreatorId().get(0));
+        Assertions.assertEquals("O2C set", ms.getMappingSetTitle());
+        Assertions.assertEquals(LocalDate.of(2023, 9, 13), ms.getPublicationDate());
+
+        Assertions.assertEquals(8, ms.getMappings().size());
+
+        Mapping mapping = ms.getMappings().get(0);
+        Assertions.assertEquals("https://example.org/entities/0001", mapping.getSubjectId());
+        Assertions.assertEquals("alice", mapping.getSubjectLabel());
+        Assertions.assertEquals("http://www.w3.org/2004/02/skos/core#closeMatch", mapping.getPredicateId());
+        Assertions.assertEquals("https://example.com/entities/0011", mapping.getObjectId());
+        Assertions.assertEquals("https://w3id.org/semapv/vocab/ManualMappingCuration",
+                mapping.getMappingJustification());
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());

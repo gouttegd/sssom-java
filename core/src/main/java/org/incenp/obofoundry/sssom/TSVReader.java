@@ -76,6 +76,7 @@ public class TSVReader extends SSSOMReader {
     private BufferedReader tsvReader;
     private Reader metaReader;
     private YAMLConverter converter = new YAMLConverter();
+    private char separator = '\t';
 
     /**
      * Creates a new instance that will read data from the specified files.
@@ -244,6 +245,20 @@ public class TSVReader extends SSSOMReader {
     }
 
     /**
+     * Enables CSV mode. This makes the reader expect that columns be separated by a
+     * comma, rather than by a tab.
+     * <p>
+     * This is not officially supported by the SSSOM specification, which only
+     * specifies the SSSOM/TSV (tab-separated) format. But the CSV variant is
+     * accepted by SSSOM-Py.
+     * 
+     * @param csv If {@code true}, the reader will expect comma-separated columns.
+     */
+    public void enableCSV(boolean csv) {
+        separator = csv ? ',' : '\t';
+    }
+
+    /**
      * Reads a mapping set from the source file(s).
      * 
      * @return A complete SSSOM mapping set, unless no TSV file was provided to the
@@ -311,7 +326,7 @@ public class TSVReader extends SSSOMReader {
 
             // Read the mappings as generic Map objects
             ObjectMapper mapper = new CsvMapper();
-            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('\t').withNullValue("");
+            CsvSchema schema = CsvSchema.emptySchema().withHeader().withColumnSeparator(separator).withNullValue("");
             MappingIterator<Map<String, Object>> it = mapper.readerFor(Map.class)
                     .with(CsvParser.Feature.SKIP_EMPTY_LINES).with(schema).readValues(tsvReader);
             while ( it.hasNext() ) {
