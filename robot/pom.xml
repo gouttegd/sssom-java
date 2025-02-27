@@ -25,7 +25,7 @@
     <dependency>
       <groupId>org.obolibrary.robot</groupId>
       <artifactId>robot-command</artifactId>
-      <version>1.9.6</version>
+      <version>1.9.7</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
