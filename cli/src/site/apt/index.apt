@@ -21,8 +21,8 @@ Command-line tool
   no positional argument is specified, SSSOM-CLI will attempt to read
   a set from its standard input.
   
-  The SSSOM/TSV, SSSOM/JSON, and RDF/Turtle formats are supported.
-  SSSOM-CLI will automatically detect the format.
+  The SSSOM/TSV, SSSOM/CSV, SSSOM/JSON, and RDF/Turtle formats are
+  supported. SSSOM-CLI will automatically detect the format.
   
   To read both from the standard input and from one or several file(s),
   use the special value <<<->>> as a positional argument. For example,
@@ -132,7 +132,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
 ** 2.5. Output format
 
   SSSOM-CLI can write the output set in the SSSOM/TSV format, the
-  SSSOM/JSON format, or the RDF Turtle format.
+  SSSOM/CSV format, the SSSOM/JSON format, or the RDF Turtle format.
   
   By default, it uses the extension of the output filename, if
   specified, to automatically determine the output format. Without an
@@ -144,6 +144,8 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
   [tsv] Write output in SSSOM/TSV format (this is already the default).
   
+  [csv] Write output in SSSOM/CSV format.
+  
   [json] Write output in SSSOM/JSON format.
   
   [ttl] Write output in RDF Turtle format.
@@ -152,7 +154,9 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
   Note that both the JSON and RDF formats are currently poorly
   specified, so the output produced by those options may change in the
-  future.
+  future. The SSSOM/CSV format is not officially part of the SSSOM
+  specification at all. It is supported here merely as a convenience,
+  but its use is best avoided.
   
   In both JSON and RDF modes, the <<<--metadata-output>>> option above
   is ignored, since those formats do not allow the use of an external

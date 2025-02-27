@@ -1,3 +1,11 @@
+Changes in sssom-java-1.2.0
+---------------------------
+
+    * Support for set-level `similarity_measure` slot.
+    * Accept reading SSSOM/TSV files without any metadata block.
+    * Read/write support for the (unofficial) SSSOM/CSV format. 
+
+
 Changes in sssom-java-1.1.2
 ---------------------------
 

@@ -32,8 +32,8 @@ MappingSet myMappingSet = reader.read();
 * 3. Easily reading from any supported format.
 
   To make it easier to read a mapping set from any of the supported
-  serialisation formats (SSSOM/TSV, SSSOM/JSON, and RDF/Turtle), the
-  Extended Library provides a
+  serialisation formats (SSSOM/TSV, SSSOM/CSV, SSSOM/JSON, and
+  RDF/Turtle), the Extended Library provides a
   {{{../apidocs/org/incenp/obofoundry/sssom/util/ReaderFactory.html}ReaderFactory}}
   helper class. This class in turns provide methods to obtain a SSSOM
   reader object from a file, by guessing, whenever possible, the format
