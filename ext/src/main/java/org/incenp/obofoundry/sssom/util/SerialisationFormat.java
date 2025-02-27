@@ -31,22 +31,22 @@ public enum SerialisationFormat {
     /**
      * SSSOM/TSV, the main format specifically designed to serialise SSSOM mappings.
      */
-    TSV("SSSOM/TSV", "tsv", "sssom.tsv"),
+    TSV("SSSOM/TSV", "tsv", ".sssom.tsv"),
 
     /**
      * SSSOM/CSV, variant used comma-separated columns.
      */
-    CSV("SSSOM/CSV", "csv", "sssom.csv"),
+    CSV("SSSOM/CSV", "csv", ".sssom.csv"),
 
     /**
      * SSSOM/JSON, the other format described in the SSSOM specification.
      */
-    JSON("SSSOM/JSON", "json", "sssom.json"),
+    JSON("SSSOM/JSON", "json", ".sssom.json"),
 
     /**
      * RDF/Turtle, a RDF representation of SSSOM objects in the Turtle syntax.
      */
-    RDF_TURTLE("RDF Turtle", "ttl", "ttl");
+    RDF_TURTLE("RDF Turtle", "ttl", ".ttl");
 
     private final static Map<String, SerialisationFormat> NAMES_MAP;
     private final static Map<String, SerialisationFormat> EXTENSIONS_MAP;

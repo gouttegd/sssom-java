@@ -541,8 +541,7 @@ public class SimpleCLI implements Runnable {
 
             SerialisationFormat fmt = outputOpts.outputFormat != null ? outputOpts.outputFormat
                     : SerialisationFormat.TSV;
-            String extension = "." + fmt.getExtension();
-            File output = new File(dir, splitId + extension);
+            File output = new File(dir, splitId + fmt.getExtension());
             try {
                 SSSOMWriter writer = getWriter(output.getPath(), null, fmt);
                 writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
