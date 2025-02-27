@@ -76,7 +76,7 @@ public class TSVReader extends SSSOMReader {
     private BufferedReader tsvReader;
     private Reader metaReader;
     private YAMLConverter converter = new YAMLConverter();
-    private char separator = '\t';
+    private SeparatorMode sepMode = SeparatorMode.GUESS;
 
     /**
      * Creates a new instance that will read data from the specified files.
@@ -245,17 +245,17 @@ public class TSVReader extends SSSOMReader {
     }
 
     /**
-     * Enables CSV mode. This makes the reader expect that columns be separated by a
-     * comma, rather than by a tab.
+     * Sets the behaviour of the reader regarding the column separator character.
      * <p>
-     * This is not officially supported by the SSSOM specification, which only
-     * specifies the SSSOM/TSV (tab-separated) format. But the CSV variant is
-     * accepted by SSSOM-Py.
+     * By default, the reader tries to guess whether columns in the TSV section are
+     * separated by tabs or by commas (defaulting to tabs if it cannot positively
+     * determine the separator). Use this method to force the reader to expect a
+     * given separator.
      * 
-     * @param csv If {@code true}, the reader will expect comma-separated columns.
+     * @param mode The separator mode to be used by this reader.
      */
-    public void enableCSV(boolean csv) {
-        separator = csv ? ',' : '\t';
+    public void setSeparatorMode(SeparatorMode mode) {
+        sepMode = mode;
     }
 
     /**
@@ -321,6 +321,20 @@ public class TSVReader extends SSSOMReader {
         MappingSet ms = readMetadata(metaReader);
 
         if ( !metadataOnly ) {
+            char separator;
+            switch ( sepMode ) {
+            case TAB:
+                separator = '\t';
+                break;
+            case COMMA:
+                separator = ',';
+                break;
+            case GUESS:
+            default:
+                separator = peekSeparator(tsvReader);
+                break;
+
+            }
             ArrayList<Mapping> mappings = new ArrayList<Mapping>();
             ms.setMappings(mappings);
 
@@ -380,6 +394,25 @@ public class TSVReader extends SSSOMReader {
         reader.reset();
 
         return t;
+    }
+
+    /*
+     * Peek into the first 32 bytes of the header line to guess the separator used
+     * (tab or comma).
+     */
+    private char peekSeparator(BufferedReader reader) throws IOException {
+        reader.mark(32);
+        int i, n = 0, sep = -1;
+        do {
+            i = reader.read();
+            if ( i == '\t' || i == ',' ) {
+                sep = i;
+            }
+            n += 1;
+        } while ( sep == -1 && i != -1 && n < 32 );
+        reader.reset();
+
+        return sep != -1 ? (char) sep : '\t';
     }
 
     /*
@@ -536,5 +569,27 @@ public class TSVReader extends SSSOMReader {
         TSV_WITH_EMBEDDED_METADATA,
         TSV_ONLY,
         JSON
+    }
+
+    /**
+     * Defines what separator character the reader should expect when parsing the
+     * TSV section.
+     */
+    public enum SeparatorMode {
+        /**
+         * Columns are expected to be separated by tabs.
+         */
+        TAB,
+
+        /**
+         * Columns are expected to be separated by commas.
+         */
+        COMMA,
+
+        /**
+         * The reader should try to infer the separator used (with fallback to expecting
+         * tabs if the separator cannot be positively determined).
+         */
+        GUESS
     }
 }

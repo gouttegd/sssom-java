@@ -31,6 +31,7 @@ import org.incenp.obofoundry.sssom.JSONReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.TSVReader;
+import org.incenp.obofoundry.sssom.TSVReader.SeparatorMode;
 import org.incenp.obofoundry.sssom.rdf.RDFReader;
 
 /**
@@ -225,8 +226,10 @@ public class ReaderFactory {
     public SSSOMReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
         SSSOMReader br = null;
         SerialisationFormat format = null;
+        boolean fromFilename = false;
         if ( useExtension && filename != null ) {
             format = inferFormat(filename);
+            fromFilename = format != null;
         }
         if ( format == null ) {
             format = inferFormat(reader);
@@ -242,11 +245,14 @@ public class ReaderFactory {
             br = new JSONReader(reader);
             break;
         case TSV:
-            br = new TSVReader(reader, null, filename);
-            break;
         case CSV:
             br = new TSVReader(reader, null, filename);
-            ((TSVReader) br).enableCSV(true);
+            if ( fromFilename ) {
+                // If we got the format from the extension, we expect that the corresponding
+                // separator MUST be used.
+                SeparatorMode mode = format == SerialisationFormat.TSV ? SeparatorMode.TAB : SeparatorMode.COMMA;
+                ((TSVReader) br).setSeparatorMode(mode);
+            }
             break;
         }
         return br;
@@ -283,7 +289,7 @@ public class ReaderFactory {
             } else if ( c == '@' || c == '[' ) {
                 format = SerialisationFormat.RDF_TURTLE;
             } else if ( Character.isLowerCase(c) ) {
-                // Assume a TSV file without an embedded metadata block
+                // Assume a TSV or CSV file without an embedded metadata block.
                 format = SerialisationFormat.TSV;
             }
         }

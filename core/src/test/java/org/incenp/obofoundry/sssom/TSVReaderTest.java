@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.TSVReader.SeparatorMode;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -625,7 +626,6 @@ public class TSVReaderTest {
     @Test
     void testReadCSVInput() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.csv");
-        reader.enableCSV(true);
         MappingSet ms = reader.read();
 
         Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", ms.getCreatorId().get(0));
@@ -641,6 +641,29 @@ public class TSVReaderTest {
         Assertions.assertEquals("https://example.com/entities/0011", mapping.getObjectId());
         Assertions.assertEquals("https://w3id.org/semapv/vocab/ManualMappingCuration",
                 mapping.getMappingJustification());
+    }
+
+    @Test
+    void testForceTabSeparator() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv");
+        reader.setSeparatorMode(SeparatorMode.TAB);
+        MappingSet ms = reader.read();
+        Assertions.assertEquals(8, ms.getMappings().size());
+    }
+
+    @Test
+    void testForceCommaSeparator() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.csv");
+        reader.setSeparatorMode(SeparatorMode.COMMA);
+        MappingSet ms = reader.read();
+        Assertions.assertEquals(8, ms.getMappings().size());
+    }
+
+    @Test
+    void testFailOnWrongSeparator() throws IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.csv");
+        reader.setSeparatorMode(SeparatorMode.TAB);
+        Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
     }
 
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {

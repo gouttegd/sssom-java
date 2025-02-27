@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 public class ReaderFactoryTest {
 
     private final static String sampleTSVFile = "../core/src/test/resources/sets/exo2c.sssom.tsv";
+    private final static String sampleCSVFile = "../core/src/test/resources/sets/exo2c.sssom.csv";
     private final static String sampleJSONFile = "../core/src/test/resources/sets/exo2c.sssom.json";
     private final static String sampleTTFFile = "src/test/resources/sets/exo2c.ttl";
 
@@ -46,6 +47,11 @@ public class ReaderFactoryTest {
         ReaderFactory factory = new ReaderFactory();
 
         reader = new BufferedReader(new FileReader(new File(sampleTSVFile)));
+        Assertions.assertEquals(SerialisationFormat.TSV, factory.inferFormat(reader));
+        reader.close();
+
+        reader = new BufferedReader(new FileReader(new File(sampleCSVFile)));
+        // Without the filename, this is inferred as a TSV file, not a CSV file.
         Assertions.assertEquals(SerialisationFormat.TSV, factory.inferFormat(reader));
         reader.close();
 
