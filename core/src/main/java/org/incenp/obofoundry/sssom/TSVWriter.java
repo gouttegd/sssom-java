@@ -73,9 +73,11 @@ import org.incenp.obofoundry.sssom.slots.StringSlot;
 public class TSVWriter extends SSSOMWriter {
 
     private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
+    private static final Pattern csvSpecialChars = Pattern.compile("[,\n\r\"]");
 
     private BufferedWriter tsvWriter, metaWriter;
     private Set<String> usedPrefixes = new HashSet<String>();
+    private boolean isCSV = false;
 
     /**
      * Creates a new instance that will write data to the specified files.
@@ -157,6 +159,20 @@ public class TSVWriter extends SSSOMWriter {
         this(new File(filename));
     }
 
+    /**
+     * Enables CSV mode. This makes the writer use a comma to separate columns,
+     * rather than a tab.
+     * <p>
+     * This is not officially supported by the SSSOM specification, which only
+     * specifies the tab-separated format. But the comma-separated variant is
+     * accepted by SSSOM-Py.
+     * 
+     * @param csv If {@code true}, the writer will produce a CSV file.
+     */
+    public void enableCSV(boolean csv) {
+        isCSV = csv;
+    }
+
     @Override
     protected void doWrite(MappingSet mappingSet) throws IOException {
         // Find out which prefixes are actually needed
@@ -193,6 +209,7 @@ public class TSVWriter extends SSSOMWriter {
         // Write the column headers
         List<Slot<Mapping>> usedSlots = helper.getSlots();
         ArrayList<String> headers = new ArrayList<String>();
+        String sep = isCSV ? "," : "\t";
         for ( Slot<Mapping> slot : usedSlots ) {
             if ( slot.getName().equals("extensions") ) {
                 for ( ExtensionDefinition definition : extraSlots ) {
@@ -210,7 +227,7 @@ public class TSVWriter extends SSSOMWriter {
             headers.add("object_id");
             headers.add("mapping_justification");
         }
-        tsvWriter.append(String.join("\t", headers));
+        tsvWriter.append(String.join(sep, headers));
         tsvWriter.append('\n');
 
         // Write the individual mappings
@@ -218,7 +235,7 @@ public class TSVWriter extends SSSOMWriter {
         mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
             helper.visitSlots(mapping, mappingVisitor, true);
-            tsvWriter.append(String.join("\t", mappingVisitor.results));
+            tsvWriter.append(String.join(sep, mappingVisitor.results));
             tsvWriter.append('\n');
             mappingVisitor.results.clear();
         }
@@ -669,7 +686,8 @@ public class TSVWriter extends SSSOMWriter {
          * https://datatracker.ietf.org/doc/html/rfc4180#section-2
          */
         private String escapeTSV(String value) {
-            if ( tsvSpecialChars.matcher(value).find() ) {
+            Pattern specialChars = isCSV ? csvSpecialChars : tsvSpecialChars;
+            if ( specialChars.matcher(value).find() ) {
                 return "\"" + value.replace("\"", "\"\"") + "\"";
             } else {
                 return value;

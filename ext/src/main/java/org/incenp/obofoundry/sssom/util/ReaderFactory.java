@@ -225,14 +225,8 @@ public class ReaderFactory {
     public SSSOMReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
         SSSOMReader br = null;
         SerialisationFormat format = null;
-        boolean isCSV = false;
         if ( useExtension && filename != null ) {
-            if ( filename.endsWith(".sssom.csv") ) {
-                format = SerialisationFormat.TSV;
-                isCSV = true;
-            } else {
-                format = inferFormat(filename);
-            }
+            format = inferFormat(filename);
         }
         if ( format == null ) {
             format = inferFormat(reader);
@@ -249,9 +243,10 @@ public class ReaderFactory {
             break;
         case TSV:
             br = new TSVReader(reader, null, filename);
-            if ( isCSV ) {
-                ((TSVReader) br).enableCSV(true);
-            }
+            break;
+        case CSV:
+            br = new TSVReader(reader, null, filename);
+            ((TSVReader) br).enableCSV(true);
             break;
         }
         return br;

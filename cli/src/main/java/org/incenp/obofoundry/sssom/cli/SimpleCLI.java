@@ -584,6 +584,7 @@ public class SimpleCLI implements Runnable {
             return ttlWriter;
 
         case TSV:
+        case CSV:
         default:
             TSVWriter tsvWriter = null;
             if ( stdout ) {
@@ -595,6 +596,7 @@ public class SimpleCLI implements Runnable {
             } else {
                 tsvWriter = new TSVWriter(filename, metaFilename);
             }
+            tsvWriter.enableCSV(fmt == SerialisationFormat.CSV);
             return tsvWriter;
         }
     }

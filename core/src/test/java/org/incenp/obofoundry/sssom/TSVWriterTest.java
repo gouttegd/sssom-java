@@ -285,6 +285,7 @@ public class TSVWriterTest {
     void testEscapingTSV() throws IOException, SSSOMFormatException {
         MappingSet ms = getTestSet();
         ms.setMappingSetId("https://example.org/sets/test-escaping-tsv");
+        ms.getMappings().get(0).setSubjectLabel("Value with , characters");
         ms.getMappings().get(0).setComment("Value\twith\ttab\tcharacters");
         ms.getMappings().get(0).setObjectLabel("Value with \"quote\" characters");
         ms.getMappings().get(0).setIssueTrackerItem("Value with\nnew line character");
@@ -298,6 +299,40 @@ public class TSVWriterTest {
         ms.getMappings().get(0).setSubjectType(EntityType.OWL_CLASS);
 
         assertWrittenAsExpected(ms, "test-enum-values-in-yaml", null, null, null);
+    }
+
+    @Test
+    void testWritingAsCSV() throws IOException {
+        MappingSet ms = getTestSet();
+        File written = new File("src/test/resources/output/exo2c-minimal.sssom.csv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.enableCSV(true);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/output/exo2c-minimal.sssom.csv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
+    }
+
+    void testEscapingCSV() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-escaping-tsv.sssom.tsv");
+        MappingSet ms = reader.read();
+        ms.setMappingSetId("https://example.org/sets/test-escaping-csv");
+
+        File written = new File("src/test/resources/sets/test-escaping-csv.sssom.csv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.enableCSV(true);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/output/test-escaping-csv.sssom.csv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
     }
 
     /*

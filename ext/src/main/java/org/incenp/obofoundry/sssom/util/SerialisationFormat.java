@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,11 @@ public enum SerialisationFormat {
      * SSSOM/TSV, the main format specifically designed to serialise SSSOM mappings.
      */
     TSV("SSSOM/TSV", "tsv", "sssom.tsv"),
+
+    /**
+     * SSSOM/CSV, variant used comma-separated columns.
+     */
+    CSV("SSSOM/CSV", "csv", "sssom.csv"),
 
     /**
      * SSSOM/JSON, the other format described in the SSSOM specification.
