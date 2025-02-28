@@ -260,6 +260,12 @@ public class SSSOMCLITest {
                 new String[] { "--output-format", "tTl" });
     }
 
+    @Test
+    void testDisableSorting() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c-unsorted.sssom.tsv" }, "test-exo2c-unsorted.sssom.json",
+                new String[] { "--output-format", "JSON", "--no-sorting" });
+    }
+
     /*
      * Playing with propagation/condensation
      */

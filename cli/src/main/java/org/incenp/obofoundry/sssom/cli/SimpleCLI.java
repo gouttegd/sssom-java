@@ -205,6 +205,10 @@ public class SimpleCLI implements Runnable {
             jsonShortenIRIs = arg;
             jsonWriteContext = arg;
         }
+
+        @Option(names = {"--sorting" }, negatable = true, defaultValue = "true", fallbackValue = "true",
+                description = "Enable/disable sorting of mappings. This is enabled by default.")
+        boolean sortMappings;
     }
 
     enum OutputMapSource {
@@ -504,10 +508,7 @@ public class SimpleCLI implements Runnable {
         }
         boolean stdout = outputOpts.file.equals("-");
         try {
-            SSSOMWriter writer = getWriter(outputOpts.file, outputOpts.metaFile, outputOpts.outputFormat);
-            writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
-            writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
-            writer.write(set);
+            getWriter(outputOpts.file, outputOpts.metaFile, outputOpts.outputFormat).write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
         }
@@ -543,10 +544,7 @@ public class SimpleCLI implements Runnable {
                     : SerialisationFormat.TSV;
             File output = new File(dir, splitId + fmt.getExtension());
             try {
-                SSSOMWriter writer = getWriter(output.getPath(), null, fmt);
-                writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
-                writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
-                writer.write(splitSet);
+                getWriter(output.getPath(), null, fmt).write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());
             }
@@ -558,46 +556,48 @@ public class SimpleCLI implements Runnable {
         if ( fmt == null ) {
             fmt = getOutputFormat(filename);
         }
+        SSSOMWriter writer;
         switch ( fmt ) {
         case JSON:
-            JSONWriter jsonWriter = null;
             if ( stdout ) {
-                jsonWriter = new JSONWriter(System.out);
+                writer = new JSONWriter(System.out);
             } else {
-                jsonWriter = new JSONWriter(filename);
+                writer = new JSONWriter(filename);
             }
-            jsonWriter.setShortenIRIs(outputOpts.jsonShortenIRIs);
-            jsonWriter.setWriteCurieMapInContext(outputOpts.jsonWriteContext);
-
-            return jsonWriter;
+            ((JSONWriter) writer).setShortenIRIs(outputOpts.jsonShortenIRIs);
+            ((JSONWriter) writer).setWriteCurieMapInContext(outputOpts.jsonWriteContext);
+            break;
 
         case RDF_TURTLE:
-            RDFWriter ttlWriter = null;
             if ( stdout ) {
-                ttlWriter = new RDFWriter(System.out);
+                writer = new RDFWriter(System.out);
             } else {
-                ttlWriter = new RDFWriter(filename);
+                writer = new RDFWriter(filename);
             }
             outputOpts.defaultWriteExtraMetadata = ExtraMetadataPolicy.UNDEFINED;
             outputOpts.defaultEnableCondensation = false;
-            return ttlWriter;
+            break;
 
         case TSV:
         case CSV:
         default:
-            TSVWriter tsvWriter = null;
             if ( stdout ) {
                 FileOutputStream metaStream = null;
                 if ( metaFilename != null ) {
                     metaStream = new FileOutputStream(metaFilename);
                 }
-                tsvWriter = new TSVWriter(System.out, metaStream);
+                writer = new TSVWriter(System.out, metaStream);
             } else {
-                tsvWriter = new TSVWriter(filename, metaFilename);
+                writer = new TSVWriter(filename, metaFilename);
             }
-            tsvWriter.enableCSV(fmt == SerialisationFormat.CSV);
-            return tsvWriter;
+            ((TSVWriter) writer).enableCSV(fmt == SerialisationFormat.CSV);
+            break;
         }
+
+        writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
+        writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
+        writer.setSortingEnabled(outputOpts.sortMappings);
+        return writer;
     }
 
     private SerialisationFormat getOutputFormat(String filename) {
