@@ -164,6 +164,49 @@ public class TSVWriterTest {
     }
 
     /*
+     * Check that mappings are sorted.
+     */
+    @Test
+    void testSorting() throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/sets/exo2c-unsorted.sssom.tsv");
+        TSVReader reader = new TSVReader(source);
+        MappingSet ms = reader.read();
+
+        File written = new File("src/test/resources/output/exo2c-sorted.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/sets/exo2c.sssom.tsv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
+    }
+
+    /*
+     * Check that we can force mappings not to be sorted.
+     */
+    @Test
+    void testDisableSorting() throws IOException, SSSOMFormatException {
+        File source = new File("src/test/resources/sets/exo2c-unsorted.sssom.tsv");
+        TSVReader reader = new TSVReader(source);
+        MappingSet ms = reader.read();
+
+        File written = new File("src/test/resources/output/exo2c-unsorted.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.setSortingEnabled(false);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/sets/exo2c-unsorted.sssom.tsv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
+    }
+
+    /*
      * Check that extra slots are either not written, written in "declared" form, or
      * written as if they were standard slots, depending on the ExtraMetadataPolicy.
      */

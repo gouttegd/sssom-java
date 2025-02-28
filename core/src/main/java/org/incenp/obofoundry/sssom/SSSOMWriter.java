@@ -46,6 +46,7 @@ public abstract class SSSOMWriter {
     protected ExtensionSlotManager extensionManager;
     protected PrefixManager prefixManager = new PrefixManager();
     private boolean customMap = false;
+    private boolean sortMappings = true;
 
     /**
      * Sets the Curie map to use to shorten identifiers. The Curie map associated
@@ -83,6 +84,15 @@ public abstract class SSSOMWriter {
     }
 
     /**
+     * Enables or disables sorting the mappings when writing them.
+     * 
+     * @param enabled {@code False} to disable sorting; it is enabled by default.
+     */
+    public void setSortingEnabled(boolean enabled) {
+        sortMappings = enabled;
+    }
+
+    /**
      * Serialises a mapping set into the underlying file. This method performs some
      * prelimiary steps that are common to all serialisers, then delegates the
      * actual serialisation task to {@link #doWrite(MappingSet)}.
@@ -109,6 +119,10 @@ public abstract class SSSOMWriter {
         extensionManager = new ExtensionSlotManager(extraPolicy, prefixManager);
         extensionManager.fillFromExistingExtensions(mappingSet);
         mappingSet.setExtensionDefinitions(extensionManager.getDefinitions(true, false));
+
+        if ( sortMappings ) {
+            mappingSet.getMappings().sort(new DefaultMappingComparator());
+        }
 
         doWrite(mappingSet);
     }

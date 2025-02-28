@@ -232,7 +232,6 @@ public class TSVWriter extends SSSOMWriter {
 
         // Write the individual mappings
         MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(extraSlots);
-        mappingSet.getMappings().sort(new DefaultMappingComparator());
         for ( Mapping mapping : mappingSet.getMappings() ) {
             helper.visitSlots(mapping, mappingVisitor, true);
             tsvWriter.append(String.join(sep, mappingVisitor.results));

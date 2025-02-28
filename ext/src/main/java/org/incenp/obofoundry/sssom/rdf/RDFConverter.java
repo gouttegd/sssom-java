@@ -42,7 +42,6 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
-import org.incenp.obofoundry.sssom.DefaultMappingComparator;
 import org.incenp.obofoundry.sssom.ExtensionSlotManager;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
@@ -197,7 +196,6 @@ public class RDFConverter {
 
         RDFBuilderVisitor<Mapping> mappingVisitor = new RDFBuilderVisitor<Mapping>(model, null, prefixManager,
                 usedPrefixes);
-        ms.getMappings().sort(new DefaultMappingComparator());
         SlotHelper<Mapping> mappingHelper = getMappingHelper();
         for ( Mapping mapping : ms.getMappings() ) {
             // Add individual mapping
