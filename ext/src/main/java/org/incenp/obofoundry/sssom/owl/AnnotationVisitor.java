@@ -34,6 +34,7 @@ import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
 import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.URISlot;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
@@ -41,6 +42,7 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.vocab.XSDVocabulary;
 
 /**
@@ -100,6 +102,21 @@ public class AnnotationVisitor extends SlotVisitorBase<Mapping> {
         OWLAnnotationProperty p = factory.getOWLAnnotationProperty(transformer.transform(slot));
         for ( String value : values ) {
             annots.add(factory.getOWLAnnotation(p, factory.getOWLLiteral(value)));
+        }
+    }
+
+    @Override
+    public void visit(URISlot<Mapping> slot, Mapping mapping, String value) {
+        annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
+                factory.getOWLLiteral(value, factory.getOWLDatatype(XSDVocabulary.ANY_URI.getIRI()))));
+    }
+
+    @Override
+    public void visit(URISlot<Mapping> slot, Mapping mapping, List<String> values) {
+        OWLAnnotationProperty p = factory.getOWLAnnotationProperty(transformer.transform(slot));
+        OWLDatatype t = factory.getOWLDatatype(XSDVocabulary.ANY_URI.getIRI());
+        for ( String value : values ) {
+            annots.add(factory.getOWLAnnotation(p, factory.getOWLLiteral(value, t)));
         }
     }
 
