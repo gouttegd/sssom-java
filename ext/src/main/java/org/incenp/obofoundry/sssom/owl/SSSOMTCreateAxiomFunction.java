@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,7 +62,11 @@ import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
  * <p>
  * The function also accepts an optional <code>/annots=...</code> parameter; if
  * present, it should be a list of SSSOM metadata fields that should be used to
- * annotate the generated axiom.
+ * annotate the generated axiom. When that parameter is present, another
+ * parameter, <code>/annots_uris=...</code> can be used to specify how metadata
+ * fields should be rendered into annotation properties (allowed values:
+ * <code>direct</code>, <code>standard_map</code>; default is
+ * <code>direct</code>).
  */
 public class SSSOMTCreateAxiomFunction
         implements ISSSOMTFunction<IMappingTransformer<OWLAxiom>>, IMappingTransformer<OWLAxiom> {
@@ -124,15 +128,7 @@ public class SSSOMTCreateAxiomFunction
             throw new SSSOMTransformError(e.getMessage());
         }
 
-        String annotSpec = keyedArguments.get("annots");
-        if ( annotSpec == null && arguments.size() == 2 ) {
-            annotSpec = arguments.get(1);
-        }
-        if ( annotSpec != null ) {
-            t = app.createAnnotatedTransformer(t, annotSpec);
-        }
-
-        return t;
+        return SSSOMTHelper.maybeCreateAnnotatedTransformer(app, t, keyedArguments, arguments, 1);
     }
 
     @Override

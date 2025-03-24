@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,12 +33,23 @@ import org.semanticweb.owlapi.model.OWLAxiom;
  * mappings, as per the serialisation rules set forth in the SSSOM
  * specification.
  * <p>
- * The function accepts an optional argument, which if present should be a list
- * of SSSOM metadata slots. The generated axiom will be annotated with the value
- * of those slots. If that argument is not present, it defaults to
- * <code>metadata,-mapping_cardinality</code>, indicating that all available
- * metadata slots should be turned into annotations, except
- * <code>mapping_cardinality</code>.
+ * The function also accepts an optional <code>/annots=...</code> parameter; if
+ * present, it should be a list of SSSOM metadata fields that should be used to
+ * annotate the generated axiom. When that parameter is present, another
+ * parameter, <code>/annots_uris=...</code> can be used to specify how metadata
+ * fields should be rendered into annotation properties (allowed values:
+ * <code>direct</code>, <code>standard_map</code>; default is
+ * <code>direct</code>).
+ * <p>
+ * For backwards compatibility, the value of the <code>/annots=...</code>
+ * parameter may be given as a positional argument instead.
+ * <p>
+ * If no <code>/annots=...</code> parameter and no position argument are
+ * specified, the list defaults to <code>metadata,-mapping_cardinality</code>,
+ * indicating that all available metadata slots should be turned into
+ * annotations, except <code>mapping_cardinality</code>. To avoid generating any
+ * annotation at all, specify an explicitly empty list
+ * (<code>/annots=""</code>).
  * 
  * @see <a href="https://mapping-commons.github.io/sssom/spec-formats-owl/">The
  *      OWL/RDF serialisation format in the SSSOM specification</a>
@@ -64,8 +75,11 @@ public class SSSOMTDirectFunction implements ISSSOMTFunction<IMappingTransformer
     @Override
     public IMappingTransformer<OWLAxiom> call(List<String> arguments, Map<String, String> keyedArguments)
             throws SSSOMTransformError {
-        return app.createAnnotatedTransformer(new DirectAxiomGenerator(app.getOntology()),
-                arguments.isEmpty() ? "metadata,-mapping_cardinality" : arguments.get(0));
+        if ( arguments.isEmpty() && !keyedArguments.containsKey(SSSOMTHelper.ANNOTS_KEYWORD) ) {
+            keyedArguments.put(SSSOMTHelper.ANNOTS_KEYWORD, "metadata,-mapping_cardinality");
+        }
+        return SSSOMTHelper.maybeCreateAnnotatedTransformer(app, new DirectAxiomGenerator(app.getOntology()),
+                keyedArguments, arguments, 0);
     }
 
 }

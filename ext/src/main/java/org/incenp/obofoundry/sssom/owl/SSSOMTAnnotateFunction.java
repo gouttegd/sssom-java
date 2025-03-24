@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2024,2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
  * </pre>
  * 
  * <p>
- * Additionally, the function can accept two parameters:
+ * Additionally, the function can accept three parameters:
  * <ul>
  * <li><code>/type=T</code>, where <em>T</em> is the type of the annotation
  * value; it defaults to <code>xsd:string</code>; any valid OWL2 datatype can be
@@ -59,6 +59,10 @@ import org.semanticweb.owlapi.model.OWLDataFactory;
  * annotation value should be treated as a IRI;
  * <li><code>/annots=A</code>, where <code>A</code> is a list of SSSOM metadata
  * fields to annotate the generated axiom with.
+ * <li><code>/annots_uris=B</code>, where <code>B</code> dictates how metadata
+ * fields are rendered into annotation properties (allowed values:
+ * <code>direct</code>, <code>standard_map</code>; the default is
+ * <code>direct</code>).
  * </ul>
  */
 public class SSSOMTAnnotateFunction
@@ -103,18 +107,9 @@ public class SSSOMTAnnotateFunction
     @Override
     public IMappingTransformer<OWLAxiom> call(List<String> arguments, Map<String, String> keyedArguments)
             throws SSSOMTransformError {
-        String annotSpec = keyedArguments.get("annots");
-        if ( annotSpec == null && arguments.size() == 4 ) {
-            annotSpec = arguments.get(3);
-        }
-
         IMappingTransformer<OWLAxiom> t = new SSSOMTAnnotateFunction(app, arguments.get(0), arguments.get(1),
                 arguments.get(2), keyedArguments.get("type"));
-        if ( annotSpec != null ) {
-            return app.createAnnotatedTransformer(t, annotSpec);
-        } else {
-            return t;
-        }
+        return SSSOMTHelper.maybeCreateAnnotatedTransformer(app, t, keyedArguments);
     }
 
     @Override

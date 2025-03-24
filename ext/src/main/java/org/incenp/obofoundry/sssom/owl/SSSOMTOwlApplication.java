@@ -282,7 +282,11 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
      *                         for details about the expected format of that
      *                         argument.
      * @return The modified axiom generator.
+     * @deprecated Use
+     *             {@link SSSOMTHelper#maybeCreateAnnotatedTransformer(SSSOMTOwlApplication, IMappingTransformer, Map)}
+     *             instead.
      */
+    @Deprecated
     public IMappingTransformer<OWLAxiom> createAnnotatedTransformer(IMappingTransformer<OWLAxiom> innerTransformer,
             String spec) {
         spec = spec.replaceAll("( |\r|\n|\t)", "");
