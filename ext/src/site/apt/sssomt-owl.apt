@@ -220,9 +220,6 @@ is_a(%{object_id}, BFO:0000003) -> annotate(%{object_id}, rdfs:comment, "My obje
   representation, following the rules set forth in the
   {{{https://mapping-commons.github.io/sssom/spec-formats-owl/}SSSOM specification}}.
   
-  It takes a single optional argument, which describes how the generated
-  axioms should be annotated with the mapping metadata.
-  
 *** 4.1.1. OWL serialisation rules
   
   Of note, those rules are not fully specified yet and therefore the
@@ -287,15 +284,15 @@ AnnotationAssertion(
   skos:exactMatch UBERON:0000016 mesh:D007515)
 +-----------------------------------------------------------------------
 
-  To change the default behaviour, the <direct> function accepts an
-  optional argument that is a comma-separated list of names. Each name
-  should be the name of a metadata slot that is to be turned into an
-  axiom annotation, unless it is prefixed by a minus character
+  To change the default behaviour, the <direct> function accepts two
+  optional flags.
+  
+  The first one, <<</annots>>>, expects a comma-separated list of.
+  Each name should be the name of a metadata slot that is to be turned
+  into an axiom annotation, unless it is prefixed by a minus character
   (<<<->>>), in which case the slot is to be excluded from the
   annotations.
-  
-  The following special names can also be used:
-  
+    
   * <<<all>>>: represent all slots;
   
   * <<<mapping>>>: represent the slots that describes the mapping itself
@@ -309,7 +306,7 @@ AnnotationAssertion(
   For example:
   
 +-----------------------------------------------------------------------
-... -> direct("mapping_justification,subject_label,object_label");
+... -> direct(/annots="mapping_justification,subject_label,object_label");
 +-----------------------------------------------------------------------
 
   will generate axioms that will be annotated with the values of the
@@ -317,14 +314,32 @@ AnnotationAssertion(
   (assuming those slots are present of course).
   
 +-----------------------------------------------------------------------
-... -> direct("metadata,-subject_label,-object_label)";
+... -> direct(/annots="metadata,-subject_label,-object_label)";
 +-----------------------------------------------------------------------
 
   will generate axioms annotated with all the metadata slots, <except>
   the <subject_label> and <object_label> slots.
   
   To prevent the <direct> function from annotating axioms completely,
-  simply pass it an empty string.
+  simply pass an empty parameter (<<</annots="">>>).
+  
+  The second flag is <<</annots_uris>>>. It dictates how individual
+  slots are turned into annotation properties. It accepts two values:
+  
+  * <<<direct>>>: uses as annotation properties the fully qualified
+    names of the slots; for example, the <<<creator_id>>> slot is turned 
+    into <<<sssom:creator_id>>> annotation;
+    
+  * <<<standard-map>>>: uses as annotation properties the properties
+    that are explicitly mapped to the slots in the SSSOM specification
+    (if a slot is not mapped to a property, then its fully qualified
+    name is used instead); for example, the <<<creator_id>>> slot is
+    turned into a <<<http://purl.org/dc/terms/creator>>> annotation.
+    
+  []
+  
+  If the <<</annots_uris=>>> parameter is not used, the default
+  behaviour is the same as <<</annots_uris="direct">>>.
 
 ** 4.2. <create_axiom>
 
@@ -408,10 +423,9 @@ AnnotationAssertion(
 *** 4.2.2. Annotating the generated axiom
 
   By default, <create_axiom> creates un-annotated axioms. It can be made
-  to annotate the axioms it creates in a similar fashion as the <direct>
-  function, by adding an optional <<</annots>>> flag whose argument
-  should follow {{{4.1.2. Axiom annotations}the same rules}} as the
-  argument to the <direct> function.
+  to annotate the axioms it creates
+  {{{4.1.2. Axiom annotations}in a similar fashion}} as the <direct>
+  function, by adding <<</annots>>> and <<</annots_uris>>> flags.
   
   For example, to annotate a _SubClassOf_ axiom with annotations from
   all the mapping’s metadata slots except <mapping_cardinality>:
@@ -463,12 +477,13 @@ AnnotationAssertion(
 
 *** 4.3.2. Annotating the generated axiom
 
-  The <annotate> function accepts the same <<</annots>>> optional flag
-  as the <create_axiom> function, to annotate the generated annotation
-  axiom with values from the mapping’s metadata slots.
+  The <annotate> function accepts the same <<</annots>>> and
+  <<</annots_uris>>> optional flags as the <create_axiom> function, to
+  annotate the generated annotation axiom with values from the
+  mapping’s metadata slots.
   
-  The <<</annots>>> flag may be used at the same time as the <<</type>>>
-  flag. They can be specified in any order.
+  The <<</annots>>> and <<</annots_uris>>> flags may be used at the same
+  time as the <<</type>>> flag. They can be specified in any order.
 
 * 6. Backwards compatibility
 
