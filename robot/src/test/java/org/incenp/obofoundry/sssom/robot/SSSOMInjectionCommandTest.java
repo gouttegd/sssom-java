@@ -121,4 +121,17 @@ public class SSSOMInjectionCommandTest {
         // @formatter:off
         TestUtils.checkOutput("exo2c-direct.ofn");
     }
+
+    @Test
+    void testDirectAnnotations() throws IOException {
+        // @formatter:off
+        TestUtils.runCommand("sssom-inject",
+                "--create",
+                "--sssom", "../core/src/test/resources/sets/exo2c.sssom.tsv",
+                "--ruleset", "../ext/src/test/resources/rules/annotations.rules",
+                "--bridge-format", "ofn",
+                "--bridge-file", "src/test/resources/output/exo2c-annotated.ofn.out");
+        // @formatter:off
+        TestUtils.checkOutput("exo2c-annotated.ofn");
+    }
 }

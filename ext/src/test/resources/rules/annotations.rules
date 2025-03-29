@@ -1,0 +1,27 @@
+prefix COMENT: <https://example.com/entities/>
+prefix ORGENT: <https://example.org/entities/>
+
+# Annotate with default annotation properties
+subject==ORGENT:0001 -> create_axiom("%subject_id SubClassOf: %object_id",
+                                     /annots="mapping_justification,subject_id");
+
+# Same, but using an optional positional argument
+subject==ORGENT:0002 -> create_axiom("%subject_id SubClassOf: %object_id",
+                                     "mapping_justification,subject_id");
+
+# Named parameter takes precedence over positional argument
+subject==ORGENT:0004 -> create_axiom("%subject_id SubClassOf: %object_id",
+                                     "mapping_justification,subject_id",
+                                     /annots="mapping_justification,object_id");
+
+# Annotate with "direct" annotation properties
+subject==ORGENT:0005 -> create_axiom("%subject_id SubClassOf: %object_id",
+                                     /annots="mapping_justification,subject_id",
+                                     /annots_uris="direct");
+
+# Annotate with standard mapped annotation properties
+subject==ORGENT:0006 -> create_axiom("%subject_id SubClassOf: %object_id",
+                                     /annots="mapping_justification,subject_id",
+                                     /annots_uris="standard_map");
+
+

@@ -1,0 +1,49 @@
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+
+
+Ontology(
+Declaration(Class(<https://example.com/entities/0011>))
+Declaration(Class(<https://example.com/entities/0012>))
+Declaration(Class(<https://example.com/entities/0014>))
+Declaration(Class(<https://example.com/entities/0015>))
+Declaration(Class(<https://example.com/entities/0016>))
+Declaration(Class(<https://example.org/entities/0001>))
+Declaration(Class(<https://example.org/entities/0002>))
+Declaration(Class(<https://example.org/entities/0004>))
+Declaration(Class(<https://example.org/entities/0005>))
+Declaration(Class(<https://example.org/entities/0006>))
+Declaration(AnnotationProperty(owl:annotatedSource))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/mapping_justification>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/object_id>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/subject_id>))
+
+############################
+#   Classes
+############################
+
+# Class: <https://example.org/entities/0001> (<https://example.org/entities/0001>)
+
+SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/subject_id> <https://example.org/entities/0001>) <https://example.org/entities/0001> <https://example.com/entities/0011>)
+
+# Class: <https://example.org/entities/0002> (<https://example.org/entities/0002>)
+
+SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/subject_id> <https://example.org/entities/0002>) <https://example.org/entities/0002> <https://example.com/entities/0012>)
+
+# Class: <https://example.org/entities/0004> (<https://example.org/entities/0004>)
+
+SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_id> <https://example.com/entities/0014>) <https://example.org/entities/0004> <https://example.com/entities/0014>)
+
+# Class: <https://example.org/entities/0005> (<https://example.org/entities/0005>)
+
+SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/subject_id> <https://example.org/entities/0005>) <https://example.org/entities/0005> <https://example.com/entities/0015>)
+
+# Class: <https://example.org/entities/0006> (<https://example.org/entities/0006>)
+
+SubClassOf(Annotation(owl:annotatedSource <https://example.org/entities/0006>) Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) <https://example.org/entities/0006> <https://example.com/entities/0016>)
+
+
+)

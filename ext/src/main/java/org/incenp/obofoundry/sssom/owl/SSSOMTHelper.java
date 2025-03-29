@@ -109,7 +109,7 @@ public class SSSOMTHelper {
             IMappingTransformer<OWLAxiom> innerTransformer, Map<String, String> keyedArguments, List<String> arguments,
             int nArgs) {
         if ( !keyedArguments.containsKey(ANNOTS_KEYWORD) && arguments.size() == nArgs + 1 ) {
-            keyedArguments.put(ANNOTS_URIS_KEYWORD, arguments.get(nArgs));
+            keyedArguments.put(ANNOTS_KEYWORD, arguments.get(nArgs));
         }
         return maybeCreateAnnotatedTransformer(application, innerTransformer, keyedArguments);
     }
