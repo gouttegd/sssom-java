@@ -330,7 +330,7 @@ AnnotationAssertion(
     names of the slots; for example, the <<<creator_id>>> slot is turned 
     into <<<sssom:creator_id>>> annotation;
     
-  * <<<standard-map>>>: uses as annotation properties the properties
+  * <<<standard_map>>>: uses as annotation properties the properties
     that are explicitly mapped to the slots in the SSSOM specification
     (if a slot is not mapped to a property, then its fully qualified
     name is used instead); for example, the <<<creator_id>>> slot is
