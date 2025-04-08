@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +69,7 @@ public class ExtendedPrefixMap {
     private HashMap<String, String> prefixMap = new HashMap<String, String>();
     private HashMap<String, String> synonymMap = new HashMap<String, String>();
     private HashMap<String, String> iri2CanonCache = new HashMap<String, String>();
+    private HashSet<String> canonicalPrefixNames = new HashSet<>();
 
     /**
      * Creates a new extended prefix map from the specified file.
@@ -105,12 +107,26 @@ public class ExtendedPrefixMap {
     }
 
     /**
-     * Get a simple prefix map associating the canonical prefix name to the
+     * Gets a simple prefix map associating the canonical prefix name to the
      * canonical URL prefix.
      * 
      * @return The simple, canonical prefix map.
      */
     public Map<String, String> getSimplePrefixMap() {
+        HashMap<String, String> map = new HashMap<>();
+        for ( String prefixName : canonicalPrefixNames ) {
+            map.put(prefixName, prefixMap.get(prefixName));
+        }
+        return map;
+    }
+
+    /**
+     * Gets the full prefix map, associating every known prefix names to the
+     * canonical URL prefix.
+     * 
+     * @return The full prefix map.
+     */
+    public Map<String, String> getFullPrefixMap() {
         return prefixMap;
     }
 
@@ -193,7 +209,7 @@ public class ExtendedPrefixMap {
      */
     public void canonicalise(MappingSet set) {
         SlotHelper.getMappingSetHelper().visitSlots(set, new Visitor<MappingSet>());
-        set.getCurieMap().putAll(prefixMap);
+        set.getCurieMap().putAll(getSimplePrefixMap());
         canonicalise(set.getMappings());
     }
 
@@ -206,6 +222,12 @@ public class ExtendedPrefixMap {
 
         for (ExtendedPrefixMapEntry entry : rawMap) {
             prefixMap.put(entry.prefixName, entry.prefix);
+            canonicalPrefixNames.add(entry.prefixName);
+            if ( entry.synonyms != null ) {
+                for ( String synonym : entry.synonyms ) {
+                    prefixMap.put(synonym, entry.prefix);
+                }
+            }
             synonymMap.put(entry.prefix, entry.prefix);
             if ( entry.prefixSynonyms != null) {
                 for ( String prefixSynonym : entry.prefixSynonyms ) {

@@ -36,6 +36,11 @@ public class ExtendedPrefixMapTest {
         Map<String, String> pm = epm.getSimplePrefixMap();
         Assertions.assertTrue(pm.containsKey("FBbt"));
         Assertions.assertEquals("http://purl.obolibrary.org/obo/FBbt_", pm.get("FBbt"));
+        Assertions.assertFalse(pm.containsKey("fbbt"));
+
+        pm = epm.getFullPrefixMap();
+        Assertions.assertTrue(pm.containsKey("fbbt"));
+        Assertions.assertEquals("http://purl.obolibrary.org/obo/FBbt_", pm.get("fbbt"));
     }
 
     @Test
