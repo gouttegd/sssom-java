@@ -49,6 +49,11 @@ public class ExtendedPrefixMapTest {
         // Check canonicalisation of an IRI already using the canonical prefix
         Assertions.assertEquals("http://purl.obolibrary.org/obo/FBbt_5678",
                 epm.canonicalise("http://purl.obolibrary.org/obo/FBbt_5678"));
+
+        // Check canonicalisation of an IRI where the original IRI matches both a
+        // canonical prefix and a prefix synonym, and the prefix synonym is more precise
+        Assertions.assertEquals("http://purl.uniprot.org/isoforms/1234",
+                epm.canonicalise("http://purl.obolibrary.org/obo/UniProtKB_1234"));
     }
 
     @Test

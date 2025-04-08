@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -69,7 +68,6 @@ public class ExtendedPrefixMap {
     private HashMap<String, String> prefixMap = new HashMap<String, String>();
     private HashMap<String, String> synonymMap = new HashMap<String, String>();
     private HashMap<String, String> iri2CanonCache = new HashMap<String, String>();
-    private HashSet<String> canonicalPrefixes = new HashSet<String>();
 
     /**
      * Creates a new extended prefix map from the specified file.
@@ -133,20 +131,6 @@ public class ExtendedPrefixMap {
             String bestPrefix = null;
             int bestLength = 0;
 
-            // First check if this is already a canonical prefix
-            for ( String canon : canonicalPrefixes ) {
-                if ( iri.startsWith(canon) && canon.length() > bestLength ) {
-                    bestPrefix = canon;
-                    bestLength = canon.length();
-                }
-            }
-            if ( bestPrefix != null ) {
-                // It is, so we can return it as is
-                iri2CanonCache.put(iri, iri);
-                return iri;
-            }
-
-            // No luck, search through the prefix synonyms
             for ( String synonym : synonymMap.keySet() ) {
                 if ( iri.startsWith(synonym) && synonym.length() > bestLength ) {
                     bestPrefix = synonym;
@@ -222,7 +206,7 @@ public class ExtendedPrefixMap {
 
         for (ExtendedPrefixMapEntry entry : rawMap) {
             prefixMap.put(entry.prefixName, entry.prefix);
-            canonicalPrefixes.add(entry.prefix);
+            synonymMap.put(entry.prefix, entry.prefix);
             if ( entry.prefixSynonyms != null) {
                 for ( String prefixSynonym : entry.prefixSynonyms ) {
                     synonymMap.put(prefixSynonym, entry.prefix);
