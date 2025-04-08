@@ -329,6 +329,7 @@ public class SimpleCLI implements Runnable {
             inputOpts.files.add("-");
         }
         ReaderFactory readerFactory = new ReaderFactory(true);
+        ExtendedPrefixMap epm = readExtendedPrefixMap(inputOpts.epmFile);
         for ( String input : inputOpts.files ) {
             String[] items = input.split(":", 2);
             String tsvFile = items[0];
@@ -337,6 +338,9 @@ public class SimpleCLI implements Runnable {
                 SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(inputOpts.enablePropagation);
+                if ( epm != null ) {
+                    reader.fillPrefixMap(epm.getFullPrefixMap());
+                }
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
@@ -356,17 +360,7 @@ public class SimpleCLI implements Runnable {
             }
         }
 
-        if ( inputOpts.epmFile != null ) {
-            ExtendedPrefixMap epm = null;
-            try {
-                if ( inputOpts.epmFile.equals("obo") ) {
-                    epm = new ExtendedPrefixMap(ExtendedPrefixMap.class.getResourceAsStream("/obo.epm.json"));
-                } else {
-                    epm = new ExtendedPrefixMap(inputOpts.epmFile);
-                }
-            } catch ( IOException ioe ) {
-                helper.error("Cannot read extended prefix map: %s", ioe.getMessage());
-            }
+        if ( epm != null ) {
             epm.canonicalise(ms);
         }
 
@@ -390,6 +384,22 @@ public class SimpleCLI implements Runnable {
         }
 
         return ms;
+    }
+
+    private ExtendedPrefixMap readExtendedPrefixMap(String epmFile) {
+        ExtendedPrefixMap epm = null;
+        if ( epmFile != null ) {
+            try {
+                if ( epmFile.equals("obo") ) {
+                    epm = new ExtendedPrefixMap(ExtendedPrefixMap.class.getResourceAsStream("/obo.epm.json"));
+                } else {
+                    epm = new ExtendedPrefixMap(epmFile);
+                }
+            } catch ( IOException ioe ) {
+                helper.error("Cannot read extended prefix map: %s", ioe.getMessage());
+            }
+        }
+        return epm;
     }
 
     /*

@@ -20,6 +20,7 @@ package org.incenp.obofoundry.sssom;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -65,6 +66,19 @@ public abstract class SSSOMReader {
      */
     public void setValidationEnabled(boolean enabled) {
         withValidation = enabled;
+    }
+
+    /**
+     * Declares all prefix names in the specified map. Prefix names declared here
+     * complement the declarations from the file’s own prefix map, allowing the
+     * reader to parse a file with an incomplete prefix map.
+     * <p>
+     * It is up to concrete implementations to actually do something with that map.
+     * Some of them may ignore it.
+     * 
+     * @param map The prefix map to use.
+     */
+    public void fillPrefixMap(Map<String, String> map) {
     }
 
     /**

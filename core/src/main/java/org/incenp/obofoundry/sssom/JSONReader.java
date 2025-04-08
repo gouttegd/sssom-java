@@ -90,6 +90,11 @@ public class JSONReader extends SSSOMReader {
     }
 
     @Override
+    public void fillPrefixMap(Map<String, String> map) {
+        converter.getPrefixManager().add(map);
+    }
+
+    @Override
     public MappingSet read() throws SSSOMFormatException, IOException {
         MappingSet ms;
         converter.setExtraMetadataPolicy(extraPolicy);

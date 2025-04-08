@@ -244,6 +244,11 @@ public class TSVReader extends SSSOMReader {
         this(new File(file), null);
     }
 
+    @Override
+    public void fillPrefixMap(Map<String, String> map) {
+        converter.getPrefixManager().add(map);
+    }
+
     /**
      * Sets the behaviour of the reader regarding the column separator character.
      * <p>

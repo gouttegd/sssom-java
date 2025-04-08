@@ -123,6 +123,13 @@ public class SSSOMCLITest {
                 new String[] { "--mangle-iris", "pom.xml" });
     }
 
+    @Test
+    void testEPMToComplementPrefixMap() throws IOException {
+        TestUtils.runCommand(0, new String[] { "fbbt-undeclared-prefixes.sssom.tsv" },
+                "fbbt-canonicalised-urls.sssom.tsv",
+                new String[] { "--mangle-iris", "../ext/src/main/resources/obo.epm.json" });
+    }
+
     /*
      * Output tests
      */
