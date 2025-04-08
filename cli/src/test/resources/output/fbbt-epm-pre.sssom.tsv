@@ -1,0 +1,16 @@
+#curie_map:
+#  ORCID: http://orcid.org/
+#mapping_set_id: https://example.org/sets/fbbt-uncanonical-urls
+#mapping_set_title: FBbt to Uberon mappings with non-canonical FBbt URLs
+#creator_id:
+#  - ORCID:0000-0002-6095-8718
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id	subject_label	predicate_id	object_id	mapping_justification
+http://purl.obolibrary.org/obo/FBbt_00000001	organism	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_0000468	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000002	tagma	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_6000002	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000003	segment	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_0000914	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000004	head	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_0000033	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000004	head	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_6000004	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000005	ocular segment	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_6000005	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000006	head segment	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_6000006	semapv:ManualMappingCuration
+http://purl.obolibrary.org/obo/FBbt_00000007	procephalic segment	semapv:crossSpeciesExactMatch	http://purl.obolibrary.org/obo/UBERON_6000007	semapv:ManualMappingCuration

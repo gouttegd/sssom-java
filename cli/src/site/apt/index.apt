@@ -69,11 +69,30 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
 ** 1.2. Extended Prefix Map support
 
-  Once a mapping set has been read, any IRI it contains may be
-  “reconciled” against an
-  {{{https://github.com/cthoyt/curies/blob/main/docs/source/struct.rst#extended-prefix-maps}Extended Prefix Map}},
-  by specifying the extended prefix map to use with the
-  <<<--mangle-iris>>> option.
+  Use the <<<--epm>>> option to pass an optional
+  {{{https://github.com/cthoyt/curies/blob/main/docs/source/struct.rst#extended-prefix-maps}Extended Prefix Map}}
+  (EPM) to SSSOM-CLI. How the extended prefix map will be used is
+  determined by the value of the <<<--epm-mode>>> option:
+  
+  [PRE] The extended prefix map is used <before> the input set is read,
+        to complement the input set’s own prefix map. This allows to
+        read a set even if its prefix map is incomplete, provided the
+        EPM declares the prefixes that are missing from the set's prefix
+        map. Note that declarations from the prefix map of the input set
+        will always take precedence, declarations from the EPM will only
+        be used for undeclared prefixes.
+  
+  [POST] The extended prefix map is used <after> the input set is read,
+         to “reconcile” all IRIs from the set to make sure they use the
+         “canonical” IRI prefixes set forth by the EPM for any
+         namespace.
+  
+  [BOTH] This is a combination of the <<<PRE>>> and <<<POST>>> mode. The
+         extended prefix map will be used both for complementing the
+         input prefix map and for reconciliating the IRIs. This is the
+         default mode.
+  
+  []
   
 * 2. Output options
   

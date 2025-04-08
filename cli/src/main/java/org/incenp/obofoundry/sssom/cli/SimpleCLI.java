@@ -84,6 +84,12 @@ public class SimpleCLI implements Runnable {
     @Spec
     private static CommandSpec spec;
 
+    enum EPMMode {
+        PRE,
+        POST,
+        BOTH
+    }
+
     @ArgGroup(validate = false, heading = "%nInput options:%n")
     private InputOptions inputOpts = new InputOptions();
 
@@ -103,10 +109,21 @@ public class SimpleCLI implements Runnable {
             files.add(args[args.length - 1]);
         }
 
-        @Option(names = "--mangle-iris",
+        @Option(names = "--epm",
                 paramLabel = "EPM",
-                description = "Use an extended prefix map (EPM) to mangle IRIs in the mapping set. This is done before any other processing.")
+                description = "Use the specified extended prefix map (EPM).")
         String epmFile;
+
+        @Option(names = "--mangle-iris", hidden = true)
+        private void mangleIRIs(String arg) {
+            epmFile = arg;
+            epmMode = EPMMode.POST;
+        }
+
+        @Option(names = "--epm-mode",
+                paramLabel = "MODE",
+                description = "How to use the Extended Prefix Map set with --epm. Allowed values: ${COMPLETION-CANDIDATES}. Default is BOTH.")
+        EPMMode epmMode = EPMMode.BOTH;
 
         @Option(names = "--no-metadata-merge",
                 description = "Do not attempt to merge the set-level metadata of the input sets.")
@@ -338,7 +355,7 @@ public class SimpleCLI implements Runnable {
                 SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(inputOpts.enablePropagation);
-                if ( epm != null ) {
+                if ( epm != null && inputOpts.epmMode != EPMMode.POST ) {
                     reader.fillPrefixMap(epm.getFullPrefixMap());
                 }
                 if ( ms == null ) {
@@ -360,7 +377,7 @@ public class SimpleCLI implements Runnable {
             }
         }
 
-        if ( epm != null ) {
+        if ( epm != null && inputOpts.epmMode != EPMMode.PRE ) {
             epm.canonicalise(ms);
         }
 

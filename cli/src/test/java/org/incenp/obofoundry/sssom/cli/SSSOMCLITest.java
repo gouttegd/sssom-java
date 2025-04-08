@@ -124,10 +124,16 @@ public class SSSOMCLITest {
     }
 
     @Test
-    void testEPMToComplementPrefixMap() throws IOException {
+    void testEPMModeBoth() throws IOException {
         TestUtils.runCommand(0, new String[] { "fbbt-undeclared-prefixes.sssom.tsv" },
                 "fbbt-canonicalised-urls.sssom.tsv",
-                new String[] { "--mangle-iris", "../ext/src/main/resources/obo.epm.json" });
+                new String[] { "--epm", "../ext/src/main/resources/obo.epm.json", "--epm-mode", "BOTH" });
+    }
+
+    @Test
+    void testEPMModePre() throws IOException {
+        TestUtils.runCommand(0, new String[] { "fbbt-undeclared-prefixes.sssom.tsv" }, "fbbt-epm-pre.sssom.tsv",
+                new String[] { "--epm", "../ext/src/main/resources/obo.epm.json", "--epm-mode", "PRE" });
     }
 
     /*
