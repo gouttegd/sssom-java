@@ -131,7 +131,7 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--accept-extra-metadata",
                 paramLabel = "POLICY",
-                description = "Whether to accept non-standard metadata in the input set(s). Allowed values: ${COMPLETION-CANDIDATES}.")
+                description = "Whether to accept non-standard metadata in the input set(s). Allowed values: ${COMPLETION-CANDIDATES}. Default is NONE.")
         ExtraMetadataPolicy acceptExtraMetadata = ExtraMetadataPolicy.NONE;
 
         @Option(names = "--propagation", negatable = true,
@@ -165,7 +165,7 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--output-prefix-map",
                 paramLabel = "SRC",
-                description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}.")
+                description = "Specify the source of the output prefix map. Possible values: ${COMPLETION-CANDIDATES}. Default is BOTH.")
         OutputMapSource prefixMapSource = OutputMapSource.BOTH;
 
         @Option(names = { "-m", "--output-metadata" },
@@ -175,7 +175,7 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--write-extra-metadata",
                 paramLabel = "POLICY",
-                description = "How to write non-standard metadata in the output set. Allowed values: ${COMPLETION-CANDIDATES}.")
+                description = "How to write non-standard metadata in the output set. Allowed values: ${COMPLETION-CANDIDATES}. Default is DEFINED, except for RDF output where it is UNDEFINED.")
         ExtraMetadataPolicy writeExtraMetadata = null;
 
         ExtraMetadataPolicy defaultWriteExtraMetadata = ExtraMetadataPolicy.DEFINED;
@@ -198,7 +198,7 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = { "-f", "--output-format" },
                 paramLabel = "FMT",
-                description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.",
+                description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is tsv.",
                 converter = SerialisationFormatConverter.class,
                 completionCandidates = SerialisationFormatCompletionCandidates.class)
         SerialisationFormat outputFormat = null;
