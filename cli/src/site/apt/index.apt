@@ -87,8 +87,8 @@ sssom-cli set.sssom.tsv:metadata.yaml
          “canonical” IRI prefixes set forth by the EPM for any
          namespace.
   
-  [BOTH] This is a combination of the <<<PRE>>> and <<<POST>>> mode. The
-         extended prefix map will be used both for complementing the
+  [BOTH] This is a combination of the <<<PRE>>> and <<<POST>>> modes.
+         The extended prefix map will be used both for complementing the
          input prefix map and for reconciliating the IRIs. This is the
          default mode.
   
@@ -194,7 +194,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
 
   []
   
-  For convenience, another option, <<<--sssompy-json>>>, can be used to
+  For convenience, another option, <<<--json-sssompy>>>, can be used to
   trigger JSON output tailored for SSSOM-Py compatibility. Using that
   option is equivalent to using <<<--output-format json>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.

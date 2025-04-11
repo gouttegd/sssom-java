@@ -203,7 +203,7 @@ public class SimpleCLI implements Runnable {
                 completionCandidates = SerialisationFormatCompletionCandidates.class)
         SerialisationFormat outputFormat = null;
 
-        @Option(names = { "-j", "--json-output" }, description = "Write the mapping set in SSSOM/JSON format.")
+        @Option(names = { "-j", "--json-output" }, hidden = true)
         private void useJSON(boolean value) {
             outputFormat = SerialisationFormat.JSON;
         }
@@ -215,12 +215,17 @@ public class SimpleCLI implements Runnable {
                 description = "Store the CURIE map in a JSON-LD @context key when writing in JSON format.")
         boolean jsonWriteContext;
 
-        @Option(names = { "--sssompy-json" },
+        @Option(names = { "--json-sssompy" },
                 description = "Write the mapping set in the JSON-LD format expected by SSSOM-Py.")
         private void enableSSSOMPyJSON(boolean arg) {
             outputFormat = SerialisationFormat.JSON;
             jsonShortenIRIs = arg;
             jsonWriteContext = arg;
+        }
+
+        @Option(names = { "--sssompy-json" }, hidden = true)
+        private void oldEnableSSSOMPyJSON(boolean arg) {
+            enableSSSOMPyJSON(arg);
         }
 
         @Option(names = {"--sorting" }, negatable = true, defaultValue = "true", fallbackValue = "true",
