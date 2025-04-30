@@ -10,9 +10,11 @@ class_template = """\
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;
 {% if cls.name == 'MappingSet' or cls.name == 'Mapping' -%}
 import java.util.Map;
+import java.util.HashMap;
 {% endif -%}
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -72,8 +74,47 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         {{ f.name }} = value;
     }
 {% endfor -%}
+{%- for f in cls.fields %}
+{%- if f.source_slot.multivalued and f.range == 'List<String>' %}
+    public {{ f.range }} get{{ f.name[0].upper() }}{{ f.name[1:] }}(boolean set) {
+        if ( {{ f.name }} == null && set ) {
+            {{ f.name }} = new ArrayList<>();
+        }
+        return {{ f.name }};
+    }
+{% endif -%}
+{% endfor -%}
 {%- if cls.name == 'MappingSet' or cls.name == 'Mapping' %}
     private Map<String,ExtensionValue> extensions;
+
+    public Map<String,ExtensionValue> getExtensions(boolean set) {
+        if ( extensions == null && set ) {
+            extensions = new HashMap<>();
+        }
+        return extensions;
+    }
+{% endif -%}
+{%- if cls.name == 'MappingSet' %}
+    public Map<String,String> getCurieMap(boolean set) {
+        if ( curieMap == null && set ) {
+            curieMap = new HashMap<>();
+        }
+        return curieMap;
+    }
+
+    public List<Mapping> getMappings(boolean set) {
+        if ( mappings == null && set ) {
+            mappings = new ArrayList<>();
+        }
+        return mappings;
+    }
+
+    public List<ExtensionDefinition> getExtensionDefinitions(boolean set) {
+        if ( extensionDefinitions == null && set ) {
+            extensionDefinitions = new ArrayList<>();
+        }
+        return extensionDefinitions;
+    }
 {% endif -%}
 {%- if cls.name == 'Mapping' %}
     /**

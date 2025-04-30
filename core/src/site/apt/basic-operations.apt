@@ -57,6 +57,27 @@ Mapping mapping2 = mapping.toBuilder()
                           .build();
 +-----------------------------------------------------------------------
 
+  For convenience, all read accessors to complex fields have an
+  overloaded variant that takes a boolean argument; when that argument
+  is <<<true>>>, the accessor will initialise the underlying field with
+  the proper complex structure and return it. This allows to do simply,
+  for example:
+
++-----------------------------------------------------------------------
+mapping.getAuthorLabel(true).add("A. U. Thor");
++-----------------------------------------------------------------------
+
+  to add a new author label to a mapping, regardless of whether the
+  underlying field has been initialised or not; this is basically a
+  shortcut for:
+
++-----------------------------------------------------------------------
+if ( mapping.getAuthorLabel() == null ) {
+    mapping = new ArrayList<>();
+}
+mapping.getAuthorLabel().add("A. U. Thor");
++-----------------------------------------------------------------------
+
 * 2. Visiting the slots of a mapping or a mapping set
 
   A common need when manipulating mapping is to apply an operation on
