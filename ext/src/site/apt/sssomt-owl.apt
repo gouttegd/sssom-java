@@ -287,11 +287,11 @@ AnnotationAssertion(
   To change the default behaviour, the <direct> function accepts two
   optional flags.
   
-  The first one, <<</annots>>>, expects a comma-separated list of.
+  The first one, <<</annots>>>, expects a comma-separated list of names.
   Each name should be the name of a metadata slot that is to be turned
   into an axiom annotation, unless it is prefixed by a minus character
   (<<<->>>), in which case the slot is to be excluded from the
-  annotations.
+  annotations. The list may also contain the following special values:
     
   * <<<all>>>: represent all slots;
   
