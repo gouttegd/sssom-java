@@ -1,6 +1,7 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -41,4 +42,11 @@ public class MappingRegistry  {
     @JsonProperty("issue_tracker")
     @URI
     private String issueTracker;
+
+    public List<String> getImports(boolean set) {
+        if ( imports == null && set ) {
+            imports = new ArrayList<>();
+        }
+        return imports;
+    }
 }

@@ -1,8 +1,10 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -148,5 +150,89 @@ public class MappingSet  {
     @JsonProperty("extension_definitions")
     private List<ExtensionDefinition> extensionDefinitions;
 
+    public List<String> getMappingSetSource(boolean set) {
+        if ( mappingSetSource == null && set ) {
+            mappingSetSource = new ArrayList<>();
+        }
+        return mappingSetSource;
+    }
+
+    public List<String> getCreatorId(boolean set) {
+        if ( creatorId == null && set ) {
+            creatorId = new ArrayList<>();
+        }
+        return creatorId;
+    }
+
+    public List<String> getCreatorLabel(boolean set) {
+        if ( creatorLabel == null && set ) {
+            creatorLabel = new ArrayList<>();
+        }
+        return creatorLabel;
+    }
+
+    public List<String> getSubjectMatchField(boolean set) {
+        if ( subjectMatchField == null && set ) {
+            subjectMatchField = new ArrayList<>();
+        }
+        return subjectMatchField;
+    }
+
+    public List<String> getObjectMatchField(boolean set) {
+        if ( objectMatchField == null && set ) {
+            objectMatchField = new ArrayList<>();
+        }
+        return objectMatchField;
+    }
+
+    public List<String> getSubjectPreprocessing(boolean set) {
+        if ( subjectPreprocessing == null && set ) {
+            subjectPreprocessing = new ArrayList<>();
+        }
+        return subjectPreprocessing;
+    }
+
+    public List<String> getObjectPreprocessing(boolean set) {
+        if ( objectPreprocessing == null && set ) {
+            objectPreprocessing = new ArrayList<>();
+        }
+        return objectPreprocessing;
+    }
+
+    public List<String> getSeeAlso(boolean set) {
+        if ( seeAlso == null && set ) {
+            seeAlso = new ArrayList<>();
+        }
+        return seeAlso;
+    }
+
     private Map<String,ExtensionValue> extensions;
+
+    public Map<String,ExtensionValue> getExtensions(boolean set) {
+        if ( extensions == null && set ) {
+            extensions = new HashMap<>();
+        }
+        return extensions;
+    }
+
+    public Map<String,String> getCurieMap(boolean set) {
+        if ( curieMap == null && set ) {
+            curieMap = new HashMap<>();
+        }
+        return curieMap;
+    }
+
+    public List<Mapping> getMappings(boolean set) {
+        if ( mappings == null && set ) {
+            mappings = new ArrayList<>();
+        }
+        return mappings;
+    }
+
+    public List<ExtensionDefinition> getExtensionDefinitions(boolean set) {
+        if ( extensionDefinitions == null && set ) {
+            extensionDefinitions = new ArrayList<>();
+        }
+        return extensionDefinitions;
+    }
 }

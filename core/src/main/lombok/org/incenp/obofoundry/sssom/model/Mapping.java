@@ -1,8 +1,10 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.HashMap;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -200,7 +202,112 @@ public class Mapping  {
         similarityScore = value;
     }
 
+    public List<String> getAuthorId(boolean set) {
+        if ( authorId == null && set ) {
+            authorId = new ArrayList<>();
+        }
+        return authorId;
+    }
+
+    public List<String> getAuthorLabel(boolean set) {
+        if ( authorLabel == null && set ) {
+            authorLabel = new ArrayList<>();
+        }
+        return authorLabel;
+    }
+
+    public List<String> getReviewerId(boolean set) {
+        if ( reviewerId == null && set ) {
+            reviewerId = new ArrayList<>();
+        }
+        return reviewerId;
+    }
+
+    public List<String> getReviewerLabel(boolean set) {
+        if ( reviewerLabel == null && set ) {
+            reviewerLabel = new ArrayList<>();
+        }
+        return reviewerLabel;
+    }
+
+    public List<String> getCreatorId(boolean set) {
+        if ( creatorId == null && set ) {
+            creatorId = new ArrayList<>();
+        }
+        return creatorId;
+    }
+
+    public List<String> getCreatorLabel(boolean set) {
+        if ( creatorLabel == null && set ) {
+            creatorLabel = new ArrayList<>();
+        }
+        return creatorLabel;
+    }
+
+    public List<String> getCurationRule(boolean set) {
+        if ( curationRule == null && set ) {
+            curationRule = new ArrayList<>();
+        }
+        return curationRule;
+    }
+
+    public List<String> getCurationRuleText(boolean set) {
+        if ( curationRuleText == null && set ) {
+            curationRuleText = new ArrayList<>();
+        }
+        return curationRuleText;
+    }
+
+    public List<String> getSubjectMatchField(boolean set) {
+        if ( subjectMatchField == null && set ) {
+            subjectMatchField = new ArrayList<>();
+        }
+        return subjectMatchField;
+    }
+
+    public List<String> getObjectMatchField(boolean set) {
+        if ( objectMatchField == null && set ) {
+            objectMatchField = new ArrayList<>();
+        }
+        return objectMatchField;
+    }
+
+    public List<String> getMatchString(boolean set) {
+        if ( matchString == null && set ) {
+            matchString = new ArrayList<>();
+        }
+        return matchString;
+    }
+
+    public List<String> getSubjectPreprocessing(boolean set) {
+        if ( subjectPreprocessing == null && set ) {
+            subjectPreprocessing = new ArrayList<>();
+        }
+        return subjectPreprocessing;
+    }
+
+    public List<String> getObjectPreprocessing(boolean set) {
+        if ( objectPreprocessing == null && set ) {
+            objectPreprocessing = new ArrayList<>();
+        }
+        return objectPreprocessing;
+    }
+
+    public List<String> getSeeAlso(boolean set) {
+        if ( seeAlso == null && set ) {
+            seeAlso = new ArrayList<>();
+        }
+        return seeAlso;
+    }
+
     private Map<String,ExtensionValue> extensions;
+
+    public Map<String,ExtensionValue> getExtensions(boolean set) {
+        if ( extensions == null && set ) {
+            extensions = new HashMap<>();
+        }
+        return extensions;
+    }
 
     /**
      * Indicates whether this mapping represents a "missing" mapping.
