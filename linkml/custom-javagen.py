@@ -60,6 +60,13 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
             {%- else %}{{ f.range }}{% endif %} {{ f.name }};
 {% endfor -%}
 {%- for f in gen.get_constrained_slots(cls) %}
+    /**
+     * Sets the {{ f.source_slot.name }} field to a new value.
+     *
+     * @param value The new {{ f.source_slot.name }} value to set.
+     * @throws IllegalArgumentException If the value is outside of the valid
+     *                                  range.
+     */
     public void set{{ f.name[0].upper() }}{{ f.name[1:] }}({{ f.range }} value) {
         {%- if f.source_slot.maximum_value %}
         if ( value > {{ f.source_slot.maximum_value }} ) {
@@ -76,6 +83,14 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
 {% endfor -%}
 {%- for f in cls.fields %}
 {%- if f.source_slot.multivalued and f.range == 'List<String>' %}
+    /**
+     * Gets the list of {{ f.source_slot.name }} values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of {{ f.source_slot.name }} values.
+     */
     public {{ f.range }} get{{ f.name[0].upper() }}{{ f.name[1:] }}(boolean set) {
         if ( {{ f.name }} == null && set ) {
             {{ f.name }} = new ArrayList<>();
@@ -87,6 +102,14 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
 {%- if cls.name == 'MappingSet' or cls.name == 'Mapping' %}
     private Map<String,ExtensionValue> extensions;
 
+    /**
+     * Gets the map of extension values, optionally initializing the map if
+     * needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty map if it happens to be {@code null}.
+     * @return The map of extension values.
+     */
     public Map<String,ExtensionValue> getExtensions(boolean set) {
         if ( extensions == null && set ) {
             extensions = new HashMap<>();
@@ -95,6 +118,13 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     }
 {% endif -%}
 {%- if cls.name == 'MappingSet' %}
+    /**
+     * Gets the prefix map, optionally initializing the map if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty map if it happens to be {@code null}.
+     * @return The prefix map.
+     */
     public Map<String,String> getCurieMap(boolean set) {
         if ( curieMap == null && set ) {
             curieMap = new HashMap<>();
@@ -102,6 +132,14 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         return curieMap;
     }
 
+    /**
+     * Gets the list of mappings, optionally initializing the underlying field
+     * to an empty list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of mappings.
+     */
     public List<Mapping> getMappings(boolean set) {
         if ( mappings == null && set ) {
             mappings = new ArrayList<>();
@@ -109,6 +147,14 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         return mappings;
     }
 
+    /**
+     * Gets the list of extension definitions, optionally initializing the
+     * underlying field to an empty list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of extension definitions.
+     */
     public List<ExtensionDefinition> getExtensionDefinitions(boolean set) {
         if ( extensionDefinitions == null && set ) {
             extensionDefinitions = new ArrayList<>();
@@ -132,6 +178,16 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         return Constants.NoTermFound.equals(subjectId) || Constants.NoTermFound.equals(objectId);
     }
 
+    /**
+     * Indicates whether this mapping represents a "literal" mapping.
+     * <p>
+     * A literal mapping is a mapping where either the subject or the object
+     * (or both) is a literal, as indicated by the {@code subject_type} or
+     * {@code object_type} slot being set to {@link EntityType#RDFS_LITERAL}.
+     *
+     * @return {@code True} if the mapping is a literal mapping,
+     *         {@code false} otherwise.
+     */
     public boolean isLiteral() {
         return subjectType == EntityType.RDFS_LITERAL || objectType == EntityType.RDFS_LITERAL;
     }
@@ -288,7 +344,7 @@ class CustomJavaGenerator(JavaGenerator):
 @click.command()
 def cli(yamlfile, output_directory=None):
     gen = CustomJavaGenerator(yamlfile)
-    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix"])
+    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix", "NoTermFound"])
 
 if __name__ == "__main__":
     cli()
