@@ -150,6 +150,14 @@ public class MappingSet  {
     @JsonProperty("extension_definitions")
     private List<ExtensionDefinition> extensionDefinitions;
 
+    /**
+     * Gets the list of mapping_set_source values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of mapping_set_source values.
+     */
     public List<String> getMappingSetSource(boolean set) {
         if ( mappingSetSource == null && set ) {
             mappingSetSource = new ArrayList<>();
@@ -157,6 +165,14 @@ public class MappingSet  {
         return mappingSetSource;
     }
 
+    /**
+     * Gets the list of creator_id values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of creator_id values.
+     */
     public List<String> getCreatorId(boolean set) {
         if ( creatorId == null && set ) {
             creatorId = new ArrayList<>();
@@ -164,6 +180,14 @@ public class MappingSet  {
         return creatorId;
     }
 
+    /**
+     * Gets the list of creator_label values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of creator_label values.
+     */
     public List<String> getCreatorLabel(boolean set) {
         if ( creatorLabel == null && set ) {
             creatorLabel = new ArrayList<>();
@@ -171,6 +195,14 @@ public class MappingSet  {
         return creatorLabel;
     }
 
+    /**
+     * Gets the list of subject_match_field values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of subject_match_field values.
+     */
     public List<String> getSubjectMatchField(boolean set) {
         if ( subjectMatchField == null && set ) {
             subjectMatchField = new ArrayList<>();
@@ -178,6 +210,14 @@ public class MappingSet  {
         return subjectMatchField;
     }
 
+    /**
+     * Gets the list of object_match_field values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of object_match_field values.
+     */
     public List<String> getObjectMatchField(boolean set) {
         if ( objectMatchField == null && set ) {
             objectMatchField = new ArrayList<>();
@@ -185,6 +225,14 @@ public class MappingSet  {
         return objectMatchField;
     }
 
+    /**
+     * Gets the list of subject_preprocessing values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of subject_preprocessing values.
+     */
     public List<String> getSubjectPreprocessing(boolean set) {
         if ( subjectPreprocessing == null && set ) {
             subjectPreprocessing = new ArrayList<>();
@@ -192,6 +240,14 @@ public class MappingSet  {
         return subjectPreprocessing;
     }
 
+    /**
+     * Gets the list of object_preprocessing values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of object_preprocessing values.
+     */
     public List<String> getObjectPreprocessing(boolean set) {
         if ( objectPreprocessing == null && set ) {
             objectPreprocessing = new ArrayList<>();
@@ -199,6 +255,14 @@ public class MappingSet  {
         return objectPreprocessing;
     }
 
+    /**
+     * Gets the list of see_also values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of see_also values.
+     */
     public List<String> getSeeAlso(boolean set) {
         if ( seeAlso == null && set ) {
             seeAlso = new ArrayList<>();
@@ -208,6 +272,14 @@ public class MappingSet  {
 
     private Map<String,ExtensionValue> extensions;
 
+    /**
+     * Gets the map of extension values, optionally initializing the map if
+     * needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty map if it happens to be {@code null}.
+     * @return The map of extension values.
+     */
     public Map<String,ExtensionValue> getExtensions(boolean set) {
         if ( extensions == null && set ) {
             extensions = new HashMap<>();
@@ -215,6 +287,13 @@ public class MappingSet  {
         return extensions;
     }
 
+    /**
+     * Gets the prefix map, optionally initializing the map if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty map if it happens to be {@code null}.
+     * @return The prefix map.
+     */
     public Map<String,String> getCurieMap(boolean set) {
         if ( curieMap == null && set ) {
             curieMap = new HashMap<>();
@@ -222,6 +301,14 @@ public class MappingSet  {
         return curieMap;
     }
 
+    /**
+     * Gets the list of mappings, optionally initializing the underlying field
+     * to an empty list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of mappings.
+     */
     public List<Mapping> getMappings(boolean set) {
         if ( mappings == null && set ) {
             mappings = new ArrayList<>();
@@ -229,6 +316,14 @@ public class MappingSet  {
         return mappings;
     }
 
+    /**
+     * Gets the list of extension definitions, optionally initializing the
+     * underlying field to an empty list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of extension definitions.
+     */
     public List<ExtensionDefinition> getExtensionDefinitions(boolean set) {
         if ( extensionDefinitions == null && set ) {
             extensionDefinitions = new ArrayList<>();

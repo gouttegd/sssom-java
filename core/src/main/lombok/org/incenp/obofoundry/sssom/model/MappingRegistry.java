@@ -43,6 +43,14 @@ public class MappingRegistry  {
     @URI
     private String issueTracker;
 
+    /**
+     * Gets the list of imports values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of imports values.
+     */
     public List<String> getImports(boolean set) {
         if ( imports == null && set ) {
             imports = new ArrayList<>();

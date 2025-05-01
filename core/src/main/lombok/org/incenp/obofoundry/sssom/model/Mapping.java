@@ -182,6 +182,13 @@ public class Mapping  {
     @SlotURI("http://www.w3.org/2000/01/rdf-schema#comment")
     private String comment;
 
+    /**
+     * Sets the confidence field to a new value.
+     *
+     * @param value The new confidence value to set.
+     * @throws IllegalArgumentException If the value is outside of the valid
+     *                                  range.
+     */
     public void setConfidence(Double value) {
         if ( value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for confidence");
@@ -192,6 +199,13 @@ public class Mapping  {
         confidence = value;
     }
 
+    /**
+     * Sets the similarity_score field to a new value.
+     *
+     * @param value The new similarity_score value to set.
+     * @throws IllegalArgumentException If the value is outside of the valid
+     *                                  range.
+     */
     public void setSimilarityScore(Double value) {
         if ( value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for similarity_score");
@@ -202,6 +216,14 @@ public class Mapping  {
         similarityScore = value;
     }
 
+    /**
+     * Gets the list of author_id values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of author_id values.
+     */
     public List<String> getAuthorId(boolean set) {
         if ( authorId == null && set ) {
             authorId = new ArrayList<>();
@@ -209,6 +231,14 @@ public class Mapping  {
         return authorId;
     }
 
+    /**
+     * Gets the list of author_label values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of author_label values.
+     */
     public List<String> getAuthorLabel(boolean set) {
         if ( authorLabel == null && set ) {
             authorLabel = new ArrayList<>();
@@ -216,6 +246,14 @@ public class Mapping  {
         return authorLabel;
     }
 
+    /**
+     * Gets the list of reviewer_id values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of reviewer_id values.
+     */
     public List<String> getReviewerId(boolean set) {
         if ( reviewerId == null && set ) {
             reviewerId = new ArrayList<>();
@@ -223,6 +261,14 @@ public class Mapping  {
         return reviewerId;
     }
 
+    /**
+     * Gets the list of reviewer_label values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of reviewer_label values.
+     */
     public List<String> getReviewerLabel(boolean set) {
         if ( reviewerLabel == null && set ) {
             reviewerLabel = new ArrayList<>();
@@ -230,6 +276,14 @@ public class Mapping  {
         return reviewerLabel;
     }
 
+    /**
+     * Gets the list of creator_id values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of creator_id values.
+     */
     public List<String> getCreatorId(boolean set) {
         if ( creatorId == null && set ) {
             creatorId = new ArrayList<>();
@@ -237,6 +291,14 @@ public class Mapping  {
         return creatorId;
     }
 
+    /**
+     * Gets the list of creator_label values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of creator_label values.
+     */
     public List<String> getCreatorLabel(boolean set) {
         if ( creatorLabel == null && set ) {
             creatorLabel = new ArrayList<>();
@@ -244,6 +306,14 @@ public class Mapping  {
         return creatorLabel;
     }
 
+    /**
+     * Gets the list of curation_rule values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of curation_rule values.
+     */
     public List<String> getCurationRule(boolean set) {
         if ( curationRule == null && set ) {
             curationRule = new ArrayList<>();
@@ -251,6 +321,14 @@ public class Mapping  {
         return curationRule;
     }
 
+    /**
+     * Gets the list of curation_rule_text values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of curation_rule_text values.
+     */
     public List<String> getCurationRuleText(boolean set) {
         if ( curationRuleText == null && set ) {
             curationRuleText = new ArrayList<>();
@@ -258,6 +336,14 @@ public class Mapping  {
         return curationRuleText;
     }
 
+    /**
+     * Gets the list of subject_match_field values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of subject_match_field values.
+     */
     public List<String> getSubjectMatchField(boolean set) {
         if ( subjectMatchField == null && set ) {
             subjectMatchField = new ArrayList<>();
@@ -265,6 +351,14 @@ public class Mapping  {
         return subjectMatchField;
     }
 
+    /**
+     * Gets the list of object_match_field values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of object_match_field values.
+     */
     public List<String> getObjectMatchField(boolean set) {
         if ( objectMatchField == null && set ) {
             objectMatchField = new ArrayList<>();
@@ -272,6 +366,14 @@ public class Mapping  {
         return objectMatchField;
     }
 
+    /**
+     * Gets the list of match_string values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of match_string values.
+     */
     public List<String> getMatchString(boolean set) {
         if ( matchString == null && set ) {
             matchString = new ArrayList<>();
@@ -279,6 +381,14 @@ public class Mapping  {
         return matchString;
     }
 
+    /**
+     * Gets the list of subject_preprocessing values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of subject_preprocessing values.
+     */
     public List<String> getSubjectPreprocessing(boolean set) {
         if ( subjectPreprocessing == null && set ) {
             subjectPreprocessing = new ArrayList<>();
@@ -286,6 +396,14 @@ public class Mapping  {
         return subjectPreprocessing;
     }
 
+    /**
+     * Gets the list of object_preprocessing values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of object_preprocessing values.
+     */
     public List<String> getObjectPreprocessing(boolean set) {
         if ( objectPreprocessing == null && set ) {
             objectPreprocessing = new ArrayList<>();
@@ -293,6 +411,14 @@ public class Mapping  {
         return objectPreprocessing;
     }
 
+    /**
+     * Gets the list of see_also values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of see_also values.
+     */
     public List<String> getSeeAlso(boolean set) {
         if ( seeAlso == null && set ) {
             seeAlso = new ArrayList<>();
@@ -302,6 +428,14 @@ public class Mapping  {
 
     private Map<String,ExtensionValue> extensions;
 
+    /**
+     * Gets the map of extension values, optionally initializing the map if
+     * needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty map if it happens to be {@code null}.
+     * @return The map of extension values.
+     */
     public Map<String,ExtensionValue> getExtensions(boolean set) {
         if ( extensions == null && set ) {
             extensions = new HashMap<>();
@@ -324,6 +458,16 @@ public class Mapping  {
         return Constants.NoTermFound.equals(subjectId) || Constants.NoTermFound.equals(objectId);
     }
 
+    /**
+     * Indicates whether this mapping represents a "literal" mapping.
+     * <p>
+     * A literal mapping is a mapping where either the subject or the object
+     * (or both) is a literal, as indicated by the {@code subject_type} or
+     * {@code object_type} slot being set to {@link EntityType#RDFS_LITERAL}.
+     *
+     * @return {@code True} if the mapping is a literal mapping,
+     *         {@code false} otherwise.
+     */
     public boolean isLiteral() {
         return subjectType == EntityType.RDFS_LITERAL || objectType == EntityType.RDFS_LITERAL;
     }
