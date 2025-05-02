@@ -27,6 +27,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.model.Version;
 
 /**
  * A default implementation of the {@link ISlotVisitor} interface that does
@@ -94,6 +95,11 @@ public class SlotVisitorBase<T> implements ISlotVisitor<T> {
 
     @Override
     public void visit(PredicateModifierSlot<T> slot, T object, PredicateModifier value) {
+        visit((Slot<T>) slot, object, value);
+    }
+
+    @Override
+    public void visit(VersionSlot<T> slot, T object, Version value) {
         visit((Slot<T>) slot, object, value);
     }
 
