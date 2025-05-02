@@ -105,6 +105,7 @@ public class Mapping  {
     private String objectSourceVersion;
 
     @JsonProperty("predicate_type")
+    @Versionable(addedIn = Version.SSSOM_1_1)
     private EntityType predicateType;
 
     @JsonProperty("mapping_provider")
