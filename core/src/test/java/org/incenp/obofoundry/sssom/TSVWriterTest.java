@@ -30,6 +30,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -376,6 +377,28 @@ public class TSVWriterTest {
         if ( same ) {
             written.delete();
         }
+    }
+
+    @Test
+    void testWritingSSSOMVersion() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+
+        // sssom_version=1.0 should not be written
+        ms.setSssomVersion(Version.SSSOM_1_0);
+        assertWrittenAsExpected(ms, "exo2c-minimal", null, null, null);
+
+        // neither should sssom_version=1.1, if the set is in fact compliant with 1.0
+        ms.setSssomVersion(Version.SSSOM_1_1);
+        assertWrittenAsExpected(ms, "exo2c-minimal", null, null, null);
+
+        // neither should an unknown version
+        ms.setSssomVersion(Version.UNKNOWN);
+        assertWrittenAsExpected(ms, "exo2c-minimal", null, null, null);
+
+        // but adding a SSSOM 1.1 slot should cause the writer to forcefully set
+        // sssom_version=1.1
+        ms.getMappings().get(0).setSubjectType(EntityType.COMPOSED_ENTITY_EXPRESSION);
+        assertWrittenAsExpected(ms, "test-writing-sssom11-version", null, null, null);
     }
 
     /*

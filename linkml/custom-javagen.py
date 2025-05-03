@@ -49,6 +49,9 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     {%- if f.source_slot.range == 'uri' %}
     @URI
     {%- endif %}
+    {%- if gen.get_added_in_version(f.source_slot.name) %}
+    @Versionable(addedIn = {{ gen.get_added_in_version(f.source_slot.name) }})
+    {%- endif %}
     {%- if gen.is_slot_constrained(f) %}
     @Setter(AccessLevel.NONE)
     {%- endif %}
@@ -56,6 +59,7 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
             {%- elif f.source_slot.range == 'mapping_cardinality_enum' %}MappingCardinality
             {%- elif f.source_slot.range == 'entity_type_enum' %}EntityType
             {%- elif f.source_slot.range == 'predicate_modifier_enum' %}PredicateModifier
+            {%- elif f.source_slot.range == 'sssom_version_enum' %}Version
             {%- elif f.source_slot.name == 'curie_map' %}Map<String,String>
             {%- else %}{{ f.range }}{% endif %} {{ f.name }};
 {% endfor -%}
@@ -309,6 +313,20 @@ class CustomJavaGenerator(JavaGenerator):
             return "propagated" in d
         return False
 
+    def get_added_in_version(self, slot_name):
+        """Get the added_in annotation carried by this slot, if any.
+
+        :param slot_name: the name of the slot to check
+        """
+
+        d = self.schemaview.annotation_dict(slot_name)
+        if d is not None:
+            v = d.get("added_in", None)
+            if v is not None:
+                major, minor = v.split(".")
+                return f"Version.SSSOM_{major}_{minor}"
+        return None
+
     def expand_curie(self, curie):
         return self.schemaview.expand_curie(curie)
 
@@ -344,7 +362,7 @@ class CustomJavaGenerator(JavaGenerator):
 @click.command()
 def cli(yamlfile, output_directory=None):
     gen = CustomJavaGenerator(yamlfile)
-    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix", "NoTermFound"])
+    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix", "NoTermFound", "Versionable"])
 
 if __name__ == "__main__":
     cli()

@@ -19,6 +19,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class MappingSet  {
+    @JsonProperty("sssom_version")
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private Version sssomVersion;
+
     @JsonProperty("curie_map")
     private Map<String,String> curieMap;
 
@@ -85,6 +89,7 @@ public class MappingSet  {
 
     @JsonProperty("predicate_type")
     @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
     private EntityType predicateType;
 
     @JsonProperty("mapping_provider")

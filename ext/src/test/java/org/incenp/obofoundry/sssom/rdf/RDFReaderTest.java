@@ -33,6 +33,7 @@ import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.model.ValueType;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -140,5 +141,45 @@ public class RDFReaderTest {
         Assertions.assertNotNull(ev);
         Assertions.assertTrue(ev.isString());
         Assertions.assertEquals("Baz 0001", ev.asString());
+    }
+
+    @Test
+    void testReadSSSOM11Version() throws SSSOMFormatException, IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-sssom11-version.ttl");
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+    }
+
+    @Test
+    void testReadSSSOM10Version() throws SSSOMFormatException, IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-sssom10-version.ttl");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(Version.SSSOM_1_0, ms.getSssomVersion());
+        // sssom_version slot should not be treated as an extension slot
+        Assertions.assertNull(ms.getExtensionDefinitions());
+        Assertions.assertNull(ms.getExtensions());
+    }
+
+    @Test
+    void testReadUnknownVersion() throws SSSOMFormatException, IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-unknown-version.ttl");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
+        // Version should be unknown
+        Assertions.assertEquals(Version.UNKNOWN, ms.getSssomVersion());
+        // predicate_type slot should be recognised
+        Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(1).getPredicateType());
+        // no slot should have been treated as extensions
+        Assertions.assertNull(ms.getExtensionDefinitions());
+    }
+
+    @Test
+    void testReadInvalidSSSOMVersion() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-invalid-version.ttl");
+        Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
     }
 }

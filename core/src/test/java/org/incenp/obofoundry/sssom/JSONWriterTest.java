@@ -104,6 +104,7 @@ public class JSONWriterTest {
     void testTSVAndJSONRoundtrips() throws IOException, SSSOMFormatException {
         TSVtoJSONtoTSVRoundtrip("exo2c", ExtraMetadataPolicy.NONE);
         TSVtoJSONtoTSVRoundtrip("test-extensions-defined", ExtraMetadataPolicy.DEFINED);
+        TSVtoJSONtoTSVRoundtrip("test-writing-sssom11-version", ExtraMetadataPolicy.NONE);
     }
 
     private void TSVtoJSONtoTSVRoundtrip(String tsvFilename, ExtraMetadataPolicy policy)

@@ -27,6 +27,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
+import org.incenp.obofoundry.sssom.model.Version;
 
 /**
  * A visitor interface to visit the different types of metadata slots of a SSSOM
@@ -147,6 +148,16 @@ public interface ISlotVisitor<T> {
      * @param value  The value of the slot.
      */
     public void visit(PredicateModifierSlot<T> slot, T object, PredicateModifier value);
+
+    /**
+     * Visits a slot that holds a SSSOM version value.
+     * 
+     * @param slot    The slot that is being visited.
+     * @param object  The object to which the slot is attached.
+     * @param version The value of the slot.
+     */
+    default public void visit(VersionSlot<T> slot, T object, Version version) {
+    }
 
     /**
      * Visits a slot that holds a curie map.

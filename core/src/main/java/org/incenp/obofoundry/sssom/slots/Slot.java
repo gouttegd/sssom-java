@@ -27,6 +27,8 @@ import org.incenp.obofoundry.sssom.model.EntityReference;
 import org.incenp.obofoundry.sssom.model.Propagatable;
 import org.incenp.obofoundry.sssom.model.SlotURI;
 import org.incenp.obofoundry.sssom.model.URI;
+import org.incenp.obofoundry.sssom.model.Version;
+import org.incenp.obofoundry.sssom.model.Versionable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,6 +41,7 @@ public class Slot<T> {
     private Field field;
     private String name;
     private boolean entity;
+    private Version addedIn;
 
     /**
      * Creates a new instance.
@@ -52,6 +55,9 @@ public class Slot<T> {
         name = jsonAnnotation != null ? jsonAnnotation.value() : field.getName();
 
         entity = field.isAnnotationPresent(EntityReference.class);
+
+        Versionable versionAnnotation = field.getDeclaredAnnotation(Versionable.class);
+        addedIn = versionAnnotation != null ? versionAnnotation.addedIn() : Version.SSSOM_1_0;
     }
 
     /**
@@ -108,6 +114,16 @@ public class Slot<T> {
      */
     public boolean isURI() {
         return field.isAnnotationPresent(URI.class);
+    }
+
+    /**
+     * Gets the earliest version of the SSSOM specification this slot is compatible
+     * with. This is the version in which the slot was first introduced.
+     * 
+     * @return The earliest compatible SSSOM version.
+     */
+    public Version getCompliantVersion() {
+        return addedIn;
     }
 
     /**

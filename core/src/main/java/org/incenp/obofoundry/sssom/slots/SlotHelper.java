@@ -35,6 +35,7 @@ import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.model.URI;
+import org.incenp.obofoundry.sssom.model.Version;
 
 /**
  * A class to facilitate the manipulation of SSSOM slots. This class is mostly
@@ -426,6 +427,8 @@ public class SlotHelper<T> {
             return new MappingCardinalitySlot<T>(field);
         } else if ( javaType.equals(PredicateModifier.class) ) {
             return new PredicateModifierSlot<T>(field);
+        } else if ( javaType.equals(Version.class) ) {
+            return new VersionSlot<T>(field);
         } else if ( javaType.equals(List.class) ) {
             if ( name.equals("extensionDefinitions") ) {
                 return new ExtensionDefinitionSlot<T>(field);

@@ -41,6 +41,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.ValueType;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
 import org.incenp.obofoundry.sssom.slots.DateSlot;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
@@ -51,6 +52,7 @@ import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.VersionSlot;
 
 /**
  * A writer to serialise a SSSOM mapping set into the TSV format.
@@ -180,6 +182,9 @@ public class TSVWriter extends SSSOMWriter {
 
         // Condense the set
         Set<String> condensedSlots = condenseSet(mappingSet);
+
+        // Determine minimum compliant version
+        mappingSet.setSssomVersion(new Validator().getCompliantVersion(mappingSet));
 
         // Write the metadata
         MappingSetSlotVisitor v = new MappingSetSlotVisitor(metaWriter == null ? "#" : "");
@@ -396,6 +401,15 @@ public class TSVWriter extends SSSOMWriter {
                         sb.append("\n");
                     }
                 }
+            }
+        }
+
+        public void visit(VersionSlot<MappingSet> slot, MappingSet set, Version value) {
+            if ( value != Version.SSSOM_1_0 && value != Version.UNKNOWN ) {
+                sb.append(linePrefix);
+                sb.append("sssom_version: \"");
+                sb.append(value.toString());
+                sb.append("\"\n");
             }
         }
 
