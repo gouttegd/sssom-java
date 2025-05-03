@@ -35,6 +35,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
 import org.incenp.obofoundry.sssom.slots.Slot;
@@ -151,7 +152,23 @@ public class YAMLConverter {
             preprocessor.process(rawMap);
         }
 
-        // Process the CURIE map first, so that we can expand CURIEs as soon as possible
+        // Find out the version of the spec the set declares itself to be compliant with
+        Version version = Version.SSSOM_1_0;
+        Object rawVersion = rawMap.get("sssom_version");
+        if ( rawVersion != null ) {
+            if ( String.class.isInstance(rawVersion) ) {
+                version = Version.fromString(String.class.cast(rawVersion));
+            } else {
+                throw getTypingError("sssom_version");
+            }
+        }
+        ms.setSssomVersion(version);
+        if ( version == Version.UNKNOWN ) {
+            // Try the latest supported version
+            version = Version.SSSOM_1_1;
+        }
+
+        // Process the CURIE map, so that we can expand CURIEs as soon as possible
         Object rawCurieMap = rawMap.getOrDefault("curie_map", new HashMap<String, String>());
         if ( isMapOf(rawCurieMap, String.class) ) {
             @SuppressWarnings("unchecked")
@@ -176,7 +193,7 @@ public class YAMLConverter {
             }
 
             Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByName(key);
-            if ( slot != null ) {
+            if ( slot != null && slot.getCompliantVersion().isCompatibleWith(version) ) {
                 Object rawValue = rawMap.get(key);
                 if ( rawValue == null ) {
                     slot.setValue(ms, rawValue);
@@ -203,7 +220,7 @@ public class YAMLConverter {
                 @SuppressWarnings("unchecked")
                 List<Map<String, Object>> rawMappings = List.class.cast(value);
                 for ( Map<String, Object> rawMapping : rawMappings ) {
-                    mappings.add(convertMapping(rawMapping));
+                    mappings.add(convertMapping(rawMapping, version));
                 }
                 ms.setMappings(mappings);
             } else {
@@ -220,6 +237,9 @@ public class YAMLConverter {
     /**
      * Converts a generic dictionary (as may have been obtained from a YAML or JSON
      * parser) into a {@link Mapping} object.
+     * <p>
+     * This method assumes the mapping is compliant with the highest supported
+     * version of the specification.
      * 
      * @param rawMap The dictionary to convert.
      * @return The corresponding mapping object.
@@ -228,6 +248,22 @@ public class YAMLConverter {
      *                              compatibility processing.
      */
     public Mapping convertMapping(Map<String, Object> rawMap) throws SSSOMFormatException {
+        return convertMapping(rawMap, Version.SSSOM_1_1);
+    }
+
+    /**
+     * Converts a generic dictionary (as may have been obtained from a YAML or JSON
+     * parser) into a {@link Mapping} object.
+     * 
+     * @param rawMap        The dictionary to convert.
+     * @param targetVersion The version of the SSSOM specification the mapping is
+     *                      compliant with.
+     * @return The corresponding mapping object.
+     * @throws SSSOMFormatException If the contents of the dictionary does not match
+     *                              the SSSOM format and data model, even after
+     *                              compatibility processing.
+     */
+    public Mapping convertMapping(Map<String, Object> rawMap, Version targetVersion) throws SSSOMFormatException {
         Mapping m = new Mapping();
         Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
 
@@ -235,11 +271,15 @@ public class YAMLConverter {
             preprocessor.process(rawMap);
         }
 
+        if ( targetVersion == Version.UNKNOWN ) {
+            targetVersion = Version.SSSOM_1_1;
+        }
+
         SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
 
         for ( String key : rawMap.keySet() ) {
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByName(key);
-            if ( slot != null ) {
+            if ( slot != null && slot.getCompliantVersion().isCompatibleWith(targetVersion) ) {
                 Object rawValue = rawMap.get(key);
                 if ( rawValue == null ) {
                     slot.setValue(m, rawValue);

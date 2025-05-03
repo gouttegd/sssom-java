@@ -37,6 +37,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -664,6 +665,40 @@ public class TSVReaderTest {
         TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.csv");
         reader.setSeparatorMode(SeparatorMode.TAB);
         Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
+    }
+
+    @Test
+    void testNoSSSOMVersion() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-sssom11-slots-with-no-version.sssom.tsv");
+        MappingSet ms = reader.read();
+        Assertions.assertEquals(Version.SSSOM_1_0, ms.getSssomVersion());
+
+        // SSSOM 1.1 slot should be ignored
+        Assertions.assertNull(ms.getMappings().get(0).getPredicateType());
+
+        reader = new TSVReader("src/test/resources/sets/test-sssom11-slots-with-no-version.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        ms = reader.read();
+
+        // SSSOM 1.1 slot should be treated as an extension slot
+        Assertions.assertNull(ms.getMappings().get(0).getPredicateType());
+        Assertions.assertEquals("owl annotation property",
+                ms.getMappings().get(0).getExtensions().get("http://sssom.invalid/predicate_type").asString());
+    }
+
+    @Test
+    void testSSSOM11Version() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-sssom11-slots-with-version.sssom.tsv");
+        MappingSet ms = reader.read();
+        Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+        Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(0).getPredicateType());
+    }
+
+    @Test
+    void testInvalidSSSOMVersion() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-invalid-version.sssom.tsv");
+        MappingSet ms = reader.read();
+        Assertions.assertEquals(Version.UNKNOWN, ms.getSssomVersion());
     }
 
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {

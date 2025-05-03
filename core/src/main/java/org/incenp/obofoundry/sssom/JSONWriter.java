@@ -36,6 +36,7 @@ import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.ValueType;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.CurieMapSlot;
 import org.incenp.obofoundry.sssom.slots.DateSlot;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
@@ -47,6 +48,7 @@ import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.VersionSlot;
 
 /**
  * A writer to serialise a SSSOM mapping set into a JSON format.
@@ -133,6 +135,9 @@ public class JSONWriter extends SSSOMWriter {
     protected void doWrite(MappingSet mappingSet) throws IOException {
         // Condense the set
         Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
+
+        // Determine minimum compliant version
+        mappingSet.setSssomVersion(new Validator().getCompliantVersion(mappingSet));
 
         startDict();
 
@@ -345,6 +350,14 @@ public class JSONWriter extends SSSOMWriter {
         @Override
         public void visit(CurieMapSlot<T> slot, T object, Map<String, String> curieMap) {
             // Nothing to do, we wrote the Curie map (if needed) already
+        }
+
+        @Override
+        public void visit(VersionSlot<T> slot, T object, Version value) {
+            if ( value != Version.SSSOM_1_0 && value != Version.UNKNOWN ) {
+                addKey(slot.getName());
+                addValue(value.toString());
+            }
         }
 
         @Override
