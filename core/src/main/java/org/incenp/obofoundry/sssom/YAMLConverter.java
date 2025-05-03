@@ -158,6 +158,7 @@ public class YAMLConverter {
         if ( rawVersion != null ) {
             if ( String.class.isInstance(rawVersion) ) {
                 version = Version.fromString(String.class.cast(rawVersion));
+                rawMap.remove("sssom_version");
             } else {
                 throw getTypingError("sssom_version");
             }

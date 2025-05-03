@@ -687,6 +687,18 @@ public class TSVReaderTest {
     }
 
     @Test
+    void testSSSOM10Version() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-sssom10-with-version.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(Version.SSSOM_1_0, ms.getSssomVersion());
+        // sssom_version slot should not be treated as a set-level extension slot
+        Assertions.assertNull(ms.getExtensions());
+        Assertions.assertNull(ms.getExtensionDefinitions());
+    }
+
+    @Test
     void testSSSOM11Version() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-sssom11-slots-with-version.sssom.tsv");
         MappingSet ms = reader.read();
