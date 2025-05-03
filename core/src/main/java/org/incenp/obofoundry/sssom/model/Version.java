@@ -43,6 +43,12 @@ public enum Version {
      */
     UNKNOWN(0, 0);
 
+    /**
+     * The latest version of the specification currently supported by this
+     * implementation.
+     */
+    public static final Version LATEST = SSSOM_1_1;
+
     private final int major;
     private final int minor;
 

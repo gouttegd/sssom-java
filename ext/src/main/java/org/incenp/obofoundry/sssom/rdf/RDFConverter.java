@@ -255,7 +255,7 @@ public class RDFConverter {
         Version version = versionFromRDF(model, set.get());
         ms.setSssomVersion(version);
         if ( version == Version.UNKNOWN ) {
-            version = Version.SSSOM_1_1;
+            version = Version.LATEST;
         }
 
         // Parse extension definitions ahead, so that definitions are available if/when
@@ -312,7 +312,7 @@ public class RDFConverter {
      *                              is expected for a SSSOM Mapping object.
      */
     public Mapping mappingFromRDF(Model model) throws SSSOMFormatException {
-        return mappingFromRDF(model, Version.SSSOM_1_1);
+        return mappingFromRDF(model, Version.LATEST);
     }
 
     /**

@@ -111,7 +111,7 @@ public class Validator {
         // Check minimal version required by set metadata
         SlotHelper.getMappingSetHelper().visitSlots(set, new VersionVisitor<MappingSet>(versions), false);
         Version highest = Version.getHighestVersion(versions);
-        if ( highest == Version.SSSOM_1_1 || set.getMappings() == null ) {
+        if ( highest == Version.LATEST || set.getMappings() == null ) {
             return highest;
         }
 
@@ -121,7 +121,7 @@ public class Validator {
         int nMappings = set.getMappings().size();
         int i = 0;
         VersionVisitor<Mapping> v = new VersionVisitor<>(versions);
-        while ( i < nMappings && highest != Version.SSSOM_1_1 ) {
+        while ( i < nMappings && highest != Version.LATEST ) {
             SlotHelper.getMappingHelper().visitSlots(set.getMappings().get(i++), v, false);
             highest = Version.getHighestVersion(versions);
         }

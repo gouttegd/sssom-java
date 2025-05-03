@@ -165,8 +165,7 @@ public class YAMLConverter {
         }
         ms.setSssomVersion(version);
         if ( version == Version.UNKNOWN ) {
-            // Try the latest supported version
-            version = Version.SSSOM_1_1;
+            version = Version.LATEST;
         }
 
         // Process the CURIE map, so that we can expand CURIEs as soon as possible
