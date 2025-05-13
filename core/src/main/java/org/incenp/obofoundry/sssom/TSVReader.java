@@ -34,6 +34,7 @@ import java.util.Map;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -351,7 +352,7 @@ public class TSVReader extends SSSOMReader {
             while ( it.hasNext() ) {
                 try {
                     Map<String, Object> rawMapping = it.next();
-                    mappings.add(converter.convertMapping(rawMapping));
+                    mappings.add(converter.convertMapping(rawMapping, ms.getSssomVersion()));
                 } catch ( RuntimeJsonMappingException e ) {
                     throw new SSSOMFormatException("Error when parsing TSV table", e);
                 }
@@ -564,6 +565,7 @@ public class TSVReader extends SSSOMReader {
             reader.close();
         } else {
             ms = new MappingSet();
+            ms.setSssomVersion(Version.SSSOM_1_0);
             ms.setCurieMap(new HashMap<>());
         }
 

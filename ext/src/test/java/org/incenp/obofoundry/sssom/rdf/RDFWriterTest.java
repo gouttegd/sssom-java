@@ -49,6 +49,17 @@ public class RDFWriterTest {
     }
 
     @Test
+    void testWriteSSSOM11Version() {
+        MappingSet ms = getTestSet();
+        ms.getMappings().get(0).setPredicateType(EntityType.OWL_ANNOTATION_PROPERTY);
+        try {
+            assertWrittenAsExpected(ms, "test-sssom11-version", null, null);
+        } catch ( IOException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testWriteShortIRIsWithEscapedCharacters() throws IOException {
         MappingSet ms = getTestSet();
         ms.getCreatorId().add("https://example.com/people/0000+0000?0002@5678");

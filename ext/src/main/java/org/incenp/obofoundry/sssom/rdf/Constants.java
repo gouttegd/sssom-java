@@ -39,6 +39,11 @@ public class Constants {
     public static final IRI SSSOM_MAPPINGS = Values.iri(SSSOM_NS, "mappings");
 
     /**
+     * The IRI of the property that links a SSSOM Version value to a mapping set.
+     */
+    public static final IRI SSSOM_VERSION = Values.iri(SSSOM_NS, "sssom_version");
+
+    /**
      * The IRI of the property that links a “Extension Definition” to the MappingSet
      * it belongs to.
      */

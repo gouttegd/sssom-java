@@ -18,8 +18,18 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
+import org.incenp.obofoundry.sssom.slots.EntityTypeSlot;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
+import org.incenp.obofoundry.sssom.slots.VersionSlot;
 
 /**
  * Helper class to validate MappingSet and Mapping objects.
@@ -82,5 +92,77 @@ public class Validator {
         }
 
         return null;
+    }
+
+    /**
+     * Gets the minimum version of the SSSOM specification that the given set is
+     * compliant with.
+     * <p>
+     * FIXME: This does not really have anything to do with “validation”, so this
+     * class may not be the best place for such a method.
+     * 
+     * @param set The set whose compliance is to be checked.
+     * @return The earliest version of the SSSOM specification that defines all
+     *         slots and values required by the set.
+     */
+    public Version getCompliantVersion(MappingSet set) {
+        Set<Version> versions = new HashSet<>();
+
+        // Check minimal version required by set metadata
+        SlotHelper.getMappingSetHelper().visitSlots(set, new VersionVisitor<MappingSet>(versions), false);
+        Version highest = Version.getHighestVersion(versions);
+        if ( highest == Version.LATEST || set.getMappings() == null ) {
+            return highest;
+        }
+
+        // Then check the mappings themselves. If one mapping requires the highest
+        // supported version, then we can stop immediately, no need to loop over the
+        // entire set.
+        int nMappings = set.getMappings().size();
+        int i = 0;
+        VersionVisitor<Mapping> v = new VersionVisitor<>(versions);
+        while ( i < nMappings && highest != Version.LATEST ) {
+            SlotHelper.getMappingHelper().visitSlots(set.getMappings().get(i++), v, false);
+            highest = Version.getHighestVersion(versions);
+        }
+
+        return highest;
+    }
+
+    /*
+     * Helper class to visit all the slots in a mapping set or a mapping and collect
+     * the minimum required SSSOM version.
+     */
+    private class VersionVisitor<T> extends SlotVisitorBase<T> {
+        Set<Version> versions;
+
+        VersionVisitor(Set<Version> versions) {
+            this.versions = versions;
+        }
+
+        @Override
+        public void visit(Slot<T> slot, T object, Object value) {
+            // For almost all slots, all we need to do is to use directly the version the
+            // slot itself declares to be needing
+            versions.add(slot.getCompliantVersion());
+        }
+
+        @Override
+        public void visit(EntityTypeSlot<T> slot, T object, EntityType value) {
+            Version slotVersion = slot.getCompliantVersion();
+            if ( slotVersion == Version.SSSOM_1_0 && value == EntityType.COMPOSED_ENTITY_EXPRESSION ) {
+                // Even if the slot itself is compliant with 1.0, the "composed entity
+                // expression" value was added in 1.1
+                slotVersion = Version.SSSOM_1_1;
+            }
+            versions.add(slotVersion);
+        }
+
+        @Override
+        public void visit(VersionSlot<T> slot, T object, Version value) {
+            // Ignore the sssom_version slot, so that we do not consider a set as requiring
+            // SSSOM 1.1 just because it has a sssom_version slot
+        }
+
     }
 }

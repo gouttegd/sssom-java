@@ -46,6 +46,7 @@ import org.incenp.obofoundry.sssom.ExtensionSlotManager;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
+import org.incenp.obofoundry.sssom.Validator;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
@@ -55,6 +56,7 @@ import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.incenp.obofoundry.sssom.model.ValueType;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.DateSlot;
 import org.incenp.obofoundry.sssom.slots.DoubleSlot;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
@@ -68,6 +70,7 @@ import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.slots.URISlot;
+import org.incenp.obofoundry.sssom.slots.VersionSlot;
 
 /**
  * A helper class to convert SSSOM objects to and from a RDF model in the Rdf4J
@@ -185,6 +188,9 @@ public class RDFConverter {
         bnodeCounter = 0;
         Set<String> usedPrefixes = prefixManager != null ? new HashSet<String>() : null;
 
+        // Determine mininum compliant version
+        ms.setSssomVersion(new Validator().getCompliantVersion(ms));
+
         // Create the mapping set node
         BNode set = Values.bnode(String.valueOf(bnodeCounter++));
         model.add(set, RDF.TYPE, Constants.SSSOM_MAPPING_SET);
@@ -245,14 +251,25 @@ public class RDFConverter {
         ms.setMappings(new ArrayList<Mapping>());
         SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>();
 
+        // Extract the SSSOM version first
+        Version version = versionFromRDF(model, set.get());
+        ms.setSssomVersion(version);
+        if ( version == Version.UNKNOWN ) {
+            version = Version.LATEST;
+        }
+
         // Parse extension definitions ahead, so that definitions are available if/when
         // we encounter an extension slot when looping over all the statements
         extensionsFromRDF(ms, model, set.get());
 
         // Process all statements about the mapping set node
         for ( Statement st : model.filter(set.get(), null, null) ) {
+            if ( st.getPredicate().equals(Constants.SSSOM_VERSION) ) {
+                // We have dealt with that one already, skip
+                continue;
+            }
             Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByURI(st.getPredicate().stringValue());
-            if ( slot != null ) {
+            if ( slot != null && slot.getCompliantVersion().isCompatibleWith(version) ) {
                 // Statement is a mapping set metadata slot
                 visitor.rdfValue = st.getObject();
                 slot.accept(visitor, ms, null);
@@ -263,7 +280,7 @@ public class RDFConverter {
                 // Statement is an individual mapping
                 Value o = st.getObject();
                 if ( o instanceof BNode ) {
-                    ms.getMappings().add(mappingFromRDF(model.filter((BNode) o, null, null)));
+                    ms.getMappings().add(mappingFromRDF(model.filter((BNode) o, null, null), version));
                 } else {
                     throw getTypingError("mappings");
                 }
@@ -285,6 +302,9 @@ public class RDFConverter {
 
     /**
      * Converts a RDF model to a Mapping object.
+     * <p>
+     * This method assumes the mapping is compliant with the highest supported
+     * version of the specification.
      * 
      * @param model The Rdf4J model to convert.
      * @return The corresponding mapping.
@@ -292,6 +312,20 @@ public class RDFConverter {
      *                              is expected for a SSSOM Mapping object.
      */
     public Mapping mappingFromRDF(Model model) throws SSSOMFormatException {
+        return mappingFromRDF(model, Version.LATEST);
+    }
+
+    /**
+     * Converts a RDF model to a Mapping object.
+     * 
+     * @param model         The Rdf4J model to convert.
+     * @param targetVersion The version of the SSSOM specification the mapping is
+     *                      compliant with.
+     * @return The corresponding mapping.
+     * @throws SSSOMFormatException If the contents of the model does not match what
+     *                              is expected for a SSSOM Mapping object.
+     */
+    public Mapping mappingFromRDF(Model model, Version targetVersion) throws SSSOMFormatException {
         Model root = model.filter(null, RDF.TYPE, Constants.OWL_AXIOM);
         Optional<BNode> mappingNode = Models.subjectBNode(root);
         if ( mappingNode.isEmpty() ) {
@@ -302,7 +336,7 @@ public class RDFConverter {
         SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
         for ( Statement st : model.filter(mappingNode.get(), null, null) ) {
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(st.getPredicate().stringValue());
-            if ( slot != null ) {
+            if ( slot != null && slot.getCompliantVersion().isCompatibleWith(targetVersion) ) {
                 // Statement is a mapping metadata slot
                 visitor.rdfValue = st.getObject();
                 slot.accept(visitor, mapping, null);
@@ -348,6 +382,21 @@ public class RDFConverter {
             helper.excludeSlots(excludedSlots);
         }
         return helper;
+    }
+
+    /*
+     * Extract the SSSOM Version value from the RDF model.
+     */
+    private Version versionFromRDF(Model model, BNode set) throws SSSOMFormatException {
+        Version version = Version.SSSOM_1_0;
+        for ( Statement st : model.filter(set, Constants.SSSOM_VERSION, null) ) {
+            if ( st.getObject().isLiteral() ) {
+                version = Version.fromString(st.getObject().stringValue());
+            } else {
+                throw getTypingError("sssom_version");
+            }
+        }
+        return version;
     }
 
     /*
@@ -794,6 +843,14 @@ public class RDFConverter {
                 }
 
                 model.add(subject, predicate, rdfValue);
+            }
+        }
+
+        @Override
+        public void visit(VersionSlot<T> slot, T object, Version value) {
+            if ( value != Version.SSSOM_1_0 && value != Version.UNKNOWN ) {
+                recordUsedIRI(slot.getURI());
+                model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
             }
         }
     }

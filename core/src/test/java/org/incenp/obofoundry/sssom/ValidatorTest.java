@@ -19,8 +19,13 @@
 package org.incenp.obofoundry.sssom;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,5 +59,33 @@ public class ValidatorTest {
         for ( int i = 0, n = ms.getMappings().size(); i < n; i++ ) {
             Assertions.assertEquals(expectedErrors[i], v.validate(ms.getMappings().get(i)));
         }
+    }
+
+    @Test
+    void testGetCompliantVersion() {
+        MappingSet set = new MappingSet();
+        Validator v = new Validator();
+
+        // Empty set is compliant with 1.0
+        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
+
+        // A set with only slots from 1.0 is compliant with 1.0
+        set.setComment("A comment");
+        set.setPublicationDate(LocalDate.now());
+        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
+
+        // A set with a slot from 1.1 is compliant with 1.1
+        set.setPredicateType(EntityType.RDF_PROPERTY);
+        Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
+
+        // Unless the slot is sssom_version
+        set = MappingSet.builder().sssomVersion(Version.SSSOM_1_1).build();
+        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
+
+        // A set with only 1.0 metadata slots but containing mappings with 1.1 slots
+        // requires 1.1
+        set = MappingSet.builder().comment("A comment").mappings(new ArrayList<>()).build();
+        set.getMappings().add(Mapping.builder().subjectType(EntityType.COMPOSED_ENTITY_EXPRESSION).build());
+        Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
     }
 }
