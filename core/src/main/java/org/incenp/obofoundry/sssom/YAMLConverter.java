@@ -248,7 +248,7 @@ public class YAMLConverter {
      *                              compatibility processing.
      */
     public Mapping convertMapping(Map<String, Object> rawMap) throws SSSOMFormatException {
-        return convertMapping(rawMap, Version.SSSOM_1_1);
+        return convertMapping(rawMap, Version.LATEST);
     }
 
     /**
@@ -272,7 +272,7 @@ public class YAMLConverter {
         }
 
         if ( targetVersion == Version.UNKNOWN ) {
-            targetVersion = Version.SSSOM_1_1;
+            targetVersion = Version.LATEST;
         }
 
         SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
