@@ -1,3 +1,10 @@
+Changes in sssom-java 1.5.0
+---------------------------
+
+    * sssom-core,sssom-ext:
+      * Support for the new sssom_version slot in SSSOM 1.1.
+
+
 Changes in sssom-java-1.4.0
 ---------------------------
 
