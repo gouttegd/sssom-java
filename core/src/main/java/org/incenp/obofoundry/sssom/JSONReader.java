@@ -98,6 +98,7 @@ public class JSONReader extends SSSOMReader {
     public MappingSet read() throws SSSOMFormatException, IOException {
         MappingSet ms;
         converter.setExtraMetadataPolicy(extraPolicy);
+        converter.setAssumedVersion(assumedVersion);
 
         ObjectMapper mapper = new ObjectMapper(new JsonFactory());
         try {

@@ -707,6 +707,25 @@ public class TSVReaderTest {
     }
 
     @Test
+    void testAssumedVersion() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-sssom11-slots-with-no-version.sssom.tsv");
+        reader.setAssumedVersion(Version.SSSOM_1_1);
+        MappingSet ms = reader.read();
+
+        Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+        // SSSOM 1.1 slot should be recognised as such
+        Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(0).getPredicateType());
+
+        reader = new TSVReader("src/test/resources/sets/test-sssom11-slots-with-version.sssom.tsv");
+        reader.setAssumedVersion(Version.SSSOM_1_0);
+        ms = reader.read();
+
+        // Assumed version has no effect when sssom_version is present
+        Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+        Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(0).getPredicateType());
+    }
+
+    @Test
     void testInvalidSSSOMVersion() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-invalid-version.sssom.tsv");
         MappingSet ms = reader.read();

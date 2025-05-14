@@ -96,6 +96,14 @@ public class SSSOMCLITest {
                 "exo2c.sssom.tsv", null);
     }
 
+    @Test
+    void testAssumeVersion() throws IOException {
+        TestUtils.runCommand(0, new String[] { "test-sssom11-slots-with-no-version.sssom.tsv" },
+                "test-sssom11-assumed-as-10.sssom.tsv", null);
+        TestUtils.runCommand(0, new String[] { "test-sssom11-slots-with-no-version.sssom.tsv" },
+                "test-sssom11-assumed-as-11.sssom.tsv", new String[] { "--assume-version=1.1" });
+    }
+
     /*
      * Tests for mangling IRIs with an extended prefix map
      */

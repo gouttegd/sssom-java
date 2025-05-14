@@ -182,4 +182,22 @@ public class RDFReaderTest {
         RDFReader reader = new RDFReader("src/test/resources/sets/test-invalid-version.ttl");
         Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
     }
+
+    @Test
+    void testReadWithAssumedVersion() throws SSSOMFormatException, IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-sssom11-slots-no-version.ttl");
+        MappingSet ms = reader.read();
+
+        // Set is assumed to be 1.0 by default, SSSOM 1.1 slot is not recognised
+        Assertions.assertEquals(Version.SSSOM_1_0, ms.getSssomVersion());
+        Assertions.assertNull(ms.getMappings().get(1).getPredicateType());
+
+        reader = new RDFReader("src/test/resources/sets/test-sssom11-slots-no-version.ttl");
+        reader.setAssumedVersion(Version.SSSOM_1_1);
+        ms = reader.read();
+
+        // Set is assumed to be 1.1, SSSOM 1.1 slot is recognised
+        Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+        Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(1).getPredicateType());
+    }
 }

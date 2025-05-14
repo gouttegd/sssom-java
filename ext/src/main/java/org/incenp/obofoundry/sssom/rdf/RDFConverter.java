@@ -80,6 +80,7 @@ public class RDFConverter {
 
     private ExtraMetadataPolicy extraPolicy;
     private ExtensionSlotManager extMgr;
+    private Version assumedVersion = Version.SSSOM_1_0;
     private int bnodeCounter;
     private Set<String> excludedSlots;
 
@@ -99,6 +100,20 @@ public class RDFConverter {
      */
     public RDFConverter(ExtraMetadataPolicy policy) {
         extraPolicy = policy;
+    }
+
+    /**
+     * Creates a new instance with an explicit policy for converting non-standard
+     * metadata and a default assumed version.
+     * 
+     * @param policy         The non-standard metadata policy.
+     * @param assumedVersion The version of the SSSOM specification that a set
+     *                       should be assumed to be compliant with, in the absence
+     *                       of an explicit {@code sssom_version} slot.
+     */
+    public RDFConverter(ExtraMetadataPolicy policy, Version assumedVersion) {
+        extraPolicy = policy;
+        this.assumedVersion = assumedVersion;
     }
 
     /*
@@ -388,7 +403,7 @@ public class RDFConverter {
      * Extract the SSSOM Version value from the RDF model.
      */
     private Version versionFromRDF(Model model, BNode set) throws SSSOMFormatException {
-        Version version = Version.SSSOM_1_0;
+        Version version = assumedVersion;
         for ( Statement st : model.filter(set, Constants.SSSOM_VERSION, null) ) {
             if ( st.getObject().isLiteral() ) {
                 version = Version.fromString(st.getObject().stringValue());

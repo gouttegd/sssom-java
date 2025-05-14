@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 
 /**
  * Base class to read a mapping set from any of the supported serialisation
@@ -36,6 +37,7 @@ public abstract class SSSOMReader {
 
     protected ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
     protected PropagationPolicy propagationPolicy = PropagationPolicy.NeverReplace;
+    protected Version assumedVersion = Version.SSSOM_1_0;
     private boolean withValidation = true;
 
     /**
@@ -57,6 +59,22 @@ public abstract class SSSOMReader {
      */
     public void setPropagationEnabled(boolean enabled) {
         propagationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
+    }
+
+    /**
+     * Sets the version of the SSSOM specification that the reader should assume the
+     * set is compliant with, if the set does not have a {@code sssom_version} slot.
+     * The default is to assume that the set is compliant with version 1.0, as
+     * mandated by the specification.
+     * <p>
+     * This parameter has no effect if the set does have a {@code sssom_version}
+     * slot: in that case, the set will be expected to be compliant with the version
+     * indicated in that slot.
+     * 
+     * @param version The SSSOM version a set is assumed to be compliant with.
+     */
+    public void setAssumedVersion(Version version) {
+        assumedVersion = version;
     }
 
     /**

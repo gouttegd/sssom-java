@@ -52,6 +52,7 @@ public class YAMLConverter {
     private List<IYAMLPreprocessor> preprocessors;
     private ExtensionSlotManager extensionManager;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
+    private Version assumedVersion = Version.SSSOM_1_0;
 
     /**
      * Creates a new YAML converter.
@@ -76,6 +77,16 @@ public class YAMLConverter {
      */
     public void setExtraMetadataPolicy(ExtraMetadataPolicy policy) {
         extraPolicy = policy;
+    }
+
+    /**
+     * Sets the version of the SSSOM specification that a set should be assumed to
+     * be compliant with, in the absence of an explicit {@code sssom_version} slot.
+     * 
+     * @param version The assumed default version.
+     */
+    public void setAssumedVersion(Version version) {
+        assumedVersion = version;
     }
 
     /**
@@ -153,7 +164,7 @@ public class YAMLConverter {
         }
 
         // Find out the version of the spec the set declares itself to be compliant with
-        Version version = Version.SSSOM_1_0;
+        Version version = assumedVersion;
         Object rawVersion = rawMap.get("sssom_version");
         if ( rawVersion != null ) {
             if ( String.class.isInstance(rawVersion) ) {

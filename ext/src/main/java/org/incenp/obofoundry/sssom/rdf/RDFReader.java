@@ -86,7 +86,7 @@ public class RDFReader extends SSSOMReader {
 
     @Override
     public MappingSet read() throws SSSOMFormatException, IOException {
-        RDFConverter converter = new RDFConverter(extraPolicy);
+        RDFConverter converter = new RDFConverter(extraPolicy, assumedVersion);
         Model model = Rio.parse(reader, RDFFormat.TURTLE);
         reader.close();
 

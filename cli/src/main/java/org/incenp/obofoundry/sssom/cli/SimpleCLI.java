@@ -40,6 +40,7 @@ import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
 import org.incenp.obofoundry.sssom.rdf.RDFWriter;
@@ -138,6 +139,12 @@ public class SimpleCLI implements Runnable {
                 defaultValue = "true", fallbackValue = "true",
                 description = "Enable/disable propagation of propagatable slots. This is enabled by default.")
         boolean enablePropagation;
+
+        @Option(names = "--assume-version",
+                paramLabel="VERSION",
+                converter=VersionConverter.class,
+                description = "Default SSSOM version the input set(s) should be assumed to be compliant with, in the absence of an explicit sssom_version slot. Default is 1.0.")
+        Version assumedVersion = Version.SSSOM_1_0;
     }
 
     @ArgGroup(validate = false, heading = "%nOutput options:%n")
@@ -360,6 +367,7 @@ public class SimpleCLI implements Runnable {
                 SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(inputOpts.enablePropagation);
+                reader.setAssumedVersion(inputOpts.assumedVersion);
                 if ( epm != null && inputOpts.epmMode != EPMMode.POST ) {
                     reader.fillPrefixMap(epm.getFullPrefixMap());
                 }

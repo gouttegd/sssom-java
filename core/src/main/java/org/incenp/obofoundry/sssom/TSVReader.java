@@ -316,6 +316,7 @@ public class TSVReader extends SSSOMReader {
             }
         }
         converter.setExtraMetadataPolicy(extraPolicy);
+        converter.setAssumedVersion(assumedVersion);
         return read(metaReader, metadataOnly || tsvReader == null);
     }
 
