@@ -302,6 +302,12 @@ public class SimpleCLI implements Runnable {
                 paramLabel = "CATALOG",
                 description = "Use the specified catalog to resolve imports when reading the ontology.")
         String xmlCatalog;
+
+        @Option(names = "--ignore-missing-imports",
+                description = "Silently ignore missing imports when reading the ontology.")
+        boolean ignoreMissingImports = false;
+
+        final String OWLAPI_MISSING_IMPORT_PROPERTY = "org.semanticweb.owlapi.model.parameters.ConfigurationOptions.MISSING_IMPORT_HANDLING_STRATEGY";
     }
 
     private static class SerialisationFormatConverter implements ITypeConverter<SerialisationFormat> {
@@ -473,6 +479,16 @@ public class SimpleCLI implements Runnable {
                 } catch ( CatalogException | IllegalArgumentException e ) {
                     helper.error("Cannot parse catalog: %s", e.getMessage());
                 }
+            }
+
+            if ( ontOptions.ignoreMissingImports ) {
+                /*
+                 * FIXME: I don't understand why the following does not work:
+                 * 
+                 * mgr.setOntologyLoaderConfiguration(mgr.getOntologyLoaderConfiguration()
+                 * .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT));
+                 */
+                System.setProperty(ontOptions.OWLAPI_MISSING_IMPORT_PROPERTY, "SILENT");
             }
 
             for ( String ontFile : ontOptions.ontologiesForUpdate ) {

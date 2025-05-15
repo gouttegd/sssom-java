@@ -442,4 +442,11 @@ public class SSSOMCLITest {
         tmpCatalog.delete();
         tmpOnt3.delete();
     }
+
+    @Test
+    void testIgnoreMissingImports() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" },
+                "exo2c-updated-from-ont2-missing-imports.sssom.tsv", new String[] { "--update-from-ontology",
+                        "../ext/src/test/resources/owl/ont2.ofn", "--ignore-missing-imports" });
+    }
 }
