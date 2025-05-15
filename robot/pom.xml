@@ -25,12 +25,12 @@
     <dependency>
       <groupId>org.obolibrary.robot</groupId>
       <artifactId>robot-command</artifactId>
-      <version>1.9.7</version>
+      <version>1.9.8</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.6</version>
+      <version>1.5.18</version>
     </dependency>
   </dependencies>
 
