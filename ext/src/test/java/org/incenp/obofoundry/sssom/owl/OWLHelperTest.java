@@ -43,7 +43,7 @@ public class OWLHelperTest {
     private OWLOntology ontology = null;
 
     @BeforeEach
-    private void getTestOntology() {
+    void getTestOntology() {
         OWLOntologyManager mgr = OWLManager.createOWLOntologyManager();
         OWLDataFactory factory = mgr.getOWLDataFactory();
         ontology = null;

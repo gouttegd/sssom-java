@@ -53,6 +53,7 @@
   </distributionManagement>
 
   <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <lombok.encoding>UTF-8</lombok.encoding>
   </properties>
 
