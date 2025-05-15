@@ -117,6 +117,31 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<sssom_version>>> slot; it is only used in the absence of such a
   slot, it does <not> allow to override the value of that slot when
   present.
+
+** 1.4. Slot propagation
+
+  By default, when reading a set, “propagatable slots” (as defined by the
+  {{{https://mapping-commons.github.io/sssom/spec-model/#propagation-of-mapping-set-slots}SSSOM specification}})
+  are automatically propagated down to each individual mappings. Use the
+  <<<--no-propagation>>> option to disable that behaviour.
+
+** 1.5. Non-standard metadata.
+
+  The <<<--accept-extra-metadata>>> option controls how non-standard
+  metadata slots are handled, when they are found in the input set(s).
+  There are three possible policies:
+  
+  [NONE] Non-standard metadata slots are completely ignored. This is the
+         default policy.
+         
+  [DEFINED] Non-standard metadata slots that are <defined> as
+            {{{https://mapping-commons.github.io/sssom/spec-model/#defined-extensions}extension slots}}
+            are accepted; other slots are ignored.
+            
+  [UNDEFINED] All non-standard metadata slots, whether defined as
+              extensions or not, are accepted.
+              
+  []
   
 * 2. Output options
   
@@ -223,6 +248,62 @@ sssom-cli set.sssom.tsv:metadata.yaml
   option is equivalent to using <<<--output-format json>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
+** 2.6. Slot condensation
+
+  By default, when writing the result set, “propagatable slots” are
+  condensed up to the mapping set whenever possible. That is, if all
+  mappings in the set have the same value for a propagatable slot, then
+  the value is written only once in the set metadata, rather than for
+  each mapping. Use the <<<--no-condensation>>> option to disable that
+  behaviour.
+  
+** 2.7. Non-standard metadata
+
+  The <<<--write-extra-metadata>>> option controls how non-standard
+  metadata slots are written in the result set. This option is only
+  meaningful if the <<<--accept-extra-metadata>>> option is not set to
+  <<<NONE>>>, because otherwise the set cannot contain any non-standard
+  slot to begin with.
+  
+  The option accepts the same values as <<<--accept-extra-metadata>>>,
+  with the following meanings:
+  
+  [NONE] Non-standard slots are not written to the result set at all.
+  
+  [DEFINED] Non-standard slots are written as defined extension slots.
+  
+  [UNDEFINED] Non-standard slots are written as undefined extensions.
+  
+  []
+  
+  The default policy is <<<DEFINED>>>, except when writing in
+  RDF/Turtle, where the policy is <<<UNDEFINED>>> (the rationale for
+  that is that extension definitions are presumably not useful in RDF
+  output: the main interest of an extension definition is to provide the
+  property that gives meaning to the extension, but in RDF extension
+  slots are always represented by their property anyway).
+  
+** 2.8. Other options
+
+  By default, the <<<mapping_cardinality>>> slot is excluded from the
+  result set. This is because that slot is considered (at least by the
+  author of this program) as not very useful, since its value can always
+  be computed on the fly whenever needed. In fact, it <should> always be
+  computed on the fly whenever needed, because pre-computed values found
+  in a set may not be reliable (if the composition of the set has
+  changed since the values were computed). Use the
+  <<<--force-cardinality>>> option to include the
+  <<<mapping_cardinality>>> slot in the result set. In that case, what
+  will be written will always be the <effective> cardinality for each
+  mapping, computed at the last moment before writing the set (in
+  particular, after any transformation of the set).
+  
+  The result set is always <sorted>, so that the mappings are written in
+  a completely deterministic order. Use the <<<--no-sorting>>> option to
+  disable sorting and write the mappings in the original order in which
+  they were read. This can speed up the processing, as sorting can be a
+  time-consuming operation on very large sets.
+  
 * 3. Checking a set against an ontology
 
   The <<<--update-from-ontology>>> option allows checking and updating
@@ -273,6 +354,10 @@ sssom-cli set.sssom.tsv:metadata.yaml
   explicitly specify another catalog file (that option accepts a special
   value <<<none>>> to disable using the default <<<catalog-v001.xml>>>
   file).
+  
+  If an imported ontology cannot be found (with or without the help of a
+  catalog), by default SSSOM-CLI will error out. To silently ignore a
+  missing import, use the <<<--ignore-missing-imports>>> option.
   
 * 4. Transformations
 
