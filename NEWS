@@ -1,3 +1,11 @@
+Changes in sssom-java 1.5.1
+---------------------------
+
+    * sssom-cli:
+      * Add the `--assume-version` option.
+      * Add the `--ignore-missing-imports` option.
+
+
 Changes in sssom-java 1.5.0
 ---------------------------
 
