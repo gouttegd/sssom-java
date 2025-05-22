@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @NoArgsConstructor
@@ -48,6 +49,11 @@ public class MappingSet  {
     @JsonProperty("mapping_set_description")
     @SlotURI("http://purl.org/dc/terms/description")
     private String mappingSetDescription;
+
+    @JsonProperty("mapping_set_confidence")
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    @Setter(AccessLevel.NONE)
+    private Double mappingSetConfidence;
 
     @JsonProperty("creator_id")
     @EntityReference
@@ -154,6 +160,23 @@ public class MappingSet  {
 
     @JsonProperty("extension_definitions")
     private List<ExtensionDefinition> extensionDefinitions;
+
+    /**
+     * Sets the mapping_set_confidence field to a new value.
+     *
+     * @param value The new mapping_set_confidence value to set.
+     * @throws IllegalArgumentException If the value is outside of the valid
+     *                                  range.
+     */
+    public void setMappingSetConfidence(Double value) {
+        if ( value > 1.0 ) {
+            throw new IllegalArgumentException("Invalid value for mapping_set_confidence");
+        }
+        if ( value < 0.0 ) {
+            throw new IllegalArgumentException("Invalid value for mapping_set_confidence");
+        }
+        mappingSetConfidence = value;
+    }
 
     /**
      * Gets the list of mapping_set_source values, optionally

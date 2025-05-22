@@ -345,7 +345,11 @@ public class TSVWriter extends SSSOMWriter {
 
         @Override
         public void visit(DoubleSlot<MappingSet> slot, MappingSet set, Double value) {
+            sb.append(linePrefix);
+            sb.append(slot.getName());
+            sb.append(": ");
             sb.append(floatFormatter.format(value));
+            sb.append("\n");
         }
 
         @Override
