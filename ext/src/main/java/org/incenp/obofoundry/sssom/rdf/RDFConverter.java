@@ -18,6 +18,8 @@
 
 package org.incenp.obofoundry.sssom.rdf;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
@@ -264,7 +266,6 @@ public class RDFConverter {
 
         MappingSet ms = new MappingSet();
         ms.setMappings(new ArrayList<Mapping>());
-        SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>();
 
         // Extract the SSSOM version first
         Version version = versionFromRDF(model, set.get());
@@ -278,6 +279,7 @@ public class RDFConverter {
         extensionsFromRDF(ms, model, set.get());
 
         // Process all statements about the mapping set node
+        SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>(version);
         for ( Statement st : model.filter(set.get(), null, null) ) {
             if ( st.getPredicate().equals(Constants.SSSOM_VERSION) ) {
                 // We have dealt with that one already, skip
@@ -348,7 +350,7 @@ public class RDFConverter {
         }
 
         Mapping mapping = new Mapping();
-        SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
+        SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>(targetVersion);
         for ( Statement st : model.filter(mappingNode.get(), null, null) ) {
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(st.getPredicate().stringValue());
             if ( slot != null && slot.getCompliantVersion().isCompatibleWith(targetVersion) ) {
@@ -579,6 +581,11 @@ public class RDFConverter {
 
         Value rdfValue;
         SSSOMFormatException error;
+        Version targetVersion;
+
+        SlotSetterVisitor(Version version) {
+            targetVersion = version;
+        }
 
         @Override
         public void visit(StringSlot<T> slot, T target, String unused) {
@@ -603,17 +610,24 @@ public class RDFConverter {
             if ( !(rdfValue instanceof Literal) || !((Literal) rdfValue).getDatatype().equals(XSD.ANYURI) ) {
                 error = getTypingError(slot.getName());
             } else {
+                String value = rdfValue.stringValue();
+                try {
+                    URI u = new URI(value);
+                    if ( !u.isAbsolute() && targetVersion != Version.SSSOM_1_0 ) {
+                        error = new SSSOMFormatException(
+                                String.format("Invalid relative URI value for slot '%s'", slot.getName()));
+                    }
+                    slot.setValue(target, value);
+                } catch ( URISyntaxException e ) {
+                    error = new SSSOMFormatException(String.format("Invalid URI value for slot '%s'", slot.getName()));
+                }
                 slot.setValue(target, rdfValue.stringValue());
             }
         }
 
         @Override
         public void visit(URISlot<T> slot, T target, List<String> unused) {
-            if ( !(rdfValue instanceof Literal) || !((Literal) rdfValue).getDatatype().equals(XSD.ANYURI) ) {
-                error = getTypingError(slot.getName());
-            } else {
-                slot.setValue(target, rdfValue.stringValue());
-            }
+            visit(slot, target, (String) null);
         }
 
         @Override

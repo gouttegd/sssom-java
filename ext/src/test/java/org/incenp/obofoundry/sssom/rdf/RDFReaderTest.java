@@ -200,4 +200,28 @@ public class RDFReaderTest {
         Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
         Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(1).getPredicateType());
     }
+
+    @Test
+    void testRelativeURIs() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-relative-uri.ttl");
+        MappingSet ms;
+
+        // Relative URIs should be accepted in 1.0 mode
+        try {
+            ms = reader.read();
+            Assertions.assertEquals("test-relative-uri.sssom.ttl", ms.getMappingSetId());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+
+        reader = new RDFReader("src/test/resources/sets/test-relative-uri.ttl");
+        reader.setAssumedVersion(Version.SSSOM_1_1);
+
+        // But not in 1.1 mode
+        try {
+            reader.read();
+            Assertions.fail("SSSOMFormatException not thrown on relative URI value");
+        } catch ( SSSOMFormatException e ) {
+        }
+    }
 }

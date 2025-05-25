@@ -320,7 +320,7 @@ public class TSVWriterTest {
         other.add("\"Initial\" quotes");
         other.add("Internal \"quotes\"");
         other.add("> Internal \"quotes\"");
-        ms.setSeeAlso(other);
+        ms.setCreatorLabel(other);
 
         assertWrittenAsExpected(ms, "test-escaping-yaml", null, null, null);
     }

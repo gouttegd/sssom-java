@@ -18,6 +18,8 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
@@ -42,6 +44,7 @@ import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
+import org.incenp.obofoundry.sssom.slots.URISlot;
 
 /**
  * A helper class to convert generic YAML dictionaries into SSSOM objects.
@@ -196,7 +199,7 @@ public class YAMLConverter {
         processDefinitions(rawMap);
 
         // Process the bulk of the metadata slots
-        SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>();
+        SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>(version);
         Map<String, ExtensionValue> extensionSlots = new HashMap<String, ExtensionValue>();
         for ( String key : rawMap.keySet() ) {
             if ( key.equals("mappings") ) { // To be processed separately
@@ -286,7 +289,7 @@ public class YAMLConverter {
             targetVersion = Version.LATEST;
         }
 
-        SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>();
+        SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>(targetVersion);
 
         for ( String key : rawMap.keySet() ) {
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByName(key);
@@ -551,6 +554,11 @@ public class YAMLConverter {
 
         SSSOMFormatException error;
         Object rawValue;
+        Version targetVersion;
+
+        SlotSetterVisitor(Version version) {
+            targetVersion = version;
+        }
 
         // Covers all enum-based slots
         @Override
@@ -566,7 +574,6 @@ public class YAMLConverter {
             }
         }
 
-        // Covers both string- and URI-typed mono-valued slots
         @Override
         public void visit(StringSlot<T> slot, T object, String unused) {
             try {
@@ -577,13 +584,48 @@ public class YAMLConverter {
             }
         }
 
-        // Covers both string- and URI-typed multi-valued slots
         @Override
         public void visit(StringSlot<T> slot, T object, List<String> unused) {
             try {
                 slot.setValue(object, getListOfStrings(slot.getName(), rawValue));
             } catch ( SSSOMFormatException e ) {
                 error = e;
+            }
+        }
+
+        @Override
+        public void visit(URISlot<T> slot, T object, String unused) {
+            try {
+                String value = stringify(rawValue, slot.getName());
+                URI u = new URI(value);
+                if ( !u.isAbsolute() && targetVersion != Version.SSSOM_1_0 ) {
+                    error = new SSSOMFormatException(
+                            String.format("Invalid relative URI value for slot '%s'", slot.getName()));
+                }
+                slot.setValue(object, value);
+            } catch ( SSSOMFormatException e ) {
+                error = e;
+            } catch ( URISyntaxException e ) {
+                error = new SSSOMFormatException(String.format("Invalid URI value for slot '%s'", slot.getName()), e);
+            }
+        }
+
+        @Override
+        public void visit(URISlot<T> slot, T object, List<String> unused) {
+            try {
+                List<String> values = getListOfStrings(slot.getName(), rawValue);
+                for ( String value : values ) {
+                    URI u = new URI(value);
+                    if ( !u.isAbsolute() && targetVersion != Version.SSSOM_1_0 ) {
+                        error = new SSSOMFormatException(
+                                String.format("Invalid relative URI value for slot '%s'", slot.getName()));
+                    }
+                }
+                slot.setValue(object, values);
+            } catch ( SSSOMFormatException e ) {
+                error = e;
+            } catch ( URISyntaxException e ) {
+                error = new SSSOMFormatException(String.format("Invalid URI value for slot '%s'", slot.getName()), e);
             }
         }
 

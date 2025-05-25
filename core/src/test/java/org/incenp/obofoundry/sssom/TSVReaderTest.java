@@ -732,6 +732,30 @@ public class TSVReaderTest {
         Assertions.assertEquals(Version.UNKNOWN, ms.getSssomVersion());
     }
 
+    @Test
+    void testRelativeURIs() throws IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-relative-uri.sssom.tsv");
+        MappingSet ms;
+
+        // Relative URIs should be accepted in 1.0 mode
+        try {
+            ms = reader.read();
+            Assertions.assertEquals("test-relative-uri.sssom.tsv", ms.getMappingSetId());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+
+        reader = new TSVReader("src/test/resources/sets/test-relative-uri.sssom.tsv");
+        reader.setAssumedVersion(Version.SSSOM_1_1);
+
+        // But not in 1.1 mode
+        try {
+            reader.read();
+            Assertions.fail("SSSOMFormatException not thrown on relative URI value");
+        } catch ( SSSOMFormatException e ) {
+        }
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());
