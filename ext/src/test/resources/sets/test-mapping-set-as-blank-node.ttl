@@ -1,9 +1,7 @@
 @prefix COMENT: <https://example.com/entities/> .
 @prefix COMPID: <https://example.com/people/> .
-@prefix FBbt: <http://purl.obolibrary.org/obo/FBbt_> .
 @prefix ORGENT: <https://example.org/entities/> .
 @prefix ORGPID: <https://example.org/people/> .
-@prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_> .
 @prefix dcterms: <http://purl.org/dc/terms/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix semapv: <https://w3id.org/semapv/vocab/> .
@@ -11,31 +9,17 @@
 @prefix sssom: <https://w3id.org/sssom/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<https://example.org/sets/exo2c> a sssom:MappingSet;
+[] a sssom:MappingSet;
+  dcterms:created "2023-09-13"^^xsd:date;
   dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
   dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
+  dcterms:title "O2C set";
+  sssom:mapping_set_id "https://example.org/sets/exo2c"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
-      owl:annotatedProperty skos:closeMatch;
-      owl:annotatedSource FBbt:12345678;
-      owl:annotatedTarget UBERON:1234567;
-      sssom:mapping_justification semapv:ManualMappingCuration
-    ], [ a owl:Axiom;
       owl:annotatedProperty skos:closeMatch;
       owl:annotatedSource ORGENT:0001;
       owl:annotatedTarget COMENT:0011;
       sssom:mapping_justification semapv:ManualMappingCuration;
       sssom:object_label "alpha";
-      sssom:predicate_type owl:AnnotationProperty;
-      sssom:subject_label "alice";
-      sssom:subject_type owl:Class
-    ], [ a owl:Axiom;
-      owl:annotatedProperty skos:closeMatch;
-      owl:annotatedSource ORGENT:0002;
-      owl:annotatedTarget COMENT:0012;
-      sssom:confidence 7.0E-1;
-      sssom:mapping_justification semapv:ManualMappingCuration;
-      sssom:object_label "beta";
-      sssom:subject_label "bob";
-      sssom:subject_type owl:Class
-    ];
-  sssom:sssom_version "1.1" .
+      sssom:subject_label "alice"
+    ] .

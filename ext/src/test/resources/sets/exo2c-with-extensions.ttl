@@ -9,7 +9,7 @@
 @prefix sssom: <https://w3id.org/sssom/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a sssom:MappingSet;
+<https://example.org/sets/exo2c-with-extensions> a sssom:MappingSet;
   dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
   sssom:extension_definitions [
       sssom:property ORGPRO:bar;
@@ -20,7 +20,6 @@
       sssom:slot_name "ext_foo";
       sssom:type_hint xsd:integer
     ];
-  sssom:mapping_set_id "https://example.org/sets/exo2c-with-extensions"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
       <http://sssom.invalid/ext_baz> "Baz 0001";
       owl:annotatedProperty skos:closeMatch;

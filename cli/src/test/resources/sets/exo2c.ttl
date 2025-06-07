@@ -8,12 +8,11 @@
 @prefix sssom: <https://w3id.org/sssom/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a sssom:MappingSet;
+<https://example.org/sets/exo2c> a sssom:MappingSet;
   dcterms:created "2023-09-13"^^xsd:date;
   dcterms:creator ORGPID:0000-0000-0001-1234;
   dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
   dcterms:title "O2C set";
-  sssom:mapping_set_id "https://example.org/sets/exo2c"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
       owl:annotatedProperty skos:closeMatch;
       owl:annotatedSource ORGENT:0001;

@@ -7,9 +7,8 @@
 @prefix sssom: <https://w3id.org/sssom/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a sssom:MappingSet;
+<https://example.org/sets/test-slot-types> a sssom:MappingSet;
   dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
-  sssom:mapping_set_id "https://example.org/sets/test-slot-types"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
       owl:annotatedProperty skos:closeMatch;
       owl:annotatedSource ORGENT:0001;

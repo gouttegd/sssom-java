@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 
@@ -209,13 +210,16 @@ public class RDFConverter {
         ms.setSssomVersion(new Validator().getCompliantVersion(ms));
 
         // Create the mapping set node
-        BNode set = Values.bnode(String.valueOf(bnodeCounter++));
+        Resource set = ms.getMappingSetId() != null ? Values.iri(ms.getMappingSetId())
+                : Values.bnode(String.valueOf(bnodeCounter++));
         model.add(set, RDF.TYPE, Constants.SSSOM_MAPPING_SET);
 
         // Add the set-level metadata
+        SlotHelper<MappingSet> slotHelper = SlotHelper.getMappingSetHelper(true);
+        slotHelper.excludeSlots(Set.of("mapping_set_id"));
         RDFBuilderVisitor<MappingSet> setVisitor = new RDFBuilderVisitor<MappingSet>(model, set, prefixManager,
                 usedPrefixes);
-        SlotHelper.getMappingSetHelper().visitSlots(ms, setVisitor);
+        slotHelper.visitSlots(ms, setVisitor);
 
         RDFBuilderVisitor<Mapping> mappingVisitor = new RDFBuilderVisitor<Mapping>(model, null, prefixManager,
                 usedPrefixes);
@@ -259,16 +263,21 @@ public class RDFConverter {
      */
     public MappingSet fromRDF(Model model) throws SSSOMFormatException {
         Model root = model.filter(null, RDF.TYPE, Constants.SSSOM_MAPPING_SET);
-        Optional<BNode> set = Models.subjectBNode(root);
-        if ( set.isEmpty() ) {
+        Resource set = null;
+        try {
+            set = Models.subject(root).get();
+        } catch ( NoSuchElementException e ) {
             throw new SSSOMFormatException("RDF model does not contain a SSSOM mapping set");
         }
 
         MappingSet ms = new MappingSet();
+        if ( set instanceof IRI ) {
+            ms.setMappingSetId(set.stringValue());
+        }
         ms.setMappings(new ArrayList<Mapping>());
 
         // Extract the SSSOM version first
-        Version version = versionFromRDF(model, set.get());
+        Version version = versionFromRDF(model, set);
         ms.setSssomVersion(version);
         if ( version == Version.UNKNOWN ) {
             version = Version.LATEST;
@@ -276,11 +285,11 @@ public class RDFConverter {
 
         // Parse extension definitions ahead, so that definitions are available if/when
         // we encounter an extension slot when looping over all the statements
-        extensionsFromRDF(ms, model, set.get());
+        extensionsFromRDF(ms, model, set);
 
         // Process all statements about the mapping set node
         SlotSetterVisitor<MappingSet> visitor = new SlotSetterVisitor<MappingSet>(version);
-        for ( Statement st : model.filter(set.get(), null, null) ) {
+        for ( Statement st : model.filter(set, null, null) ) {
             if ( st.getPredicate().equals(Constants.SSSOM_VERSION) ) {
                 // We have dealt with that one already, skip
                 continue;
@@ -404,7 +413,7 @@ public class RDFConverter {
     /*
      * Extract the SSSOM Version value from the RDF model.
      */
-    private Version versionFromRDF(Model model, BNode set) throws SSSOMFormatException {
+    private Version versionFromRDF(Model model, Resource set) throws SSSOMFormatException {
         Version version = assumedVersion;
         for ( Statement st : model.filter(set, Constants.SSSOM_VERSION, null) ) {
             if ( st.getObject().isLiteral() ) {
@@ -420,7 +429,7 @@ public class RDFConverter {
      * Extracts extension definitions from the RDF model, if extensions are enabled
      * by policy.
      */
-    private void extensionsFromRDF(MappingSet ms, Model model, BNode set) {
+    private void extensionsFromRDF(MappingSet ms, Model model, Resource set) {
         if ( extraPolicy == ExtraMetadataPolicy.NONE ) {
             return;
         }

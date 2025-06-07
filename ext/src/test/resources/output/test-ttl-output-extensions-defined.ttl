@@ -11,7 +11,7 @@
 @prefix sssom: <https://w3id.org/sssom/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-[] a sssom:MappingSet;
+<https://example.org/sets/exo2c-with-extensions> a sssom:MappingSet;
   dcterms:created "2023-09-13"^^xsd:date;
   dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
   dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
@@ -39,18 +39,7 @@
       sssom:slot_name "ext_foo";
       sssom:type_hint xsd:string
     ];
-  sssom:mapping_set_id "https://example.org/sets/exo2c-with-extensions"^^xsd:anyURI;
   sssom:mappings [ a owl:Axiom;
-      <http://sssom.invalid/ext_undeclared_baz> "Baz F";
-      owl:annotatedProperty skos:closeMatch;
-      owl:annotatedSource ORGENT:0006;
-      owl:annotatedTarget COMENT:0016;
-      EXPROP:barProperty "116"^^xsd:int;
-      EXPROP:bazProperty ORGENT:BAZ_0006;
-      sssom:mapping_justification semapv:ManualMappingCuration;
-      sssom:object_label "zeta";
-      sssom:subject_label "fanny"
-    ], [ a owl:Axiom;
       <http://sssom.invalid/ext_undeclared_baz> "Baz G";
       owl:annotatedProperty skos:exactMatch;
       owl:annotatedSource ORGENT:0007;
@@ -118,4 +107,14 @@
       sssom:mapping_justification semapv:ManualMappingCuration;
       sssom:object_label "epsilon";
       sssom:subject_label "eve"
+    ], [ a owl:Axiom;
+      <http://sssom.invalid/ext_undeclared_baz> "Baz F";
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0006;
+      owl:annotatedTarget COMENT:0016;
+      EXPROP:barProperty "116"^^xsd:int;
+      EXPROP:bazProperty ORGENT:BAZ_0006;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "zeta";
+      sssom:subject_label "fanny"
     ] .

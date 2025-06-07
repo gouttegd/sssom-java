@@ -44,6 +44,7 @@ public class RDFReaderTest {
         RDFReader reader = new RDFReader("src/test/resources/sets/exo2c.ttl");
         MappingSet ms = reader.read();
 
+        Assertions.assertEquals("https://example.org/sets/exo2c", ms.getMappingSetId());
         Assertions.assertEquals("O2C set", ms.getMappingSetTitle());
         Assertions.assertEquals(LocalDate.of(2023, 9, 13), ms.getPublicationDate());
         Assertions.assertEquals("https://creativecommons.org/licenses/by/4.0/", ms.getLicense());
@@ -222,6 +223,19 @@ public class RDFReaderTest {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown on relative URI value");
         } catch ( SSSOMFormatException e ) {
+        }
+    }
+
+    @Test
+    void testMappingSetAsBlankNode() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-mapping-set-as-blank-node.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals("https://example.org/sets/exo2c", ms.getMappingSetId());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
         }
     }
 }
