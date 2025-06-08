@@ -238,4 +238,17 @@ public class RDFReaderTest {
             Assertions.fail(e);
         }
     }
+
+    @Test
+    void testURISlotsAsResources() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-uri-slots-as-resources.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals("https://creativecommons.org/licenses/by/4.0/", ms.getLicense());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
 }

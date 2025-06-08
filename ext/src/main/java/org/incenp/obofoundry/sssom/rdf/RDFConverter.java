@@ -616,7 +616,8 @@ public class RDFConverter {
 
         @Override
         public void visit(URISlot<T> slot, T target, String unused) {
-            if ( !(rdfValue instanceof Literal) || !((Literal) rdfValue).getDatatype().equals(XSD.ANYURI) ) {
+            if ( !(rdfValue instanceof IRI)
+                    && (!(rdfValue instanceof Literal) || !((Literal) rdfValue).getDatatype().equals(XSD.ANYURI)) ) {
                 error = getTypingError(slot.getName());
             } else {
                 String value = rdfValue.stringValue();
