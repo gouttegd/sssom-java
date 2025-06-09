@@ -28,7 +28,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 
@@ -111,24 +110,13 @@ public class JSONReader extends SSSOMReader {
         new SlotPropagator(propagationPolicy).propagate(ms);
 
         // Post-reading checks
-        // 1. Check that built-in prefixes are not redefined
-        Map<String, String> curieMap = ms.getCurieMap();
-        if ( curieMap != null ) {
-            for ( String prefix : curieMap.keySet() ) {
-                BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
-                if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
-                    throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
-                }
-            }
-        }
-
-        // 2. Check there are no unresolvable CURIEs
+        // 1. Check there are no unresolvable CURIEs
         if ( converter.getPrefixManager().getUnresolvedPrefixNames().size() > 0 ) {
             throw new SSSOMFormatException(String.format("Some prefixes are undeclared: %s",
                     String.join(", ", converter.getPrefixManager().getUnresolvedPrefixNames())));
         }
 
-        // 3. Post-parsing checks
+        // 2. Other post-parsing checks
         validate(ms);
 
         reader.close();

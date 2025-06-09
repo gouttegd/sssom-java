@@ -32,6 +32,7 @@ import org.incenp.obofoundry.sssom.checks.MissingPredicateValidator;
 import org.incenp.obofoundry.sssom.checks.MissingSetIdValidator;
 import org.incenp.obofoundry.sssom.checks.MissingSubjectValidator;
 import org.incenp.obofoundry.sssom.checks.PredicateTypeValidator;
+import org.incenp.obofoundry.sssom.checks.RedefinedBuiltinPrefixValidator;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -62,6 +63,7 @@ public class Validator {
     public Validator() {
         setValidators.add(new MissingSetIdValidator());
         setValidators.add(new MissingLicenseValidator());
+        setValidators.add(new RedefinedBuiltinPrefixValidator());
         mappingValidators.add(new MissingSubjectValidator());
         mappingValidators.add(new MissingObjectValidator());
         mappingValidators.add(new MissingPredicateValidator());

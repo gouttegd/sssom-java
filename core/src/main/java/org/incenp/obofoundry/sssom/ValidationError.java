@@ -27,6 +27,7 @@ import java.util.HashSet;
 public enum ValidationError {
     MISSING_SET_ID("Missing set ID", true),
     MISSING_LICENSE("Missing license", true),
+    REDEFINED_BUILTIN_PREFIX("Re-defined builtin prefix in the provided curie map", true),
     MISSING_SUBJECT("Missing subject"),
     MISSING_OBJECT("Missing object"),
     MISSING_PREDICATE("Missing predicate"),

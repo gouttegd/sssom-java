@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.Version;
@@ -553,15 +552,6 @@ public class TSVReader extends SSSOMReader {
                 ms = converter.convertMappingSet(rawSet);
             } catch ( JsonParseException | JsonMappingException e ) {
                 throw new SSSOMFormatException("Invalid YAML metadata", e);
-            }
-
-            // Check the CURIE map for re-defined prefixes
-            Map<String, String> curieMap = ms.getCurieMap();
-            for ( String prefix : curieMap.keySet() ) {
-                BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
-                if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
-                    throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
-                }
             }
             reader.close();
         } else {

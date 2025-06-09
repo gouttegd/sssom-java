@@ -140,7 +140,8 @@ public class JSONReaderTest {
             reader.read();
             Assertions.fail("SSSOMFormatException not thrown for a redefined built-in prefix");
         } catch ( SSSOMFormatException sfe ) {
-            Assertions.assertEquals("Re-defined builtin prefix in the provided curie map", sfe.getMessage());
+            Assertions.assertEquals("Invalid mapping set: Re-defined builtin prefix in the provided curie map",
+                    sfe.getMessage());
         }
     }
 
