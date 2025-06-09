@@ -128,8 +128,8 @@ public class JSONReader extends SSSOMReader {
                     String.join(", ", converter.getPrefixManager().getUnresolvedPrefixNames())));
         }
 
-        // 3. Check individual mappings for missing slots
-        validate(ms.getMappings());
+        // 3. Post-parsing checks
+        validate(ms);
 
         reader.close();
 

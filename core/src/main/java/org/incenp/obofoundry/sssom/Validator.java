@@ -18,9 +18,20 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.incenp.obofoundry.sssom.checks.IMappingSetValidator;
+import org.incenp.obofoundry.sssom.checks.IMappingValidator;
+import org.incenp.obofoundry.sssom.checks.MissingJustificationValidator;
+import org.incenp.obofoundry.sssom.checks.MissingLicenseValidator;
+import org.incenp.obofoundry.sssom.checks.MissingObjectValidator;
+import org.incenp.obofoundry.sssom.checks.MissingPredicateValidator;
+import org.incenp.obofoundry.sssom.checks.MissingSetIdValidator;
+import org.incenp.obofoundry.sssom.checks.MissingSubjectValidator;
+import org.incenp.obofoundry.sssom.checks.PredicateTypeValidator;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -42,13 +53,86 @@ import org.incenp.obofoundry.sssom.slots.VersionSlot;
  */
 public class Validator {
 
-    public static final String MISSING_SUBJECT_LABEL = "Missing subject_label";
-    public static final String MISSING_SUBJECT_ID = "Missing subject_id";
-    public static final String MISSING_OBJECT_LABEL = "Missing object_label";
-    public static final String MISSING_OBJECT_ID = "Missing object_id";
-    public static final String MISSING_PREDICATE = "Missing predicate_id";
-    public static final String MISSING_JUSTIFICATION = "Missing mapping_justification";
-    public static final String INVALID_PREDICATE_TYPE = "Invalid predicate_type";
+    private ArrayList<IMappingSetValidator> setValidators = new ArrayList<>();
+    private ArrayList<IMappingValidator> mappingValidators = new ArrayList<>();
+
+    /**
+     * Creates a new instance.
+     */
+    public Validator() {
+        setValidators.add(new MissingSetIdValidator());
+        setValidators.add(new MissingLicenseValidator());
+        mappingValidators.add(new MissingSubjectValidator());
+        mappingValidators.add(new MissingObjectValidator());
+        mappingValidators.add(new MissingPredicateValidator());
+        mappingValidators.add(new MissingJustificationValidator());
+        mappingValidators.add(new PredicateTypeValidator());
+    }
+
+    /**
+     * Checks whether the given mapping set, including the mappings it contains, is
+     * valid.
+     * 
+     * @param ms The mapping set to validate.
+     * @return A set of all the validation errors encountered when checking the
+     *         mapping set (will be empty if the mapping set is in fact valid).
+     */
+    public EnumSet<ValidationError> validate(MappingSet ms) {
+        return validate(ms, true);
+    }
+
+    /**
+     * Checks whether the given mapping set is valid.
+     * <p>
+     * This method allows to skip checking the individual mappings if the set itself
+     * is invalid.
+     * 
+     * @param ms                  The mapping set to validate.
+     * @param alwaysCheckMappings If {@code true}, individual mappings will always
+     *                            be checked; otherwise, they will be checked only
+     *                            if there are no errors already at the level of the
+     *                            mapping set.
+     * @return A set of all the validation errors encountered when checking the
+     *         mapping set (will be empty if the mapping set is in fact valid).
+     */
+    public EnumSet<ValidationError> validate(MappingSet ms, boolean alwaysCheckMappings) {
+        EnumSet<ValidationError> result = EnumSet.noneOf(ValidationError.class);
+
+        for ( IMappingSetValidator validator : setValidators ) {
+            ValidationError error = validator.validate(ms);
+            if ( error != null ) {
+                result.add(error);
+            }
+        }
+
+        if ( !result.isEmpty() && !alwaysCheckMappings ) {
+            return result;
+        }
+
+        for ( Mapping m : ms.getMappings() ) {
+            for ( IMappingValidator validator : mappingValidators ) {
+                ValidationError error = validator.validate(m);
+                if ( error != null ) {
+                    result.add(error);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks whether the given mapping set is valid, and throws an exception if it
+     * is not.
+     * 
+     * @param ms The mapping set to validate.
+     * @throws SSSOMFormatException If the mapping set is invalid.
+     */
+    public void check(MappingSet ms) throws SSSOMFormatException {
+        EnumSet<ValidationError> result = validate(ms, false);
+        if ( !result.isEmpty() ) {
+            throw new SSSOMFormatException(ValidationError.getMessage(result));
+        }
+    }
 
     /**
      * Validates an individual mapping. This method checks that the slots that are
@@ -56,41 +140,17 @@ public class Validator {
      * 
      * @param mapping The mapping to validate.
      * @return An error message if the mapping is invalid, otherwise {@code null}.
+     * @deprecated Use {@link #validate(MappingSet)} to validate an entire mapping
+     *             set instead.
      */
+    @Deprecated
     public String validate(Mapping mapping) {
-        if ( mapping.getSubjectType() == EntityType.RDFS_LITERAL ) {
-            if ( mapping.getSubjectLabel() == null || mapping.getSubjectLabel().isEmpty() ) {
-                return MISSING_SUBJECT_LABEL;
-            }
-        } else {
-            if ( mapping.getSubjectId() == null || mapping.getSubjectId().isEmpty() ) {
-                return MISSING_SUBJECT_ID;
+        for ( IMappingValidator v : mappingValidators ) {
+            ValidationError error = v.validate(mapping);
+            if ( error != null ) {
+                return error.getMessage();
             }
         }
-
-        if ( mapping.getObjectType() == EntityType.RDFS_LITERAL ) {
-            if ( mapping.getObjectLabel() == null || mapping.getObjectLabel().isEmpty() ) {
-                return MISSING_OBJECT_LABEL;
-            }
-        } else {
-            if ( mapping.getObjectId() == null || mapping.getObjectId().isEmpty() ) {
-                return MISSING_OBJECT_ID;
-            }
-        }
-
-        if ( mapping.getPredicateId() == null || mapping.getPredicateId().isEmpty() ) {
-            return MISSING_PREDICATE;
-        }
-
-        if ( mapping.getMappingJustification() == null || mapping.getMappingJustification().isEmpty() ) {
-            return MISSING_JUSTIFICATION;
-        }
-
-        if ( mapping.getPredicateType() == EntityType.RDFS_LITERAL
-                || mapping.getPredicateType() == EntityType.COMPOSED_ENTITY_EXPRESSION ) {
-            return INVALID_PREDICATE_TYPE;
-        }
-
         return null;
     }
 

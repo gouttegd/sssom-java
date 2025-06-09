@@ -103,7 +103,7 @@ public class RDFReader extends SSSOMReader {
             }
         }
 
-        validate(ms.getMappings());
+        validate(ms);
 
         return ms;
     }

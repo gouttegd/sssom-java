@@ -5,6 +5,7 @@
   },
   "mapping_set_id": "https://example.org/sets/exo2c",
   "mapping_set_title": "O2C set",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
   "mappings": [
     {
       "subject_id": "ORGENT:0001",

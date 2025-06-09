@@ -714,6 +714,7 @@ public class SimpleCLI implements Runnable {
         if ( transOpts.externalPrefixMap != null ) {
             try {
                 TSVReader reader = new TSVReader(null, transOpts.externalPrefixMap);
+                reader.setValidationEnabled(false);
                 map.putAll(reader.read(true).getCurieMap());
             } catch ( IOException ioe ) {
                 helper.error("Cannot read file %s: %s", transOpts.externalPrefixMap, ioe.getMessage());

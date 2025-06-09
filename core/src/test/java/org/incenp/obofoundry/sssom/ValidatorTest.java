@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.EnumSet;
 
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -37,14 +38,23 @@ public class ValidatorTest {
         reader.setValidationEnabled(false); // So we can check each mapping ourselves
         MappingSet ms = reader.read();
 
-        String[] expectedErrors = { Validator.MISSING_SUBJECT_ID, Validator.MISSING_SUBJECT_ID,
-                Validator.MISSING_SUBJECT_LABEL, Validator.MISSING_OBJECT_ID, Validator.MISSING_OBJECT_ID,
-                Validator.MISSING_OBJECT_LABEL, Validator.MISSING_PREDICATE, Validator.MISSING_JUSTIFICATION };
+        ValidationError[] expectedErrors = { ValidationError.MISSING_SUBJECT, ValidationError.MISSING_SUBJECT,
+                ValidationError.MISSING_SUBJECT, ValidationError.MISSING_OBJECT, ValidationError.MISSING_OBJECT,
+                ValidationError.MISSING_OBJECT, ValidationError.MISSING_PREDICATE,
+                ValidationError.MISSING_JUSTIFICATION };
 
         Validator v = new Validator();
         for ( int i = 0, n = ms.getMappings().size(); i < n; i++ ) {
-            Assertions.assertEquals(expectedErrors[i], v.validate(ms.getMappings().get(i)));
+            Assertions.assertEquals(expectedErrors[i].getMessage(), v.validate(ms.getMappings().get(i)));
         }
+
+        // Same but with the new interface
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_SUBJECT));
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_OBJECT));
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_PREDICATE));
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_JUSTIFICATION));
+        Assertions.assertEquals(4, errors.size());
     }
 
     @Test
@@ -53,12 +63,39 @@ public class ValidatorTest {
         reader.setValidationEnabled(false);
         MappingSet ms = reader.read();
 
-        String[] expectedErrors = { null, null, Validator.INVALID_PREDICATE_TYPE, Validator.INVALID_PREDICATE_TYPE };
+        String[] expectedErrors = { null, null, ValidationError.INVALID_PREDICATE_TYPE.getMessage(),
+                ValidationError.INVALID_PREDICATE_TYPE.getMessage() };
 
         Validator v = new Validator();
         for ( int i = 0, n = ms.getMappings().size(); i < n; i++ ) {
             Assertions.assertEquals(expectedErrors[i], v.validate(ms.getMappings().get(i)));
         }
+
+        // Same but with the new interface
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.INVALID_PREDICATE_TYPE));
+        Assertions.assertEquals(1, errors.size());
+    }
+
+    @Test
+    void testMissingRequiredSetSlots() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-required-set-slots.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+        Validator v = new Validator();
+
+        // Check the entire set
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_SET_ID));
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_LICENSE));
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_SUBJECT));
+        Assertions.assertEquals(3, errors.size());
+
+        // Check the mapping set only
+        errors = v.validate(ms, false);
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_SET_ID));
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_LICENSE));
+        Assertions.assertEquals(2, errors.size());
     }
 
     @Test

@@ -373,7 +373,7 @@ public class TSVReader extends SSSOMReader {
                     String.join(", ", converter.getPrefixManager().getUnresolvedPrefixNames())));
         }
 
-        validate(ms.getMappings());
+        validate(ms);
 
         if ( tsvReader != null ) {
             tsvReader.close();

@@ -177,6 +177,7 @@ public class TSVReaderTest {
     @Test
     void testNoMetadata() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-no-metadata.sssom.tsv");
+        reader.setValidationEnabled(false);
         MappingSet ms = reader.read();
         Assertions.assertNotNull(ms.getCurieMap());
 
@@ -487,7 +488,7 @@ public class TSVReaderTest {
     void testMissingRequiredSlots() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-required-slots.sssom.tsv");
         SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
-        Assertions.assertEquals("Invalid mapping: Missing subject_id", sfe.getMessage());
+        Assertions.assertTrue(sfe.getMessage().contains("Missing subject"));
     }
 
     /*
@@ -771,6 +772,7 @@ public class TSVReaderTest {
     private MappingSet parseMetadataString(String test, boolean with_extensions)
             throws SSSOMFormatException, IOException {
         TSVReader reader = new TSVReader(null, new StringReader(test));
+        reader.setValidationEnabled(false);
         if ( with_extensions ) {
             reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
         }
@@ -782,6 +784,7 @@ public class TSVReaderTest {
                 "extension: %s\nextension_definitions:\n  - slot_name: extension\n    property: test\n    type_hint: %s",
                 value, typeHint);
         TSVReader reader = new TSVReader(null, new StringReader(test));
+        reader.setValidationEnabled(false);
         reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
         return reader.read().getExtensions().get("test");
     }

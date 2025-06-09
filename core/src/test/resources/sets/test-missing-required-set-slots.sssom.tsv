@@ -1,0 +1,6 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+subject_id	subject_label	subject_type	predicate_id	object_id	object_label	object_type	mapping_justification
+	alice		skos:closeMatch	COMENT:0011	alpha		semapv:ManualMappingCuration
+	bob	owl class	skos:closeMatch	COMENT:0012	beta		semapv:ManualMappingCuration

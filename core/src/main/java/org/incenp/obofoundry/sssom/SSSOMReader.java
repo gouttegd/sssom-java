@@ -19,10 +19,8 @@
 package org.incenp.obofoundry.sssom;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
-import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.Version;
 
@@ -110,21 +108,17 @@ public abstract class SSSOMReader {
     public abstract MappingSet read() throws SSSOMFormatException, IOException;
 
     /**
-     * Validates individual mappings. This method checks that all mappings have all
-     * the required slots set.
+     * Validates a mapping set. This method performs all post-parsing checks to
+     * ensure the mapping set is valid according to the SSSOM specification.
      * 
-     * @param mappings The list of mappings to check.
-     * @throws SSSOMFormatException If any mapping is invalid.
+     * @param mappingSet The set to validate. It should be called by the
+     *                   {@code read} method in concrete derived classes.
+     * @throws SSSOMFormatException If the mapping set is invalid.
      */
-    protected void validate(List<Mapping> mappings) throws SSSOMFormatException {
+    protected void validate(MappingSet mappingSet) throws SSSOMFormatException {
         if ( withValidation ) {
             Validator validator = new Validator();
-            for ( Mapping m : mappings ) {
-                String error = validator.validate(m);
-                if ( error != null ) {
-                    throw new SSSOMFormatException(String.format("Invalid mapping: %s", error));
-                }
-            }
+            validator.check(mappingSet);
         }
     }
 }
