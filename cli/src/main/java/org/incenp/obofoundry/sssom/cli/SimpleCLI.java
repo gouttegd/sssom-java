@@ -37,6 +37,7 @@ import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.SSSOMWriter;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
+import org.incenp.obofoundry.sssom.ValidationLevel;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -145,6 +146,10 @@ public class SimpleCLI implements Runnable {
                 converter=VersionConverter.class,
                 description = "Default SSSOM version the input set(s) should be assumed to be compliant with, in the absence of an explicit sssom_version slot. Default is 1.0.")
         Version assumedVersion = Version.SSSOM_1_0;
+
+        @Option(names = "--lax",
+                description = "Silently accept some invalid mapping sets.")
+        boolean laxMode;
     }
 
     @ArgGroup(validate = false, heading = "%nOutput options:%n")
@@ -374,6 +379,7 @@ public class SimpleCLI implements Runnable {
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(inputOpts.enablePropagation);
                 reader.setAssumedVersion(inputOpts.assumedVersion);
+                reader.setValidation(inputOpts.laxMode ? ValidationLevel.MINIMAL : ValidationLevel.FULL);
                 if ( epm != null && inputOpts.epmMode != EPMMode.POST ) {
                     reader.fillPrefixMap(epm.getFullPrefixMap());
                 }

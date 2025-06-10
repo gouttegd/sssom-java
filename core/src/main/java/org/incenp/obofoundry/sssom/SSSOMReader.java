@@ -36,7 +36,7 @@ public abstract class SSSOMReader {
     protected ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
     protected PropagationPolicy propagationPolicy = PropagationPolicy.NeverReplace;
     protected Version assumedVersion = Version.SSSOM_1_0;
-    private boolean withValidation = true;
+    private ValidationLevel validationType = ValidationLevel.FULL;
 
     /**
      * Sets the policy to deal with non-standard metadata in the input file.
@@ -81,7 +81,23 @@ public abstract class SSSOMReader {
      * @param enabled {@code False} to disable validation; it is enabled by default.
      */
     public void setValidationEnabled(boolean enabled) {
-        withValidation = enabled;
+        validationType = enabled ? ValidationLevel.FULL : ValidationLevel.DISABLED;
+    }
+
+    /**
+     * Controls whether a mapping set should be validated after it has been parsed,
+     * and how.
+     * <p>
+     * This method provides a finer control than
+     * {@link #setValidationEnabled(boolean)}, which simply enables full validation
+     * or disables validation entirely.
+     * 
+     * @param validationType The level of validation to use; set to
+     *                       {@link ValidationLevel#DISABLED} to disable validation
+     *                       entirely; the default is {@link ValidationLevel#FULL}.
+     */
+    public void setValidation(ValidationLevel validationType) {
+        this.validationType = validationType;
     }
 
     /**
@@ -116,8 +132,8 @@ public abstract class SSSOMReader {
      * @throws SSSOMFormatException If the mapping set is invalid.
      */
     protected void validate(MappingSet mappingSet) throws SSSOMFormatException {
-        if ( withValidation ) {
-            Validator validator = new Validator();
+        if ( validationType != ValidationLevel.DISABLED ) {
+            Validator validator = new Validator(validationType);
             validator.check(mappingSet);
         }
     }

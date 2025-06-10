@@ -99,6 +99,30 @@ public class ValidatorTest {
     }
 
     @Test
+    void testDisabledValidation() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-required-slots.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        Validator v = new Validator(ValidationLevel.DISABLED);
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    void testMinimalValidation() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-required-slots.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        Validator v = new Validator(ValidationLevel.MINIMAL);
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertFalse(errors.isEmpty());
+        Assertions.assertFalse(errors.contains(ValidationError.MISSING_SET_ID));
+        Assertions.assertFalse(errors.contains(ValidationError.MISSING_LICENSE));
+    }
+
+    @Test
     void testGetCompliantVersion() {
         MappingSet set = new MappingSet();
         Validator v = new Validator();

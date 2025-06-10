@@ -117,15 +117,32 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<sssom_version>>> slot; it is only used in the absence of such a
   slot, it does <not> allow to override the value of that slot when
   present.
+  
+** 1.4. Input validation
 
-** 1.4. Slot propagation
+  By default, SSSOM-CLI will check whether the input sets are fully
+  valid according to the SSSOM specification, and error out if they are
+  not. This means for example that a set that does not have a
+  <<<mapping_set_id>>> slot or a <<<license>>> slot will be rejected,
+  because those slots are <required> by the SSSOM specification.
+  
+  Use the <<<--lax>>> option to force SSSOM-CLI to silently accept sets
+  that would otherwise be rejected.
+  
+  Note that even with the <<<--lax>>> option, SSSOM-CLI will always
+  check that all mappings in the input set(s) have the required
+  <<<subject_id>>>, <<<predicate_id>>>, <<<object_id>>>, and
+  <<<mapping_justification>>> slots. This minimal level of correctness
+  checking <cannot> be disabled.
+
+** 1.5. Slot propagation
 
   By default, when reading a set, “propagatable slots” (as defined by the
   {{{https://mapping-commons.github.io/sssom/spec-model/#propagation-of-mapping-set-slots}SSSOM specification}})
   are automatically propagated down to each individual mappings. Use the
   <<<--no-propagation>>> option to disable that behaviour.
 
-** 1.5. Non-standard metadata.
+** 1.6. Non-standard metadata.
 
   The <<<--accept-extra-metadata>>> option controls how non-standard
   metadata slots are handled, when they are found in the input set(s).
@@ -175,7 +192,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
          latter taking precedence over the former. This is the default
          behaviour.
          
-** 2.3. Metadata of the output set
+** 2.2. Metadata of the output set
 
   By default, the output set will contain the same set-level metadata as
   the <first> input set, except for multi-valued slots which will
@@ -190,14 +207,14 @@ sssom-cli set.sssom.tsv:metadata.yaml
   which case the output metadata will <only> come from the
   <<<--output-metadata>>> option.
   
-** 2.4. Splitting the result set
+** 2.3. Splitting the result set
 
   Instead of writing a single mapping set, it is possible to split the
   result set along the subject and object prefixes with the
   <<<--split>>> option, which accepts the name of a directory where the
   split sets will be written.
   
-** 2.5. Output format
+** 2.4. Output format
 
   SSSOM-CLI can write the output set in the SSSOM/TSV format, the
   SSSOM/CSV format, the SSSOM/JSON format, or the RDF Turtle format.
@@ -248,7 +265,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   option is equivalent to using <<<--output-format json>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
-** 2.6. Slot condensation
+** 2.5. Slot condensation
 
   By default, when writing the result set, “propagatable slots” are
   condensed up to the mapping set whenever possible. That is, if all
@@ -257,7 +274,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   each mapping. Use the <<<--no-condensation>>> option to disable that
   behaviour.
   
-** 2.7. Non-standard metadata
+** 2.6. Non-standard metadata
 
   The <<<--write-extra-metadata>>> option controls how non-standard
   metadata slots are written in the result set. This option is only
@@ -283,7 +300,7 @@ sssom-cli set.sssom.tsv:metadata.yaml
   property that gives meaning to the extension, but in RDF extension
   slots are always represented by their property anyway).
   
-** 2.8. Other options
+** 2.7. Other options
 
   By default, the <<<mapping_cardinality>>> slot is excluded from the
   result set. This is because that slot is considered (at least by the

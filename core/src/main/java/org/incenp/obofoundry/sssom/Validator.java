@@ -61,14 +61,36 @@ public class Validator {
      * Creates a new instance.
      */
     public Validator() {
-        setValidators.add(new MissingSetIdValidator());
-        setValidators.add(new MissingLicenseValidator());
-        setValidators.add(new RedefinedBuiltinPrefixValidator());
-        mappingValidators.add(new MissingSubjectValidator());
-        mappingValidators.add(new MissingObjectValidator());
-        mappingValidators.add(new MissingPredicateValidator());
-        mappingValidators.add(new MissingJustificationValidator());
-        mappingValidators.add(new PredicateTypeValidator());
+        this(ValidationLevel.FULL);
+    }
+
+    /**
+     * Creates a new instance with the specified validation level.
+     * 
+     * @param validationLevel Indicates which checks should be performed.
+     */
+    public Validator(ValidationLevel validationLevel) {
+        switch ( validationLevel ) {
+        case DISABLED:
+            break;
+
+        case FULL:
+            // Fall-through
+
+        case EXTENDED:
+            setValidators.add(new MissingSetIdValidator());
+            setValidators.add(new MissingLicenseValidator());
+            setValidators.add(new RedefinedBuiltinPrefixValidator());
+            // Fall-through
+
+        case MINIMAL:
+            mappingValidators.add(new MissingSubjectValidator());
+            mappingValidators.add(new MissingObjectValidator());
+            mappingValidators.add(new MissingPredicateValidator());
+            mappingValidators.add(new MissingJustificationValidator());
+            mappingValidators.add(new PredicateTypeValidator());
+            break;
+        }
     }
 
     /**
@@ -107,7 +129,7 @@ public class Validator {
             }
         }
 
-        if ( !result.isEmpty() && !alwaysCheckMappings ) {
+        if ( (!result.isEmpty() && !alwaysCheckMappings) || mappingValidators.isEmpty() ) {
             return result;
         }
 

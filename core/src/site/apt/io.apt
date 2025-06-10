@@ -78,13 +78,9 @@ TSVReader reader = new TSVReader("my-mappings.sssom.tsv", "my-meta.yml");
   regardless of which version of the specification the file is
   conformant to.
   
-  By default, the parser automatically checks that all mappings are
-  compliant with the SSSOM specification. For now, this check consists
-  in ensuring that the following slots are present for all mappings:
-  <<<subject_id>>> (or <<<subject_label>>> if the subject is a literal),
-  <<<object_id>>> (or <<<object_label>>> if the object is a literal),
-  <<<predicate_id>>>, and <<<mapping_justification>>>. This check may
-  be disabled by calling <<<setValidationEnabled(false)>>>.
+  By default, the parser automatically checks that the mapping set and
+  all its mappings are compliant with the SSSOM specification. For more
+  details on this check, see the {{{a1.4._Validation}validation section}}.
   
   As a convenience, the TSV parser will automatically detect if the
   input file could be a file in the JSON format (if the first byte is a
@@ -166,6 +162,34 @@ try {
     when possible.
     
   * Validation of mappings is done by default.
+    
+  []
+  
+** 1.4. Validation
+
+  By default, all parsers (TSV, CSV, JSON) automatically check that the
+  mapping set and all its mappings are valid according to the SSSOM
+  specification.
+  
+  Validation checks include:
+  
+  * checking that all <required> slots are indeed present;
+  
+  * checking for constructs that are syntactically valid but logically
+    forbidden (and therefore cannot be enforced at parsing time); for
+    example, checking that a <literal mapping>, that is a mapping whose
+    subject (resp. object) is a literal, has a non-empty
+    <<<subject_label>>> (resp. <<<object_label>>>) slot.
+    
+  []
+  
+  Post-parsing validation can be controlled in two ways:
+  
+  * the <<<setEnableValidation(boolean)>>> method on the parser allows
+    to disable validation completely;
+    
+  * the <<<setValidation(ValidationLevel)>>> method allows to more
+    finely control how strict the checks should be.
     
   []
   
