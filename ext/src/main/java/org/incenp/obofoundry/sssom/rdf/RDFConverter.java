@@ -318,7 +318,8 @@ public class RDFConverter {
         // Fill in the Curie map from the model's namespaces
         ms.setCurieMap(new HashMap<String, String>());
         for ( Namespace ns : model.getNamespaces() ) {
-            if ( BuiltinPrefix.fromString(ns.getPrefix()) == null ) {
+            BuiltinPrefix bp = BuiltinPrefix.fromString(ns.getPrefix());
+            if ( bp == null || !bp.getPrefix().equals(ns.getName()) ) {
                 ms.getCurieMap().put(ns.getPrefix(), ns.getName());
             }
         }

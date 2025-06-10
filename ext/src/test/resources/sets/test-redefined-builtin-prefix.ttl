@@ -1,0 +1,24 @@
+@prefix COMENT: <https://example.com/entities/> .
+@prefix COMPID: <https://example.com/people/> .
+@prefix ORGENT: <https://example.org/entities/> .
+@prefix ORGPID: <https://example.org/people/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix semapv: <https://w3id.org/semapv/vocab/> .
+@prefix skos: <https://example/org/not-skos#> .
+@prefix sssom: <https://w3id.org/sssom/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/sets/exo2c> a sssom:MappingSet;
+  dcterms:created "2023-09-13"^^xsd:date;
+  dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
+  dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
+  dcterms:title "O2C set";
+  sssom:mappings [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0001;
+      owl:annotatedTarget COMENT:0011;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "alpha";
+      sssom:subject_label "alice"
+    ] .

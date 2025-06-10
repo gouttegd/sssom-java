@@ -26,14 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Map;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.SSSOMReader;
-import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 
@@ -92,16 +90,6 @@ public class RDFReader extends SSSOMReader {
 
         MappingSet ms = converter.fromRDF(model);
         new SlotPropagator(propagationPolicy).propagate(ms);
-
-        Map<String, String> curieMap = ms.getCurieMap();
-        if ( curieMap != null ) {
-            for ( String prefix : curieMap.keySet() ) {
-                BuiltinPrefix bp = BuiltinPrefix.fromString(prefix);
-                if ( bp != null && !bp.getPrefix().equals(curieMap.get(prefix)) ) {
-                    throw new SSSOMFormatException("Re-defined builtin prefix in the provided curie map");
-                }
-            }
-        }
 
         validate(ms);
 

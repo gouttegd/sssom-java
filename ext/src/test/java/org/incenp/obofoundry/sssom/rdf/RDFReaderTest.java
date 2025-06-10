@@ -251,4 +251,12 @@ public class RDFReaderTest {
             Assertions.fail(e);
         }
     }
+
+    @Test
+    void testRedefinedBuiltinPrefix() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-redefined-builtin-prefix.ttl");
+        SSSOMFormatException sfe = Assertions.assertThrows(SSSOMFormatException.class, () -> reader.read());
+        Assertions.assertEquals("Invalid mapping set: Re-defined builtin prefix in the provided curie map",
+                sfe.getMessage());
+    }
 }
