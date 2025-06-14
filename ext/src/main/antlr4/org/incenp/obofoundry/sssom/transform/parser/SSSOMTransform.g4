@@ -59,6 +59,7 @@ idField   : 'issue_tracker_item'
           | 'object'
           | 'object_source'
           | 'predicate'
+          | 'record'
           | 'subject'
           | 'subject_source'
           ;
