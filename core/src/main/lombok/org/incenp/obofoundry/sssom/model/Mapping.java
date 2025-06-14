@@ -122,6 +122,11 @@ public class Mapping  {
     @JsonProperty("mapping_tool")
     private String mappingTool;
 
+    @JsonProperty("mapping_tool_id")
+    @EntityReference
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private String mappingToolId;
+
     @JsonProperty("mapping_tool_version")
     private String mappingToolVersion;
 

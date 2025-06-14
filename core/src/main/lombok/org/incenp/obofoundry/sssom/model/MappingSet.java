@@ -107,6 +107,12 @@ public class MappingSet  {
     @Propagatable
     private String mappingTool;
 
+    @JsonProperty("mapping_tool_id")
+    @EntityReference
+    @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private String mappingToolId;
+
     @JsonProperty("mapping_tool_version")
     @Propagatable
     private String mappingToolVersion;

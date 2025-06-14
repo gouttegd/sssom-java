@@ -690,6 +690,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
             filter = (mapping) -> testValue.apply(mapping.getMappingTool());
             break;
 
+        case "mapping_tool_id":
+            filter = (mapping) -> testValue.apply(mapping.getMappingToolId());
+            break;
+
         case "mapping_tool_version":
             filter = (mapping) -> testValue.apply(mapping.getMappingToolVersion());
             break;

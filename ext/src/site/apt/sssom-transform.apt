@@ -169,9 +169,10 @@ NAME==PATTERN
   slot against which the filter operates, except that for the slots
   whose name ends with <<<_id>>> (e.g. <<<subject_id>>>,
   <<<predicate_id>>>, <<<creator_id>>>, etc.), the <<<_id>>> suffix is
-  dropped. Also, <<<justification>>> is accepted as an alias for
-  <<<mapping_justification>>> and <<<cardinality>>> is accepted as an
-  alias for <<<mapping_cardinality>>>.
+  dropped (except for <<<mapping_tool_id>>>, since <<<mapping_tool>>> is
+  a distinct slot). Also, <<<justification>>> is accepted as an alias
+  for <<<mapping_justification>>> and <<<cardinality>>> is accepted as
+  an alias for <<<mapping_cardinality>>>.
   
 *** 3.1.1. ID filters
 
