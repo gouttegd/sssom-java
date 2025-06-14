@@ -39,7 +39,7 @@ public enum EntityType {
     RDFS_LITERAL("http://www.w3.org/2000/01/rdf-schema#Literal"),
     RDFS_DATATYPE("http://www.w3.org/2000/01/rdf-schema#Datatype"),
     RDF_PROPERTY("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"),
-    COMPOSED_ENTITY_EXPRESSION(null);
+    COMPOSED_ENTITY_EXPRESSION("https://w3id.org/sssom/ComposedEntityExpression");
 
     private final static Map<String, EntityType> MAP;
     private final static Map<String, EntityType> URI_MAP;

@@ -31,6 +31,7 @@ import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +55,18 @@ public class RDFWriterTest {
         ms.getMappings().get(0).setPredicateType(EntityType.OWL_ANNOTATION_PROPERTY);
         try {
             assertWrittenAsExpected(ms, "test-sssom11-version", null, null);
+        } catch ( IOException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testWriteEnumValuesAsResources() {
+        MappingSet ms = getTestSet();
+        ms.getMappings().get(0).setSubjectType(EntityType.COMPOSED_ENTITY_EXPRESSION);
+        ms.getMappings().get(1).setPredicateModifier(PredicateModifier.NOT);
+        try {
+            assertWrittenAsExpected(ms, "test-enum-values-written-as-resources", null, null);
         } catch ( IOException e ) {
             Assertions.fail(e);
         }

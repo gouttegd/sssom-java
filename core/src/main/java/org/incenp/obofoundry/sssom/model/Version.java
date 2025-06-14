@@ -63,6 +63,15 @@ public enum Version {
     }
 
     /**
+     * Gets the IRI associated to the enum value.
+     * 
+     * @return The IRI used to represent the enum value.
+     */
+    public String getIRI() {
+        return String.format("https://w3id.org/sssom/version%d.%d", major, minor);
+    }
+
+    /**
      * Checks whether this version is compatible with the indicated version.
      * <p>
      * For the purpose of this method, a version <em>A</em> is said to be compatible
@@ -103,7 +112,7 @@ public enum Version {
      * Parses a string into the corresponding SSSOM version object.
      * 
      * @param v The string to parse.
-     * @return The corresponding version, or {@code #UNKNOWN} if the string does not
+     * @return The corresponding version, or {@link #UNKNOWN} if the string does not
      *         match any recognised version.
      */
     @JsonCreator
@@ -111,6 +120,23 @@ public enum Version {
         if ( v.equals("1.0") ) {
             return SSSOM_1_0;
         } else if ( v.equals("1.1") ) {
+            return SSSOM_1_1;
+        } else {
+            return UNKNOWN;
+        }
+    }
+
+    /**
+     * Parses an IRI into the corresponding SSSOM version object.
+     * 
+     * @param iri The IRI to parse.
+     * @return The corresponding version, or {@link #UNKNOWN} if the IRI does not
+     *         match any recognised version.
+     */
+    public static Version fromIRI(String iri) {
+        if ( iri.equals("https://w3id.org/sssom/version1.0") ) {
+            return SSSOM_1_0;
+        } else if ( iri.equals("https://w3id.org/sssom/version1.1") ) {
             return SSSOM_1_1;
         } else {
             return UNKNOWN;

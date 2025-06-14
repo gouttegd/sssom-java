@@ -25,9 +25,8 @@
       owl:annotatedTarget COMENT:0011;
       sssom:mapping_justification semapv:ManualMappingCuration;
       sssom:object_label "alpha";
-      sssom:predicate_type owl:AnnotationProperty;
       sssom:subject_label "alice";
-      sssom:subject_type owl:Class
+      sssom:subject_type sssom:ComposedEntityExpression
     ], [ a owl:Axiom;
       owl:annotatedProperty skos:closeMatch;
       owl:annotatedSource ORGENT:0002;
@@ -35,7 +34,8 @@
       sssom:confidence 7.0E-1;
       sssom:mapping_justification semapv:ManualMappingCuration;
       sssom:object_label "beta";
+      sssom:predicate_modifier sssom:NegatedPredicate;
       sssom:subject_label "bob";
       sssom:subject_type owl:Class
     ];
-  sssom:sssom_version [] .
+  sssom:sssom_version sssom:version1.1 .

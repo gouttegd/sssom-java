@@ -56,7 +56,10 @@ public class VersionSlot<T> extends Slot<T> {
     public void setValue(T object, String value) {
         Version version = null;
         if ( value != null ) {
-            version = Version.fromString(value);
+            version = Version.fromIRI(value);
+            if ( version == Version.UNKNOWN ) {
+                version = Version.fromString(value);
+            }
         }
         super.setValue(object, version);
     }

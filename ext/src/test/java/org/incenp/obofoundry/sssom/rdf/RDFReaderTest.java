@@ -259,4 +259,34 @@ public class RDFReaderTest {
         Assertions.assertEquals("Invalid mapping set: Re-defined builtin prefix in the provided curie map",
                 sfe.getMessage());
     }
+
+    @Test
+    void testEnumValuesAsResources() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-enum-values-as-resources.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+            Assertions.assertEquals(EntityType.COMPOSED_ENTITY_EXPRESSION, ms.getMappings().get(0).getSubjectType());
+            Assertions.assertEquals(PredicateModifier.NOT, ms.getMappings().get(0).getPredicateModifier());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testEnumValuesAsLiterals() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-enum-values-as-literals.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+            Assertions.assertEquals(EntityType.COMPOSED_ENTITY_EXPRESSION, ms.getMappings().get(0).getSubjectType());
+            Assertions.assertEquals(PredicateModifier.NOT, ms.getMappings().get(0).getPredicateModifier());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
 }

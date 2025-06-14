@@ -55,7 +55,10 @@ public class PredicateModifierSlot<T> extends Slot<T> {
     public void setValue(T object, String value) {
         PredicateModifier pm = null;
         if ( value != null ) {
-            pm = PredicateModifier.fromString(value);
+            pm = PredicateModifier.fromIRI(value);
+            if ( pm == null ) {
+                pm = PredicateModifier.fromString(value);
+            }
             if ( pm == null ) {
                 throw new IllegalArgumentException();
             }

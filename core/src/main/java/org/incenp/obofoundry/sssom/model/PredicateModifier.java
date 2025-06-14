@@ -25,17 +25,29 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  * defined modifier is {@code NOT}, which negates the predicate.
  */
 public enum PredicateModifier {
-    NOT("Not");
+    NOT("Not", "https://w3id.org/sssom/NegatedPredicate");
 
     private final String repr;
+    private String iri;
 
-    PredicateModifier(String repr) {
+    PredicateModifier(String repr, String iri) {
         this.repr = repr;
+        this.iri = iri;
     }
 
     @Override
     public String toString() {
         return repr;
+    }
+
+    /**
+     * Gets the IRI associated with the enum value.
+     * 
+     * @return The IRI used to represent the enum value, if any (may be
+     *         {@code null}).
+     */
+    public String getIRI() {
+        return iri;
     }
 
     /**
@@ -49,6 +61,20 @@ public enum PredicateModifier {
     public static PredicateModifier fromString(String v) {
         if ( v.equals("Not") ) {
             return PredicateModifier.NOT;
+        }
+        return null;
+    }
+
+    /**
+     * Parses an IRI into the corresponding predicate modifier value.
+     * 
+     * @param iri The IRI to parse.
+     * @return The corresponding enumeration value, or {@code null} if the provided
+     *         IRI does not match any predicate modifier.
+     */
+    public static PredicateModifier fromIRI(String iri) {
+        if ( iri.equals(NOT.iri) ) {
+            return NOT;
         }
         return null;
     }

@@ -417,7 +417,9 @@ public class RDFConverter {
     private Version versionFromRDF(Model model, Resource set) throws SSSOMFormatException {
         Version version = assumedVersion;
         for ( Statement st : model.filter(set, Constants.SSSOM_VERSION, null) ) {
-            if ( st.getObject().isLiteral() ) {
+            if ( st.getObject().isIRI() ) {
+                version = Version.fromIRI(st.getObject().stringValue());
+            } else if ( st.getObject().isLiteral() ) {
                 version = Version.fromString(st.getObject().stringValue());
             } else {
                 throw getTypingError("sssom_version");
@@ -786,15 +788,8 @@ public class RDFConverter {
         @Override
         public void visit(EntityTypeSlot<T> slot, T object, EntityType value) {
             recordUsedIRI(slot.getURI());
-            String valIRI = value.getIRI();
-            Value rdfValue = null;
-            if ( valIRI != null ) {
-                rdfValue = Values.iri(valIRI);
-                recordUsedIRI(valIRI);
-            } else {
-                rdfValue = Values.literal(value.toString());
-            }
-            model.add(subject, Values.iri(slot.getURI()), rdfValue);
+            recordUsedIRI(value.getIRI());
+            model.add(subject, Values.iri(slot.getURI()), Values.iri(value.getIRI()));
         }
 
         @Override
@@ -806,7 +801,8 @@ public class RDFConverter {
         @Override
         public void visit(PredicateModifierSlot<T> slot, T object, PredicateModifier value) {
             recordUsedIRI(slot.getURI());
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
+            recordUsedIRI(value.getIRI());
+            model.add(subject, Values.iri(slot.getURI()), Values.iri(value.getIRI()));
         }
 
         @Override
@@ -890,7 +886,7 @@ public class RDFConverter {
         public void visit(VersionSlot<T> slot, T object, Version value) {
             if ( value != Version.SSSOM_1_0 && value != Version.UNKNOWN ) {
                 recordUsedIRI(slot.getURI());
-                model.add(subject, Values.iri(slot.getURI()), Values.literal(value.toString()));
+                model.add(subject, Values.iri(slot.getURI()), Values.iri(value.getIRI()));
             }
         }
     }
