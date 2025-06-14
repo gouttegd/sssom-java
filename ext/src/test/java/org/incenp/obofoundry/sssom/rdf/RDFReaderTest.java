@@ -289,4 +289,32 @@ public class RDFReaderTest {
             Assertions.fail(e);
         }
     }
+
+    @Test
+    void testRecordIdAsResources() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-record-ids.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals("https://example.org/records/0001", ms.getMappings().get(0).getRecordId());
+            Assertions.assertEquals("https://example.org/records/0002", ms.getMappings().get(1).getRecordId());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testRecordIdAsProperties() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-record-ids-as-properties.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals("https://example.org/records/0001", ms.getMappings().get(0).getRecordId());
+            Assertions.assertEquals("https://example.org/records/0002", ms.getMappings().get(1).getRecordId());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
 }

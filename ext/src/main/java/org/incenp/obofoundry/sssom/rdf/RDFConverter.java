@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.rdf4j.model.BNode;
@@ -226,7 +225,13 @@ public class RDFConverter {
         SlotHelper<Mapping> mappingHelper = getMappingHelper();
         for ( Mapping mapping : ms.getMappings() ) {
             // Add individual mapping
-            BNode mappingNode = Values.bnode(String.valueOf(bnodeCounter++));
+            Resource mappingNode = null;
+            if ( mapping.getRecordId() != null ) {
+                mappingNode = Values.iri(mapping.getRecordId());
+                mappingVisitor.recordUsedIRI(mapping.getRecordId());
+            } else {
+                mappingNode = Values.bnode(String.valueOf(bnodeCounter++));
+            }
             model.add(mappingNode, RDF.TYPE, Constants.OWL_AXIOM);
             model.add(set, Constants.SSSOM_MAPPINGS, mappingNode);
 
@@ -305,8 +310,8 @@ public class RDFConverter {
             } else if ( st.getPredicate().equals(Constants.SSSOM_MAPPINGS) ) {
                 // Statement is an individual mapping
                 Value o = st.getObject();
-                if ( o instanceof BNode ) {
-                    ms.getMappings().add(mappingFromRDF(model.filter((BNode) o, null, null), version));
+                if ( o instanceof Resource ) {
+                    ms.getMappings().add(mappingFromRDF(model.filter((Resource) o, null, null), version));
                 } else {
                     throw getTypingError("mappings");
                 }
@@ -354,14 +359,19 @@ public class RDFConverter {
      */
     public Mapping mappingFromRDF(Model model, Version targetVersion) throws SSSOMFormatException {
         Model root = model.filter(null, RDF.TYPE, Constants.OWL_AXIOM);
-        Optional<BNode> mappingNode = Models.subjectBNode(root);
-        if ( mappingNode.isEmpty() ) {
+        Resource mappingNode = null;
+        try {
+            mappingNode = Models.subject(root).get();
+        } catch ( NoSuchElementException e ) {
             throw new SSSOMFormatException("RDF model does not contain a Mapping object");
         }
 
         Mapping mapping = new Mapping();
+        if ( mappingNode instanceof IRI ) {
+            mapping.setRecordId(mappingNode.stringValue());
+        }
         SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>(targetVersion);
-        for ( Statement st : model.filter(mappingNode.get(), null, null) ) {
+        for ( Statement st : model.filter(mappingNode, null, null) ) {
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(st.getPredicate().stringValue());
             if ( slot != null && slot.getCompliantVersion().isCompatibleWith(targetVersion) ) {
                 // Statement is a mapping metadata slot
@@ -401,13 +411,11 @@ public class RDFConverter {
      * Gets the helper to use for visiting mapping slots.
      */
     private SlotHelper<Mapping> getMappingHelper() {
-        SlotHelper<Mapping> helper;
-        if ( excludedSlots == null || excludedSlots.isEmpty() ) {
-            helper = SlotHelper.getMappingHelper();
-        } else {
-            helper = SlotHelper.getMappingHelper(true);
+        SlotHelper<Mapping> helper = SlotHelper.getMappingHelper(true);
+        if ( excludedSlots != null && !excludedSlots.isEmpty() ) {
             helper.excludeSlots(excludedSlots);
         }
+        helper.excludeSlots(Set.of("record_id"));
         return helper;
     }
 

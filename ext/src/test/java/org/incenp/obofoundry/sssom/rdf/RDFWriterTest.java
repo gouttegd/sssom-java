@@ -73,6 +73,20 @@ public class RDFWriterTest {
     }
 
     @Test
+    void testWriteRecordIDsAsResources() {
+        MappingSet ms = getTestSet();
+        ms.getCurieMap().put("ORGREC", "https://example.org/records/");
+        for ( int i = 0; i < ms.getMappings().size(); i++ ) {
+            ms.getMappings().get(i).setRecordId(String.format("https://example.org/records/%04d", i));
+        }
+        try {
+            assertWrittenAsExpected(ms, "test-record-ids-as-resources", null, null);
+        } catch ( IOException e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testWriteShortIRIsWithEscapedCharacters() throws IOException {
         MappingSet ms = getTestSet();
         ms.getCreatorId().add("https://example.com/people/0000+0000?0002@5678");
