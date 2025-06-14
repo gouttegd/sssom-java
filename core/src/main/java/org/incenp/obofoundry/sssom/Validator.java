@@ -23,12 +23,14 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.incenp.obofoundry.sssom.checks.DuplicatedRecordIdValidator;
 import org.incenp.obofoundry.sssom.checks.IMappingSetValidator;
 import org.incenp.obofoundry.sssom.checks.IMappingValidator;
 import org.incenp.obofoundry.sssom.checks.MissingJustificationValidator;
 import org.incenp.obofoundry.sssom.checks.MissingLicenseValidator;
 import org.incenp.obofoundry.sssom.checks.MissingObjectValidator;
 import org.incenp.obofoundry.sssom.checks.MissingPredicateValidator;
+import org.incenp.obofoundry.sssom.checks.MissingRecordIdValidator;
 import org.incenp.obofoundry.sssom.checks.MissingSetIdValidator;
 import org.incenp.obofoundry.sssom.checks.MissingSubjectValidator;
 import org.incenp.obofoundry.sssom.checks.PredicateTypeValidator;
@@ -75,6 +77,12 @@ public class Validator {
             break;
 
         case FULL:
+            MissingRecordIdValidator v1 = new MissingRecordIdValidator();
+            DuplicatedRecordIdValidator v2 = new DuplicatedRecordIdValidator();
+            setValidators.add(v1);
+            setValidators.add(v2);
+            mappingValidators.add(v1);
+            mappingValidators.add(v2);
             // Fall-through
 
         case EXTENDED:

@@ -99,6 +99,39 @@ public class ValidatorTest {
     }
 
     @Test
+    void testRecordIds() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-record-ids.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        Validator v = new Validator();
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    void testMissingRecordIds() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-record-ids-mix.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        Validator v = new Validator();
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_RECORD_ID));
+    }
+
+    @Test
+    void testDuplicatedRecordIds() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-record-ids-duplicate.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        Validator v = new Validator();
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.DUPLICATED_RECORD_ID));
+    }
+
+    @Test
     void testDisabledValidation() throws SSSOMFormatException, IOException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-missing-required-slots.sssom.tsv");
         reader.setValidationEnabled(false);

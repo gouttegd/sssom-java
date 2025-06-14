@@ -20,6 +20,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class Mapping  {
+    @JsonProperty("record_id")
+    @EntityReference
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private String recordId;
+
     @JsonProperty("subject_id")
     @EntityReference
     @SlotURI("http://www.w3.org/2002/07/owl#annotatedSource")
