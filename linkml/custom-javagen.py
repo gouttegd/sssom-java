@@ -46,7 +46,7 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     {%- if f.source_slot.slot_uri %}
     @SlotURI("{{ gen.expand_curie(f.source_slot.slot_uri) }}")
     {%- endif %}
-    {%- if f.source_slot.range == 'uri' %}
+    {%- if f.source_slot.range == 'NonRelativeURI' %}
     @URI
     {%- endif %}
     {%- if gen.get_added_in_version(f.source_slot.name) %}
