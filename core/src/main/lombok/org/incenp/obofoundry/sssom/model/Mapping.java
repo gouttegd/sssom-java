@@ -522,6 +522,255 @@ public class Mapping  {
     }
 
     /**
+     * Creates a canonical S-expression representing this mapping.
+     *
+     * @return A String uniquely representing this mapping, as a canonical S-expression.
+     */
+    public String toSExpr() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(7:mapping(");
+        if ( subjectId != null ) {
+            String v = String.valueOf(subjectId);
+            sb.append(String.format("(10:subject_id%d:%s)", v.length(), v));
+        }
+        if ( subjectLabel != null ) {
+            String v = String.valueOf(subjectLabel);
+            sb.append(String.format("(13:subject_label%d:%s)", v.length(), v));
+        }
+        if ( subjectCategory != null ) {
+            String v = String.valueOf(subjectCategory);
+            sb.append(String.format("(16:subject_category%d:%s)", v.length(), v));
+        }
+        if ( predicateId != null ) {
+            String v = String.valueOf(predicateId);
+            sb.append(String.format("(12:predicate_id%d:%s)", v.length(), v));
+        }
+        if ( predicateLabel != null ) {
+            String v = String.valueOf(predicateLabel);
+            sb.append(String.format("(15:predicate_label%d:%s)", v.length(), v));
+        }
+        if ( predicateModifier != null ) {
+            String v = String.valueOf(predicateModifier);
+            sb.append(String.format("(18:predicate_modifier%d:%s)", v.length(), v));
+        }
+        if ( objectId != null ) {
+            String v = String.valueOf(objectId);
+            sb.append(String.format("(9:object_id%d:%s)", v.length(), v));
+        }
+        if ( objectLabel != null ) {
+            String v = String.valueOf(objectLabel);
+            sb.append(String.format("(12:object_label%d:%s)", v.length(), v));
+        }
+        if ( objectCategory != null ) {
+            String v = String.valueOf(objectCategory);
+            sb.append(String.format("(15:object_category%d:%s)", v.length(), v));
+        }
+        if ( mappingJustification != null ) {
+            String v = String.valueOf(mappingJustification);
+            sb.append(String.format("(21:mapping_justification%d:%s)", v.length(), v));
+        }
+        if ( authorId != null ) {
+            sb.append("(9:author_id(");
+            for ( String v : authorId ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( authorLabel != null ) {
+            sb.append("(12:author_label(");
+            for ( String v : authorLabel ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( reviewerId != null ) {
+            sb.append("(11:reviewer_id(");
+            for ( String v : reviewerId ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( reviewerLabel != null ) {
+            sb.append("(14:reviewer_label(");
+            for ( String v : reviewerLabel ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( creatorId != null ) {
+            sb.append("(10:creator_id(");
+            for ( String v : creatorId ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( creatorLabel != null ) {
+            sb.append("(13:creator_label(");
+            for ( String v : creatorLabel ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( license != null ) {
+            String v = String.valueOf(license);
+            sb.append(String.format("(7:license%d:%s)", v.length(), v));
+        }
+        if ( subjectType != null ) {
+            String v = String.valueOf(subjectType);
+            sb.append(String.format("(12:subject_type%d:%s)", v.length(), v));
+        }
+        if ( subjectSource != null ) {
+            String v = String.valueOf(subjectSource);
+            sb.append(String.format("(14:subject_source%d:%s)", v.length(), v));
+        }
+        if ( subjectSourceVersion != null ) {
+            String v = String.valueOf(subjectSourceVersion);
+            sb.append(String.format("(22:subject_source_version%d:%s)", v.length(), v));
+        }
+        if ( objectType != null ) {
+            String v = String.valueOf(objectType);
+            sb.append(String.format("(11:object_type%d:%s)", v.length(), v));
+        }
+        if ( objectSource != null ) {
+            String v = String.valueOf(objectSource);
+            sb.append(String.format("(13:object_source%d:%s)", v.length(), v));
+        }
+        if ( objectSourceVersion != null ) {
+            String v = String.valueOf(objectSourceVersion);
+            sb.append(String.format("(21:object_source_version%d:%s)", v.length(), v));
+        }
+        if ( predicateType != null ) {
+            String v = String.valueOf(predicateType);
+            sb.append(String.format("(14:predicate_type%d:%s)", v.length(), v));
+        }
+        if ( mappingProvider != null ) {
+            String v = String.valueOf(mappingProvider);
+            sb.append(String.format("(16:mapping_provider%d:%s)", v.length(), v));
+        }
+        if ( mappingSource != null ) {
+            String v = String.valueOf(mappingSource);
+            sb.append(String.format("(14:mapping_source%d:%s)", v.length(), v));
+        }
+        if ( mappingCardinality != null ) {
+            String v = String.valueOf(mappingCardinality);
+            sb.append(String.format("(19:mapping_cardinality%d:%s)", v.length(), v));
+        }
+        if ( mappingTool != null ) {
+            String v = String.valueOf(mappingTool);
+            sb.append(String.format("(12:mapping_tool%d:%s)", v.length(), v));
+        }
+        if ( mappingToolId != null ) {
+            String v = String.valueOf(mappingToolId);
+            sb.append(String.format("(15:mapping_tool_id%d:%s)", v.length(), v));
+        }
+        if ( mappingToolVersion != null ) {
+            String v = String.valueOf(mappingToolVersion);
+            sb.append(String.format("(20:mapping_tool_version%d:%s)", v.length(), v));
+        }
+        if ( mappingDate != null ) {
+            String v = String.valueOf(mappingDate);
+            sb.append(String.format("(12:mapping_date%d:%s)", v.length(), v));
+        }
+        if ( publicationDate != null ) {
+            String v = String.valueOf(publicationDate);
+            sb.append(String.format("(16:publication_date%d:%s)", v.length(), v));
+        }
+        if ( confidence != null ) {
+            String v = String.valueOf(confidence);
+            sb.append(String.format("(10:confidence%d:%s)", v.length(), v));
+        }
+        if ( curationRule != null ) {
+            sb.append("(13:curation_rule(");
+            for ( String v : curationRule ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( curationRuleText != null ) {
+            sb.append("(18:curation_rule_text(");
+            for ( String v : curationRuleText ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( subjectMatchField != null ) {
+            sb.append("(19:subject_match_field(");
+            for ( String v : subjectMatchField ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( objectMatchField != null ) {
+            sb.append("(18:object_match_field(");
+            for ( String v : objectMatchField ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( matchString != null ) {
+            sb.append("(12:match_string(");
+            for ( String v : matchString ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( subjectPreprocessing != null ) {
+            sb.append("(21:subject_preprocessing(");
+            for ( String v : subjectPreprocessing ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( objectPreprocessing != null ) {
+            sb.append("(20:object_preprocessing(");
+            for ( String v : objectPreprocessing ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( similarityScore != null ) {
+            String v = String.valueOf(similarityScore);
+            sb.append(String.format("(16:similarity_score%d:%s)", v.length(), v));
+        }
+        if ( similarityMeasure != null ) {
+            String v = String.valueOf(similarityMeasure);
+            sb.append(String.format("(18:similarity_measure%d:%s)", v.length(), v));
+        }
+        if ( seeAlso != null ) {
+            sb.append("(8:see_also(");
+            for ( String v : seeAlso ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
+        if ( issueTrackerItem != null ) {
+            String v = String.valueOf(issueTrackerItem);
+            sb.append(String.format("(18:issue_tracker_item%d:%s)", v.length(), v));
+        }
+        if ( other != null ) {
+            String v = String.valueOf(other);
+            sb.append(String.format("(5:other%d:%s)", v.length(), v));
+        }
+        if ( comment != null ) {
+            String v = String.valueOf(comment);
+            sb.append(String.format("(7:comment%d:%s)", v.length(), v));
+        }
+        if ( extensions != null ) {
+            sb.append("(10:extensions(");
+            ArrayList<Map.Entry<String, ExtensionValue>> entries = new ArrayList<>(extensions.entrySet());
+            entries.sort((a, b) -> a.getKey().compareTo(b.getKey()));
+            for ( Map.Entry<String, ExtensionValue> entry : entries ) {
+                String key = entry.getKey();
+                String value = entry.getValue().toString();
+                sb.append(String.format("(%d:%s%d:%s)", key.length(), key, value.length(), value));
+            }
+            sb.append("))");
+        }
+        sb.append("))");
+        return sb.toString();
+    }
+
+    /**
      * Creates an inverted version of this mapping if possible.
      * <p>
      * Inversion is possible if the predicate is one of the known "common"

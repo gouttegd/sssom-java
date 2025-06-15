@@ -224,6 +224,45 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     }
 
     /**
+     * Creates a canonical S-expression representing this mapping.
+     *
+     * @return A String uniquely representing this mapping, as a canonical S-expression.
+     */
+    public String toSExpr() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(7:mapping(");
+{%- for f in cls.fields %}
+{%- if f.source_slot.name != 'record_id' %}
+        if ( {{ f.name }} != null ) {
+{%- if f.source_slot.multivalued %}
+            sb.append("({{ f.source_slot.name|length }}:{{ f.source_slot.name }}(");
+            for ( String v : {{ f.name }} ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+{%- else %}
+            String v = String.valueOf({{ f.name }});
+            sb.append(String.format("({{ f.source_slot.name|length }}:{{ f.source_slot.name }}%d:%s)", v.length(), v));
+{%- endif %}
+        }
+{%- endif %}
+{%- endfor %}
+        if ( extensions != null ) {
+            sb.append("(10:extensions(");
+            ArrayList<Map.Entry<String, ExtensionValue>> entries = new ArrayList<>(extensions.entrySet());
+            entries.sort((a, b) -> a.getKey().compareTo(b.getKey()));
+            for ( Map.Entry<String, ExtensionValue> entry : entries ) {
+                String key = entry.getKey();
+                String value = entry.getValue().toString();
+                sb.append(String.format("(%d:%s%d:%s)", key.length(), key, value.length(), value));
+            }
+            sb.append("))");
+        }
+        sb.append("))");
+        return sb.toString();
+    }
+
+    /**
      * Creates an inverted version of this mapping if possible.
      * <p>
      * Inversion is possible if the predicate is one of the known "common"

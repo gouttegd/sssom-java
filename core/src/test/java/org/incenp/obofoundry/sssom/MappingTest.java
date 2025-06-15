@@ -18,6 +18,8 @@
 
 package org.incenp.obofoundry.sssom;
 
+import java.time.LocalDate;
+
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.junit.jupiter.api.Assertions;
@@ -45,5 +47,24 @@ public class MappingTest {
 
         m.getExtensions(true).put("myext", new ExtensionValue("my-value"));
         Assertions.assertTrue(m.getExtensions().containsKey("myext"));
+    }
+
+    @Test
+    void testSExpressions() {
+        Mapping m = new Mapping();
+        m.setSubjectId("https://example.org/entities/0001");
+        m.setConfidence(0.7);
+        m.getAuthorId(true).add("https://example.org/people/0001");
+        m.getExtensions(true).put("https://example.org/properties/foo", new ExtensionValue(LocalDate.of(2025, 6, 15)));
+
+        Assertions.assertEquals(
+                "(7:mapping((10:subject_id33:https://example.org/entities/0001)(9:author_id(31:https://example.org/people/0001))(10:confidence3:0.7)(10:extensions((34:https://example.org/properties/foo10:2025-06-15)))))",
+                m.toSExpr());
+
+        Mapping m2 = m.toBuilder().build();
+        Assertions.assertEquals(m2.toSExpr(), m.toSExpr());
+
+        m2.setSubjectId("https://example.org/entities/0002");
+        Assertions.assertNotEquals(m2.toSExpr(), m.toSExpr());
     }
 }
