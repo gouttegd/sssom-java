@@ -18,14 +18,9 @@
 
 package org.incenp.obofoundry.sssom;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.slots.Slot;
-import org.incenp.obofoundry.sssom.slots.SlotHelper;
-import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 
 /**
  * Comparator for mapping objects. This class allows to sort mappings in the
@@ -38,31 +33,10 @@ import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
  */
 public class DefaultMappingComparator implements Comparator<Mapping> {
 
-    private StringifyVisitor visitor = new StringifyVisitor();
-
     @Override
     public int compare(Mapping o1, Mapping o2) {
         // We create a rough string representation of the mappings that we can then just
         // compare directly.
-        String s1 = stringifyMapping(o1);
-        String s2 = stringifyMapping(o2);
-
-        return s1.compareTo(s2);
-    }
-
-    private String stringifyMapping(Mapping m) {
-        visitor.strings.clear();
-        SlotHelper.getMappingHelper().visitSlots(m, visitor, true);
-        return String.join(",", visitor.strings);
-    }
-
-    private class StringifyVisitor extends SlotVisitorBase<Mapping> {
-
-        List<String> strings = new ArrayList<String>();
-
-        @Override
-        public void visit(Slot<Mapping> slot, Mapping mapping, Object value) {
-            strings.add(value != null ? value.toString() : "");
-        }
+        return o1.toString().compareTo(o2.toString());
     }
 }
