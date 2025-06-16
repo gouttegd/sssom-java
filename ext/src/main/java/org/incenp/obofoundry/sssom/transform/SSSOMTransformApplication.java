@@ -42,6 +42,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
     private PrefixManager pfxMgr;
     private VariableManager varMgr = new VariableManager();
     private MappingFormatter formatter = new MappingFormatter();
+    private int serial;
 
     private Map<String, ISSSOMTFunction<IMappingFilter>> filters = new HashMap<String, ISSSOMTFunction<IMappingFilter>>();
     private Map<String, ISSSOMTFunction<Void>> directives = new HashMap<String, ISSSOMTFunction<Void>>();
@@ -160,6 +161,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
     @Override
     public void onInit(PrefixManager prefixManager) {
         pfxMgr = prefixManager;
+        serial = 0;
 
         formatter.setPrefixManager(prefixManager);
         formatter.setStandardSubstitutions();
@@ -180,6 +182,10 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         registerFilter(new SSSOMTUriExpressionContainsFunction<T>(this));
         registerPreprocessor(new SSSOMTUriExpressionToExtFunction<T>(this));
         formatter.setModifier(new SSSOMTUriExpressionSlotValueFunction(pfxMgr));
+
+        // Additional experimental substitutions
+        formatter.setSubstitution("hash", new MappingHasher());
+        formatter.setSubstitution("serial", (mapping) -> serial++);
     }
 
     @Override

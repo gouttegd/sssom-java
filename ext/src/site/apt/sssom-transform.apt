@@ -563,8 +563,23 @@ my_function("%{subject_id}");
   Note that not all SSSOM/T functions accept the use of placeholders
   within their arguments. Consult the documentation of each function to
   find out whether the use of placeholders is possible or not.
+
+** 5.3. Special placeholders
+
+  In addition to the placeholders representing the slots of the
+  <Mapping> class, the following special placeholders are also
+  available:
   
-** 5.3. Format modifiers
+  * <<<serial>>>: inserts an integer whose value is incremented every
+    time the placeholder is used on a mapping;
+  
+  * <<<hash>>>: inserts a hash value calculated on all the slots of
+    the current mapping, so that the hash is unique for any given
+    mapping.
+    
+  []
+  
+** 5.4. Format modifiers
 
   When using the bracketed syntax to insert a placeholder inside a
   string argument, the placeholder itself may be followed by one or
