@@ -140,7 +140,7 @@ public class Mapping  {
     private LocalDate mappingDate;
 
     @JsonProperty("publication_date")
-    @SlotURI("http://purl.org/dc/terms/created")
+    @SlotURI("http://purl.org/dc/terms/issued")
     private LocalDate publicationDate;
 
     @Setter(AccessLevel.NONE)

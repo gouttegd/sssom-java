@@ -10,8 +10,8 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 <https://example.org/sets/exo2c> a sssom:MappingSet;
-  dcterms:created "2023-09-13"^^xsd:date;
   dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
+  dcterms:issued "2023-09-13"^^xsd:date;
   dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
   dcterms:title "O2C set";
   sssom:mappings [ a owl:Axiom;

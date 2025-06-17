@@ -123,7 +123,7 @@ public class MappingSet  {
     private LocalDate mappingDate;
 
     @JsonProperty("publication_date")
-    @SlotURI("http://purl.org/dc/terms/created")
+    @SlotURI("http://purl.org/dc/terms/issued")
     private LocalDate publicationDate;
 
     @JsonProperty("subject_match_field")
