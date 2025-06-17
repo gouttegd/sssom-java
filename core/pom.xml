@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.incenp</groupId>
     <artifactId>sssom-java</artifactId>
-    <version>1.6.0</version>
+    <version>1.6.1-SNAPSHOT</version>
   </parent>
   <artifactId>sssom-core</artifactId>
 
@@ -13,7 +13,7 @@
   <url>https://incenp.org/dvlpt/sssom-java/library.html</url>
   <scm>
     <url>https://github.com/gouttegd/sssom-java</url>
-    <tag>sssom-java-1.6.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <dependencies>
