@@ -332,8 +332,9 @@ author==~
   Lastly, an atomic filter may also take the form of a call to a
   {{{6.2. Filter functions}filter function}}.
   
-  The base SSSOM/T language currently does not define any filter
-  function, but SSSOM/T dialect may define their own filter functions.
+  The base SSSOM/T language currently defines only one filter function,
+  called <<<is_duplicate>>>. SSSOM/T dialects may add their own filter
+  functions.
   
 ** 3.2. Combining filters
 
@@ -642,9 +643,41 @@ my_function("My variable has the value %{MY_VARIABLE}");
 
 ** 6.2. Filter functions
 
-  The base SSSOM/Transform language currently does not define any filter
-  function. All filtering is done using the standard filter constructs
-  described in the {{{3. Filters}Filters}} section.
+*** 6.2.1. <is_duplicate>
+
+  This filter can be used to select mappings for which a mapping-derived
+  value is the same as for a previous mapping. It expects one argument,
+  which is the mapping-derived value to check against.
+  
+  Whenever it is called on a given mapping, the filter obtains derives
+  the corresponding value and records it. If the value has not been seen
+  before, it returns <false>; otherwise, it returns <true>.
+  
+  Examples:
+  
++-----------------------------------------------------------------------
+is_duplicate(%{subject_id}) -> stop();
++-----------------------------------------------------------------------
+
+  This will drop all mappings that have the same <subject_id>, except
+  the first one.
+  
+  The mapping-derived value may be more complex, as in this example:
+  
++-----------------------------------------------------------------------
+is_duplicate("%{subject_id}%{predicate_id}%{object_id}") -> stop();
++-----------------------------------------------------------------------
+
+  which will drop all mappings that have the same subject / object /
+  predicate triple (again, except the first such mapping).
+  
+  Use the filter with the special
+  {{{5.3. Special placeholders} <hash> substitution}} to drop mappings
+  that are completely identical:
+  
++-----------------------------------------------------------------------
+is_duplicate(%{hash}) -> stop();
++-----------------------------------------------------------------------
 
 ** 6.3. Callback functions
 

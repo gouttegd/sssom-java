@@ -183,9 +183,10 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         registerPreprocessor(new SSSOMTUriExpressionToExtFunction<T>(this));
         formatter.setModifier(new SSSOMTUriExpressionSlotValueFunction(pfxMgr));
 
-        // Additional experimental substitutions
+        // Additional experimental stuff
         formatter.setSubstitution("hash", new MappingHasher());
         formatter.setSubstitution("serial", (mapping) -> serial++);
+        registerFilter(new SSSOMTDuplicateFunction(this));
     }
 
     @Override

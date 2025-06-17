@@ -317,4 +317,22 @@ public class SSSOMTransformApplicationTest {
             Assertions.fail(e);
         }
     }
+
+    @Test
+    void testIsDuplicateFilter() {
+        arguments.add("%{subject_id}");
+
+        try {
+            IMappingFilter f = application.onFilter("is_duplicate", arguments, keyedArguments);
+
+            Mapping m1 = Mapping.builder().subjectId("subject1").build();
+            Mapping m2 = Mapping.builder().subjectId("subject2").build();
+
+            Assertions.assertFalse(f.filter(m1));
+            Assertions.assertFalse(f.filter(m2));
+            Assertions.assertTrue(f.filter(m1));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+    }
 }
