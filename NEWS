@@ -1,3 +1,29 @@
+Changes in sssom-java 1.6.0
+---------------------------
+
+    * core:
+      * New SSSOM 1.1 slots supported:
+        * `record_id`,
+        * `mapping_tool_id`,
+        * and `mapping_set_confidence`.
+      * Check for correctness of URI-typed slots (SSSOM 1.1).
+      * Added set-level validation for
+        * missing `mapping_set_id` slot,
+        * missing `license` slot,
+        * improper use of `record_id`.
+      * Allow automatically generating a unique hash for a mapping.
+    * RDF support:
+      * Use `mapping_set_id` as the resource representing the mapping set.
+      * Use `record_id` (if present) as the resource for a mapping record.
+      * Serialise enum values as IRIs whenever possible.
+    * SSSOM/T:
+      * New filters for the new `record_id` and `mapping_tool_id` slots.
+      * New filter function `is_duplicate`.
+      * New special substitutions `%{hash}` and `%{serial}`.
+    * sssom-cli:
+      * Added the `--lax` option.
+
+
 Changes in sssom-java 1.5.1
 ---------------------------
 
