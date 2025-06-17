@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.incenp</groupId>
   <artifactId>sssom-java</artifactId>
-  <version>1.5.2-SNAPSHOT</version>
+  <version>1.6.0</version>
   <packaging>pom</packaging>
 
   <name>SSSOM-Java</name>
@@ -33,7 +33,7 @@
     <connection>scm:git:https://github.com/gouttegd/sssom-java.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/gouttegd/sssom-java.git</developerConnection>
     <url>https://github.com/gouttegd/sssom-java</url>
-    <tag>HEAD</tag>
+    <tag>sssom-java-1.6.0</tag>
   </scm>
 
   <issueManagement>
