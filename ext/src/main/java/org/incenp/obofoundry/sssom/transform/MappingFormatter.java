@@ -150,6 +150,7 @@ public class MappingFormatter {
         placeholders.put("mapping_provider", (m) -> m.getMappingProvider());
         placeholders.put("mapping_source", (m) -> m.getMappingSource());
         placeholders.put("mapping_tool", (m) -> m.getMappingTool());
+        placeholders.put("mapping_tool_id", (m) -> m.getMappingToolId());
         placeholders.put("mapping_tool_version", (m) -> m.getMappingToolVersion());
         placeholders.put("match_string", (m) -> m.getMatchString());
         placeholders.put("object_category", (m) -> m.getObjectCategory());
@@ -165,6 +166,7 @@ public class MappingFormatter {
         placeholders.put("predicate_label", (m) -> m.getPredicateLabel());
         placeholders.put("predicate_modifier", (m) -> m.getPredicateModifier());
         placeholders.put("publication_date", (m) -> m.getPublicationDate());
+        placeholders.put("record_id", (m) -> m.getRecordId());
         placeholders.put("reviewer_id", (m) -> m.getReviewerId());
         placeholders.put("reviewer_label", (m) -> m.getReviewerLabel());
         placeholders.put("see_also", (m) -> m.getSeeAlso());
