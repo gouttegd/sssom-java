@@ -543,7 +543,9 @@ public class YAMLConverter {
                 break;
             }
 
-            extensions.put(definition.getProperty(), parsedValue);
+            if ( parsedValue != null && parsedValue.getValue() != null ) {
+                extensions.put(definition.getProperty(), parsedValue);
+            }
         }
     }
 

@@ -443,6 +443,16 @@ public class TSVReaderTest {
         compare(new ExtensionValue("BAZ A", false), m1.getExtensions().get("http://sssom.invalid/ext_undeclared_baz"));
     }
 
+    @Test
+    void testEmptyExtensionValuesAreIgnored() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-with-extensions.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
+        MappingSet ms = reader.read();
+
+        Mapping m2 = ms.getMappings().get(2);
+        Assertions.assertFalse(m2.getExtensions().containsKey("https://example.org/properties/bazProperty"));
+    }
+
     /*
      * Test that the parser can handle escaped YAML strings.
      */
