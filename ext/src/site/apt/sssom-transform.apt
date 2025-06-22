@@ -330,11 +330,10 @@ author==~
 *** 3.1.8. Function filters
 
   Lastly, an atomic filter may also take the form of a call to a
-  {{{6.2. Filter functions}filter function}}.
-  
-  The base SSSOM/T language currently defines only one filter function,
-  called <<<is_duplicate>>>. SSSOM/T dialects may add their own filter
-  functions.
+  filter function. See the
+  {{{6.2. Filter functions}corresponding section}} for a list of filter
+  functions available in the base SSSOM/T language. SSSOM/T dialects may
+  also add their own filter functions.
   
 ** 3.2. Combining filters
 
@@ -677,6 +676,18 @@ is_duplicate("%{subject_id}%{predicate_id}%{object_id}") -> stop();
   
 +-----------------------------------------------------------------------
 is_duplicate(%{hash}) -> stop();
++-----------------------------------------------------------------------
+
+*** 6.2.2 <has_extension>
+
+  This filter can be used to select mappings that have a particular
+  extension slot. It expects one argument, which is the property
+  associated with the extension slot whose existence must be checked.
+  
+  Example:
+  
++-----------------------------------------------------------------------
+has_extension(PROP:fooProperty) -> stop();
 +-----------------------------------------------------------------------
 
 ** 6.3. Callback functions

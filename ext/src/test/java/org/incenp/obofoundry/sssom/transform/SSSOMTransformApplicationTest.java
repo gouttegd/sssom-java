@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.EntityType;
+import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.PredicateModifier;
@@ -331,6 +332,29 @@ public class SSSOMTransformApplicationTest {
             Assertions.assertFalse(f.filter(m1));
             Assertions.assertFalse(f.filter(m2));
             Assertions.assertTrue(f.filter(m1));
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    void testHasExtensionFilter() {
+        arguments.add("https://example.org/properties/fooProperty");
+
+        try {
+            IMappingFilter f = application.onFilter("has_extension", arguments, keyedArguments);
+
+            Mapping m1 = new Mapping();
+            Mapping m2 = new Mapping();
+            m2.setExtensions(new HashMap<String, ExtensionValue>());
+            Mapping m3 = new Mapping();
+            m3.getExtensions(true).put("https://example.org/properties/fooProperty",
+                    new ExtensionValue(LocalDate.of(2025, 06, 01)));
+
+            Assertions.assertFalse(f.filter(m1));
+            Assertions.assertFalse(f.filter(m2));
+            Assertions.assertTrue(f.filter(m3));
+
         } catch ( SSSOMTransformError e ) {
             Assertions.fail(e);
         }
