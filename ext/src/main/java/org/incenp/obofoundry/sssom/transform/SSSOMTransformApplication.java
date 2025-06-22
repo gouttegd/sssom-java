@@ -169,6 +169,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         formatter.setModifier(new SSSOMTFormatFunction());
         formatter.setModifier(new SSSOMTListItemFunction());
         formatter.setModifier(new SSSOMTFlattenFunction());
+        formatter.setModifier(new SSSOMTDefaultModifierFunction());
 
         registerDirective(new SSSOMTSetvarFunction(this));
         registerCallback(new SSSOMTSetvarCallbackFunction(this));

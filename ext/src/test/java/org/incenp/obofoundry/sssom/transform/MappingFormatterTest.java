@@ -166,17 +166,36 @@ public class MappingFormatterTest {
         Mapping mapping = getSampleMapping();
 
         IMappingTransformer<String> f = formatter.getTransformer("Empty %{}");
-        Assertions.assertEquals("Empty %{}", f.transform(mapping));
+        Assertions.assertEquals("Empty ", f.transform(mapping));
 
         f = formatter.getTransformer("%{inexisting}");
-        Assertions.assertEquals("%{inexisting}", f.transform(mapping));
+        Assertions.assertEquals("", f.transform(mapping));
 
         formatter.setModifier(new UppercaseModifier());
         f = formatter.getTransformer("%{|upper}");
-        Assertions.assertEquals("%{}", f.transform(mapping));
+        Assertions.assertEquals("", f.transform(mapping));
 
         f = formatter.getTransformer("%{inexisting|upper}");
-        Assertions.assertEquals("%{INEXISTING}", f.transform(mapping));
+        Assertions.assertEquals("", f.transform(mapping));
+    }
+
+    @Test
+    void testDefaultModifier() {
+        formatter.setStandardSubstitutions();
+        formatter.setModifier(new SSSOMTDefaultModifierFunction());
+        Mapping mapping = getSampleMapping();
+
+        IMappingTransformer<String> f = formatter.getTransformer("Tool: %{mapping_tool}");
+        Assertions.assertEquals("Tool: ", f.transform(mapping));
+
+        f = formatter.getTransformer("Tool: %{mapping_tool|default(unknown tool)}");
+        Assertions.assertEquals("Tool: unknown tool", f.transform(mapping));
+
+        f = formatter.getTransformer("Subject: %{subject_label|default('unknown subject')}");
+        Assertions.assertEquals("Subject: alice", f.transform(mapping));
+
+        f = formatter.getTransformer("Foo extension: %{https://example.org/properties/fooProperty|default(empty)}");
+        Assertions.assertEquals("Foo extension: empty", f.transform(mapping));
     }
 
     @Test

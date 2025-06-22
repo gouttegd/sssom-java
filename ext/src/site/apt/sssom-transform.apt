@@ -937,6 +937,19 @@ predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui="
 +-----------------------------------------------------------------------
 "Confidence: %{confidence|format('%.03f')}"
 +-----------------------------------------------------------------------
+
+*** 6.5.5. <default>
+
+  This modifier allows to specify a default value to insert into a
+  string if the original substituted value is null or empty.
+  
+  For example, to insert the name of the mapping tool used to create the
+  current mapping, or a default string indicating that the tool is
+  unknown:
+  
++-----------------------------------------------------------------------
+"Mapping tool: %{mapping_tool|default('unknown tool')}"
++-----------------------------------------------------------------------
   
 * 7. Grouping rules
 

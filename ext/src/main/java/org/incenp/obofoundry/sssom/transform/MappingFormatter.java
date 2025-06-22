@@ -301,8 +301,8 @@ public class MappingFormatter {
                     }
                 }
 
-                // No extension with that name, return the original format string
-                return String.format("%%{%s}", name);
+                // No extension with that name, return an empty string
+                return "";
             };
         }
 
