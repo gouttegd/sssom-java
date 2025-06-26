@@ -121,6 +121,36 @@ public class ValidatorTest {
     }
 
     @Test
+    void testLastRecordMissingRecordID() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-record-ids.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        // Remove the last record ID
+        ms.getMappings().get(ms.getMappings().size() - 1).setRecordId(null);
+
+        Validator v = new Validator();
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_RECORD_ID));
+    }
+
+    @Test
+    void testAllRecordsMissingRecordIDExceptLast() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-record-ids.sssom.tsv");
+        reader.setValidationEnabled(false);
+        MappingSet ms = reader.read();
+
+        // Remove all record IDs except for the last record
+        for ( int i = 0, n = ms.getMappings().size(); i < n - 1; n++ ) {
+            ms.getMappings().get(i).setRecordId(null);
+        }
+
+        Validator v = new Validator();
+        EnumSet<ValidationError> errors = v.validate(ms);
+        Assertions.assertTrue(errors.contains(ValidationError.MISSING_RECORD_ID));
+    }
+
+    @Test
     void testDuplicatedRecordIds() throws SSSOMFormatException, IOException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-record-ids-duplicate.sssom.tsv");
         reader.setValidationEnabled(false);

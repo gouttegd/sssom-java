@@ -27,13 +27,12 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  */
 public class MissingRecordIdValidator implements IMappingSetValidator, IMappingValidator {
 
-    private boolean hasSomeRecordID;
+    private boolean expectRecordID;
 
     @Override
     public ValidationError validate(Mapping mapping) {
-        if ( mapping.getRecordId() != null && !mapping.getRecordId().isEmpty() ) {
-            hasSomeRecordID = true;
-        } else if ( hasSomeRecordID ) {
+        boolean hasRecordID = mapping.getRecordId() != null && !mapping.getRecordId().isEmpty();
+        if ( hasRecordID != expectRecordID ) {
             return ValidationError.MISSING_RECORD_ID;
         }
         return null;
@@ -41,10 +40,14 @@ public class MissingRecordIdValidator implements IMappingSetValidator, IMappingV
 
     @Override
     public ValidationError validate(MappingSet ms) {
-        // We do not actually validate anything here. We use this method as an
-        // initialiser that is called before the real validation method above is called
-        // in individual mappings.
-        hasSomeRecordID = false;
+        // Check whether the first mapping has a record ID; this will set the
+        // expectation for all subsequent mappings.
+        if ( ms.getMappings() != null && !ms.getMappings().isEmpty() ) {
+            Mapping first = ms.getMappings().get(0);
+            expectRecordID = first.getRecordId() != null && !first.getRecordId().isEmpty();
+        } else {
+            expectRecordID = false;
+        }
         return null;
     }
 
