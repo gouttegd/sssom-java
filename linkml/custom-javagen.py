@@ -16,6 +16,11 @@ import java.time.LocalDate;
 import java.util.Map;
 import java.util.HashMap;
 {% endif -%}
+{% if cls.name == 'Mapping' -%}
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Collections;
+{% endif -%}
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -229,19 +234,33 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
      * @return A String uniquely representing this mapping, as a canonical S-expression.
      */
     public String toSExpr() {
+        DecimalFormat floatFormatter = new DecimalFormat("#.###");
+        floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
+
         StringBuilder sb = new StringBuilder();
         sb.append("(7:mapping(");
 {%- for f in cls.fields %}
-{%- if f.source_slot.name != 'record_id' %}
+{%- if f.source_slot.name != 'record_id' and f.source_slot.name != 'mapping_cardinality' %}
         if ( {{ f.name }} != null ) {
 {%- if f.source_slot.multivalued %}
             sb.append("({{ f.source_slot.name|length }}:{{ f.source_slot.name }}(");
-            for ( String v : {{ f.name }} ) {
+            List<String> tmp = null;
+            if ( {{ f.name }}.size() > 1 ) {
+                tmp = new ArrayList<>({{ f.name }});
+                Collections.sort(tmp);
+            } else {
+                tmp = {{ f.name }};
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
 {%- else %}
+{%- if f.range == 'Double' %}
+            String v = floatFormatter.format({{ f.name }});
+{%- else %}
             String v = String.valueOf({{ f.name }});
+{%- endif %}
             sb.append(String.format("({{ f.source_slot.name|length }}:{{ f.source_slot.name }}%d:%s)", v.length(), v));
 {%- endif %}
         }

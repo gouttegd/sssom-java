@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.HashMap;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.util.Collections;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -527,6 +530,9 @@ public class Mapping  {
      * @return A String uniquely representing this mapping, as a canonical S-expression.
      */
     public String toSExpr() {
+        DecimalFormat floatFormatter = new DecimalFormat("#.###");
+        floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
+
         StringBuilder sb = new StringBuilder();
         sb.append("(7:mapping(");
         if ( subjectId != null ) {
@@ -571,42 +577,84 @@ public class Mapping  {
         }
         if ( authorId != null ) {
             sb.append("(9:author_id(");
-            for ( String v : authorId ) {
+            List<String> tmp = null;
+            if ( authorId.size() > 1 ) {
+                tmp = new ArrayList<>(authorId);
+                Collections.sort(tmp);
+            } else {
+                tmp = authorId;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( authorLabel != null ) {
             sb.append("(12:author_label(");
-            for ( String v : authorLabel ) {
+            List<String> tmp = null;
+            if ( authorLabel.size() > 1 ) {
+                tmp = new ArrayList<>(authorLabel);
+                Collections.sort(tmp);
+            } else {
+                tmp = authorLabel;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( reviewerId != null ) {
             sb.append("(11:reviewer_id(");
-            for ( String v : reviewerId ) {
+            List<String> tmp = null;
+            if ( reviewerId.size() > 1 ) {
+                tmp = new ArrayList<>(reviewerId);
+                Collections.sort(tmp);
+            } else {
+                tmp = reviewerId;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( reviewerLabel != null ) {
             sb.append("(14:reviewer_label(");
-            for ( String v : reviewerLabel ) {
+            List<String> tmp = null;
+            if ( reviewerLabel.size() > 1 ) {
+                tmp = new ArrayList<>(reviewerLabel);
+                Collections.sort(tmp);
+            } else {
+                tmp = reviewerLabel;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( creatorId != null ) {
             sb.append("(10:creator_id(");
-            for ( String v : creatorId ) {
+            List<String> tmp = null;
+            if ( creatorId.size() > 1 ) {
+                tmp = new ArrayList<>(creatorId);
+                Collections.sort(tmp);
+            } else {
+                tmp = creatorId;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( creatorLabel != null ) {
             sb.append("(13:creator_label(");
-            for ( String v : creatorLabel ) {
+            List<String> tmp = null;
+            if ( creatorLabel.size() > 1 ) {
+                tmp = new ArrayList<>(creatorLabel);
+                Collections.sort(tmp);
+            } else {
+                tmp = creatorLabel;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
@@ -651,10 +699,6 @@ public class Mapping  {
             String v = String.valueOf(mappingSource);
             sb.append(String.format("(14:mapping_source%d:%s)", v.length(), v));
         }
-        if ( mappingCardinality != null ) {
-            String v = String.valueOf(mappingCardinality);
-            sb.append(String.format("(19:mapping_cardinality%d:%s)", v.length(), v));
-        }
         if ( mappingTool != null ) {
             String v = String.valueOf(mappingTool);
             sb.append(String.format("(12:mapping_tool%d:%s)", v.length(), v));
@@ -676,60 +720,109 @@ public class Mapping  {
             sb.append(String.format("(16:publication_date%d:%s)", v.length(), v));
         }
         if ( confidence != null ) {
-            String v = String.valueOf(confidence);
+            String v = floatFormatter.format(confidence);
             sb.append(String.format("(10:confidence%d:%s)", v.length(), v));
         }
         if ( curationRule != null ) {
             sb.append("(13:curation_rule(");
-            for ( String v : curationRule ) {
+            List<String> tmp = null;
+            if ( curationRule.size() > 1 ) {
+                tmp = new ArrayList<>(curationRule);
+                Collections.sort(tmp);
+            } else {
+                tmp = curationRule;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( curationRuleText != null ) {
             sb.append("(18:curation_rule_text(");
-            for ( String v : curationRuleText ) {
+            List<String> tmp = null;
+            if ( curationRuleText.size() > 1 ) {
+                tmp = new ArrayList<>(curationRuleText);
+                Collections.sort(tmp);
+            } else {
+                tmp = curationRuleText;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( subjectMatchField != null ) {
             sb.append("(19:subject_match_field(");
-            for ( String v : subjectMatchField ) {
+            List<String> tmp = null;
+            if ( subjectMatchField.size() > 1 ) {
+                tmp = new ArrayList<>(subjectMatchField);
+                Collections.sort(tmp);
+            } else {
+                tmp = subjectMatchField;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( objectMatchField != null ) {
             sb.append("(18:object_match_field(");
-            for ( String v : objectMatchField ) {
+            List<String> tmp = null;
+            if ( objectMatchField.size() > 1 ) {
+                tmp = new ArrayList<>(objectMatchField);
+                Collections.sort(tmp);
+            } else {
+                tmp = objectMatchField;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( matchString != null ) {
             sb.append("(12:match_string(");
-            for ( String v : matchString ) {
+            List<String> tmp = null;
+            if ( matchString.size() > 1 ) {
+                tmp = new ArrayList<>(matchString);
+                Collections.sort(tmp);
+            } else {
+                tmp = matchString;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( subjectPreprocessing != null ) {
             sb.append("(21:subject_preprocessing(");
-            for ( String v : subjectPreprocessing ) {
+            List<String> tmp = null;
+            if ( subjectPreprocessing.size() > 1 ) {
+                tmp = new ArrayList<>(subjectPreprocessing);
+                Collections.sort(tmp);
+            } else {
+                tmp = subjectPreprocessing;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( objectPreprocessing != null ) {
             sb.append("(20:object_preprocessing(");
-            for ( String v : objectPreprocessing ) {
+            List<String> tmp = null;
+            if ( objectPreprocessing.size() > 1 ) {
+                tmp = new ArrayList<>(objectPreprocessing);
+                Collections.sort(tmp);
+            } else {
+                tmp = objectPreprocessing;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
         }
         if ( similarityScore != null ) {
-            String v = String.valueOf(similarityScore);
+            String v = floatFormatter.format(similarityScore);
             sb.append(String.format("(16:similarity_score%d:%s)", v.length(), v));
         }
         if ( similarityMeasure != null ) {
@@ -738,7 +831,14 @@ public class Mapping  {
         }
         if ( seeAlso != null ) {
             sb.append("(8:see_also(");
-            for ( String v : seeAlso ) {
+            List<String> tmp = null;
+            if ( seeAlso.size() > 1 ) {
+                tmp = new ArrayList<>(seeAlso);
+                Collections.sort(tmp);
+            } else {
+                tmp = seeAlso;
+            }
+            for ( String v : tmp ) {
                 sb.append(String.format("%d:%s", v.length(), v));
             }
             sb.append("))");
