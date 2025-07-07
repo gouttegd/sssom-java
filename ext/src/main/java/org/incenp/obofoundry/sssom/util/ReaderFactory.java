@@ -286,7 +286,7 @@ public class ReaderFactory {
                 format = SerialisationFormat.TSV;
             } else if ( c == '{' ) {
                 format = SerialisationFormat.JSON;
-            } else if ( c == '@' || c == '[' ) {
+            } else if ( c == '@' || c == '[' || c == '<' ) {
                 format = SerialisationFormat.RDF_TURTLE;
             } else if ( Character.isLowerCase(c) ) {
                 // Assume a TSV or CSV file without an embedded metadata block.
