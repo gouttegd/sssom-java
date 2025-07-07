@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
@@ -194,6 +195,42 @@ public class SetMergerTest {
         Assertions.assertEquals(1, ms1.getExtensionDefinitions().size());
         containsExtensionDefinition(ms1.getExtensionDefinitions(),
                 new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"));
+    }
+
+    @Test
+    public void testMergingScalarSlots() {
+        MappingSet ms1 = getSampleSet();
+        MappingSet ms2 = getSampleSet();
+
+        ms1.setLicense("https://creativecommons.org/licenses/by/4.0/");
+        ms2.setLicense("https://creativecommons.org/licenses/by/3.0/");
+
+        SetMerger merger = new SetMerger();
+        merger.setMergeOptions(EnumSet.of(MergeOption.MERGE_SCALARS));
+        merger.merge(ms1, ms2);
+        Assertions.assertEquals("https://creativecommons.org/licenses/by/3.0/", ms1.getLicense());
+    }
+
+    @Test
+    public void testMergingMappingsOnly() {
+        MappingSet ms1 = getSampleSet();
+        MappingSet ms2 = getSampleSet();
+
+        ms1.getCreatorId(true).add("https://example.org/people/0000-0000-0001-1234");
+        ms2.getCreatorId(true).add("https://example.org/people/0000-0000-0001-5678");
+        ms2.setLicense("https://creativecommons.org/licenses/by/4.0/");
+
+        SetMerger merger = new SetMerger();
+        merger.setMergeOptions(EnumSet.of(MergeOption.MERGE_MAPPINGS));
+        merger.merge(ms1, ms2);
+
+        // Metadata should not be merged
+        Assertions.assertEquals(1, ms1.getCreatorId().size());
+        Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", ms1.getCreatorId().get(0));
+        Assertions.assertNull(ms1.getLicense());
+
+        // But mappings should be
+        Assertions.assertEquals(2, ms1.getMappings().size());
     }
 
     private void containsExtensionDefinition(List<ExtensionDefinition> actual, ExtensionDefinition expected) {

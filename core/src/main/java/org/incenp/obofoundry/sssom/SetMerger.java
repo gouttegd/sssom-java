@@ -51,7 +51,7 @@ public class SetMerger extends SlotVisitorBase<MappingSet> {
      * @param options The new set of options.
      */
     public void setMergeOptions(EnumSet<MergeOption> options) {
-        this.options.addAll(options);
+        this.options = options;
     }
 
     /**
