@@ -31,10 +31,12 @@ import javax.xml.catalog.CatalogException;
 
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.JSONWriter;
+import org.incenp.obofoundry.sssom.MergeOption;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.SSSOMWriter;
+import org.incenp.obofoundry.sssom.SetMerger;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.ValidationLevel;
@@ -97,6 +99,7 @@ public class SimpleCLI implements Runnable {
 
     private static class InputOptions {
         private ArrayList<String> files = new ArrayList<String>();
+        private SetMerger merger = new SetMerger();
 
         @Parameters(index = "0..*",
                 paramLabel = "SET[:META]",
@@ -129,7 +132,14 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--no-metadata-merge",
                 description = "Do not attempt to merge the set-level metadata of the input sets.")
-        boolean noMetadataMerge;
+        private void noMetadataMerge(boolean value) {
+            merger.getMergeOptions().remove(MergeOption.MERGE_LISTS);
+            merger.getMergeOptions().remove(MergeOption.MERGE_EXTENSIONS);
+        }
+
+        public SetMerger getMerger() {
+            return merger;
+        }
 
         @Option(names = "--accept-extra-metadata",
                 paramLabel = "POLICY",
@@ -364,7 +374,6 @@ public class SimpleCLI implements Runnable {
 
     private MappingSet loadInputs() {
         MappingSet ms = null;
-        MetadataMerger merger = new MetadataMerger();
         if ( inputOpts.files.isEmpty() ) {
             inputOpts.files.add("-");
         }
@@ -386,14 +395,7 @@ public class SimpleCLI implements Runnable {
                 if ( ms == null ) {
                     ms = reader.read();
                 } else {
-                    MappingSet tmp = reader.read();
-                    ms.getMappings().addAll(tmp.getMappings());
-                    if ( !inputOpts.noMetadataMerge ) {
-                        merger.merge(ms, tmp);
-                    } else {
-                        // We always merge at least the curie maps
-                        ms.getCurieMap().putAll(tmp.getCurieMap());
-                    }
+                    inputOpts.getMerger().merge(ms, reader.read());
                 }
             } catch ( IOException ioe ) {
                 helper.error("Cannot read file %s: %s", input, ioe.getMessage());
@@ -412,11 +414,7 @@ public class SimpleCLI implements Runnable {
                 // input set.
                 TSVReader reader = new TSVReader(null, outputOpts.extraMetadataFile);
                 MappingSet tmpSet = reader.read(true);
-                tmpSet.setMappings(ms.getMappings());
-                ms.getCurieMap().forEach((k, v) -> tmpSet.getCurieMap().putIfAbsent(k, v));
-                if ( !inputOpts.noMetadataMerge ) {
-                    merger.merge(tmpSet, ms);
-                }
+                inputOpts.getMerger().merge(tmpSet, ms);
                 ms = tmpSet;
             } catch ( IOException ioe ) {
                 helper.error("Cannot read file %s: %s", outputOpts.extraMetadataFile, ioe.getMessage());

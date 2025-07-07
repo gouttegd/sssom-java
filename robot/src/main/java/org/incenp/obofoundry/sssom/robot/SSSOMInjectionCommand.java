@@ -20,13 +20,16 @@ package org.incenp.obofoundry.sssom.robot;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.MergeOption;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMReader;
+import org.incenp.obofoundry.sssom.SetMerger;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -160,13 +163,15 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         MappingSet mappingSet = null;
         ReaderFactory readerFactory = new ReaderFactory(true);
+        SetMerger merger = new SetMerger();
+        merger.setMergeOptions(EnumSet.of(MergeOption.MERGE_MAPPINGS));
         if ( line.hasOption("sssom") ) {
             for ( String sssomFile : line.getOptionValues("sssom") ) {
                 SSSOMReader reader = readerFactory.getReader(sssomFile, line.getOptionValue("sssom-metadata"));
                 if ( mappingSet == null ) {
                     mappingSet = reader.read();
                 } else {
-                    mappingSet.getMappings().addAll(reader.read().getMappings());
+                    merger.merge(mappingSet, reader.read());
                 }
             }
         }
@@ -177,7 +182,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             if ( mappingSet == null ) {
                 mappingSet = extractor.extract(ontology);
             } else {
-                mappingSet.getMappings().addAll(extractor.extract(ontology).getMappings());
+                merger.merge(mappingSet, extractor.extract(ontology));
             }
         }
         if ( mappingSet == null ) {

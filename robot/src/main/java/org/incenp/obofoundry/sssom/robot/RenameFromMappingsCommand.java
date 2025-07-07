@@ -18,13 +18,16 @@
 
 package org.incenp.obofoundry.sssom.robot;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.MergeOption;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMReader;
+import org.incenp.obofoundry.sssom.SetMerger;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.util.ReaderFactory;
@@ -101,12 +104,14 @@ public class RenameFromMappingsCommand implements Command {
 
         MappingSet ms = null;
         ReaderFactory readerFactory = new ReaderFactory(true);
+        SetMerger merger = new SetMerger();
+        merger.setMergeOptions(EnumSet.of(MergeOption.MERGE_MAPPINGS));
         for ( String sssomFile : line.getOptionValues('s') ) {
             SSSOMReader reader = readerFactory.getReader(sssomFile);
             if ( ms == null ) {
                 ms = reader.read();
             } else {
-                ms.getMappings().addAll(reader.read().getMappings());
+                merger.merge(ms, reader.read());
             }
         }
 

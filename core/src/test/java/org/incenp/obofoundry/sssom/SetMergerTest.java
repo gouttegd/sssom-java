@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2024 Damien Goutte-Gattat
+ * Copyright © 2025 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom.cli;
+package org.incenp.obofoundry.sssom;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,13 +29,13 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class MetadataMergerTest {
+public class SetMergerTest {
 
     @Test
     public void testMergingListValues() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         // Merging a dataset that contains values into a dataset that does not
         ms1.setCreatorId(null);
@@ -63,7 +63,7 @@ public class MetadataMergerTest {
     public void testMergingMapValues() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         // Merging a dataset that contains values into a dataset that does not
         ms1.setCurieMap(null);
@@ -83,7 +83,7 @@ public class MetadataMergerTest {
     public void testMergingExtensionValues() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         // Merging a dataset that contains values into a dataset that does not
         ms2.setExtensions(new HashMap<String, ExtensionValue>());
@@ -109,7 +109,7 @@ public class MetadataMergerTest {
     public void testMergingExtensionDefinitions() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         // Merging a dataset with definitions into a dataset that does not
         ms2.setExtensionDefinitions(new ArrayList<ExtensionDefinition>());
@@ -120,9 +120,8 @@ public class MetadataMergerTest {
                 new ExtensionDefinition("ext_foo", "https://example.org/properties/fooProperty"));
 
         // Merging datasets that both contain definitions (without conflicts)
-        ms2.getExtensionDefinitions()
-                .add(new ExtensionDefinition("ext_bar", "https://example.org/properties/barProperty",
-                        "http://www.w3.org/2001/XMLSchema#integer"));
+        ms2.getExtensionDefinitions().add(new ExtensionDefinition("ext_bar",
+                "https://example.org/properties/barProperty", "http://www.w3.org/2001/XMLSchema#integer"));
         merger.merge(ms1, ms2);
         Assertions.assertEquals(2, ms1.getExtensionDefinitions().size());
         containsExtensionDefinition(ms1.getExtensionDefinitions(),
@@ -135,7 +134,7 @@ public class MetadataMergerTest {
     public void testMergingExtensionDefinitionsWithSlotNameClash() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         ms1.setExtensionDefinitions(new ArrayList<ExtensionDefinition>());
         ms1.getExtensionDefinitions()
@@ -158,7 +157,7 @@ public class MetadataMergerTest {
     public void testMergingExtensionDefinitionsWithPropertyClash() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         ms1.setExtensionDefinitions(new ArrayList<ExtensionDefinition>());
         ms1.getExtensionDefinitions()
@@ -179,7 +178,7 @@ public class MetadataMergerTest {
     public void testMergingExtensionDefinitionsWithTypeClash() {
         MappingSet ms1 = getSampleSet();
         MappingSet ms2 = getSampleSet();
-        MetadataMerger merger = new MetadataMerger();
+        SetMerger merger = new SetMerger();
 
         ms1.setExtensionDefinitions(new ArrayList<ExtensionDefinition>());
         ms1.getExtensionDefinitions().add(new ExtensionDefinition("ext_foo",
@@ -200,8 +199,7 @@ public class MetadataMergerTest {
     private void containsExtensionDefinition(List<ExtensionDefinition> actual, ExtensionDefinition expected) {
         boolean ok = false;
         for ( ExtensionDefinition ext : actual ) {
-            if ( ext.getSlotName().equals(expected.getSlotName())
-                    && ext.getProperty().equals(expected.getProperty())
+            if ( ext.getSlotName().equals(expected.getSlotName()) && ext.getProperty().equals(expected.getProperty())
                     && ext.getEffectiveType().equals(expected.getEffectiveType())
                     && ext.getTypeHint().equals(expected.getTypeHint()) ) {
                 ok = true;
