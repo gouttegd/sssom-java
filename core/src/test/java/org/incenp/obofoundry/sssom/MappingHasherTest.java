@@ -16,10 +16,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom.transform;
+package org.incenp.obofoundry.sssom;
 
 import java.time.LocalDate;
 
+import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.junit.jupiter.api.Assertions;

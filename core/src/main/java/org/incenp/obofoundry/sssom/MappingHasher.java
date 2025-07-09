@@ -16,7 +16,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom.transform;
+package org.incenp.obofoundry.sssom;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -27,7 +27,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 /**
  * Creates deterministic hash values from mappings.
  */
-public class MappingHasher implements IMappingTransformer<Object> {
+public class MappingHasher {
 
     // Z-Base32 output alphabet
     private static char[] ZB32 = { 'y', 'b', 'n', 'd', 'r', 'f', 'g', '8', 'e', 'j', 'k', 'm', 'c', 'p', 'q', 'x', 'o',
@@ -44,13 +44,12 @@ public class MappingHasher implements IMappingTransformer<Object> {
         }
     }
 
-    @Override
-    public Object transform(Mapping mapping) {
-        // For use as a "mapping substitution" transformer we need to return an Object,
-        // not a String.
-        return hash(mapping);
-    }
-
+    /**
+     * Hashes the given mapping using the SSSOM standard hash procedure.
+     * 
+     * @param mapping The mapping to hash.
+     * @return The unique hash for the mapping.
+     */
     public String hash(Mapping mapping) {
         if ( md != null ) {
             byte[] digest = md.digest(mapping.toSExpr().getBytes(StandardCharsets.UTF_8));
