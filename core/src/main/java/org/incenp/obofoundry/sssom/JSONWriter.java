@@ -25,7 +25,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -254,6 +253,11 @@ public class JSONWriter extends SSSOMWriter {
         buffer.append('"');
     }
 
+    /* Appends a double value (unquoted) to the JSON flow. */
+    private void addValue(Double value) {
+        buffer.append(SSSOMUtils.format(value));
+    }
+
     /* Appends a value to the JSON flow. */
     private void addValue(Object value) {
         buffer.append(value.toString());
@@ -344,7 +348,7 @@ public class JSONWriter extends SSSOMWriter {
         @Override
         public void visit(DateSlot<T> slot, T object, LocalDate value) {
             addKey(slot.getName());
-            addValue(value.format(DateTimeFormatter.ISO_DATE));
+            addValue(SSSOMUtils.format(value));
         }
 
         @Override
@@ -394,12 +398,6 @@ public class JSONWriter extends SSSOMWriter {
                         switch ( value.getType() ) {
                         case BOOLEAN:
                             addValue(value.asBoolean());
-                            break;
-                        case DATE:
-                            addValue(value.asDate().format(DateTimeFormatter.ISO_DATE));
-                            break;
-                        case DATETIME:
-                            addValue(value.asDatetime().format(DateTimeFormatter.ISO_DATE_TIME));
                             break;
                         case DOUBLE:
                             addValue(value.asDouble());

@@ -24,8 +24,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -253,12 +251,9 @@ public class TSVWriter extends SSSOMWriter {
      */
     private class MappingSetSlotVisitor extends SlotVisitorBase<MappingSet> {
         StringBuilder sb = new StringBuilder();
-        DecimalFormat floatFormatter;
         String linePrefix;
 
         MappingSetSlotVisitor(String linePrefix) {
-            floatFormatter = new DecimalFormat("#.##");
-            floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
             this.linePrefix = linePrefix;
         }
 
@@ -348,17 +343,13 @@ public class TSVWriter extends SSSOMWriter {
             sb.append(linePrefix);
             sb.append(slot.getName());
             sb.append(": ");
-            sb.append(floatFormatter.format(value));
+            sb.append(SSSOMUtils.format(value));
             sb.append("\n");
         }
 
         @Override
         public void visit(DateSlot<MappingSet> slot, MappingSet set, LocalDate value) {
-            // The SSSOM specification says nothing on how to serialise dates, but LinkML
-            // says “for xsd dates, datetimes, and times, AtomicValue must be a string
-            // conforming to the relevant ISO type”. I assume this means ISO-8601.
-            sb.append(
-                    String.format("%s%s: %s\n", linePrefix, slot.getName(), value.format(DateTimeFormatter.ISO_DATE)));
+            sb.append(String.format("%s%s: %s\n", linePrefix, slot.getName(), SSSOMUtils.format(value)));
         }
 
         @Override
@@ -616,13 +607,10 @@ public class TSVWriter extends SSSOMWriter {
      */
     private class MappingSlotVisitor extends SlotVisitorBase<Mapping> {
         private List<ExtensionDefinition> definitions;
-        private DecimalFormat floatFormatter;
         List<String> results;
 
         MappingSlotVisitor(List<ExtensionDefinition> extraSlots) {
             definitions = extraSlots;
-            floatFormatter = new DecimalFormat("#.###");
-            floatFormatter.setRoundingMode(RoundingMode.HALF_UP);
             results = new ArrayList<String>();
         }
 
@@ -674,7 +662,7 @@ public class TSVWriter extends SSSOMWriter {
 
         @Override
         public void visit(DoubleSlot<Mapping> slot, Mapping object, Double value) {
-            results.add(value == null ? "" : floatFormatter.format(value));
+            results.add(value == null ? "" : SSSOMUtils.format(value));
         }
 
         @Override

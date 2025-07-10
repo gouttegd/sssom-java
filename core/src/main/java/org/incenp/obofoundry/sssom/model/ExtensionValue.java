@@ -21,6 +21,8 @@ package org.incenp.obofoundry.sssom.model;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
+import org.incenp.obofoundry.sssom.SSSOMUtils;
+
 /**
  * Represents the value of an extension slot.
  */
@@ -112,7 +114,19 @@ public class ExtensionValue {
 
     @Override
     public String toString() {
-        return value.toString();
+        switch ( valueType ) {
+        case DOUBLE:
+            return SSSOMUtils.format((Double) value);
+
+        case DATE:
+            return SSSOMUtils.format((LocalDate) value);
+
+        case DATETIME:
+            return SSSOMUtils.format((ZonedDateTime) value);
+
+        default:
+            return value.toString();
+        }
     }
 
     /**
