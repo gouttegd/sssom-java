@@ -28,6 +28,8 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  */
 public class HashExtractor extends MappingValueExtractor {
     
+    private MappingHasher hasher = new MappingHasher();
+
     /**
      * Creates a new instance.
      * 
@@ -41,7 +43,7 @@ public class HashExtractor extends MappingValueExtractor {
 
     @Override
     protected Object extract(Mapping mapping) {
-        return new MappingHasher().hash(mapping);
+        return hasher.hash(mapping);
     }
 
     @Override
