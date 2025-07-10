@@ -35,11 +35,15 @@ import org.incenp.obofoundry.sssom.MergeOption;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
 import org.incenp.obofoundry.sssom.SSSOMReader;
+import org.incenp.obofoundry.sssom.SSSOMUtils;
 import org.incenp.obofoundry.sssom.SSSOMWriter;
 import org.incenp.obofoundry.sssom.SetMerger;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
 import org.incenp.obofoundry.sssom.ValidationLevel;
+import org.incenp.obofoundry.sssom.extract.ExtractorSyntaxException;
+import org.incenp.obofoundry.sssom.extract.IValueExtractor;
+import org.incenp.obofoundry.sssom.extract.ValueExtractorFactory;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -65,6 +69,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
@@ -253,6 +258,23 @@ public class SimpleCLI implements Runnable {
         @Option(names = {"--sorting" }, negatable = true, defaultValue = "true", fallbackValue = "true",
                 description = "Enable/disable sorting of mappings. This is enabled by default.")
         boolean sortMappings;
+
+        IValueExtractor extractor;
+
+        @Option(names = { "--extract" }, paramLabel = "EXPRESSION",
+                description = "Extract a single value from the result set and print it on standard output.")
+        private void setExtractor(String arg) {
+            try {
+                extractor = new ValueExtractorFactory().parse(arg);
+            } catch ( ExtractorSyntaxException e ) {
+                throw new ParameterException(spec.commandLine(),
+                        String.format("Invalid --extract expression: %s", e.getMessage()));
+            }
+        }
+
+        @Option(names = { "--no-stdout" },
+                description = "Do not write the result set on standard output.")
+        boolean noStandardOutput;
     }
 
     enum OutputMapSource {
@@ -365,6 +387,7 @@ public class SimpleCLI implements Runnable {
         MappingSet ms = loadInputs();
         transform(ms);
         postProcess(ms);
+        extract(ms);
         writeOutput(ms);
     }
 
@@ -553,6 +576,15 @@ public class SimpleCLI implements Runnable {
         }
     }
 
+    private void extract(MappingSet set) {
+        if ( outputOpts.extractor != null ) {
+            Object value = outputOpts.extractor.extract(set);
+            if ( value != null ) {
+                System.out.printf("%s\n", SSSOMUtils.format(value));
+            }
+        }
+    }
+
     private void writeOutput(MappingSet set) {
         if ( outputOpts.prefixMapSource == OutputMapSource.SSSOMT ) {
             // Replace the input map with the SSSOM/T map
@@ -567,6 +599,9 @@ public class SimpleCLI implements Runnable {
             return; // Skip writing the full set when writing splits
         }
         boolean stdout = outputOpts.file.equals("-");
+        if ( stdout && outputOpts.noStandardOutput ) {
+            return;
+        }
         try {
             getWriter(outputOpts.file, outputOpts.metaFile, outputOpts.outputFormat).write(set);
         } catch ( IOException ioe ) {
