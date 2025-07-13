@@ -13,7 +13,7 @@
 
 <https://example.org/sets/exo2c> a sssom:MappingSet;
   dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
-  dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
+  dcterms:license <https://creativecommons.org/licenses/by/4.0/>;
   sssom:mappings [ a owl:Axiom;
       owl:annotatedProperty skos:closeMatch;
       owl:annotatedSource FBbt:12345678;

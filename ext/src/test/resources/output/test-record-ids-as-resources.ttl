@@ -39,6 +39,6 @@ ORGREC:0002 a owl:Axiom;
 
 <https://example.org/sets/exo2c> a sssom:MappingSet;
   dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
-  dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
+  dcterms:license <https://creativecommons.org/licenses/by/4.0/>;
   sssom:mappings ORGREC:0000, ORGREC:0001, ORGREC:0002;
   sssom:sssom_version sssom:version1.1 .

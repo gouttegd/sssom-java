@@ -743,7 +743,7 @@ public class RDFConverter {
         public void visit(URISlot<T> slot, T object, String value) {
             recordUsedIRI(slot.getURI());
             recordUsedPrefix(BuiltinPrefix.XSD);
-            model.add(subject, Values.iri(slot.getURI()), Values.literal(value, XSD.ANYURI));
+            model.add(subject, Values.iri(slot.getURI()), Values.iri(value));
         }
 
         @Override

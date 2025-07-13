@@ -240,8 +240,8 @@ public class RDFReaderTest {
     }
 
     @Test
-    void testURISlotsAsResources() throws IOException {
-        RDFReader reader = new RDFReader("src/test/resources/sets/test-uri-slots-as-resources.ttl");
+    void testURISlotsAsLiterals() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-uri-slots-as-literals.ttl");
         MappingSet ms;
 
         try {
