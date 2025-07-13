@@ -124,6 +124,16 @@ public class RDFWriterTest {
                 (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.NONE));
     }
 
+    @Test
+    void testWriteURIExtensionValue() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("../core/src/test/resources/sets/test-uri-extension-values.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.DEFINED);
+        MappingSet ms = reader.read();
+
+        assertWrittenAsExpected(ms, "test-ttl-output-uri-extensions", null,
+                (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED));
+    }
+
     private void assertWrittenAsExpected(MappingSet ms, String expectedBasename, String actualBasename,
             Consumer<RDFWriter> consumer) throws IOException {
         if ( actualBasename == null ) {

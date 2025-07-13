@@ -538,6 +538,18 @@ public class YAMLConverter {
                 }
                 break;
 
+            case URI:
+                if ( String.class.isInstance(rawValue) ) {
+                    try {
+                        parsedValue = new ExtensionValue(new URI(String.class.cast(rawValue)));
+                    } catch ( URISyntaxException e ) {
+                        throw getTypingError(slotName, e);
+                    }
+                } else if ( rawValue != null ) {
+                    throw getTypingError(slotName);
+                }
+                break;
+
             case OTHER:
                 parsedValue = new ExtensionValue(rawValue);
                 break;

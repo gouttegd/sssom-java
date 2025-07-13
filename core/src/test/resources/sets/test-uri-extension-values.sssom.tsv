@@ -1,0 +1,17 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  EXPROP: https://example.org/properties/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/exo2c-with-extensions
+#mapping_set_title: Test URI-typed extension values
+#license: https://creativecommons.org/licenses/by/4.0/
+#publication_date: 2025-07-13
+#extension_definitions:
+#  - slot_name: ext_bar
+#    property: EXPROP:barProperty
+#    type_hint: xsd:anyURI
+#ext_foo: https://example.org/
+#ext_bar: https://example.org/
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	ext_bar
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	https://example.org/M1
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration	https://example.org/M2

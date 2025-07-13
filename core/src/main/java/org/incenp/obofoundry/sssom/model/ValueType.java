@@ -41,6 +41,7 @@ public enum ValueType {
     DATETIME("http://www.w3.org/2001/XMLSchema#datetime"),
     IDENTIFIER("https://w3id.org/linkml/Uriorcurie",
                "https://w3id.org/linkml/uriOrCurie"),
+    URI("http://www.w3.org/2001/XMLSchema#anyURI"),
     OTHER(null);
 
     private final static Map<String, ValueType> MAP;

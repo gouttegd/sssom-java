@@ -103,6 +103,16 @@ public class ExtensionValue {
     }
 
     /**
+     * Creates a new value representing a URI.
+     * 
+     * @param uri The value.
+     */
+    public ExtensionValue(java.net.URI uri) {
+        value = uri;
+        valueType = ValueType.URI;
+    }
+
+    /**
      * Creates a new value with an unknown type.
      * 
      * @param o The value.
@@ -193,7 +203,7 @@ public class ExtensionValue {
     }
 
     /**
-     * @return The value as an integer, or {@code null} is the value has another
+     * @return The value as an integer, or {@code null} if the value has another
      *         type.
      */
     public Integer asInteger() {
@@ -201,14 +211,14 @@ public class ExtensionValue {
     }
 
     /**
-     * @return The value as a double, or {@code null} is the value has another type.
+     * @return The value as a double, or {@code null} if the value has another type.
      */
     public Double asDouble() {
         return valueType == ValueType.DOUBLE ? Double.class.cast(value) : null;
     }
 
     /**
-     * @return The value as a boolean, or {@code null} is the value has another
+     * @return The value as a boolean, or {@code null} if the value has another
      *         type.
      */
     public Boolean asBoolean() {
@@ -216,14 +226,14 @@ public class ExtensionValue {
     }
 
     /**
-     * @return The value as a date, or {@code null} is the value has another type.
+     * @return The value as a date, or {@code null} if the value has another type.
      */
     public LocalDate asDate() {
         return valueType == ValueType.DATE ? LocalDate.class.cast(value) : null;
     }
 
     /**
-     * @return The value as a date and time object, or {@code null} is the value has
+     * @return The value as a date and time object, or {@code null} if the value has
      *         another type.
      */
     public ZonedDateTime asDatetime() {
@@ -231,10 +241,18 @@ public class ExtensionValue {
     }
 
     /**
-     * @return The value as a string, or {@code null} is the value is not typed as a
+     * @return The value as a string, or {@code null} if the value is not typed as a
      *         string or an identifier.
      */
     public String asString() {
         return valueType == ValueType.STRING || valueType == ValueType.IDENTIFIER ? String.class.cast(value) : null;
+    }
+
+    /**
+     * @return The value as a URI, or {@code null} if the value is not typed as
+     *         such.
+     */
+    public java.net.URI asURI() {
+        return valueType == ValueType.URI ? java.net.URI.class.cast(value) : null;
     }
 }

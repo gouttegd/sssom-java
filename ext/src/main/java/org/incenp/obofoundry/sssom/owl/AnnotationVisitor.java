@@ -43,6 +43,7 @@ import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLDatatype;
+import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.XSDVocabulary;
 
 /**
@@ -181,6 +182,9 @@ public class AnnotationVisitor extends SlotVisitorBase<Mapping> {
                 break;
             case STRING:
                 annotValue = factory.getOWLLiteral(value.asString());
+                break;
+            case URI:
+                annotValue = factory.getOWLLiteral(value.toString(), OWL2Datatype.XSD_ANY_URI);
                 break;
             }
             if ( annotValue != null ) {

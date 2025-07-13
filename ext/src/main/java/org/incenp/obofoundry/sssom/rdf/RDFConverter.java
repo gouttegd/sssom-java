@@ -581,8 +581,11 @@ public class RDFConverter {
                 case STRING:
                     ev = new ExtensionValue(litValue.stringValue());
                     break;
+                case URI:
+                    ev = new ExtensionValue(new URI(litValue.stringValue()));
+                    break;
                 }
-            } catch ( IllegalArgumentException | DateTimeParseException e ) {
+            } catch ( IllegalArgumentException | DateTimeParseException | URISyntaxException e ) {
                 // In DEFINED mode, an invalid value is an error; otherwise, we can just ignore
                 // the extension altogether
                 if ( extraPolicy == ExtraMetadataPolicy.DEFINED ) {
@@ -880,6 +883,10 @@ public class RDFConverter {
                 case OTHER:
                 case STRING:
                     rdfValue = Values.literal(ev.asString());
+                    break;
+                case URI:
+                    rdfValue = Values.literal(ev.toString(), Values.iri(ValueType.URI.toString()));
+                    recordUsedPrefix(BuiltinPrefix.XSD);
                     break;
                 default:
                     // Should not happen

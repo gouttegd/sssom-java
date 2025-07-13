@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -453,6 +454,22 @@ public class TSVReaderTest {
         Assertions.assertFalse(m2.getExtensions().containsKey("https://example.org/properties/bazProperty"));
     }
 
+    @Test
+    void testURIExtensionValue() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-uri-extension-values.sssom.tsv");
+        reader.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED);
+        MappingSet ms = reader.read();
+
+        ExtensionValue expected = new ExtensionValue(URI.create("https://example.org/"));
+        ExtensionValue actual = ms.getExtensions().get("https://example.org/properties/barProperty");
+        compare(expected, actual);
+
+        // ext_foo is undefined, so it should be typed as a string
+        expected = new ExtensionValue("https://example.org/", false);
+        actual = ms.getExtensions().get("http://sssom.invalid/ext_foo");
+        compare(expected, actual);
+    }
+
     /*
      * Test that the parser can handle escaped YAML strings.
      */
@@ -581,6 +598,8 @@ public class TSVReaderTest {
         Assertions.assertEquals(LocalDate.of(2024, 1, 1), parseExtensionValue("2024-01-01", "xsd:date").getValue());
         Assertions.assertEquals(ZonedDateTime.of(2024, 1, 1, 12, 0, 0, 0, ZoneId.of("Z")),
                 parseExtensionValue("2024-01-01T12:00:00Z", "xsd:datetime").getValue());
+        Assertions.assertEquals(URI.create("https://example.org/"),
+                parseExtensionValue("https://example.org/", "xsd:anyURI").getValue());
     }
 
     @Test
