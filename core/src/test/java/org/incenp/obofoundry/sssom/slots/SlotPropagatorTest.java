@@ -25,7 +25,6 @@ import org.incenp.obofoundry.sssom.PropagationPolicy;
 import org.incenp.obofoundry.sssom.model.CommonPredicate;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
