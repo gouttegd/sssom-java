@@ -47,32 +47,32 @@ public class ValueExtractorTest {
 
     @Test
     void testSetSlotExtraction() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("set.slot.license");
+        IValueExtractor e = factory.parse("set.slot(license)");
         Assertions.assertEquals("https://creativecommons.org/licenses/by/4.0/", e.extract(testSet));
     }
 
     @Test
     void testSetMultiValuedSlotExtraction() throws ExtractorSyntaxException {
         // Explicit index
-        IValueExtractor e = factory.parse("set.slot.creator_id(2)");
+        IValueExtractor e = factory.parse("set.slot(creator_id, 2)");
         Assertions.assertEquals("https://example.org/people/0000-0000-0001-1234", e.extract(testSet));
 
         // Default index
-        e = factory.parse("set.slot.creator_id");
+        e = factory.parse("set.slot(creator_id)");
         Assertions.assertEquals("https://example.com/people/0000-0000-0002-5678", e.extract(testSet));
 
         // Negative index
-        e = factory.parse("set.slot.creator_id(-2)"); // first item
+        e = factory.parse("set.slot(creator_id, -2)"); // first item
         Assertions.assertEquals("https://example.com/people/0000-0000-0002-5678", e.extract(testSet));
 
         // Out of bound index
-        e = factory.parse("set.slot.creator_id(-3)");
+        e = factory.parse("set.slot(creator_id, -3)");
         Assertions.assertNull(e.extract(testSet));
     }
 
     @Test
     void testUnsetSlotExtraction() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("set.slot.mapping_tool");
+        IValueExtractor e = factory.parse("set.slot(mapping_tool)");
         Assertions.assertNull(e.extract(testSet));
     }
 
@@ -94,19 +94,19 @@ public class ValueExtractorTest {
     @Test
     void testMappingSlotExtraction() throws ExtractorSyntaxException {
         // Default index
-        IValueExtractor e = factory.parse("mapping.slot.subject_label");
+        IValueExtractor e = factory.parse("mapping.slot(subject_label)");
         Assertions.assertEquals("alice", e.extract(testSet));
 
         // Explicit index
-        e = factory.parse("mapping(2).slot.subject_id");
+        e = factory.parse("mapping(2).slot(subject_id)");
         Assertions.assertEquals("https://example.org/entities/0002", e.extract(testSet));
 
         // Negative index
-        e = factory.parse("mapping(-4).slot.subject_label");
+        e = factory.parse("mapping(-4).slot(subject_label)");
         Assertions.assertEquals("fanny", e.extract(testSet));
 
         // Out of bound index
-        e = factory.parse("mapping(9).slot.subject_label");
+        e = factory.parse("mapping(9).slot(subject_label)");
         Assertions.assertNull(e.extract(testSet));
     }
 
@@ -122,13 +122,13 @@ public class ValueExtractorTest {
 
     @Test
     void testSExpressionExtraction() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping.special.sexpr");
+        IValueExtractor e = factory.parse("mapping.special(sexpr)");
         Assertions.assertEquals(testSet.getMappings().get(0).toSExpr(), e.extract(testSet));
     }
 
     @Test
     void testHashExtraction() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping.special.hash");
+        IValueExtractor e = factory.parse("mapping.special(hash)");
         String expected = new MappingHasher().hash(testSet.getMappings().get(0));
         Assertions.assertEquals(expected, e.extract(testSet));
     }

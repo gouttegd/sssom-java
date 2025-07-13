@@ -28,7 +28,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testSetSlotExtractor() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("set.slot.mapping_set_id");
+        IValueExtractor e = factory.parse("set.slot(mapping_set_id)");
 
         Assertions.assertInstanceOf(MappingSetSlotExtractor.class, e);
         MappingSetSlotExtractor ce = (MappingSetSlotExtractor) e;
@@ -48,7 +48,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testMappingSlotExtractor() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping(7).slot.creator_id(2)");
+        IValueExtractor e = factory.parse("mapping(7).slot(creator_id,2)");
 
         Assertions.assertInstanceOf(MappingSlotExtractor.class, e);
         MappingSlotExtractor ce = (MappingSlotExtractor) e;
@@ -70,7 +70,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testMappingSExprExtractor() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping(1).special.sexpr");
+        IValueExtractor e = factory.parse("mapping(1).special(sexpr)");
 
         Assertions.assertInstanceOf(SExpressionExtractor.class, e);
         SExpressionExtractor ce = (SExpressionExtractor) e;
@@ -80,7 +80,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testMappingHashExtractor() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping(1).special.hash");
+        IValueExtractor e = factory.parse("mapping(1).special(hash)");
 
         Assertions.assertInstanceOf(HashExtractor.class, e);
         HashExtractor ce = (HashExtractor) e;
@@ -90,7 +90,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testDefaultMappingNo() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping.slot.subject_id");
+        IValueExtractor e = factory.parse("mapping.slot(subject_id)");
 
         Assertions.assertInstanceOf(MappingSlotExtractor.class, e);
         MappingSlotExtractor ce = (MappingSlotExtractor)e;
@@ -99,7 +99,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testDefaultItemNo() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping.slot.author_id");
+        IValueExtractor e = factory.parse("mapping.slot(author_id)");
 
         Assertions.assertInstanceOf(MappingSlotExtractor.class, e);
         MappingSlotExtractor ce = (MappingSlotExtractor) e;
@@ -108,7 +108,7 @@ public class ValueExtractorFactoryTest {
 
     @Test
     void testNegativeIndex() throws ExtractorSyntaxException {
-        IValueExtractor e = factory.parse("mapping(-2).slot.author_id(-1)");
+        IValueExtractor e = factory.parse("mapping(-2).slot(author_id, -1)");
 
         Assertions.assertInstanceOf(MappingSlotExtractor.class, e);
         MappingSlotExtractor ce = (MappingSlotExtractor) e;

@@ -166,6 +166,14 @@ sssom-cli set.sssom.tsv:metadata.yaml
   output. Use the <<<--output>>> option to specify an output file
   instead.
   
+  Writing the result set to standard output can be completely disabled
+  by using the <<<--no-stdout>>> option. This is roughly equivalent to
+  using <<<--output /dev/null>>> in that the result set is not saved
+  anywhere, but is more efficient as the entire process of writing the
+  result step is skipped. This option has no effect if the result set
+  is written to a file (as a result of <<<--output FILE>>>) rather than
+  the standard output.
+  
   Also by default, the resulting mapping set is written in “embedded
   mode”, with the metadata block in the same file as the TSV section.
   Use the <<<--metadata-output>>> option to specify the name of a
@@ -460,3 +468,91 @@ object==UBERON:* -> assign("object_source", "http://purl.obolibrary.org/obo/uber
 # Include all remaining mappings
 subject==* -> include();
 +-----------------------------------------------------------------------
+
+* 5. Extracting data from a mapping set
+
+  SSSOM-CLI can be used to extract individual piece of data from a
+  mapping set. Of note, this is an experimental feature, that may change
+  abruptly in the future.
+  
+  To do so, use the <<<--extract>>> option, followed by an expression
+  indicating which piece of data you want to retrieve. If the mapping
+  set does contain a value matching the expression, the value will be
+  printed to standard output.
+  
+  The <<<--extract>>> option will typically be used jointly with the
+  <<<--no-stdout>>> option, so that the normal output of SSSOM-CLI is
+  not also sent to the standard output.
+  
+** 5.1. Extractor expression syntax.
+
+  The expression expected by the <<<--extract>>> option is made of two
+  components, separated by a dot.
+  
+  The first component indicates from which object to retrieve a value,
+  and must be either:
+  
+  [set] To retrieve a value from a metadata of the entire set.
+  
+  [mapping(N)] To retrieve a value from the <Nth> mapping of the set.
+               If <N> is negative, the <Nth> mapping counting from the
+               <last> mapping of the set will be used.
+  
+  [mapping] Equivalent to <<<mapping(1)>>>, to retrieve a value from the
+            first mapping of the set.
+  
+  []
+  
+  The second component indicates which data to retrieve from the
+  selected object, and must follow one of the following forms:
+  
+  [slot(NAME)] To retrieve the value of the metadata slot <NAME>. If
+               <NAME> is the name of the multi-valued slot (e.g.
+               <<<creator_id>>>), the first value will be retrieved.
+
+  [slot(NAME, N)] To retrieve the <Nth> value from the metadata slot
+                  <NAME>. This is only meaningful for a multi-valued
+                  slot. If <N> is negative, the <Nth> value counting
+                  from the last will be retrieved.
+  
+  [extension(PROPERTY)] To retrieve the value of the extension slot
+                        associated to the indicated <PROPERTY>,
+                        according to the set’s extension definitions.
+  
+  [special(sexpr)] To retrieve the canonical S-expression representing a
+                   mapping. This is only available if the selected
+                   object is a mapping.
+  
+  [special(hash)] To retrieve the standard SSSOM hash of a mapping. This
+                  is only available if the selected object is a mapping.
+
+  []
+
+** 5.2. Examples of extractor expressions
+  
+  [set.slot(license)] Retrieves the license of the mapping set.
+  
+  [set.slot(creator_id, 2)] Retrieves the ID of the second creator of
+  							the set.
+  
+  [set.slot(see_also)] Retrievse the first <<<see_also>>> link of the
+  					   set (equivalent to <<<set.slot(see_also, 1)>>>).
+
+  [set.extension(https://example.org/property)] Retrieves the value of
+                       set extension slot associated with the
+                       <<<https://example.org/property>>> property.
+
+  [mapping(2).slot(subject_id)] Retrieves the subject of the second
+                                mapping.
+
+  [mapping.slot(author_id, 2)] Retrieves the second author of the first
+                               mapping.
+  
+  [mapping(-1).extension(https://example.org/property)] Retrieves the
+                       value of the extension slot associated  with the
+                       <<<https://example.org/property>>> property, for
+                       the last mapping of the set.
+
+  [mapping(2).special(hash)] Retrieves the hash of the second mapping.
+  
+  []

@@ -57,11 +57,11 @@ public class ValueExtractorFactory {
     /*
      * Parses a "set." expression.
      * 
-     * Accepts "slot.SLOTNAME(N)" and "extension(PROPERTY)" expressions.
+     * Accepts "slot(SLOTNAME[, N])" and "extension(PROPERTY)" expressions.
      */
     private IValueExtractor parseSetExtractor(String expression) throws ExtractorSyntaxException {
-        if ( expression.startsWith("slot.") && expression.length() > 5 ) {
-            String[] params = parseOptionalValue(expression.substring(5));
+        if ( expression.startsWith("slot(") && expression.length() > 5 ) {
+            String[] params = parseParenValue(expression, 5).split(", ?", 2);
             int itemNo = params.length == 2 ? getNumber(params[1]) : 0;
             Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByName(params[0]);
             if ( slot == null ) {
@@ -81,18 +81,18 @@ public class ValueExtractorFactory {
      * 
      * Accepts:
      * 
-     * - "slot.SLOTNAME(N)"
+     * - "slot(SLOTNAME[, N])"
      * 
      * - "extension(PROPERTY)"
      * 
-     * - "special.sexpr"
+     * - "special(sexpr)"
      * 
-     * - "special.hash"
+     * - "special(hash)"
      */
     private IValueExtractor parseMappingExtractor(int mappingNo, String expression)
             throws ExtractorSyntaxException {
-        if ( expression.startsWith("slot.") && expression.length() > 5 ) {
-            String[] params = parseOptionalValue(expression.substring(5));
+        if ( expression.startsWith("slot(") && expression.length() > 5 ) {
+            String[] params = parseParenValue(expression, 5).split(", ?", 2);
             int itemNo = params.length == 2 ? getNumber(params[1]) : 0;
             Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByName(params[0]);
             if ( slot == null ) {
@@ -102,9 +102,9 @@ public class ValueExtractorFactory {
         } else if ( expression.startsWith("extension(") && expression.length() > 10 ) {
             String property = parseParenValue(expression, 10);
             return new MappingExtensionExtractor(mappingNo, property);
-        } else if ( expression.equals("special.sexpr") ) {
+        } else if ( expression.equals("special(sexpr)") ) {
             return new SExpressionExtractor(mappingNo);
-        } else if ( expression.equals("special.hash") ) {
+        } else if ( expression.equals("special(hash)") ) {
             return new HashExtractor(mappingNo);
         }
 
@@ -124,24 +124,6 @@ public class ValueExtractorFactory {
         }
 
         throw new ExtractorSyntaxException("Invalid parenthesised expression: %s", expression);
-    }
-
-    /*
-     * Parses an expression that may ends with a parenthesised expression.
-     * 
-     * Given "BASE(OPTION)", return {BASE, OPTION}.
-     * 
-     * Given "BASE", return {BASE}.
-     */
-    private String[] parseOptionalValue(String expression) throws ExtractorSyntaxException {
-        int paren = expression.indexOf('(');
-        if ( paren == -1 ) {
-            return new String[] { expression };
-        } else {
-            String base = expression.substring(0, paren);
-            String option = parseParenValue(expression, paren + 1);
-            return new String[] { base, option };
-        }
     }
 
     /*
