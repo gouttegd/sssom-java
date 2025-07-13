@@ -1,3 +1,20 @@
+Changes in sssom-java 1.7.0
+---------------------------
+
+    * core:
+      * Fix validation of `record_id` slots.
+      * Add a helper class to facilitate merging two sets.
+      * Allow extracting a value from a set using an abstract syntax.
+      * Support URI-typed extension slots (type hint: xsd:anyURI).
+    * SSSOM/T:
+      * Add missing placeholders for recently introduced slots.
+      * Add the `default` substitution modifier function.
+      * Add the `has_extension` filter function.
+    * sssom-cli:
+      * Add the --no-stdout option.
+      * Add the --extract option.
+
+
 Changes in sssom-java 1.6.0
 ---------------------------
 
