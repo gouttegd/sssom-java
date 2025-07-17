@@ -19,15 +19,24 @@
 package org.incenp.obofoundry.sssom.owl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
+import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.model.parameters.Navigation;
 
@@ -227,5 +236,73 @@ public class OWLHelper {
         ONLY_OBJECT;
 
         public static final EnumSet<UpdateMode> ALL = EnumSet.allOf(UpdateMode.class);
+    }
+
+    /**
+     * Annotates an ontology with annotations derived from the metadata of a mapping
+     * set.
+     * 
+     * @param ms       The mapping set whose metadata are to be used to annotate the
+     *                 ontology.
+     * @param ontology The ontology to be annotated.
+     */
+    public static void annotate(MappingSet ms, OWLOntology ontology) {
+        annotate(ms, ontology, true, new StandardMapMetadataTransformer<MappingSet>());
+    }
+
+    /**
+     * Annotates an ontology with annotations derived from the metadata of a mapping
+     * set.
+     * 
+     * @param ms             The mapping set whose metadata are to be used to
+     *                       annotate the ontology.
+     * @param ontology       The ontology to be annotated.
+     * @param setOntologyIRI If {@code true}, the {@code mapping_set_id} slot will
+     *                       be set as the ontology IRI; otherwise, it will be set
+     *                       as an annotation like all the other slots.
+     * @param mapper         The mapper indicating which properties to use to render
+     *                       each metadata slot.
+     */
+    public static void annotate(MappingSet ms, OWLOntology ontology, boolean setOntologyIRI,
+            IMetadataTransformer<MappingSet, IRI> mapper) {
+        AnnotationVisitor<MappingSet> visitor = new AnnotationVisitor<>(
+                ontology.getOWLOntologyManager().getOWLDataFactory(), mapper);
+        SlotHelper<MappingSet> helper = SlotHelper.getMappingSetHelper(true);
+        if ( setOntologyIRI ) {
+            helper.excludeSlots(Collections.singleton("mapping_set_id"));
+        }
+        helper.visitSlots(ms, visitor);
+        visitor.annotate(ontology);
+
+        if ( setOntologyIRI && ms.getMappingSetId() != null ) {
+            SetOntologyID change = new SetOntologyID(ontology, IRI.create(ms.getMappingSetId()));
+            ontology.getOWLOntologyManager().applyChange(change);
+        }
+    }
+
+    /**
+     * Exports a mapping set as an ontology.
+     * 
+     * @param ms  The mapping set to export.
+     * @param mgr The ontology manager to which the newly created ontology will be
+     *            attached.
+     * @return The newly created ontology.
+     * @throws OWLOntologyCreationException If the manager cannot creates the
+     *                                      ontology for any reason.
+     */
+    public static OWLOntology exportToOWL(MappingSet ms, OWLOntologyManager mgr)
+            throws OWLOntologyCreationException {
+        OWLOntology ont = mgr.createOntology();
+        annotate(ms, ont, true, new StandardMapMetadataTransformer<MappingSet>());
+
+        AnnotatedAxiomGenerator g = new AnnotatedAxiomGenerator(ont, new DirectAxiomGenerator(ont),
+                new StandardMapMetadataTransformer<Mapping>());
+        Set<OWLAxiom> axioms = new HashSet<>();
+        for ( Mapping mapping : ms.getMappings() ) {
+            axioms.add(g.transform(mapping));
+        }
+        mgr.addAxioms(ont, axioms);
+
+        return ont;
     }
 }

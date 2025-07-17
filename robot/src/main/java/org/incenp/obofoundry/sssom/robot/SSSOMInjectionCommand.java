@@ -37,6 +37,7 @@ import org.incenp.obofoundry.sssom.owl.AnnotatedAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.AnnotationAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.EquivalentAxiomGenerator;
 import org.incenp.obofoundry.sssom.owl.OWLGenerator;
+import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.owl.SSSOMTOwlApplication;
 import org.incenp.obofoundry.sssom.owl.XrefExtractor;
 import org.incenp.obofoundry.sssom.transform.IMappingFilter;
@@ -301,6 +302,10 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
 
         if ( !line.hasOption("no-merge") && !bridgingAxioms.isEmpty() ) {
             ontology.getOWLOntologyManager().addAxioms(ontology, bridgingAxioms);
+            // --create --direct = export a mapping set to OWL
+            if ( line.hasOption("create") && line.hasOption("direct") ) {
+                OWLHelper.annotate(mappingSet, ontology);
+            }
         }
 
         if ( line.hasOption("bridge-file") && !bridgingAxioms.isEmpty() ) {
