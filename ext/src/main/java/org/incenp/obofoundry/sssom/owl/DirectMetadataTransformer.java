@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
-import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
@@ -27,12 +26,12 @@ import org.semanticweb.owlapi.model.IRI;
  * A class to transform mapping metadata slots into their corresponding IRIs
  * according to the SSSOM specification.
  */
-public class DirectMetadataTransformer implements IMetadataTransformer<Mapping, IRI> {
+public class DirectMetadataTransformer<T> implements IMetadataTransformer<T, IRI> {
 
     private final static String SSSOM_BASE = "https://w3id.org/sssom/";
 
     @Override
-    public IRI transform(Slot<Mapping> slot) {
+    public IRI transform(Slot<T> slot) {
         return IRI.create(SSSOM_BASE + slot.getName());
     }
 

@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.owl;
 
-import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.transform.IMetadataTransformer;
 import org.semanticweb.owlapi.model.IRI;
@@ -33,10 +32,10 @@ import org.semanticweb.owlapi.model.IRI;
  * applied to the <code>creator_id</code> slot, this class will return the IRI
  * for <code>dcterms:creator</code>, instead of <code>sssom:creator_id</code>.
  */
-public class StandardMapMetadataTransformer implements IMetadataTransformer<Mapping, IRI> {
+public class StandardMapMetadataTransformer<T> implements IMetadataTransformer<T, IRI> {
 
     @Override
-    public IRI transform(Slot<Mapping> slot) {
+    public IRI transform(Slot<T> slot) {
         return IRI.create(slot.getURI());
     }
 

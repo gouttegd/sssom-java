@@ -48,7 +48,7 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      * @param ontology The ontology to generate axioms for.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology) {
-        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer(), true);
+        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer<Mapping>(), true);
     }
 
     /**
@@ -62,7 +62,7 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      *                     annotations from available slots.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology, boolean onlyMetadata) {
-        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer(), onlyMetadata);
+        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer<Mapping>(), onlyMetadata);
     }
 
     /**
@@ -74,7 +74,7 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      *                 {@code null}, all available slots will be used.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology, Collection<String> slots) {
-        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer(), slots);
+        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer<Mapping>(), slots);
     }
 
     /**
@@ -140,7 +140,7 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
     public OWLAxiom transform(Mapping mapping) {
         OWLAxiom axiom = generator.transform(mapping);
         if ( axiom != null ) {
-            AnnotationVisitor visitor = new AnnotationVisitor(factory, translator);
+            AnnotationVisitor<Mapping> visitor = new AnnotationVisitor<>(factory, translator);
             slotHelper.visitSlots(mapping, visitor);
             axiom = visitor.annotate(axiom);
         }

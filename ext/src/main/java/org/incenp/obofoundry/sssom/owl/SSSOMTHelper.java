@@ -72,11 +72,11 @@ public class SSSOMTHelper {
         IMetadataTransformer<Mapping, IRI> mapper;
         switch ( keyedArguments.getOrDefault(ANNOTS_URIS_KEYWORD, "direct") ) {
         case "standard_map":
-            mapper = new StandardMapMetadataTransformer();
+            mapper = new StandardMapMetadataTransformer<Mapping>();
             break;
 
         default:
-            mapper = new DirectMetadataTransformer();
+            mapper = new DirectMetadataTransformer<Mapping>();
             break;
         }
 

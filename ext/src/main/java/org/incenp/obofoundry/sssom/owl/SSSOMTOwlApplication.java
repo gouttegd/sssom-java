@@ -294,7 +294,7 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
             spec = spec.substring(7);
         }
 
-        return new AnnotatedAxiomGenerator(ontology, innerTransformer, new DirectMetadataTransformer(),
+        return new AnnotatedAxiomGenerator(ontology, innerTransformer, new DirectMetadataTransformer<Mapping>(),
                 SlotHelper.getMappingSlotList(spec));
     }
 
