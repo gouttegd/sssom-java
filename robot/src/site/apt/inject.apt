@@ -143,6 +143,11 @@ ROBOT inject command
     
   []
   
+  When combined with the <<<--create>>> option, the ontology newly
+  created will be annotated with the metadata from the mapping set.
+  Therefore, <<<--create --direct>>> allows to create a complete OWL
+  export of a mapping set.
+  
   The <<<--cross-species>>> option is tailored for the specific use case
   of generating a bridge ontology between taxon-specific ontologies (or
   between a taxon-specific ontology and a taxon-neutral ontology). That

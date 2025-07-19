@@ -123,6 +123,19 @@ public class SSSOMInjectionCommandTest {
     }
 
     @Test
+    void testOWLExport() throws IOException {
+        // @formatter:off
+        TestUtils.runCommand("sssom-inject",
+                "--create",
+                "--sssom", "../core/src/test/resources/sets/exo2c.sssom.tsv",
+                "--direct",
+                "convert", "--format", "ofn",
+                "--output", "src/test/resources/output/exo2c-owl-export.ofn.out");
+        // @formatter:on
+        TestUtils.checkOutput("exo2c-owl-export.ofn");
+    }
+
+    @Test
     void testDirectAnnotations() throws IOException {
         // @formatter:off
         TestUtils.runCommand("sssom-inject",
