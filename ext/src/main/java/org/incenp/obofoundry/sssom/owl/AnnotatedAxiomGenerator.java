@@ -42,17 +42,17 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
     private SlotHelper<Mapping> slotHelper;
 
     /**
-     * Creates a new instance that generate “direct” OWL axioms with “direct”
+     * Creates a new instance that generate “direct” OWL axioms with standard
      * annotations from the mapping metadata.
      * 
      * @param ontology The ontology to generate axioms for.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology) {
-        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer<Mapping>(), true);
+        this(ontology, new DirectAxiomGenerator(ontology), new StandardMapMetadataTransformer<Mapping>(), true);
     }
 
     /**
-     * Creates a new instance that generates “direct” OWL axioms with “direct”
+     * Creates a new instance that generates “direct” OWL axioms with standard
      * annotations from either the mapping metadata slots or all the mapping slots.
      * 
      * @param ontology     The ontology to generate axioms for.
@@ -62,11 +62,11 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      *                     annotations from available slots.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology, boolean onlyMetadata) {
-        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer<Mapping>(), onlyMetadata);
+        this(ontology, new DirectAxiomGenerator(ontology), new StandardMapMetadataTransformer<Mapping>(), onlyMetadata);
     }
 
     /**
-     * Creates a new instance that generates “direct” OWL axioms with “direct”
+     * Creates a new instance that generates “direct” OWL axioms with standard
      * annotations from the specified list of slots.
      * 
      * @param ontology The ontology to generate axioms for.
@@ -74,7 +74,7 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
      *                 {@code null}, all available slots will be used.
      */
     public AnnotatedAxiomGenerator(OWLOntology ontology, Collection<String> slots) {
-        this(ontology, new DirectAxiomGenerator(ontology), new DirectMetadataTransformer<Mapping>(), slots);
+        this(ontology, new DirectAxiomGenerator(ontology), new StandardMapMetadataTransformer<Mapping>(), slots);
     }
 
     /**

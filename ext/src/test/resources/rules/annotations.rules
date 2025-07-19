@@ -24,4 +24,8 @@ subject==ORGENT:0006 -> create_axiom("%subject_id SubClassOf: %object_id",
                                      /annots="mapping_justification,subject_id",
                                      /annots_uris="standard_map");
 
+# Annotate with all mappings metadata
+subject==ORGENT:0007 -> create_axiom("%subject_id SubClassOf: %object_id",
+                                     /annots="metadata");
+
 

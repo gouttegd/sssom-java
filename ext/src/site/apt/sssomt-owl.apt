@@ -339,7 +339,7 @@ AnnotationAssertion(
   []
   
   If the <<</annots_uris=>>> parameter is not used, the default
-  behaviour is the same as <<</annots_uris="direct">>>.
+  behaviour is the same as <<</annots_uris="standard_map">>>.
 
 ** 4.2. <create_axiom>
 

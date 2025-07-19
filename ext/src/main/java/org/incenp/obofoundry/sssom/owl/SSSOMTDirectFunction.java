@@ -39,7 +39,7 @@ import org.semanticweb.owlapi.model.OWLAxiom;
  * parameter, <code>/annots_uris=...</code> can be used to specify how metadata
  * fields should be rendered into annotation properties (allowed values:
  * <code>direct</code>, <code>standard_map</code>; default is
- * <code>direct</code>).
+ * <code>standard_map</code>).
  * <p>
  * For backwards compatibility, the value of the <code>/annots=...</code>
  * parameter may be given as a positional argument instead.

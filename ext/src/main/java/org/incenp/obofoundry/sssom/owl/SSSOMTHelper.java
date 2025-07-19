@@ -70,13 +70,13 @@ public class SSSOMTHelper {
 
         Collection<String> slots = SlotHelper.getMappingSlotList(annotSpec.replaceAll("( |\r|\n|\t)", ""));
         IMetadataTransformer<Mapping, IRI> mapper;
-        switch ( keyedArguments.getOrDefault(ANNOTS_URIS_KEYWORD, "direct") ) {
-        case "standard_map":
-            mapper = new StandardMapMetadataTransformer<Mapping>();
+        switch ( keyedArguments.getOrDefault(ANNOTS_URIS_KEYWORD, "standard_map") ) {
+        case "direct":
+            mapper = new DirectMetadataTransformer<Mapping>();
             break;
 
         default:
-            mapper = new DirectMetadataTransformer<Mapping>();
+            mapper = new StandardMapMetadataTransformer<Mapping>();
             break;
         }
 

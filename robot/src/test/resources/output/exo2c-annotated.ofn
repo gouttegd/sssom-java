@@ -8,6 +8,7 @@ Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
 Ontology(
 Declaration(Class(<https://example.com/entities/0011>))
 Declaration(Class(<https://example.com/entities/0012>))
+Declaration(Class(<https://example.com/entities/0013>))
 Declaration(Class(<https://example.com/entities/0014>))
 Declaration(Class(<https://example.com/entities/0015>))
 Declaration(Class(<https://example.com/entities/0016>))
@@ -16,10 +17,15 @@ Declaration(Class(<https://example.org/entities/0002>))
 Declaration(Class(<https://example.org/entities/0004>))
 Declaration(Class(<https://example.org/entities/0005>))
 Declaration(Class(<https://example.org/entities/0006>))
+Declaration(Class(<https://example.org/entities/0007>))
 Declaration(AnnotationProperty(owl:annotatedSource))
+Declaration(AnnotationProperty(owl:annotatedTarget))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/mapping_cardinality>))
 Declaration(AnnotationProperty(<https://w3id.org/sssom/mapping_justification>))
-Declaration(AnnotationProperty(<https://w3id.org/sssom/object_id>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/object_label>))
 Declaration(AnnotationProperty(<https://w3id.org/sssom/subject_id>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/subject_label>))
+
 
 ############################
 #   Classes
@@ -27,15 +33,15 @@ Declaration(AnnotationProperty(<https://w3id.org/sssom/subject_id>))
 
 # Class: <https://example.org/entities/0001> (<https://example.org/entities/0001>)
 
-SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/subject_id> <https://example.org/entities/0001>) <https://example.org/entities/0001> <https://example.com/entities/0011>)
+SubClassOf(Annotation(owl:annotatedSource <https://example.org/entities/0001>) Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) <https://example.org/entities/0001> <https://example.com/entities/0011>)
 
 # Class: <https://example.org/entities/0002> (<https://example.org/entities/0002>)
 
-SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/subject_id> <https://example.org/entities/0002>) <https://example.org/entities/0002> <https://example.com/entities/0012>)
+SubClassOf(Annotation(owl:annotatedSource <https://example.org/entities/0002>) Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) <https://example.org/entities/0002> <https://example.com/entities/0012>)
 
 # Class: <https://example.org/entities/0004> (<https://example.org/entities/0004>)
 
-SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_id> <https://example.com/entities/0014>) <https://example.org/entities/0004> <https://example.com/entities/0014>)
+SubClassOf(Annotation(owl:annotatedTarget <https://example.com/entities/0014>) Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) <https://example.org/entities/0004> <https://example.com/entities/0014>)
 
 # Class: <https://example.org/entities/0005> (<https://example.org/entities/0005>)
 
@@ -44,6 +50,10 @@ SubClassOf(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3
 # Class: <https://example.org/entities/0006> (<https://example.org/entities/0006>)
 
 SubClassOf(Annotation(owl:annotatedSource <https://example.org/entities/0006>) Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) <https://example.org/entities/0006> <https://example.com/entities/0016>)
+
+# Class: <https://example.org/entities/0007> (<https://example.org/entities/0007>)
+
+SubClassOf(Annotation(<https://w3id.org/sssom/mapping_cardinality> "1:1") Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "gamma") Annotation(<https://w3id.org/sssom/subject_label> "gavin") <https://example.org/entities/0007> <https://example.com/entities/0013>)
 
 
 )
