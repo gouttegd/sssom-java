@@ -37,7 +37,7 @@ SubClassOf(Annotation(owl:annotatedSource <https://example.org/entities/0001>) A
 
 # Class: <https://example.org/entities/0002> (<https://example.org/entities/0002>)
 
-SubClassOf(Annotation(owl:annotatedSource <https://example.org/entities/0002>) Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) <https://example.org/entities/0002> <https://example.com/entities/0012>)
+SubClassOf(<https://example.org/entities/0002> <https://example.com/entities/0012>)
 
 # Class: <https://example.org/entities/0004> (<https://example.org/entities/0004>)
 

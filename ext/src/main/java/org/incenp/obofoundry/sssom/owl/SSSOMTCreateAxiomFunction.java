@@ -128,7 +128,7 @@ public class SSSOMTCreateAxiomFunction
             throw new SSSOMTransformError(e.getMessage());
         }
 
-        return SSSOMTHelper.maybeCreateAnnotatedTransformer(app, t, keyedArguments, arguments, 1);
+        return SSSOMTHelper.maybeCreateAnnotatedTransformer(app, t, keyedArguments);
     }
 
     @Override

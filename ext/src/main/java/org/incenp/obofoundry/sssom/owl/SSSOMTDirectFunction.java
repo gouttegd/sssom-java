@@ -41,15 +41,11 @@ import org.semanticweb.owlapi.model.OWLAxiom;
  * <code>direct</code>, <code>standard_map</code>; default is
  * <code>standard_map</code>).
  * <p>
- * For backwards compatibility, the value of the <code>/annots=...</code>
- * parameter may be given as a positional argument instead.
- * <p>
- * If no <code>/annots=...</code> parameter and no position argument are
- * specified, the list defaults to <code>metadata,-mapping_cardinality</code>,
- * indicating that all available metadata slots should be turned into
- * annotations, except <code>mapping_cardinality</code>. To avoid generating any
- * annotation at all, specify an explicitly empty list
- * (<code>/annots=""</code>).
+ * If no <code>/annots=...</code> parameter is specified, the list defaults to
+ * <code>metadata,-mapping_cardinality</code>, indicating that all available
+ * metadata slots should be turned into annotations, except
+ * <code>mapping_cardinality</code>. To avoid generating any annotation at all,
+ * specify an explicitly empty list (<code>/annots=""</code>).
  * 
  * @see <a href="https://mapping-commons.github.io/sssom/spec-formats-owl/">The
  *      OWL/RDF serialisation format in the SSSOM specification</a>
@@ -79,7 +75,7 @@ public class SSSOMTDirectFunction implements ISSSOMTFunction<IMappingTransformer
             keyedArguments.put(SSSOMTHelper.ANNOTS_KEYWORD, "metadata,-mapping_cardinality");
         }
         return SSSOMTHelper.maybeCreateAnnotatedTransformer(app, new DirectAxiomGenerator(app.getOntology()),
-                keyedArguments, arguments, 0);
+                keyedArguments);
     }
 
 }
