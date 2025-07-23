@@ -25,8 +25,6 @@ import java.util.Set;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.slots.SlotHelper;
-import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionDeclareFormatFunction;
@@ -92,10 +90,6 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         fmt.setSubstitution("subject_label", (m) -> getSubjectLabel(m));
         fmt.setSubstitution("object_label", (m) -> getObjectLabel(m));
 
-        // Old-style substitutions for compatibility with previous implementation
-        fmt.setSubstitution("subject_curie", (m) -> prefixManager.shortenIdentifier(m.getSubjectId()));
-        fmt.setSubstitution("object_curie", (m) -> prefixManager.shortenIdentifier(m.getObjectId()));
-
         // Current SSSOM/T-Owl functions
         registerDirective(new SSSOMTDeclareFunction(this));
         registerFilter(new SSSOMTExistsFunction(this));
@@ -103,15 +97,6 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         registerGenerator(new SSSOMTDirectFunction(this));
         registerGenerator(new SSSOMTAnnotateFunction(this));
         registerGenerator(new SSSOMTCreateAxiomFunction(this));
-
-        // Old functions for compatibility with the previous implementation
-        registerDirective(new SSSOMTOwlSetvarFunction(this));
-        registerDirective(new SSSOMTDeclareClassFunction(this));
-        registerDirective(new SSSOMTDeclareObjectPropertyFunction(this));
-        registerPreprocessor(new SSSOMTCheckSubjectExistenceFunction(this));
-        registerPreprocessor(new SSSOMTCheckObjectExistenceFunction(this));
-        registerGenerator(new SSSOMTAnnotateSubjectFunction(this));
-        registerGenerator(new SSSOMTAnnotateObjectFunction(this));
 
         // Enable support for URI Expressions
         registerDirective(new SSSOMTUriExpressionDeclareFormatFunction(this));
@@ -146,24 +131,6 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
      */
     public UriExpressionRegistry getUriExpressionRegistry() {
         return uriExprRegistry;
-    }
-
-    /**
-     * Checks if a given class exists in the helper ontology and if it is not
-     * obsolete.
-     * <p>
-     * For this method, “exists” means that the class is present in the ontology’s
-     * signature.
-     * 
-     * @param cls The name of the class to check.
-     * @return {@code true} if the class exists and is not deprecated, otherwise
-     *         {@code false}.
-     * 
-     * @deprecated Use {@link #entityExists(String)} instead.
-     */
-    @Deprecated
-    public boolean classExists(String cls) {
-        return entityExists(cls);
     }
 
     /**
@@ -269,33 +236,6 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         }
 
         return properties;
-    }
-
-    /**
-     * Given an axiom generator, gets another generator that would produce the same
-     * axiom but annotated with metadata from the mapping.
-     * 
-     * @param innerTransformer The original axiom generator.
-     * @param spec             A list of SSSOM metadata slot names to annotate the
-     *                         produced axiom with. See
-     *                         {@link org.incenp.obofoundry.sssom.slots.SlotHelper#getMappingSlotList(String)}
-     *                         for details about the expected format of that
-     *                         argument.
-     * @return The modified axiom generator.
-     * @deprecated Use
-     *             {@link SSSOMTHelper#maybeCreateAnnotatedTransformer(SSSOMTOwlApplication, IMappingTransformer, Map)}
-     *             instead.
-     */
-    @Deprecated
-    public IMappingTransformer<OWLAxiom> createAnnotatedTransformer(IMappingTransformer<OWLAxiom> innerTransformer,
-            String spec) {
-        spec = spec.replaceAll("( |\r|\n|\t)", "");
-        if ( spec.startsWith("direct:") ) {
-            spec = spec.substring(7);
-        }
-
-        return new AnnotatedAxiomGenerator(ontology, innerTransformer, new DirectMetadataTransformer<Mapping>(),
-                SlotHelper.getMappingSlotList(spec));
     }
 
     /*

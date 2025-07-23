@@ -19,7 +19,6 @@
 package org.incenp.obofoundry.sssom.owl;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -81,36 +80,5 @@ public class SSSOMTHelper {
         }
 
         return new AnnotatedAxiomGenerator(application.getOntology(), innerTransformer, mapper, slots);
-    }
-
-    /**
-     * Given an axiom generator, maybe wraps it into another generator that would
-     * produce the same axiom but annotated with metadata from the mapping from
-     * which the axiom is derived.
-     * <p>
-     * This method is similar to
-     * {@link #maybeCreateAnnotatedTransformer(SSSOMTOwlApplication, IMappingTransformer, Map)},
-     * but if the parameters map does not contain a <code>annots</code> key, it will
-     * look for an optional position argument instead. This is for backwards
-     * compatibility only, new SSSOM/T-OWL function should not use this method.
-     * 
-     * @param application      The SSSOM/T-OWL application.
-     * @param innerTransformer The original axiom generator.
-     * @param keyedArguments   The named parameters given to a SSSOM/T-OWL function.
-     * @param arguments        The positional arguments given to a SSSOM/T-OWL
-     *                         function.
-     * @param nArgs            The number of non-optional arguments expected by the
-     *                         function.
-     * @return The wrapped axiom generator, or the original generator if axiom
-     *         annotations were not requested in the given parameters or positional
-     *         arguments.
-     */
-    public static IMappingTransformer<OWLAxiom> maybeCreateAnnotatedTransformer(SSSOMTOwlApplication application,
-            IMappingTransformer<OWLAxiom> innerTransformer, Map<String, String> keyedArguments, List<String> arguments,
-            int nArgs) {
-        if ( !keyedArguments.containsKey(ANNOTS_KEYWORD) && arguments.size() == nArgs + 1 ) {
-            keyedArguments.put(ANNOTS_KEYWORD, arguments.get(nArgs));
-        }
-        return maybeCreateAnnotatedTransformer(application, innerTransformer, keyedArguments);
     }
 }

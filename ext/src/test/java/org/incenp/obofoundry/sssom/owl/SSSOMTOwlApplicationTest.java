@@ -141,21 +141,6 @@ public class SSSOMTOwlApplicationTest {
         } catch ( SSSOMTransformError e ) {
             Assertions.fail(e);
         }
-
-        arguments.clear();
-        arguments.add("MY_VAR");
-        arguments.add("another value");
-        arguments.add("%subject_id is_a UBERON:0000105");
-        try {
-            app.onDirectiveAction("set_var", arguments, keyedArguments);
-            m.setSubjectId(UBERON_0014405);
-            Assertions.assertEquals("another value", app.getFormatter().format("%{MY_VAR}", m));
-
-            m.setSubjectId(UBERON_6000002);
-            Assertions.assertEquals("default value", app.getFormatter().format("%{MY_VAR}", m));
-        } catch ( SSSOMTransformError e ) {
-            Assertions.fail(e);
-        }
     }
 
     @Test
@@ -271,32 +256,6 @@ public class SSSOMTOwlApplicationTest {
             Assertions.assertFalse(f.filter(Mapping.builder().subjectId(UBERON_0014405).build()));
             Assertions.assertFalse(f.filter(Mapping.builder().subjectId(PART_OF).build()));
             Assertions.assertTrue(f.filter(Mapping.builder().subjectId(OIO_CONSIDER).build()));
-        } catch ( SSSOMTransformError e ) {
-            Assertions.fail(e);
-        }
-    }
-
-    @Test
-    void testCheckSubjectExistenceFunction() {
-        try {
-            IMappingTransformer<Mapping> p = app.onPreprocessingAction("check_subject_existence", arguments,
-                    keyedArguments);
-            Assertions.assertInstanceOf(SSSOMTCheckSubjectExistenceFunction.class, p);
-            Assertions.assertNotNull(p.transform(Mapping.builder().subjectId(UBERON_0000105).build()));
-            Assertions.assertNull(p.transform(Mapping.builder().subjectId("does_not_exist").build()));
-        } catch ( SSSOMTransformError e ) {
-            Assertions.fail(e);
-        }
-    }
-
-    @Test
-    void testCheckObjectExistenceFunction() {
-        try {
-            IMappingTransformer<Mapping> p = app.onPreprocessingAction("check_object_existence", arguments,
-                    keyedArguments);
-            Assertions.assertInstanceOf(SSSOMTCheckObjectExistenceFunction.class, p);
-            Assertions.assertNotNull(p.transform(Mapping.builder().objectId(UBERON_0000105).build()));
-            Assertions.assertNull(p.transform(Mapping.builder().objectId("does_not_exist").build()));
         } catch ( SSSOMTransformError e ) {
             Assertions.fail(e);
         }

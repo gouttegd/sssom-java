@@ -43,24 +43,6 @@ public class SSSOMInjectionCommandTest {
     }
 
     /*
-     * Likewise, but using the "legacy" ruleset.
-     */
-    @Test
-    void testSampleBridgeLegacy() throws IOException {
-        // @formatter:off
-        TestUtils.runCommand("sssom-inject",
-                "--input", "../ext/src/test/resources/owl/uberon.ofn.gz",
-                "--sssom", "../ext/src/test/resources/sets/fbbt.sssom.tsv",
-                "--sssom", "../ext/src/test/resources/sets/fbdv.sssom.tsv",
-                "--ruleset", "../ext/src/test/resources/rules/fbbt-bridge-legacy.rules",
-                "--exclude-rule", "xrefs",
-                "--bridge-format", "ofn",
-                "--bridge-file", "src/test/resources/output/fbbt-bridge.ofn.out");
-        // @formatter:on
-        TestUtils.checkOutput("fbbt-bridge.ofn");
-    }
-
-    /*
      * Check the production of cross-references from mappings.
      */
     @Test
@@ -71,24 +53,6 @@ public class SSSOMInjectionCommandTest {
                 "--sssom", "../ext/src/test/resources/sets/fbbt.sssom.tsv",
                 "--sssom", "../ext/src/test/resources/sets/fbdv.sssom.tsv",
                 "--ruleset", "../ext/src/test/resources/rules/fbbt-bridge.rules",
-                "--exclude-rule", "fbbt",
-                "--bridge-format", "ofn",
-                "--bridge-file", "src/test/resources/output/fbbt-xrefs.ofn.out");
-        // @formatter:on
-        TestUtils.checkOutput("fbbt-xrefs.ofn");
-    }
-
-    /*
-     * Likewise, but using the "legacy" ruleset.
-     */
-    @Test
-    void testSampleXrefLegacy() throws IOException {
-        // @formatter:off
-        TestUtils.runCommand("sssom-inject",
-                "--input", "../ext/src/test/resources/owl/uberon.ofn.gz",
-                "--sssom", "../ext/src/test/resources/sets/fbbt.sssom.tsv",
-                "--sssom", "../ext/src/test/resources/sets/fbdv.sssom.tsv",
-                "--ruleset", "../ext/src/test/resources/rules/fbbt-bridge-legacy.rules",
                 "--exclude-rule", "fbbt",
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/fbbt-xrefs.ofn.out");

@@ -12,7 +12,7 @@ The SSSOM/T-OWL dialect
   This page describes the specific functions of the SSSOM/T-OWL dialect.
   
   Note: For a quick overview of the dialect, you may want to jump to the
-  {{{7. Examples}Examples section}} at first, then come back to learn
+  {{{6. Examples}Examples section}} at first, then come back to learn
   more about each function.
 
 %{toc|section=1|fromDepth=2|toDepth=3}
@@ -485,26 +485,26 @@ AnnotationAssertion(
   The <<</annots>>> and <<</annots_uris>>> flags may be used at the same
   time as the <<</type>>> flag. They can be specified in any order.
 
-* 6. Backwards compatibility
+* 5. Obsolete features
 
   The SSSOM/T-OWL dialect has changed quite a bit since version 0.9.0 of
   SSSOM-Java. This sections briefly describes some functions and
-  features that are still supported for backwards compatibility but that
-  should preferably no longer be used.
+  features from the pre-1.0 period that were still supported until
+  version 1.8.0, but have now been removed and can no longer be used.
 
-** 6.1. Directive functions
+** 5.1. Directive functions
 
-*** 6.1.1. <declare_class>
+*** 5.1.1. <declare_class>
 
   This was the ancient way of declaring a OWL class to ensure it was
   known to the Manchester parser. The {{{2.1. declare}<declare>}}
-  directive should be used instead.
+  directive must be used instead.
 
-*** 6.1.2. <declare_object_property>
+*** 5.1.2. <declare_object_property>
 
   This was the ancient way of declaring an object property to ensure it
   was known to the Manchester parser. The {{{2.1. declare}<declare>}}
-  directive, with the <<</type="object_property">>> flag, should be used
+  directive, with the <<</type="object_property">>> flag, must be used
   instead.
   
   That is, replace for example
@@ -519,7 +519,7 @@ declare_object_property(BFO:0000051)
 declare(BFO:0000051, /type="object_property");
 +-----------------------------------------------------------------------
 
-*** 6.1.3. <set_var> (3-argument form)
+*** 5.1.3. <set_var> (3-argument form)
 
   This was a very weird and ugly hack to allow defining a variable with
   a given value depending on whether the subject or the object of a
@@ -528,9 +528,9 @@ declare(BFO:0000051, /type="object_property");
   Use the {{{3.2. is_a}<is_a>}} filter function combined with
   {{{./sssom-transform.html#a6.1.1._set_var}<set_var>}} instead.
 
-** 6.2. Preprocessor functions
+** 5.2. Preprocessor functions
 
-*** 6.2.1. <check_subject_existence>
+*** 5.2.1. <check_subject_existence>
 
   This preprocessor allowed to drop a mapping if its subject did not
   exist or was obsolete in the helper ontology. Use the
@@ -549,9 +549,9 @@ subject==UBERON:* -> check_subject_existence();
 subject==UBERON:* && !exists(%{subject_id}) -> stop();
 +-----------------------------------------------------------------------
 
-*** 6.2.2. <check_object_existence>
+*** 5.2.2. <check_object_existence>
 
-  Similar to {{{6.2.1. check_subject_existence}<check_subject_existence>}}
+  Similar to {{{5.2.1. check_subject_existence}<check_subject_existence>}}
   but for checking the object of a mapping instead of the subject.
   
   Same replacement, for example replace
@@ -566,22 +566,22 @@ object==UBERON:* && predicate==* -> check_object_existence();
 object==UBERON:* && !exists(%{object_id}) -> stop();
 +-----------------------------------------------------------------------  
 
-** 6.3. Generator functions
+** 5.3. Generator functions
 
-*** 6.3.1. <annotate_subject>
+*** 5.3.1. <annotate_subject>
 
   This function allowed to annotate the subject of a mapping. Use the
   {{{4.3. annotate}<annotate>}} function instead, with
   <<<%\{subject_id\}>>> as the first argument.
 
-*** 6.3.2. <annotate_object>
+*** 5.3.2. <annotate_object>
 
-  Similar to {{{6.3.1. annotate_subject}<annotate_subject>}}, but to
+  Similar to {{{5.3.1. annotate_subject}<annotate_subject>}}, but to
   annotate the object of a mapping. Use the
   {{{4.3. annotate}<annotate>}} function instead, with
   <<<%\{object_id\}>>> as the first argument.
 
-** 6.4. The <*_curie> placeholders
+** 5.4. The <*_curie> placeholders
 
   In addition to the deprecated functions described above, previous
   versions of the SSSOM/T-OWL dialect also defined two special
@@ -589,12 +589,11 @@ object==UBERON:* && !exists(%{object_id}) -> stop();
   mapping’s subject ID, and <<<%object_curie>>> to insert the shortened
   form of a mapping’s object ID.
   
-  Those placeholders are still supported, but it should now be preferred
-  to use the standard <<<subject_id>>> and <<<object_id>>> placeholders,
-  combined with the {{{./sssom-transform.html#a6.5.1._short}<short>}}
-  format modifier.
+  Use instead the standard <<<subject_id>>> and <<<object_id>>>
+  placeholders, combined with the
+  {{{./sssom-transform.html#a6.5.1._short}<short>}} format modifier.
   
-** 6.5. Annotating the generated axioms
+** 5.5. Annotating the generated axioms
 
   The <create_axiom> function, as well as the deprecated
   <annotate_subject> and <annotate_object> functions, also accepted an
@@ -602,15 +601,14 @@ object==UBERON:* && !exists(%{object_id}) -> stop();
   generated axiom should be annotated with values from the mapping’s
   metadata.
   
-  That argument is still supported, but the <<</annots>>> flag should
-  be preferred instead.
+  the <<</annots>>> flag must be used instead.
   
   In addition, that argument was expected to start with the fixed string
   <<<direct:>>> – this was to leave room for the possibility of
   generating annotations in different manners. That possibility is no
   longer open for now, and should it be reopen, the way to specify how
   annotations should be generated will rather be indicated by a new
-  flag option. The <<<direct:>>> prefix is now silently ignored.
+  flag option.
   
   In short, replace for example:
   
@@ -624,9 +622,9 @@ object==UBERON:* && !exists(%{object_id}) -> stop();
 ...-> create_axiom("%subject_id SubClassOf: %object_id", /annots="metadata,-mapping_cardinality");
 +-----------------------------------------------------------------------
 
-* 7. Examples
+* 6. Examples
 
-** 7.1. FBbt-to-Uberon/CL bridge
+** 6.1. FBbt-to-Uberon/CL bridge
 
   This example is inspired from the real world use-case of the
   cross-species “bridge ontology” between the Drosophila Anatomy
