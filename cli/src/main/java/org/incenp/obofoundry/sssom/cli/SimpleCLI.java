@@ -165,6 +165,12 @@ public class SimpleCLI implements Runnable {
         @Option(names = "--lax",
                 description = "Silently accept some invalid mapping sets.")
         boolean laxMode;
+
+        @Option(names = "--input-format",paramLabel = "FMT",
+                description = "Expect input in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is inferred whenever possible.",
+                converter = SerialisationFormatConverter.class,
+                completionCandidates = SerialisationFormatCompletionCandidates.class)
+        SerialisationFormat inputFormat = null;
     }
 
     @ArgGroup(validate = false, heading = "%nOutput options:%n")
@@ -407,7 +413,7 @@ public class SimpleCLI implements Runnable {
             String tsvFile = items[0];
             String metaFile = items.length == 2 ? items[1] : null;
             try {
-                SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true);
+                SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true, inputOpts.inputFormat);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(inputOpts.enablePropagation);
                 reader.setAssumedVersion(inputOpts.assumedVersion);

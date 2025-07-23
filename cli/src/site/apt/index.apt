@@ -22,7 +22,14 @@ Command-line tool
   a set from its standard input.
   
   The SSSOM/TSV, SSSOM/CSV, SSSOM/JSON, and RDF/Turtle formats are
-  supported. SSSOM-CLI will automatically detect the format.
+  supported. SSSOM-CLI will attempt to automatically detect the format,
+  based on the filename’s extension if possible, or by peaking at the
+  first byte of input (if the extension is not recognized or when
+  reading from standard input). Use the <<<--input-format>>> option
+  to explicitly specify the expected format instead of relying on
+  automatic detection. Note that the option applies to <all> input
+  files – it is not possible to explicitly specify a different format
+  for each file.
   
   To read both from the standard input and from one or several file(s),
   use the special value <<<->>> as a positional argument. For example,
@@ -49,9 +56,9 @@ sssom-cli file1.sssom.tsv  -
 sssom-cli set.sssom.tsv:metadata.yaml
 +-----------------------------------------------------------------------
 
-  The metadata file, if specified, is ignored if the input file is a
-  JSON file or Turtle file, since those formats do not allow the use of
-  an external metadata file.
+  When a metadata file is so specified, the input file is automatically
+  implied to be in the SSSOM/TSV or SSSOM/CSV format, since other
+  formats do not allow the use of an external metadata file.
   
   In previous versions of SSSOM-CLI, input files were specified using
   <<<--input>>> options instead of positional arguments. Such options

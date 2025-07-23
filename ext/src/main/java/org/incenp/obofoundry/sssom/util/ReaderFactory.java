@@ -122,10 +122,38 @@ public class ReaderFactory {
      *                              recognised.
      */
     public SSSOMReader getReader(String filename, boolean allowStdin) throws IOException, SSSOMFormatException {
+        return getReader(filename, allowStdin, null);
+    }
+
+    /**
+     * Gets a SSSOM reader for the provided file, with a possibly explicitly
+     * specified format.
+     * 
+     * @param filename   The name of the file for which a SSSOM reader is desired.
+     * @param allowStdin If {@code true}, a filename consisting of a single dash
+     *                   ({@code -}) is interpreted as representing the program's
+     *                   standard input.
+     * @param fmt        The expected format of the file. If {@code null}, the
+     *                   factory will attempt to automatically determine the format.
+     * @return A SSSOM reader suitable for the specified file.
+     * @throws IOException          If any I/O error occurs when trying to read from
+     *                              the indicated file.
+     * @throws SSSOMFormatException If the format is not explicitly specified and no
+     *                              known format can be determined.
+     */
+    public SSSOMReader getReader(String filename, boolean allowStdin, SerialisationFormat fmt)
+            throws IOException, SSSOMFormatException {
+        BufferedReader reader = null;
         if ( allowStdin && filename.equals("-") ) {
-            return getReader(System.in);
+            reader = new BufferedReader(new InputStreamReader(System.in));
+        } else {
+            reader = new BufferedReader(new FileReader(new File(filename)));
         }
-        return getReader(new BufferedReader(new FileReader(new File(filename))), filename);
+        if ( fmt != null ) {
+            return getReader(reader, fmt);
+        } else {
+            return getReader(reader, filename);
+        }
     }
 
     /**
@@ -173,21 +201,61 @@ public class ReaderFactory {
      */
     public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin)
             throws IOException, SSSOMFormatException {
+        return getReader(filename, metaFilename, allowStdin, null);
+    }
+
+    /**
+     * Gets a SSSOM reader suitable for the specified file, with a possibly
+     * explicitly specified format.
+     * 
+     * @param filename     The name of the file for which a SSSOM reader is desired.
+     * @param metaFilename If non-{@code null}, the name of the file containing the
+     *                     dataset metadata. This automatically assumes that the
+     *                     data is in SSSOM/TSV or SSSOM/CSV format, since other
+     *                     formats do not allow storing the metadata in a separate
+     *                     file.
+     * @param allowStdin   If {@code true}, a filename consisting of a single dash
+     *                     ({@code -}) is interpreted as representing the program's
+     *                     standard input.
+     * @param fmt          The expected format of the file. If {@code null}, the
+     *                     factory will attempt to automatically determine the
+     *                     format.
+     * @return A SSSOM reader for the specified file.
+     * @throws IOException          If any I/O error occurs when trying to read from
+     *                              the indicated files.
+     * @throws SSSOMFormatException If the format is not specified and no known
+     *                              format can be determined.
+     */
+    public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin, SerialisationFormat fmt)
+            throws IOException, SSSOMFormatException {
         if ( metaFilename != null ) {
+            if ( fmt != null && (fmt != SerialisationFormat.TSV && fmt != SerialisationFormat.CSV) ) {
+                throw new IOException("Cannot read metadata from a separate file if the format is not TSV or CSV");
+            }
+            TSVReader tsvReader = null;
             if ( allowStdin ) {
                 boolean tsvFromStdin = filename.equals("-");
-                boolean metaFromStdin = filename.equals("-");
+                boolean metaFromStdin = metaFilename.equals("-");
                 if ( tsvFromStdin && metaFromStdin ) {
                     throw new IOException("Cannot read both TSV section and metadata from standard input");
                 }
                 InputStream tsv = tsvFromStdin ? System.in : new FileInputStream(filename);
                 InputStream meta = metaFromStdin ? System.in : new FileInputStream(metaFilename);
-                return new TSVReader(tsv, meta);
+                tsvReader = new TSVReader(tsv, meta);
             } else {
-                return new TSVReader(filename, metaFilename);
+                tsvReader = new TSVReader(filename, metaFilename);
             }
+            if ( fmt == null && useExtension ) {
+                fmt = inferFormat(filename);
+            }
+            if ( fmt == SerialisationFormat.TSV ) {
+                tsvReader.setSeparatorMode(SeparatorMode.TAB);
+            } else if ( fmt == SerialisationFormat.CSV ) {
+                tsvReader.setSeparatorMode(SeparatorMode.COMMA);
+            }
+            return tsvReader;
         } else {
-            return getReader(filename, allowStdin);
+            return getReader(filename, allowStdin, fmt);
         }
     }
 
@@ -204,7 +272,7 @@ public class ReaderFactory {
      *                              recognised.
      */
     public SSSOMReader getReader(Reader reader) throws IOException, SSSOMFormatException {
-        return getReader(reader, null);
+        return getReader(reader, (String) null);
     }
 
     /**
@@ -253,6 +321,41 @@ public class ReaderFactory {
                 SeparatorMode mode = format == SerialisationFormat.TSV ? SeparatorMode.TAB : SeparatorMode.COMMA;
                 ((TSVReader) br).setSeparatorMode(mode);
             }
+            break;
+        }
+        return br;
+    }
+
+    /**
+     * Gets a SSSOM reader for the specified reader object and format.
+     * <p>
+     * This method does not attempt to automatically determine the format, and
+     * instead expects to be given the correct format.
+     * 
+     * @param reader The reader to read from.
+     * @param fmt    The expected serialisation format.
+     * @return A suitable SSSOM reader.
+     * @throws IOException If the serialisation format is not specified.
+     */
+    public SSSOMReader getReader(Reader reader, SerialisationFormat fmt) throws IOException {
+        SSSOMReader br = null;
+        if ( fmt == null ) {
+            throw new IOException("Expected serialisation format must be specified");
+        }
+        switch ( fmt ) {
+        case RDF_TURTLE:
+            br = new RDFReader(reader);
+            break;
+        case JSON:
+            br = new JSONReader(reader);
+            break;
+        case TSV:
+            br = new TSVReader(reader);
+            ((TSVReader) br).setSeparatorMode(SeparatorMode.TAB);
+            break;
+        case CSV:
+            br = new TSVReader(reader);
+            ((TSVReader) br).setSeparatorMode(SeparatorMode.COMMA);
             break;
         }
         return br;

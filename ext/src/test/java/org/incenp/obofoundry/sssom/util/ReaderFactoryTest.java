@@ -40,6 +40,7 @@ public class ReaderFactoryTest {
     private final static String sampleCSVFile = "../core/src/test/resources/sets/exo2c.sssom.csv";
     private final static String sampleJSONFile = "../core/src/test/resources/sets/exo2c.sssom.json";
     private final static String sampleTTFFile = "src/test/resources/sets/exo2c.ttl";
+    private final static String nonSSSOMFile = "pom.xml";
 
     @Test
     void testInferFormat() throws IOException {
@@ -117,5 +118,75 @@ public class ReaderFactoryTest {
         SSSOMReader sssomReader = factory.getReader(reader, "anything.txt");
         Assertions.assertInstanceOf(TSVReader.class, sssomReader);
         reader.close();
+    }
+
+    @Test
+    void testGetReaderFromFileWithExplicitFormat() throws IOException, SSSOMFormatException {
+        ReaderFactory factory = new ReaderFactory(true);
+        SSSOMReader reader = factory.getReader(sampleJSONFile, true, SerialisationFormat.TSV);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
+
+        reader = factory.getReader(sampleJSONFile, true);
+        Assertions.assertInstanceOf(JSONReader.class, reader);
+    }
+
+    @Test
+    void testGetReaderWithExplicitFormat() throws IOException, SSSOMFormatException {
+        ReaderFactory factory = new ReaderFactory();
+        Reader input = new BufferedReader(new FileReader(new File(sampleTSVFile)));
+        SSSOMReader reader;
+
+        reader = factory.getReader(input, SerialisationFormat.TSV);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
+
+        reader = factory.getReader(input, SerialisationFormat.CSV);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
+
+        reader = factory.getReader(input, SerialisationFormat.JSON);
+        Assertions.assertInstanceOf(JSONReader.class, reader);
+
+        reader = factory.getReader(input, SerialisationFormat.RDF_TURTLE);
+        Assertions.assertInstanceOf(RDFReader.class, reader);
+
+        try {
+            reader = factory.getReader(input, (SerialisationFormat) null);
+            Assertions.fail("Exception not thrown when serialisation format is not specified");
+        } catch ( IOException ioe ) {
+            Assertions.assertEquals("Expected serialisation format must be specified", ioe.getMessage());
+        }
+
+        input.close();
+    }
+
+    @Test
+    void testReadingFromTwoFilesImpliesTSV() throws IOException, SSSOMFormatException {
+        ReaderFactory factory = new ReaderFactory(true);
+        SSSOMReader reader = factory.getReader(sampleTTFFile, sampleTSVFile);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
+
+        reader = factory.getReader(sampleTTFFile, null);
+        Assertions.assertInstanceOf(RDFReader.class, reader);
+
+        try {
+            reader = factory.getReader(sampleTSVFile, sampleTSVFile, false, SerialisationFormat.JSON);
+            Assertions.fail("Exception not thrown on trying to read non-TSV/non-CSV from two files");
+        } catch ( IOException ioe ) {
+            Assertions.assertEquals("Cannot read metadata from a separate file if the format is not TSV or CSV",
+                    ioe.getMessage());
+        }
+
+        reader = factory.getReader(sampleTTFFile, sampleTSVFile, false, null);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
+    }
+
+    @Test
+    void testCannotReadTwoFilesFromStdin() throws SSSOMFormatException {
+        ReaderFactory factory = new ReaderFactory(true);
+        try {
+            factory.getReader("-", "-", true, SerialisationFormat.CSV);
+            Assertions.fail("Exception not thrown on trying to read two files from stdin");
+        } catch ( IOException ioe ) {
+            Assertions.assertEquals("Cannot read both TSV section and metadata from standard input", ioe.getMessage());
+        }
     }
 }
