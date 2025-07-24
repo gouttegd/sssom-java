@@ -166,7 +166,7 @@ public class SimpleCLI implements Runnable {
                 description = "Silently accept some invalid mapping sets.")
         boolean laxMode;
 
-        @Option(names = "--input-format",paramLabel = "FMT",
+        @Option(names = "--input-format", paramLabel = "FMT",
                 description = "Expect input in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is inferred whenever possible.",
                 converter = SerialisationFormatConverter.class,
                 completionCandidates = SerialisationFormatCompletionCandidates.class)

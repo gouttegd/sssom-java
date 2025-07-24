@@ -40,7 +40,6 @@ public class ReaderFactoryTest {
     private final static String sampleCSVFile = "../core/src/test/resources/sets/exo2c.sssom.csv";
     private final static String sampleJSONFile = "../core/src/test/resources/sets/exo2c.sssom.json";
     private final static String sampleTTFFile = "src/test/resources/sets/exo2c.ttl";
-    private final static String nonSSSOMFile = "pom.xml";
 
     @Test
     void testInferFormat() throws IOException {
