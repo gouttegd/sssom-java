@@ -52,7 +52,6 @@ import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAnnotationValue;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLDataFactory;
-import org.semanticweb.owlapi.model.OWLDatatype;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
@@ -66,6 +65,7 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
     private OWLDataFactory factory;
     private IMetadataTransformer<T, IRI> transformer;
     private Set<OWLAnnotation> annots;
+    private boolean uriAsResource = false;
 
     /**
      * Creates a new instance that creates annotations using properties directly
@@ -91,6 +91,20 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
         this.factory = factory;
         this.transformer = transformer;
         annots = new HashSet<OWLAnnotation>();
+    }
+
+    /**
+     * Specifies whether URI-typed slots (e.g., sssom:license) should be rendered as
+     * IRI-identified resources rather than as xsd:anyURI literals.
+     * <p>
+     * URI-typed slots are rendered as resources in the RDF serialisation, so it
+     * seems logical that they should be rendered similarly in the OWL
+     * serialisation. But that has not been decided yet, so for now we support both.
+     * 
+     * @param value If {@code true}, URI-typed slots are rendered as IRIs.
+     */
+    public void renderURISlotsAsResources(boolean value) {
+        uriAsResource = value;
     }
 
     /**
@@ -134,16 +148,18 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
 
     @Override
     public void visit(URISlot<T> slot, T object, String value) {
-        annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)),
-                factory.getOWLLiteral(value, factory.getOWLDatatype(XSDVocabulary.ANY_URI.getIRI()))));
+        OWLAnnotationValue v = uriAsResource ? IRI.create(value)
+                : factory.getOWLLiteral(value, OWL2Datatype.XSD_ANY_URI);
+        annots.add(factory.getOWLAnnotation(factory.getOWLAnnotationProperty(transformer.transform(slot)), v));
     }
 
     @Override
     public void visit(URISlot<T> slot, T object, List<String> values) {
         OWLAnnotationProperty p = factory.getOWLAnnotationProperty(transformer.transform(slot));
-        OWLDatatype t = factory.getOWLDatatype(XSDVocabulary.ANY_URI.getIRI());
         for ( String value : values ) {
-            annots.add(factory.getOWLAnnotation(p, factory.getOWLLiteral(value, t)));
+            OWLAnnotationValue v = uriAsResource ? IRI.create(value)
+                    : factory.getOWLLiteral(value, OWL2Datatype.XSD_ANY_URI);
+            annots.add(factory.getOWLAnnotation(p, v));
         }
     }
 
