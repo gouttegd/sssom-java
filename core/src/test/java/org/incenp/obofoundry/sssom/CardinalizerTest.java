@@ -29,7 +29,7 @@ import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CardinalityTest {
+public class CardinalizerTest {
 
     private Mapping getSampleMapping(String subject, String object) {
         return getSampleMapping(subject, null, object, null);
@@ -79,7 +79,7 @@ public class CardinalityTest {
         // many-to-one mapping (subject5 and subject6 both mapped to object5)
         mappings.add(getSampleMapping("subject6", "object5")); // n:1
 
-        MappingCardinality.inferCardinality(mappings);
+        new Cardinalizer().fillCardinality(mappings);
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(0).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(1).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(2).getMappingCardinality());
@@ -99,7 +99,7 @@ public class CardinalityTest {
         mappings.add(getSampleMapping("subject1", Constants.NoTermFound));
         mappings.add(getSampleMapping(Constants.NoTermFound, "object2"));
 
-        MappingCardinality.inferCardinality(mappings);
+        new Cardinalizer().fillCardinality(mappings);
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(0).getMappingCardinality());
         Assertions.assertNull(mappings.get(1).getMappingCardinality());
         Assertions.assertNull(mappings.get(2).getMappingCardinality());
@@ -120,7 +120,7 @@ public class CardinalityTest {
         mappings.add(getSampleMapping("subject3", EntityType.OWL_CLASS, "object4", null));
         mappings.add(getSampleMapping("subject3", EntityType.RDFS_LITERAL, "object4", null));
 
-        MappingCardinality.inferCardinality(mappings);
+        new Cardinalizer().fillCardinality(mappings);
         Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(0).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(1).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.MANY_TO_ONE, mappings.get(2).getMappingCardinality());

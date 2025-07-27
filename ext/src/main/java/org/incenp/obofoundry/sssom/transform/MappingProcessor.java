@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.incenp.obofoundry.sssom.Cardinalizer;
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
 
 /**
  * An engine for applying {@link MappingProcessingRule}s to mappings. This
@@ -130,6 +130,7 @@ public class MappingProcessor<T> {
     public List<T> process(List<Mapping> mappings) {
         List<T> products = new ArrayList<T>();
         boolean dirtyCard = true; /* Assume original cardinality data is unreliable. */
+        Cardinalizer cardinalizer = new Cardinalizer();
 
         for ( MappingProcessingRule<T> rule : rules ) {
             if ( selectedTags != null ) {
@@ -140,7 +141,7 @@ public class MappingProcessor<T> {
             }
 
             if ( rule.needsCardinality() && dirtyCard ) {
-                MappingCardinality.inferCardinality(mappings);
+                cardinalizer.fillCardinality(mappings);
                 dirtyCard = false;
             }
 
@@ -151,8 +152,8 @@ public class MappingProcessor<T> {
             List<Mapping> keptMappings = new ArrayList<Mapping>();
             for ( Mapping mapping : mappings ) {
                 if ( rule.apply(mapping) ) {
-                    String oldSubject = MappingCardinality.getSubject(mapping);
-                    String oldObject = MappingCardinality.getObject(mapping);
+                    String oldSubject = cardinalizer.getSubject(mapping);
+                    String oldObject = cardinalizer.getObject(mapping);
                     mapping = rule.preprocess(mapping);
                     if ( mapping != null ) {
                         T product = rule.generate(mapping);
@@ -162,8 +163,8 @@ public class MappingProcessor<T> {
                         }
 
                         keptMappings.add(mapping);
-                        if ( !MappingCardinality.getSubject(mapping).equals(oldSubject)
-                                || MappingCardinality.getObject(mapping).equals(oldObject) ) {
+                        if ( !cardinalizer.getSubject(mapping).equals(oldSubject)
+                                || !cardinalizer.getObject(mapping).equals(oldObject) ) {
                             /* Subject and/or object changed, so cardinality data is no longer reliable. */
                             dirtyCard = true;
                         }

@@ -20,9 +20,10 @@ package org.incenp.obofoundry.sssom.model;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import org.incenp.obofoundry.sssom.Cardinalizer;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -40,6 +41,7 @@ public enum MappingCardinality {
     MANY_TO_MANY("n:n");
 
     private final static Map<String, MappingCardinality> MAP;
+    private final static Cardinalizer defaultCardinalizer = new Cardinalizer();
 
     static {
         Map<String, MappingCardinality> map = new HashMap<String, MappingCardinality>();
@@ -101,36 +103,11 @@ public enum MappingCardinality {
      * cardinality information that may already be stored in each mapping.
      * 
      * @param mappings The mappings for which to infer cardinality.
+     * @deprecated Use {@link Cardinalizer#fillCardinality(List)} instead.
      */
+    @Deprecated
     public static void inferCardinality(List<Mapping> mappings) {
-        HashMap<String, HashSet<String>> subjects = new HashMap<String, HashSet<String>>();
-        HashMap<String, HashSet<String>> objects = new HashMap<String, HashSet<String>>();
-
-        for ( Mapping m : mappings ) {
-            if ( m.isUnmapped() ) {
-                continue;
-            }
-
-            subjects.computeIfAbsent(getObject(m), k -> new HashSet<String>()).add(getSubject(m));
-            objects.computeIfAbsent(getSubject(m), k -> new HashSet<String>()).add(getObject(m));
-        }
-
-        for ( Mapping m : mappings ) {
-            if ( m.isUnmapped() ) {
-                m.setMappingCardinality(null);
-                continue;
-            }
-
-            int nSubjects = subjects.get(getObject(m)).size();
-            int nObjects = objects.get(getSubject(m)).size();
-
-            if ( nSubjects == 1 ) {
-                m.setMappingCardinality(nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY);
-            } else {
-                m.setMappingCardinality(
-                        nObjects == 1 ? MappingCardinality.MANY_TO_ONE : MappingCardinality.MANY_TO_MANY);
-            }
-        }
+        defaultCardinalizer.fillCardinality(mappings);
     }
 
     /**
@@ -141,12 +118,11 @@ public enum MappingCardinality {
      * 
      * @param mapping The mapping from which to derive a subject string.
      * @return A string that can be used to compare subjects across mappings.
+     * @deprecated Use {@link Cardinalizer#getSubject(Mapping)} instead.
      */
+    @Deprecated
     public static String getSubject(Mapping mapping) {
-        EntityType t = mapping.getSubjectType();
-        String tag = "\0" + (t == null ? "" : String.valueOf(t.ordinal())) + "\0";
-        return tag + (t == EntityType.RDFS_LITERAL ? mapping.getSubjectLabel() : mapping.getSubjectId());
-
+        return defaultCardinalizer.getSubject(mapping);
     }
 
     /**
@@ -157,10 +133,10 @@ public enum MappingCardinality {
      * 
      * @param mapping The mapping from which to derive an object string.
      * @return A String that can be used to compare objects across mappings.
+     * @deprecated Use {@link Cardinalizer#getObject(Mapping)} instead.
      */
+    @Deprecated
     public static String getObject(Mapping mapping) {
-        EntityType t = mapping.getObjectType();
-        String tag = "\0" + (t == null ? "" : String.valueOf(t.ordinal())) + "\0";
-        return tag + (t == EntityType.RDFS_LITERAL ? mapping.getObjectLabel() : mapping.getObjectId());
+        return defaultCardinalizer.getObject(mapping);
     }
 }

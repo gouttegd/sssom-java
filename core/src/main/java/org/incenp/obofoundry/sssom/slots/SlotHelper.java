@@ -217,6 +217,27 @@ public class SlotHelper<T> {
     }
 
     /**
+     * Finds slots by their names.
+     * <p>
+     * This is a convenience method, basically to avoid calling
+     * {@link #getSlotByName(String)} repeatedly.
+     * 
+     * @param names The names of the slots to find, as per the SSSOM specification.
+     *              If a given name is not a valid slot name, it is ignored.
+     * @return The corresponding slots.
+     */
+    public Collection<Slot<T>> getSlotsByName(Collection<String> names) {
+        ArrayList<Slot<T>> slots = new ArrayList<>();
+        for ( String name : names ) {
+            Slot<T> slot = slotsByName.get(name);
+            if ( slot != null ) {
+                slots.add(slot);
+            }
+        }
+        return slots;
+    }
+
+    /**
      * Finds a slot by its associated URI.
      * 
      * @param uri The URI of the slot to find.

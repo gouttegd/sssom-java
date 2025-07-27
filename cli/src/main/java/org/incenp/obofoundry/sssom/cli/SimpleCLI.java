@@ -29,6 +29,7 @@ import java.util.Map;
 
 import javax.xml.catalog.CatalogException;
 
+import org.incenp.obofoundry.sssom.Cardinalizer;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.JSONWriter;
 import org.incenp.obofoundry.sssom.MergeOption;
@@ -45,7 +46,6 @@ import org.incenp.obofoundry.sssom.extract.ExtractorSyntaxException;
 import org.incenp.obofoundry.sssom.extract.IValueExtractor;
 import org.incenp.obofoundry.sssom.extract.ValueExtractorFactory;
 import org.incenp.obofoundry.sssom.model.Mapping;
-import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.owl.OWLHelper;
@@ -497,7 +497,7 @@ public class SimpleCLI implements Runnable {
 
     private void postProcess(MappingSet ms) {
         if ( outputOpts.forceCardinality ) {
-            MappingCardinality.inferCardinality(ms.getMappings());
+            new Cardinalizer().fillCardinality(ms.getMappings());
         } else {
             ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
         }
