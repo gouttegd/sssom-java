@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.model.Constants;
@@ -125,5 +126,22 @@ public class CardinalizerTest {
         Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(1).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.MANY_TO_ONE, mappings.get(2).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.MANY_TO_ONE, mappings.get(3).getMappingCardinality());
+    }
+
+    @Test
+    void testScopingCardinality() {
+        List<Mapping> mappings = new ArrayList<>();
+
+        mappings.add(Mapping.builder().subjectId("subject1").objectId("object1").predicateId("predicate1")
+                .objectSource("source1").build());
+        mappings.add(Mapping.builder().subjectId("subject1").objectId("object2").predicateId("predicate1")
+                .objectSource("source1").build());
+        mappings.add(Mapping.builder().subjectId("subject1").objectId("object3").predicateId("predicate2")
+                .objectSource("source2").build());
+
+        new Cardinalizer(Arrays.asList("predicate_id", "object_source")).fillCardinality(mappings);
+        Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(0).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(1).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(2).getMappingCardinality());
     }
 }
