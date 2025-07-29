@@ -193,8 +193,17 @@ public class SimpleCLI implements Runnable {
                 description = "Split the set along subject and object prefix names and write the split sets in the specified directory.")
         String splitDirectory;
 
-        @Option(names = { "-c", "--force-cardinality" }, description = "Include mapping cardinality values.")
-        boolean forceCardinality;
+        @Option(names = { "-c", "--force-cardinality" },
+                hidden = true,
+                description = "Include mapping cardinality values.")
+        private void forceCardinality(boolean value) {
+            cardinality = CardinalityOption.FORCE;
+        }
+
+        @Option(names = {"-C", "--cardinality" },
+                paramLabel = "OPT",
+                description = "What to do with mapping cardinality values. Possible options: ${COMPLETION-CANDIDATES}. Default is REMOVE.")
+        CardinalityOption cardinality = CardinalityOption.REMOVE;
 
         @Option(names = "--output-prefix-map",
                 paramLabel = "SRC",
@@ -496,9 +505,9 @@ public class SimpleCLI implements Runnable {
     }
 
     private void postProcess(MappingSet ms) {
-        if ( outputOpts.forceCardinality ) {
+        if ( outputOpts.cardinality == CardinalityOption.FORCE ) {
             new Cardinalizer().fillCardinality(ms.getMappings());
-        } else {
+        } else if ( outputOpts.cardinality == CardinalityOption.REMOVE ) {
             ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
         }
 

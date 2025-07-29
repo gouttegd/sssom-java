@@ -174,6 +174,16 @@ public class SSSOMCLITest {
         // We merge the three O2C, O2N, and C2N sets to have a range of cardinalities
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv", "exo2n.sssom.tsv", "exc2n.sssom.tsv" },
                 "exall-cardinality.sssom.tsv", new String[] { "--force-cardinality" });
+
+        // Same, but using the new --cardinality option.
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv", "exo2n.sssom.tsv", "exc2n.sssom.tsv" },
+                "exall-cardinality.sssom.tsv", new String[] { "--cardinality", "force" });
+    }
+
+    @Test
+    void testKeepingCardinalityValues() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c-with-cardinality.sssom.tsv" },
+                "test-keeping-cardinality.sssom.tsv", new String[] { "--cardinality", "keep" });
     }
 
     @Test

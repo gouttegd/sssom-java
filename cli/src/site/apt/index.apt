@@ -324,11 +324,12 @@ sssom-cli set.sssom.tsv:metadata.yaml
   computed on the fly whenever needed, because pre-computed values found
   in a set may not be reliable (if the composition of the set has
   changed since the values were computed). Use the
-  <<<--force-cardinality>>> option to include the
-  <<<mapping_cardinality>>> slot in the result set. In that case, what
-  will be written will always be the <effective> cardinality for each
-  mapping, computed at the last moment before writing the set (in
-  particular, after any transformation of the set).
+  <<<--cardinality keep>>> option to include the
+  <<<mapping_cardinality>>> slot in the result set, or
+  <<<--cardinality force>>> to not only include the slot, but also
+  compute the <effective> cardinality for each mapping (computed at the
+  last moment before writing the set – in particular, after any
+  transformation of the set).
   
   The result set is always <sorted>, so that the mappings are written in
   a completely deterministic order. Use the <<<--no-sorting>>> option to
