@@ -419,6 +419,13 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<--rule "subject==UBERON:* -> stop()">>>, and
   <<<--include subject==UBERON:*>>> is equivalent to
   <<<--rule "subject==UBERON:* -> include()">>>.
+  
+  Also for convenience, rules that are intended to be applied to all
+  mappings (using a catch-all filter such as <<<predicate==*>>> can be
+  specified with the <<<--blanket-rule>>> option, which only needs the
+  action part of the rule. For example, <<<--blanket-rule invert()>>> is
+  equivalent to <<<--rule predicate==* -> invert()>>>, and would invert
+  all mappings.
 
 ** 4.1. Prefix map for SSSOM/T rules
 

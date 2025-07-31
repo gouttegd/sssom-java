@@ -324,6 +324,12 @@ public class SimpleCLI implements Runnable {
             rules.add(args[args.length - 1] + " -> stop()");
         }
 
+        @Option(names = { "-A", "--blanket-rule" }, paramLabel = "ACTION",
+                description = "Apply a rule to all mappings.")
+        private void addGeneralRule(String[] args) {
+            rules.add("predicate==* -> " + args[args.length - 1]);
+        }
+
         @Option(names = "--prefix", paramLabel = "NAME=PREFIX", description = "Declare a prefix for use in SSSOM/T.")
         Map<String, String> prefixMap = new HashMap<String, String>();
 

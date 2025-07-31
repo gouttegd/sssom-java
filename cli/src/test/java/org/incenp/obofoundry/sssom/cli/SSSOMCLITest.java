@@ -345,6 +345,12 @@ public class SSSOMCLITest {
     }
 
     @Test
+    void testBlanketRules() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-with-confidence.sssom.tsv",
+                new String[] { "--blanket-rule", "assign('confidence', '0.7')", "--include-all" });
+    }
+
+    @Test
     void testApplyRuleAndRuleset() throws IOException {
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-exact-match-plus-org1.sssom.tsv",
                 new String[] { "--ruleset=src/test/resources/rules/org-exact-matches.rules",
