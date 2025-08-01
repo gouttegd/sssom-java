@@ -514,7 +514,10 @@ public class SimpleCLI implements Runnable {
         if ( outputOpts.cardinality == CardinalityOption.FORCE ) {
             new Cardinalizer().fillCardinality(ms.getMappings());
         } else if ( outputOpts.cardinality == CardinalityOption.REMOVE ) {
-            ms.getMappings().forEach(mapping -> mapping.setMappingCardinality(null));
+            for ( Mapping mapping : ms.getMappings() ) {
+                mapping.setMappingCardinality(null);
+                mapping.setCardinalityScope(null);
+            }
         }
 
         if ( ontOptions.ontologiesForUpdate != null ) {
