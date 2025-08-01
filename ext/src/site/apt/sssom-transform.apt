@@ -451,8 +451,8 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   The base SSSOM/T language described here does not specify any
   generator functions (since such functions are specific to a given
   SSSOM/T dialect). It defines a handful of
-  {{{6.4. Preprocessor functions}preprocessor functions}}, as well as
-  one {{{6.3. Callback functions}callback function}}. 
+  {{{6.4. Preprocessor functions}preprocessor functions}} and
+  {{{6.3. Callback functions}callback functions}}.
 
 * 5. Function calls
 
@@ -716,6 +716,29 @@ predicate==skos:broadMatch -> set_var("MY_VARIABLE", "value for broad matches");
   Of note, it is forbidden to use <set_var> to assign a
   mapping-dependent value to a variable that has <not> been previously
   declared in a <set_var> directive at the beginning of the ruleset.
+  
+*** 6.3.1. <infer_cardinality>
+
+  This function computes the cardinality and fills the
+  <<<mapping_cardinality>>> slot for all the mappings it is applied to.
+  It accepts optional arguments, which are the mapping slots to use to
+  define the scope that cardinality will be relative to. With no
+  arguments, cardinality will be relative to all the mappings the
+  function is applied to.
+  
+  For example, to compute the cardinality relative to the entire set
+  (function applied to all mappings, no scope):
+  
++-----------------------------------------------------------------------
+predicate==* -> infer_cardinality();
++-----------------------------------------------------------------------
+
+  To compute the cardinality on the entire set, but relatively to all
+  mappings that have the same predicate and the same object source:
+  
++-----------------------------------------------------------------------
+predicate==* -> infer_cardinality("predicate_id", "object_source");
++-----------------------------------------------------------------------
 
 ** 6.4. Preprocessor functions
 

@@ -97,6 +97,26 @@ public class SSSOMTransformApplicationTest {
     }
 
     @Test
+    void testInferCardinalityCallback() {
+        arguments.add("predicate_id");
+
+        try {
+            IMappingProcessorCallback cb = application.onCallback("infer_cardinality", arguments, keyedArguments);
+            Assertions.assertInstanceOf(SSSOMTInferCardinalityFunction.class, cb);
+
+            List<Mapping> mappings = new ArrayList<>();
+            mappings.add(Mapping.builder().subjectId("subject1").objectId("object1").predicateId("predicate1").build());
+            mappings.add(Mapping.builder().subjectId("subject1").objectId("object2").predicateId("predicate2").build());
+
+            cb.process((m) -> true, mappings);
+            Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(0).getMappingCardinality());
+            Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(1).getMappingCardinality());
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
     void testStopPreprocessor() {
         try {
             IMappingTransformer<Mapping> o = application.onPreprocessingAction("stop", arguments, keyedArguments);
