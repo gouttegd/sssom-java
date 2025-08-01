@@ -65,7 +65,8 @@ public class Cardinalizer {
 
     /**
      * Computes the cardinality of all mappings in the given set, according to the
-     * current scope, and fills the {@code mapping_cardinality} slot accordingly.
+     * current scope, and fills the {@code mapping_cardinality} slot and the
+     * {@code cardinality_scope} slot accordingly.
      * <p>
      * This overrides any cardinality information that may already be stored in each
      * mapping.
@@ -91,6 +92,7 @@ public class Cardinalizer {
         for ( Mapping m : mappings ) {
             if ( m.isUnmapped() ) {
                 m.setMappingCardinality(null);
+                m.setCardinalityScope(null);
                 continue;
             }
 
@@ -104,6 +106,14 @@ public class Cardinalizer {
                 mc = nObjects == 1 ? MappingCardinality.MANY_TO_ONE : MappingCardinality.MANY_TO_MANY;
             }
             m.setMappingCardinality(mc);
+
+            if ( !scope.isEmpty() ) {
+                for ( Slot<Mapping> slot : scope ) {
+                    m.getCardinalityScope(true).add(slot.getName());
+                }
+            } else {
+                m.setCardinalityScope(null);
+            }
         }
     }
 

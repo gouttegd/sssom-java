@@ -143,5 +143,9 @@ public class CardinalizerTest {
         Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(0).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.ONE_TO_MANY, mappings.get(1).getMappingCardinality());
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(2).getMappingCardinality());
+
+        Assertions.assertTrue(mappings.get(0).getCardinalityScope().contains("predicate_id"));
+        Assertions.assertTrue(mappings.get(0).getCardinalityScope().contains("object_source"));
+        Assertions.assertEquals(2, mappings.get(0).getCardinalityScope().size());
     }
 }

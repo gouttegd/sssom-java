@@ -127,6 +127,10 @@ public class Mapping  {
     @JsonProperty("mapping_cardinality")
     private MappingCardinality mappingCardinality;
 
+    @JsonProperty("cardinality_scope")
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private List<String> cardinalityScope;
+
     @JsonProperty("mapping_tool")
     private String mappingTool;
 
@@ -318,6 +322,21 @@ public class Mapping  {
             creatorLabel = new ArrayList<>();
         }
         return creatorLabel;
+    }
+
+    /**
+     * Gets the list of cardinality_scope values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of cardinality_scope values.
+     */
+    public List<String> getCardinalityScope(boolean set) {
+        if ( cardinalityScope == null && set ) {
+            cardinalityScope = new ArrayList<>();
+        }
+        return cardinalityScope;
     }
 
     /**
@@ -698,6 +717,20 @@ public class Mapping  {
         if ( mappingSource != null ) {
             String v = String.valueOf(mappingSource);
             sb.append(String.format("(14:mapping_source%d:%s)", v.length(), v));
+        }
+        if ( cardinalityScope != null ) {
+            sb.append("(17:cardinality_scope(");
+            List<String> tmp = null;
+            if ( cardinalityScope.size() > 1 ) {
+                tmp = new ArrayList<>(cardinalityScope);
+                Collections.sort(tmp);
+            } else {
+                tmp = cardinalityScope;
+            }
+            for ( String v : tmp ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
         }
         if ( mappingTool != null ) {
             String v = String.valueOf(mappingTool);

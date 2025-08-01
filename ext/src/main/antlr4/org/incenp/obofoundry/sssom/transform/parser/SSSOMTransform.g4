@@ -91,6 +91,7 @@ txField   : 'comment'
           ;
 
 mulTxField: 'author_label'
+          | 'cardinality_scope'
           | 'creator_label'
           | 'curation_rule_text'
           | 'reviewer_label'

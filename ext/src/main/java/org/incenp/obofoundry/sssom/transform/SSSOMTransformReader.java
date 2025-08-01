@@ -817,6 +817,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
             filter = (mapping) -> testValue.apply(mapping.getAuthorLabel());
             break;
 
+        case "cardinality_scope":
+            filter = (mapping) -> testValue.apply(mapping.getCardinalityScope());
+            break;
+
         case "creator":
             filter = (mapping) -> testValue.apply(mapping.getCreatorId());
             break;

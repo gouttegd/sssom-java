@@ -103,6 +103,11 @@ public class MappingSet  {
     @URI
     private String mappingProvider;
 
+    @JsonProperty("cardinality_scope")
+    @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private List<String> cardinalityScope;
+
     @JsonProperty("mapping_tool")
     @Propagatable
     private String mappingTool;
@@ -227,6 +232,21 @@ public class MappingSet  {
             creatorLabel = new ArrayList<>();
         }
         return creatorLabel;
+    }
+
+    /**
+     * Gets the list of cardinality_scope values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of cardinality_scope values.
+     */
+    public List<String> getCardinalityScope(boolean set) {
+        if ( cardinalityScope == null && set ) {
+            cardinalityScope = new ArrayList<>();
+        }
+        return cardinalityScope;
     }
 
     /**
