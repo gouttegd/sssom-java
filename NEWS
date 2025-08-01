@@ -1,3 +1,20 @@
+Changes in sssom-java 1.8.0
+---------------------------
+
+    * core:
+      * Support for the new `cardinality_scope` slot.
+    * sssom-cli:
+      * New option `--input-format`.
+      * New option `--cardinality <REMOVE|KEEP|FORCE>`.
+      * New option `--blanket-rule`.
+    * robot:
+      * Allow full export to SSSOM/OWL.
+    * SSSOM/T:
+      * New `infer_cardinality` callback function.
+    * SSSOM/T-OWL:
+      * Default value of the `/annots_uris` flag is now `standard_map`.
+
+
 Changes in sssom-java 1.7.0
 ---------------------------
 
