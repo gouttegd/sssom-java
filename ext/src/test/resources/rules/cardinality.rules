@@ -1,0 +1,15 @@
+# Prefix declarations
+prefix CARO: <http://purl.obolibrary.org/obo/CARO_>
+prefix CL:   <http://purl.obolibrary.org/obo/CL_>
+prefix FBbt: <http://purl.obolibrary.org/obo/FBbt_>
+
+# Compute cardinality relative to the object source
+predicate==* -> infer_cardinality('object_source');
+
+# Drop all CL mappings
+object==CL:* -> stop();
+
+# Previously computed cardinality values should not be
+# computed again, so CARO mappings should still have their
+# object_source-scoped 1:1 cardinality.
+object==CARO:* && cardinality==1:1 -> annotate(%{subject_id}, rdfs:comment, "1-to-1 mapping with %{object_id|short}");

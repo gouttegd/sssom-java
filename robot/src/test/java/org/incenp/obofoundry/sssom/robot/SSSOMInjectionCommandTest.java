@@ -144,7 +144,20 @@ public class SSSOMInjectionCommandTest {
                 "--ruleset", "../ext/src/test/resources/rules/annotations.rules",
                 "--bridge-format", "ofn",
                 "--bridge-file", "src/test/resources/output/exo2c-annotated.ofn.out");
-        // @formatter:off
+        // @formatter:on
         TestUtils.checkOutput("exo2c-annotated.ofn");
+    }
+
+    @Test
+    void testInferCardinality() throws IOException {
+        // @formatter:off
+        TestUtils.runCommand("sssom-inject",
+                "--create",
+                "--sssom", "../ext/src/test/resources/sets/fbbt.sssom.tsv",
+                "--ruleset", "../ext/src/test/resources/rules/cardinality.rules",
+                "--bridge-format", "ofn",
+                "--bridge-file", "src/test/resources/output/fbbt-caro-1-1.ofn.out");
+        // @formatter:on
+        TestUtils.checkOutput("fbbt-caro-1-1.ofn");
     }
 }

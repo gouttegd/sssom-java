@@ -1,0 +1,31 @@
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+
+
+Ontology(
+
+
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00000001> "1-to-1 mapping with CARO:0000012")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00000124> "1-to-1 mapping with CARO:0000077")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00005099> "1-to-1 mapping with CARO:0001001")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00005835> "1-to-1 mapping with CARO:0000042")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007001> "1-to-1 mapping with CARO:0000003")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007002> "1-to-1 mapping with CARO:0000013")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007003> "1-to-1 mapping with CARO:0000043")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007004> "1-to-1 mapping with CARO:0000027")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007006> "1-to-1 mapping with CARO:0000066")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007009> "1-to-1 mapping with CARO:0000032")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007010> "1-to-1 mapping with CARO:0000055")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007011> "1-to-1 mapping with CARO:0000028")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007012> "1-to-1 mapping with CARO:0000014")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007013> "1-to-1 mapping with CARO:0000040")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007015> "1-to-1 mapping with CARO:0000007")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007016> "1-to-1 mapping with CARO:0000006")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007017> "1-to-1 mapping with CARO:0000005")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007019> "1-to-1 mapping with CARO:0000004")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00007060> "1-to-1 mapping with CARO:0001000")
+AnnotationAssertion(rdfs:comment <http://purl.obolibrary.org/obo/FBbt_00111202> "1-to-1 mapping with CARO:0000008")
+)

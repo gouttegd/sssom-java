@@ -508,11 +508,6 @@ class ParseTree2RuleVisitor<T> extends SSSOMTransformBaseVisitor<Void> {
             // Assemble the final tag set
             tags.forEach((levelTags) -> rule.getTags().addAll(levelTags));
 
-            /* TODO: There should be a cleaner way to do this. */
-            if ( filter.toString().contains("cardinality==") ) {
-                rule.setCardinalityNeeded(true);
-            }
-
             rules.add(rule);
         } else {
             errors.add(new SSSOMTransformError(String.format("Unrecognised function: %s", name)));

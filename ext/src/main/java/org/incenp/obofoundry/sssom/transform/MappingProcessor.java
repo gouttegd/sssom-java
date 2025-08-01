@@ -44,6 +44,8 @@ public class MappingProcessor<T> {
     private List<IMappingProcessorListener<T>> listeners = new ArrayList<IMappingProcessorListener<T>>();
     private Set<String> selectedTags;
     private boolean includeSelectedTags;
+    private boolean checkCardinality = true;
+    private Cardinalizer cardinalizer = new Cardinalizer();
 
     /**
      * Adds a rule to be applied to mappings. The order in which rules are added is
@@ -54,6 +56,12 @@ public class MappingProcessor<T> {
      */
     public void addRule(MappingProcessingRule<T> rule) {
         rules.add(rule);
+        if ( rule.doesInferCardinality() ) {
+            // There is at least one rule that computes cardinality values, so we assume the
+            // ruleset wants to take care of it all and thus we disable our own tracking of
+            // cardinality.
+            checkCardinality = false;
+        }
     }
 
     /**
@@ -63,7 +71,9 @@ public class MappingProcessor<T> {
      * @param rules The new rules to add.
      */
     public void addRules(List<MappingProcessingRule<T>> rules) {
-        this.rules.addAll(rules);
+        for ( MappingProcessingRule<T> rule : rules ) {
+            addRule(rule);
+        }
     }
 
     /**
@@ -130,7 +140,6 @@ public class MappingProcessor<T> {
     public List<T> process(List<Mapping> mappings) {
         List<T> products = new ArrayList<T>();
         boolean dirtyCard = true; /* Assume original cardinality data is unreliable. */
-        Cardinalizer cardinalizer = new Cardinalizer();
 
         for ( MappingProcessingRule<T> rule : rules ) {
             if ( selectedTags != null ) {
@@ -140,7 +149,7 @@ public class MappingProcessor<T> {
                 }
             }
 
-            if ( rule.needsCardinality() && dirtyCard ) {
+            if ( checkCardinality && rule.needsCardinality() && dirtyCard ) {
                 cardinalizer.fillCardinality(mappings);
                 dirtyCard = false;
             }

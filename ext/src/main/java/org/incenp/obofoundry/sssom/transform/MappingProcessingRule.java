@@ -45,7 +45,6 @@ public class MappingProcessingRule<T> {
     private IMappingTransformer<T> generator;
     private IMappingProcessorCallback callback;
     private HashSet<String> tags = null;
-    private boolean cardinalityNeeded = false;
 
     /**
      * Creates a new instance.
@@ -94,23 +93,25 @@ public class MappingProcessingRule<T> {
     }
 
     /**
-     * Marks this rule as making use of cardinality information in mappings.
-     * 
-     * @param needed {@code true} to mark the rule as needing accurate cardinality
-     *               information, {@code false} otherwise.
-     */
-    public void setCardinalityNeeded(boolean needed) {
-        cardinalityNeeded = needed;
-    }
-
-    /**
-     * Indicates whether this rule makes use of cardinality information mappings.
+     * Indicates whether this rule makes use of cardinality information.
      * 
      * @return {@code true} if the rule needs accurate cardinality information,
      *         {@code false} otherwise.
      */
     public boolean needsCardinality() {
-        return cardinalityNeeded;
+        // TODO: There should be a better way to do this.
+        return filter != null && filter.toString().contains("cardinality==");
+    }
+
+    /**
+     * Indicates whether this rule takes care of computing cardinality information.
+     * 
+     * @return {@code true} if the rule infer cardinality values, {@code false}
+     *         otherwise.
+     */
+    public boolean doesInferCardinality() {
+        // TODO: There should be a better way to do this.
+        return callback != null && callback instanceof SSSOMTInferCardinalityFunction;
     }
 
     /**
