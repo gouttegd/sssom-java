@@ -175,7 +175,7 @@
         <version>0.8.0</version>
         <extensions>true</extensions>
         <configuration>
-          <publishingServerId>ossrh</publishingServerId>
+          <publishingServerId>central</publishingServerId>
           <autoPublish>true</autoPublish>
           <waitUntil>published</waitUntil>
         </configuration>
