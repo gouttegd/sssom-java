@@ -153,6 +153,7 @@ public class MappingSet  {
 
     @JsonProperty("similarity_measure")
     @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
     private String similarityMeasure;
 
     @JsonProperty("see_also")

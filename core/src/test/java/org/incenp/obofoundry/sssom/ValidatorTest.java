@@ -212,4 +212,18 @@ public class ValidatorTest {
         set.getMappings().add(Mapping.builder().subjectType(EntityType.COMPOSED_ENTITY_EXPRESSION).build());
         Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
     }
+
+    @Test
+    void testRecogniseSlotsAddedToMappingSetClass() {
+        MappingSet set = new MappingSet();
+        Validator v = new Validator();
+
+        // similarity_measure on a Mapping is compliant with 1.0
+        set.getMappings(true).add(Mapping.builder().similarityMeasure("similarity measure").build());
+        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
+
+        // similarity_measure on a MappingSet requires 1.1
+        set.setSimilarityMeasure("similarity measure");
+        Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
+    }
 }
