@@ -5,6 +5,7 @@ import click
 from linkml.generators.javagen import JavaGenerator
 from linkml.utils.generator import shared_arguments
 from jinja2 import Template
+from jsonasobj2 import as_dict
 
 class_template = """\
 package org.incenp.obofoundry.sssom.model;
@@ -54,8 +55,8 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     {%- if f.source_slot.range == 'NonRelativeURI' %}
     @URI
     {%- endif %}
-    {%- if gen.get_added_in_version(cls.name, f.source_slot.name) %}
-    @Versionable(addedIn = {{ gen.get_added_in_version(cls.name, f.source_slot.name) }})
+    {%- if gen.get_added_in_version(f.source_slot.name, cls.source_class.name) %}
+    @Versionable(addedIn = {{ gen.get_added_in_version(f.source_slot.name, cls.source_class.name) }})
     {%- endif %}
     {%- if gen.is_slot_constrained(f) %}
     @Setter(AccessLevel.NONE)
@@ -371,34 +372,17 @@ class CustomJavaGenerator(JavaGenerator):
             return "propagated" in d
         return False
 
-    def get_added_in_version(self, class_name, slot_name):
+    def get_added_in_version(self, slot_name, class_name):
         """Get the added_in annotation carried by this slot, if any.
 
         :param slot_name: the name of the slot to check
+        :param class_name: the name of the class the slot belongs to
         """
 
-        # Currently the SSSOM LinkML schema only allows to indicate when
-        # a brand new slot has been added, but does not cover the case
-        # where a pre-existing slot has been added to a class.
-        # For example, similarity_measure has existed since before 1.0,
-        # but has been added to the MappingSet class only in 1.1 (in 1.0
-        # it was only present in the Mapping class) -- we cannot get
-        # that information from the model, so we hardcode it in the
-        # following dictionary, that we query _before_ querying the
-        # schema.
-        overrides = {
-                "MappingSet:similarity_measure": "1.1",
-                "MappingSet:curation_rule": "1.1",
-                "MappingSet:curation_rule_text": "1.1"
-                }
-
-        added_in = overrides.get(f"{class_name}:{slot_name}", None)
-        if added_in is None:
-            d = self.schemaview.annotation_dict(slot_name)
-            if d is not None:
-                added_in = d.get("added_in", None)
+        induced_slot = self.schemaview.induced_slot(slot_name, class_name)
+        added_in = as_dict(induced_slot.annotations).get("added_in", None)
         if added_in is not None:
-            major, minor = added_in.split(".")
+            major, minor = added_in.get("value").split(".")
             return f"Version.SSSOM_{major}_{minor}"
         return None
 
