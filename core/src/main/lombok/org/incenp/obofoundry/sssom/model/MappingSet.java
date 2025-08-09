@@ -156,6 +156,17 @@ public class MappingSet  {
     @Versionable(addedIn = Version.SSSOM_1_1)
     private String similarityMeasure;
 
+    @JsonProperty("curation_rule")
+    @EntityReference
+    @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private List<String> curationRule;
+
+    @JsonProperty("curation_rule_text")
+    @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private List<String> curationRuleText;
+
     @JsonProperty("see_also")
     @SlotURI("http://www.w3.org/2000/01/rdf-schema#seeAlso")
     @URI
@@ -308,6 +319,36 @@ public class MappingSet  {
             objectPreprocessing = new ArrayList<>();
         }
         return objectPreprocessing;
+    }
+
+    /**
+     * Gets the list of curation_rule values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of curation_rule values.
+     */
+    public List<String> getCurationRule(boolean set) {
+        if ( curationRule == null && set ) {
+            curationRule = new ArrayList<>();
+        }
+        return curationRule;
+    }
+
+    /**
+     * Gets the list of curation_rule_text values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of curation_rule_text values.
+     */
+    public List<String> getCurationRuleText(boolean set) {
+        if ( curationRuleText == null && set ) {
+            curationRuleText = new ArrayList<>();
+        }
+        return curationRuleText;
     }
 
     /**

@@ -387,7 +387,9 @@ class CustomJavaGenerator(JavaGenerator):
         # following dictionary, that we query _before_ querying the
         # schema.
         overrides = {
-                "MappingSet:similarity_measure": "1.1"
+                "MappingSet:similarity_measure": "1.1",
+                "MappingSet:curation_rule": "1.1",
+                "MappingSet:curation_rule_text": "1.1"
                 }
 
         added_in = overrides.get(f"{class_name}:{slot_name}", None)
