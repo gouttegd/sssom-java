@@ -1,3 +1,13 @@
+Changes in sssom-java 1.8.1
+---------------------------
+
+    * core:
+      * Support for set-level, propagatable `curation_rule` slot.
+      * Support for set-level, propagatable `curation_rule_text` slot.
+    * sssom-cli:
+      * Fix behaviour of `--cardinality REMOVE` option.
+
+
 Changes in sssom-java 1.8.0
 ---------------------------
 
