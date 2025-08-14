@@ -38,7 +38,8 @@ public enum MappingCardinality {
     MANY_TO_ONE("n:1"),
     ONE_TO_NONE("1:0"),
     NONE_TO_ONE("0:1"),
-    MANY_TO_MANY("n:n");
+    MANY_TO_MANY("n:n"),
+    NONE_TO_NONE("0:0");
 
     private final static Map<String, MappingCardinality> MAP;
     private final static Cardinalizer defaultCardinalizer = new Cardinalizer();
@@ -72,6 +73,7 @@ public enum MappingCardinality {
         switch ( this ) {
         case MANY_TO_MANY:
         case ONE_TO_ONE:
+        case NONE_TO_NONE:
             return this;
         case MANY_TO_ONE:
             return MappingCardinality.ONE_TO_MANY;

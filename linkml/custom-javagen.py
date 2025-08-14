@@ -189,6 +189,28 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     }
 
     /**
+     * Indicates whether the object of this mapping is not mapped to any
+     * entity on the subject side.
+     *
+     * @return {@code True} if the subject of this mapping is
+     *         <code>sssom:NoTermFound</code>, {@code false} otherwise.
+     */
+    public boolean hasUnmappedSubject() {
+        return Constants.NoTermFound.equals(subjectId);
+    }
+
+    /**
+     * Indicates whether the subject of this mapping is not mapped to any
+     * entity on the object side.
+     *
+     * @return {@code True} if the object of this mapping is
+     *         <code>sssom:NoTermFound</code>, {@code false} otherwise.
+     */
+    public boolean hasUnmappedObject() {
+        return Constants.NoTermFound.equals(objectId);
+    }
+
+    /**
      * Indicates whether this mapping represents a "literal" mapping.
      * <p>
      * A literal mapping is a mapping where either the subject or the object

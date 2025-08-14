@@ -37,9 +37,11 @@ import org.incenp.obofoundry.sssom.checks.PredicateTypeValidator;
 import org.incenp.obofoundry.sssom.checks.RedefinedBuiltinPrefixValidator;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.MappingCardinality;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.EntityTypeSlot;
+import org.incenp.obofoundry.sssom.slots.MappingCardinalitySlot;
 import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
@@ -248,6 +250,16 @@ public class Validator {
                 slotVersion = Version.SSSOM_1_1;
             }
             versions.add(slotVersion);
+        }
+
+        @Override
+        public void visit(MappingCardinalitySlot<T> slot, T object, MappingCardinality value) {
+            if ( value == MappingCardinality.NONE_TO_NONE ) {
+                // 0:0 cardinality value was added in 1.1
+                versions.add(Version.SSSOM_1_1);
+            } else {
+                versions.add(Version.SSSOM_1_0);
+            }
         }
 
         @Override

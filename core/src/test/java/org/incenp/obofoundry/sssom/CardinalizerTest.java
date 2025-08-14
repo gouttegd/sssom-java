@@ -93,17 +93,19 @@ public class CardinalizerTest {
     }
 
     @Test
-    void testMappingsWithNoTermFoundAreIgnored() {
+    void testMappingsWithNoTermFoundAreApart() {
         List<Mapping> mappings = new ArrayList<Mapping>();
 
         mappings.add(getSampleMapping("subject1", "object2"));
         mappings.add(getSampleMapping("subject1", Constants.NoTermFound));
         mappings.add(getSampleMapping(Constants.NoTermFound, "object2"));
+        mappings.add(getSampleMapping(Constants.NoTermFound, Constants.NoTermFound));
 
         new Cardinalizer().fillCardinality(mappings);
         Assertions.assertEquals(MappingCardinality.ONE_TO_ONE, mappings.get(0).getMappingCardinality());
-        Assertions.assertNull(mappings.get(1).getMappingCardinality());
-        Assertions.assertNull(mappings.get(2).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.ONE_TO_NONE, mappings.get(1).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.NONE_TO_ONE, mappings.get(2).getMappingCardinality());
+        Assertions.assertEquals(MappingCardinality.NONE_TO_NONE, mappings.get(3).getMappingCardinality());
     }
 
 

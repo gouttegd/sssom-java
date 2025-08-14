@@ -90,20 +90,24 @@ public class Cardinalizer {
         }
 
         for ( Mapping m : mappings ) {
-            if ( m.isUnmapped() ) {
-                m.setMappingCardinality(null);
-                m.setCardinalityScope(null);
-                continue;
-            }
-
-            int nSubjects = subjects.get(getObject(m)).size();
-            int nObjects = objects.get(getSubject(m)).size();
-
             MappingCardinality mc = null;
-            if ( nSubjects == 1 ) {
-                mc = nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY;
+            if ( m.hasUnmappedSubject() ) {
+                if ( !m.hasUnmappedObject() ) {
+                    mc = MappingCardinality.NONE_TO_ONE;
+                } else {
+                    mc = MappingCardinality.NONE_TO_NONE;
+                }
+            } else if ( m.hasUnmappedObject() ) {
+                mc = MappingCardinality.ONE_TO_NONE;
             } else {
-                mc = nObjects == 1 ? MappingCardinality.MANY_TO_ONE : MappingCardinality.MANY_TO_MANY;
+                int nSubjects = subjects.get(getObject(m)).size();
+                int nObjects = objects.get(getSubject(m)).size();
+
+                if ( nSubjects == 1 ) {
+                    mc = nObjects == 1 ? MappingCardinality.ONE_TO_ONE : MappingCardinality.ONE_TO_MANY;
+                } else {
+                    mc = nObjects == 1 ? MappingCardinality.MANY_TO_ONE : MappingCardinality.MANY_TO_MANY;
+                }
             }
             m.setMappingCardinality(mc);
 
