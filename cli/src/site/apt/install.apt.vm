@@ -1,0 +1,103 @@
+    --------------------
+    Installing SSSOM-CLI
+    --------------------
+
+Installing SSSOM-CLI
+
+  This page provides some information about how to get SSSOM-CLI, the
+  command-line tool for manipulating SSSOM mapping sets, to work on your
+  machine.
+  
+  Those are guidelines only – machines and operating systems vary and it
+  is not possible to provide precise instructions for all of them.
+  
+%{toc|section=1|fromDepth=2|toDepth=3}
+  
+* 1. Pre-requisite: Install a JRE
+
+  SSSOM-CLI, like the entire SSSOM-Java project, is written in
+  {{{https://www.java.com/}Java}} and therefore requires a <Java Runtime
+  Environment> (JRE, sometimes also called a <Java virtual machine>
+  – improperly as the actual virtual machine is in fact only a part of
+  the runtime environment) to run.
+  
+  SSSOM-Java needs a JRE for Java version 11 at a minimum. It has been
+  also been tested with Java 17 and Java 21.
+  
+  On most GNU/Linux distributions, a JRE should likely be available in
+  the distribution’s package repository. For example, on Debian (and
+  presumably all Debian-based distributions), a JRE 21 can be installed
+  with
+  
++-----------------------------------------------------------------------
+# apt-get install openjdk-21-jre
++-----------------------------------------------------------------------
+
+  On MacOS, if you are using the {{{https://brew.sh}HomeBrew}} package
+  manager a Java Development Kit (JDK, which automatically includes a
+  JRE) is available with
+  
++-----------------------------------------------------------------------
+$ brew install openjdk@21
++-----------------------------------------------------------------------
+  
+  or, if you are using {{{https://macports.org/}MacPorts}}, with
+  
++-----------------------------------------------------------------------
+$ sudo port install opendjdk21
++-----------------------------------------------------------------------
+
+  For any system that is supported by Java at all, it is also possible
+  to “manually” install a JRE after downloading it from several possible
+  sources, including {{{https://www.java.com/en/download/}Oracle}},
+  {{{https://www.azul.com/downloads/?package=jre#zulu}Azul}},
+  {{{https://adoptium.net/}Adoptium}}…
+  
+  Regardless of how the JRE has been obtained and installed, at the end
+  you must be able to call <<<java>>> from the command line:
+  
++-----------------------------------------------------------------------
+$ java --version
+openjdk 21.0.8 2025-07-15
+OpenJDK Runtime Environment (build 21.0.8+9-Debian-1)
+OpenJDK 64-Bit Server VM (build 21.0.8+9-Debian-1, mixed mode, sharing)
++-----------------------------------------------------------------------
+
+* 2. Downloading and testing SSSOM-CLI
+
+  Download the <<<sssom-cli>>> file from the page of the
+  {{{https://github.com/gouttegd/sssom-java/releases/tag/sssom-java-${project.version}/}latest release}}.
+  
+  On Unix-like systems such as GNU/Linux and MacOS, the file can be made
+  executable and then invoked directly:
+  
++-----------------------------------------------------------------------
+$ chmod 755 sssom-cli
+$ ./sssom-cli --version
+sssom-cli (SSSOM-Java ${project.version})
+Copyright © 2023,2024,2025 Damien Goutte-Gattat
+
+This program is released under the GNU General Public License.
+See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.
++-----------------------------------------------------------------------
+
+  On other systems (e.g. Windows), the program can be invoked by calling
+  <<<java -jar sssom-cli>>> followed by the arguments to the program:
+  
++-----------------------------------------------------------------------
+> java -jar sssom-cli --version
+sssom-cli (SSSOM-Java ${project.version})
+Copyright © 2023,2024,2025 Damien Goutte-Gattat
+
+This program is released under the GNU General Public License.
+See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.
++-----------------------------------------------------------------------
+
+* 3. Permanent installation
+
+  On Unix-like systems, once the <<<sssom-cli>>> program has been tested
+  to work as shown above, it may then be copied (or moved) into any
+  directory that is listed in the system’s (or user’s) <PATH>.
+  
+  For example, on most systems it can be moved to <<</usr/local/bin>>>,
+  from where it will then be available to any user on the system. 

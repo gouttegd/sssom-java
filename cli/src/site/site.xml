@@ -6,6 +6,8 @@
   <body>
     <menu name="SSSOM-CLI">
       <item name="Usage" href="index.html" />
+      <item name="Installation" href="install.html" />
+      <item name="Examples" href="examples.html" />
     </menu>
   </body>
 </project>

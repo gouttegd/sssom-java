@@ -1,0 +1,128 @@
+    ------------------
+    SSSOM-CLI examples
+    ------------------
+
+SSSOM-CLI examples
+
+  This page is intended to illustrate some use cases for the
+  <<<sssom-cli>>> command-line tool.
+
+%{toc|section=1|fromDepth=2|toDepth=3}
+
+* 1. Validating sets
+
+  SSSOM-CLI automatically validates any mapping set it reads, so if you
+  need to validate a SSSOM file, all that is needed is to give it as
+  input to the tool:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-set.sssom.tsv
++-----------------------------------------------------------------------
+
+  If the file is valid, the command will print out the set and terminate
+  with an exit code of zero. Conversely, if the set is <not> valid, the
+  command will print an appropriate error message on the standard error
+  stream and terminate with a non-zero exit code.
+  
+  If you are only interested in knowing whether the set is valid, you
+  might want to use the <<<--no-stdout>>> option to disable printing the
+  set on the standard output stream:
+  
++-----------------------------------------------------------------------
+$ sssom-cli --no-stdout my-set.sssom.tsv
++-----------------------------------------------------------------------
+
+  If several input sets are specified, each set is validated before the
+  next set is read, and the command terminates as soon as one set is
+  found to be invalid.
+  
+  Use the <<<--lax>>> option to relax the validation rules and force the
+  command to silently accept some sets that would normally be rejected.
+  
+* 2. File conversions
+
+** 2.1. Conversion between formats
+
+  SSSOM-CLI can read a SSSOM file in any of the following formats: TSV,
+  CSV, JSON, and RDF/Turtle. It can likewise write a file in any of
+  those formats.
+  
+  If the recommended file extensions (<<<.sssom.tsv>>>,
+  <<<.sssom.csv>>>, <<<.sssom.json>>>, or <<<.ttl>>>) are used, then
+  converting from one format to another is simply a matter of using the
+  <<<--output>>> option. For example, to convert from TSV to JSON:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-set.sssom.tsv --output my-set.sssom.json
++-----------------------------------------------------------------------
+
+  Use the <<<--output-format>>> to explicitly specify the format of the
+  output file, if that file uses another extension than the one
+  recommended for the intended format:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-set.sssom.tsv --outout my-set.dat --output-format json
++-----------------------------------------------------------------------
+
+  Note that conversion to OWL is <not> supported by SSSOM-CLI. Instead,
+  it is handled by the {{{../sssom-robot/index.html}ROBOT plugin}} and
+  its <<<sssom:inject>>> command:
+  
++-----------------------------------------------------------------------
+$ robot sssom:inject --sssom my-set.sssom.tsv \
+                     --create --direct \
+                     --output my-set.ofn
++-----------------------------------------------------------------------
+
+** 2.2. Conversion to the latest version of the specification
+
+  SSSOM-CLI will always write the output set so that it is compliant
+  with the latest version of the specification. Therefore, if you have a
+  set compliant with some prior version, simply running it through
+  SSSOM-CLI once will automatically convert it to the latest version:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-old-set.sssom.tsv --output my-new-set.sssom.tsv
++-----------------------------------------------------------------------
+
+** 2.3. Conversion between embedded and external metadata
+
+  By default, when the output format is SSSOM/TSV, the mapping set
+  metadata are written in <embedded> mode.
+  
+  Assuming the file <<<my-set.sssom.tsv>>> does not contain any mapping
+  set metadata, but that said metadata are instead contained in a file
+  named <<<my-set.sssom.yml>>>, then with the following command:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-set.sssom.tsv --output embedded.sssom.tsv
++-----------------------------------------------------------------------
+
+  the newly created <<<embedded.sssom.tsv>>> file will be an embedded
+  version of the original file.
+  
+  To perform the opposite operation (converting a file that contains
+  embedded metadata into two files, one containing the TSV section and
+  one containing the metadata), use the <<<--metadata-output>>> option:
+  
++-----------------------------------------------------------------------
+$ sssom-cli embedded.sssom.tsv --output myset.sssom.tsv \
+                               --metadata-output myset.sssom.yml
++-----------------------------------------------------------------------
+
+* 3. Merging sets
+
+  If SSSOM-CLI is provided with several input sets, they are all merged
+  into a single set:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-first-set.sssom.tsv my-second-set.sssom.tsv \
+            --output my-merged-set.sssom.tsv
++-----------------------------------------------------------------------
+
+  The input sets may not necessarily be in the same format:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-first-set.sssom.json my-second-set.ttl \
+            --output my-merged-set.sssom.tsv
++-----------------------------------------------------------------------

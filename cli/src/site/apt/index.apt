@@ -10,6 +10,11 @@ Command-line tool
   SSSOM-CLI acts as a filter that can read one or more mapping set(s),
   perform some treatments on the mappings, and then write the resulting
   mapping set out.
+  
+  This page attempts to provide a comprehensive list of the features and
+  options of the <<<sssom-cli>>> tool. To get started, you might want to
+  look at the {{{./install.html}installation instructions}} or the
+  {{{./examples.html}examples}}.
 
 %{toc|section=1|fromDepth=2|toDepth=3}
 
