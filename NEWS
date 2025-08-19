@@ -1,3 +1,11 @@
+Changes in sssom-java 1.8.2
+---------------------------
+
+    * core:
+      * Add support for new special cardinality value `0:0`.
+      * Use special cardinality values that represent an absence of match.
+
+
 Changes in sssom-java 1.8.1
 ---------------------------
 
