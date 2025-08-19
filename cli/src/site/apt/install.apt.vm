@@ -21,8 +21,9 @@ Installing SSSOM-CLI
   – improperly as the actual virtual machine is in fact only a part of
   the runtime environment) to run.
   
-  SSSOM-Java needs a JRE for Java version 11 at a minimum. It has been
-  also been tested with Java 17 and Java 21.
+  SSSOM-Java needs a JRE for Java version 11 at a minimum, and should
+  work with any more recent version (it has explicitly been tested
+  against Java 17 and Java 21).
   
   On most GNU/Linux distributions, a JRE should likely be available in
   the distribution’s package repository. For example, on Debian (and

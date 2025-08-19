@@ -110,6 +110,33 @@ $ sssom-cli embedded.sssom.tsv --output myset.sssom.tsv \
                                --metadata-output myset.sssom.yml
 +-----------------------------------------------------------------------
 
+** 2.4. Conversion between “condensed” and “propagated” forms
+
+  By defaut, SSSOM-CLI always write the output set in “condensed” form
+  whenever possible, following the {{{https://mapping-commons.github.io/sssom/spec-model/#propagation-of-mapping-set-slots}rules}}
+  set forth in the SSSOM specification.
+  
+  That is, when all mapping records in a set have the same value for a
+  slot that is marked as “propagatable” (for example, <<<mapping_tool>>>
+  or <<<subject_source>>>), that value is moved into the set-level
+  metadata, so that it is written only once. This is a process called
+  “condensation”.
+  
+  Condensation normally never results in loss of information, since
+  SSSOM consumers should automatically perform the reverse operation
+  (“propagation”) whenever they read a SSSOM set that is in condensed
+  form.
+  
+  However, there may be cases where you’d want to convert a set in
+  condensed form into its equivalent non-condensed (or “propagated”)
+  form – for example, if the set is to be used by a tool that does <not>
+  support propagation. This can be done with the <<<--no-condensation>>>
+  option:
+  
++-----------------------------------------------------------------------
+$ sssom-cli condensed.sssom.tsv --no-condensation --output non-condensed.sssom.tsv
++-----------------------------------------------------------------------
+
 * 3. Merging sets
 
   If SSSOM-CLI is provided with several input sets, they are all merged
@@ -126,3 +153,239 @@ $ sssom-cli my-first-set.sssom.tsv my-second-set.sssom.tsv \
 $ sssom-cli my-first-set.sssom.json my-second-set.ttl \
             --output my-merged-set.sssom.tsv
 +-----------------------------------------------------------------------
+
+* 4. Reconciliating IRI prefixes
+
+  You can use an {{{https://github.com/cthoyt/curies/blob/main/docs/source/struct.rst#extended-prefix-maps}Extended Prefix Map}}
+  (EPM) to tweak the prefix map embedded within a SSSOM file and ensure
+  that all declared prefix names are expanded to a “preferred” or
+  “canonical” IRI prefix.
+  
+  For example, suppose you have the following set:
+  
++-----------------------------------------------------------------------
+#curie_map:
+#  FBbt: "http://flybase.org/cgi-bin/fbcvq.html?query=FBbt:"
+#  UBERON: http://purl.obolibrary.org/obo/UBERON_
+#mapping_set_id: https://example.org/sets/fbbt-uncanonical-iris
+#mapping_set_title: FBbt to Uberon mappings with non-canonical FBbt IRIs
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id      predicate_id                    object_id        mapping_justification
+FBbt:00000001   semapv:crossSpeciesExactMatch   UBERON:0000468   semapv:ManualMappingCuration
+FBbt:00000002   semapv:crossSpeciesExactMatch   UBERON:6000002   semapv:ManualMappingCuration
+FBbt:00000003   semapv:crossSpeciesExactMatch   UBERON:0000914   semapv:ManualMappingCuration
+FBbt:00000004   semapv:crossSpeciesExactMatch   UBERON:0000033   semapv:ManualMappingCuration
+FBbt:00000004   semapv:crossSpeciesExactMatch   UBERON:6000004   semapv:ManualMappingCuration
+FBbt:00000005   semapv:crossSpeciesExactMatch   UBERON:6000005   semapv:ManualMappingCuration
+FBbt:00000006   semapv:crossSpeciesExactMatch   UBERON:6000006   semapv:ManualMappingCuration
+FBbt:00000007   semapv:crossSpeciesExactMatch   UBERON:6000007   semapv:ManualMappingCuration
++-----------------------------------------------------------------------
+
+  and that you’d rather have the <<<FBbt:>>> prefix name expanded to the
+  <<<http://purl.obolibrary.org/obo/FBbt_>>> prefix.
+  
+  If you have an Extended Prefix Map that (1) associates the <<<FBbt:>>>
+  prefix name to the “canonical” prefix <<<http://purl.obolibrary.org/obo/FBbt_>>>
+  and (2) declares <<<http://flybase.org/cgi-bin/fbcvq.html?query=FBbt:>>>
+  to be a “synonym” for that prefix, as in:
+  
++-----------------------------------------------------------------------
+[
+    {
+        "pattern": "^\\d{8}$",
+        "prefix": "FBbt",
+        "uri_prefix": "http://purl.obolibrary.org/obo/FBbt_",
+        "uri_prefix_synonyms": [
+            "http://bio2rdf.org/fbbt:",
+            "http://bioregistry.io/FBbt:",
+            "http://bioregistry.io/FBbt_root:",
+            "http://bioregistry.io/fbbt:",
+            "http://flybase.org/cgi-bin/fbcvq.html?query=FBbt:",
+            "http://www.ebi.ac.uk/ols/ontologies/fbbt/terms?iri=http://purl.obolibrary.org/obo/FBbt_",
+            "https://bio2rdf.org/fbbt:",
+            "https://bioregistry.io/FBbt:",
+            "https://bioregistry.io/FBbt_root:",
+            "https://bioregistry.io/fbbt:",
+            "https://flybase.org/cgi-bin/fbcvq.html?query=FBbt:",
+            "https://purl.obolibrary.org/obo/FBbt_",
+            "https://www.ebi.ac.uk/ols/ontologies/fbbt/terms?iri=http://purl.obolibrary.org/obo/FBbt_"
+        ]
+    }
+}
++-----------------------------------------------------------------------
+
+  then you can use SSSOM-CLI’s <<<--epm>>> option to apply the EPM to
+  the mapping set and and make sure that the prefix map always use only
+  the canonical prefix for any prefix name:
+  
++-----------------------------------------------------------------------
+$ sssom-cli uncanonical-iris.sssom.tsv \
+            --epm my-extended-prefix-map.json \
+            --output canonical-iris.sssom.tsv
++-----------------------------------------------------------------------
+
+  (Of course, in this particularly simplistic example, using an extended
+  prefix map might seem a overly complicated solution, since it would be
+  quite easy to just “manually” edit the incorrect prefix declaration in
+  the set’s own prefix map. But an extended prefix map would come in
+  handy if you don’t know beforehand which prefix declarations need to
+  be corrected, if any: you can just apply a blanket EPM covering all
+  the prefixes you care about – after that, you can be sure that your
+  mapping set is only using “canonical” prefixes.)
+  
+* 5. Filtering mapping records
+
+  SSSOM-CLI allows to use the {{{../sssom-ext/sssom-transform.html}SSSOM/Transform}}
+  language to precisely compose the output set by excluding and/or
+  including specific mapping records.
+  
+** 5.1. Keeping only records with a subject in a given namespace
+
+  Say we only want to keep mapping records where the object side is a
+  UBERON entity. This could be done with:
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --include "object==UBERON:*" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  This is exactly equivalent to
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --rule "object==UBERON:* -> include()" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  That is, <<<--include "EXPRESSION">>> is a syntactic shortcut for
+  <<<--rule "EXPRESSION -> include()">>>.
+
+  The <<<-p>>> option (also called <<<--prefix-map-from-input>>>) allows
+  to automatically use the prefix names declared in the set’s own prefix
+  map. Here, this is assuming that the set declares a <<<UBERON:>>>
+  prefix name.
+  
+  If you are not sure of the prefix name used within the set (for
+  example, maybe the set is using <<<uberon:>>> instead), you might
+  prefer to include your own declaration, just to be sure:
+  
++-----------------------------------------------------------------------
+$ sssom-cli my-set.sssom.tsv \
+            --prefix=UBERON=http://purl.obolibrary.org/obo/UBERON_ \
+            --include "object==UBERON:*" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  (In the remaining examples, for brevity’s sake we will assume that all
+  the required prefix names are declared exactly as we expect in the
+  input set, so that we can rely solely on the <<<-p>>> option.)
+
+  Instead of <including> all mapping records with a UBERON object, you
+  can also <excluding> all records with a non-UBERON object:
+
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --exclude "!object==UBERON:*" \
+            --include-all \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  The <<<--exclude "!object==UBERON:*">>> rule causes all records with a
+  non-UBERON object to be dropped, then the <<<--include-all>>> rule
+  causes all the remaining records (which, at this point, can only be
+  records with a UBERON object) to be included in the final set (this
+  option is absolutely necessary here because the SSSOM/Transform
+  ruleset must always include at least one “include” rule, otherwise the
+  final set would be completely empty).
+  
+  This is equivalent to
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --rule "!object==UBERON:* -> stop()" \
+            --rule "predicate==* -> include()" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  That is, <<<--exclude "EXPRESSION">>> is a syntactic shortcut for
+  <<<--rule "EXPRESSION -> stop()">>> (which causes the records matching
+  the expression to be dropped) and <<<--include-all>>> is a syntactic
+  shortcut for a rule that unconditionally includes all remaining
+  records.
+
+** 5.2. Keeping only records with either subject or object in a given namespace
+
+  Say that we want to keep all records where <either> the subject or the
+  object is a UBERON entity. This could be done with:
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --include "subject==UBERON:*" \
+            --include "object==UBERON:*" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  or, using a single rule:
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --include "subject==UBERON:* || object==UBERON:*" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  Say that, in addition to only keeping records with a UBERON subject or
+  object, we also want to force the “orientation” of those records so
+  that the UBERON entities are always on the object side. Here is one
+  way to do it:
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --rule "subject==UBERON:* -> invert()" \
+            --rule "object==UBERON:* -> include()" \
+            --output uberon.sssom.tsv
++-----------------------------------------------------------------------
+
+  The first rule (<<<subject==UBERON:* -> invert()>>>) takes all records
+  with a UBERON subject and inverts them, so that they become records
+  with a UBERON <object>. Then the second rule takes all records with a
+  UBERON object (which means both the records that already had a UBERON
+  object to begin with, and the records that we have just inverted) and
+  includes them in the output set.
+  
+* 6. Editing mapping records
+
+  The SSSOM/Transform language used for filtering (as shown in the
+  previous section) may also be used to modify the mapping records.
+  
+** 6.1. Adding a <<<object_source>>> based on the object prefix
+
+  Say that we have a mapping set with records whose object is either a
+  CL entity or a UBERON entity. We want to enrich those records so that
+  they contain a <<<object_source>>> slot pointing to either
+  <<<http://purl.obolibrary.org/obo/uberon.owl>>> or
+  <<<http://purl.obolibrary.org/obo/cl.owl>>>, respectively.
+  
+  This can be done as follows:
+  
++-----------------------------------------------------------------------
+$ sssom-cli -p my-set.sssom.tsv \
+            --prefix=obo=http://purl.obolibrary.org/obo/ \
+            --rule "object==UBERON:* -> assign('object_source', obo:uberon.owl)" \
+            --rule "object==CL:* -> assign('object_source', obo:cl.owl)" \
+            --include-all \
+            --output uberon-cl.sssom.tsv
++-----------------------------------------------------------------------
+
+  Note that we explicitly declare a <<<obo:>>> prefix name. This is for
+  two reasons. First, it dispenses us from having to write the full IRI
+  in the two rules. Second, it satisfies an idiosyncrasy of the
+  SSSOM/TSV format, which is that semantic identifiers MUST always be
+  written in their shortened, “CURIE” form – which implies that we must
+  have a suitable prefix to shorten <<<http://purl.obolibrary.org/obo/uberon.owl>>>
+  into a CURIE form.
+  
+  Note also the <<<--include-all>>> rule, which is again needed to
+  ensure the records end up in the output set – the two “assign” rules
+  modify the records that they are applied to but do <not> select them
+  for inclusion in the output set.
