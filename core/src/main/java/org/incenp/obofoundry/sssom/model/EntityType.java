@@ -28,40 +28,52 @@ import com.fasterxml.jackson.annotation.JsonCreator;
  * Represents the type of an entity that is being mapped.
  */
 public enum EntityType {
-    OWL_CLASS("http://www.w3.org/2002/07/owl#Class"),
-    OWL_OBJECT_PROPERTY("http://www.w3.org/2002/07/owl#ObjectProperty"),
-    OWL_DATA_PROPERTY("http://www.w3.org/2002/07/owl#DataProperty"),
-    OWL_ANNOTATION_PROPERTY("http://www.w3.org/2002/07/owl#AnnotationProperty"),
-    OWL_NAMED_INDIVIDUAL("http://www.w3.org/2002/07/owl#NamedIndividual"),
-    SKOS_CONCEPT("http://www.w3.org/2004/02/skos/core#Concept"),
-    RDFS_RESOURCE("http://www.w3.org/2000/01/rdf-schema#Resource"),
-    RDFS_CLASS("http://www.w3.org/2000/01/rdf-schema#Class"),
-    RDFS_LITERAL("http://www.w3.org/2000/01/rdf-schema#Literal"),
-    RDFS_DATATYPE("http://www.w3.org/2000/01/rdf-schema#Datatype"),
-    RDF_PROPERTY("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property"),
+    OWL_CLASS("http://www.w3.org/2002/07/owl#Class", "owl:Class"),
+    OWL_OBJECT_PROPERTY("http://www.w3.org/2002/07/owl#ObjectProperty", "owl:ObjectProperty"),
+    OWL_DATA_PROPERTY("http://www.w3.org/2002/07/owl#DataProperty", "owl:DataProperty"),
+    OWL_ANNOTATION_PROPERTY("http://www.w3.org/2002/07/owl#AnnotationProperty", "owl:AnnotationProperty"),
+    OWL_NAMED_INDIVIDUAL("http://www.w3.org/2002/07/owl#NamedIndividual", "owl:NamedIndividual"),
+    SKOS_CONCEPT("http://www.w3.org/2004/02/skos/core#Concept", "skos:Concept"),
+    RDFS_RESOURCE("http://www.w3.org/2000/01/rdf-schema#Resource", "rdfs:Resource"),
+    RDFS_CLASS("http://www.w3.org/2000/01/rdf-schema#Class", "rdfs:Class"),
+    RDFS_LITERAL("http://www.w3.org/2000/01/rdf-schema#Literal", "rdfs:Literal"),
+    RDFS_DATATYPE("http://www.w3.org/2000/01/rdf-schema#Datatype", "rdfs:Datatype"),
+    RDF_PROPERTY("http://www.w3.org/1999/02/22-rdf-syntax-ns#Property", "rdf:Property"),
     COMPOSED_ENTITY_EXPRESSION("https://w3id.org/sssom/ComposedEntityExpression");
 
     private final static Map<String, EntityType> MAP;
     private final static Map<String, EntityType> URI_MAP;
+    private final static Map<String, EntityType> SYN_MAP;
 
     static {
         Map<String, EntityType> map = new HashMap<String, EntityType>();
         Map<String, EntityType> uri_map = new HashMap<String, EntityType>();
+        Map<String, EntityType> syn_map = new HashMap<String, EntityType>();
         for ( EntityType value : EntityType.values() ) {
             map.put(value.toString(), value);
             if ( value.iri != null ) {
                 uri_map.put(value.iri, value);
             }
+            if ( value.synonym != null ) {
+                syn_map.put(value.synonym, value);
+            }
         }
 
         MAP = Collections.unmodifiableMap(map);
         URI_MAP = Collections.unmodifiableMap(uri_map);
+        SYN_MAP = Collections.unmodifiableMap(syn_map);
     }
 
     private String iri;
+    private String synonym;
 
     EntityType(String iri) {
         this.iri = iri;
+    }
+
+    EntityType(String iri, String synonym) {
+        this.iri = iri;
+        this.synonym = synonym;
     }
 
     @Override
@@ -89,6 +101,26 @@ public enum EntityType {
     @JsonCreator
     public static EntityType fromString(String v) {
         return MAP.get(v);
+    }
+
+    /**
+     * Parses a string into a entity type enum value.
+     * <p>
+     * This is similar to {@link #fromString(String)}, but optionally allows to
+     * recognise “synonyms”.
+     * 
+     * @param v   The string to parse.
+     * @param lax If {@code true}, will attempt to match the provided value against
+     *            known synonyms of the expected values.
+     * @return The corresponding enumeration value, or {@code null} if the provided
+     *         value does not match any entity type.
+     */
+    public static EntityType fromString(String v, boolean lax) {
+        EntityType et = MAP.get(v);
+        if ( et == null && lax ) {
+            et = SYN_MAP.get(v);
+        }
+        return et;
     }
 
     /**

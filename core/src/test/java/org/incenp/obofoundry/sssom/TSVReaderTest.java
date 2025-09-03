@@ -787,6 +787,27 @@ public class TSVReaderTest {
         }
     }
 
+    @Test
+    void testAcceptingLaxEnumValues() throws IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-lax-enum-values.sssom.tsv");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals(Version.SSSOM_1_1, ms.getSssomVersion());
+            Assertions.assertEquals(EntityType.OWL_CLASS, ms.getMappings().get(0).getSubjectType());
+            Assertions.assertEquals(EntityType.OWL_ANNOTATION_PROPERTY, ms.getMappings().get(1).getSubjectType());
+            Assertions.assertEquals(EntityType.OWL_OBJECT_PROPERTY, ms.getMappings().get(2).getSubjectType());
+            Assertions.assertEquals(EntityType.OWL_DATA_PROPERTY, ms.getMappings().get(3).getSubjectType());
+            Assertions.assertEquals(EntityType.RDFS_RESOURCE, ms.getMappings().get(4).getSubjectType());
+            Assertions.assertEquals(EntityType.RDFS_CLASS, ms.getMappings().get(5).getSubjectType());
+            Assertions.assertEquals(EntityType.RDF_PROPERTY, ms.getMappings().get(6).getSubjectType());
+            Assertions.assertEquals(EntityType.SKOS_CONCEPT, ms.getMappings().get(7).getSubjectType());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());

@@ -59,7 +59,7 @@ public class EntityTypeSlot<T> extends Slot<T> {
         if ( value != null ) {
             et = EntityType.fromIRI(value);
             if ( et == null ) {
-                et = EntityType.fromString(value);
+                et = EntityType.fromString(value, true);
             }
             if ( et == null ) {
                 throw new IllegalArgumentException();
