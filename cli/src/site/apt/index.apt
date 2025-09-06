@@ -320,7 +320,18 @@ sssom-cli set.sssom.tsv:metadata.yaml
   property that gives meaning to the extension, but in RDF extension
   slots are always represented by their property anyway).
   
-** 2.7. Other options
+** 2.7. Enforcing a specific SSSOM version
+
+  By default, the result set may be compliant with any SSSOM version
+  currently supported by SSSOM-Java (depending on the contents of the
+  set).
+  
+  To force the result set to be compliant with a specific version, use
+  the <<<--force-version=X.Y>>> option, where <X.Y> is the desired
+  version. This will forcibly remove all slots within the set that are
+  not compliant with the desired version.
+  
+** 2.8. Other options
 
   By default, the <<<mapping_cardinality>>> slot is excluded from the
   result set. This is because that slot is considered (at least by the

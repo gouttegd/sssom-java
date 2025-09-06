@@ -1,0 +1,7 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/exo2c
+#license: https://creativecommons.org/licenses/by/4.0/
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	curation_rule_text
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	a curation rule

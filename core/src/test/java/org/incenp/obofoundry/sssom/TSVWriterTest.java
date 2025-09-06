@@ -401,6 +401,25 @@ public class TSVWriterTest {
         assertWrittenAsExpected(ms, "test-writing-sssom11-version", null, null, null);
     }
 
+    @Test
+    void testWriteForVersion() throws IOException {
+        MappingSet ms = getTestSet();
+        ms.getMappings().get(0).getCurationRuleText(true).add("a curation rule");
+        ms.setMappingToolId("https://example.org/entities/9999");
+
+        File written = new File("src/test/resources/sets/test-enforce-sssom10.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.setTargetVersion(Version.SSSOM_1_0);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/sets/test-enforce-sssom10.tsv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
+    }
+
     /*
      * Checks that a mapping set is written exactly as we expect. This method will
      * write the provided set to a temporary file and compares the written file with

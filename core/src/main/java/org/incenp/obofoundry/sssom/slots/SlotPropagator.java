@@ -83,6 +83,20 @@ public class SlotPropagator {
     }
 
     /**
+     * Creates a new instance with the specified propagation policy and highest
+     * version.
+     * 
+     * @param policy     The default propagation policy to use.
+     * @param maxVersion The default highest version of the SSSOM specification that
+     *                   sets should remain compliant with after propagation or
+     *                   condensation.
+     */
+    public SlotPropagator(PropagationPolicy policy, Version maxVersion) {
+        this.policy = policy;
+        this.maxVersion = maxVersion;
+    }
+
+    /**
      * Sets the propagation policy to use. The new policy will be used in all
      * subsequent calls to {@link #propagate(MappingSet)} and
      * {@link #condense(MappingSet, boolean)}.

@@ -28,6 +28,7 @@ import java.util.UUID;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.slots.EntityReferenceSlot;
 import org.incenp.obofoundry.sssom.slots.SlotHelper;
 import org.incenp.obofoundry.sssom.slots.SlotPropagator;
@@ -43,6 +44,7 @@ public abstract class SSSOMWriter {
 
     protected ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
     protected PropagationPolicy condensationPolicy = PropagationPolicy.NeverReplace;
+    protected Version targetVersion = Version.LATEST;
     protected ExtensionSlotManager extensionManager;
     protected PrefixManager prefixManager = new PrefixManager();
     private boolean customMap = false;
@@ -84,6 +86,19 @@ public abstract class SSSOMWriter {
     }
 
     /**
+     * Sets the highest version of the SSSOM specification that the written set must
+     * be compliant with.
+     * <p>
+     * Any slot that is defined in a higher version will be forcibly removed.
+     * 
+     * @param targetVersion The targeted SSSOM version. The default is the highest
+     *                      currently supported version.
+     */
+    public void setTargetVersion(Version targetVersion) {
+        this.targetVersion = targetVersion;
+    }
+
+    /**
      * Enables or disables sorting the mappings when writing them.
      * 
      * @param enabled {@code False} to disable sorting; it is enabled by default.
@@ -119,6 +134,10 @@ public abstract class SSSOMWriter {
         extensionManager = new ExtensionSlotManager(extraPolicy, prefixManager);
         extensionManager.fillFromExistingExtensions(mappingSet);
         mappingSet.setExtensionDefinitions(extensionManager.getDefinitions(true, false));
+
+        if ( targetVersion != Version.LATEST ) {
+            targetVersion.enforceCompliance(mappingSet);
+        }
 
         if ( sortMappings ) {
             mappingSet.getMappings().sort(new DefaultMappingComparator());
@@ -183,7 +202,7 @@ public abstract class SSSOMWriter {
      *         (may be empty if no slots have been condensed at all).
      */
     protected Set<String> condenseSet(MappingSet mappingSet) {
-        return new SlotPropagator(condensationPolicy).condense(mappingSet, true);
+        return new SlotPropagator(condensationPolicy, targetVersion).condense(mappingSet, true);
     }
 
     /*

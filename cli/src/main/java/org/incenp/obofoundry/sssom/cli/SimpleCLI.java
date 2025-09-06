@@ -290,6 +290,12 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "--no-stdout" },
                 description = "Do not write the result set on standard output.")
         boolean noStandardOutput;
+
+        @Option(names = "--force-version",
+                paramLabel = "VERSION",
+                converter = VersionConverter.class,
+                description = "The version of the SSSOM specification the result set must be compliant with. Default is the latest supported version.")
+        Version forceVersion = Version.LATEST;
     }
 
     enum OutputMapSource {
@@ -716,6 +722,7 @@ public class SimpleCLI implements Runnable {
         writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
         writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
         writer.setSortingEnabled(outputOpts.sortMappings);
+        writer.setTargetVersion(outputOpts.forceVersion);
         return writer;
     }
 

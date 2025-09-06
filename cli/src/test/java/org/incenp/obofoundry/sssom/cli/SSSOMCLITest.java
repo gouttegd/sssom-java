@@ -297,6 +297,12 @@ public class SSSOMCLITest {
                 new String[] { "--output-format", "JSON", "--no-sorting" });
     }
 
+    @Test
+    void testEnforceOutputVersion() throws IOException {
+        TestUtils.runCommand(0, new String[] { "test-sssom11-slots-with-version.sssom.tsv" },
+                "test-enforce-sssom10.sssom.tsv", new String[] { "--force-version", "1.0" });
+    }
+
     /*
      * Playing with propagation/condensation
      */
