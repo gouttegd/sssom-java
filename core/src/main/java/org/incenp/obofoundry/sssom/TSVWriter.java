@@ -182,7 +182,7 @@ public class TSVWriter extends SSSOMWriter {
         Set<String> condensedSlots = condenseSet(mappingSet);
 
         // Determine minimum compliant version
-        mappingSet.setSssomVersion(new Validator().getCompliantVersion(mappingSet));
+        mappingSet.setSssomVersion(Version.getCompliantVersion(mappingSet));
 
         // Write the metadata
         MappingSetSlotVisitor v = new MappingSetSlotVisitor(metaWriter == null ? "#" : "");

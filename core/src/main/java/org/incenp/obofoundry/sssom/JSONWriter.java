@@ -136,7 +136,7 @@ public class JSONWriter extends SSSOMWriter {
         Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
 
         // Determine minimum compliant version
-        mappingSet.setSssomVersion(new Validator().getCompliantVersion(mappingSet));
+        mappingSet.setSssomVersion(Version.getCompliantVersion(mappingSet));
 
         startDict();
 

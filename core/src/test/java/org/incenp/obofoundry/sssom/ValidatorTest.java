@@ -19,14 +19,9 @@
 package org.incenp.obofoundry.sssom;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.EnumSet;
 
-import org.incenp.obofoundry.sssom.model.EntityType;
-import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -183,47 +178,5 @@ public class ValidatorTest {
         Assertions.assertFalse(errors.isEmpty());
         Assertions.assertFalse(errors.contains(ValidationError.MISSING_SET_ID));
         Assertions.assertFalse(errors.contains(ValidationError.MISSING_LICENSE));
-    }
-
-    @Test
-    void testGetCompliantVersion() {
-        MappingSet set = new MappingSet();
-        Validator v = new Validator();
-
-        // Empty set is compliant with 1.0
-        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
-
-        // A set with only slots from 1.0 is compliant with 1.0
-        set.setComment("A comment");
-        set.setPublicationDate(LocalDate.now());
-        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
-
-        // A set with a slot from 1.1 is compliant with 1.1
-        set.setPredicateType(EntityType.RDF_PROPERTY);
-        Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
-
-        // Unless the slot is sssom_version
-        set = MappingSet.builder().sssomVersion(Version.SSSOM_1_1).build();
-        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
-
-        // A set with only 1.0 metadata slots but containing mappings with 1.1 slots
-        // requires 1.1
-        set = MappingSet.builder().comment("A comment").mappings(new ArrayList<>()).build();
-        set.getMappings().add(Mapping.builder().subjectType(EntityType.COMPOSED_ENTITY_EXPRESSION).build());
-        Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
-    }
-
-    @Test
-    void testRecogniseSlotsAddedToMappingSetClass() {
-        MappingSet set = new MappingSet();
-        Validator v = new Validator();
-
-        // similarity_measure on a Mapping is compliant with 1.0
-        set.getMappings(true).add(Mapping.builder().similarityMeasure("similarity measure").build());
-        Assertions.assertEquals(Version.SSSOM_1_0, v.getCompliantVersion(set));
-
-        // similarity_measure on a MappingSet requires 1.1
-        set.setSimilarityMeasure("similarity measure");
-        Assertions.assertEquals(Version.SSSOM_1_1, v.getCompliantVersion(set));
     }
 }

@@ -48,7 +48,6 @@ import org.incenp.obofoundry.sssom.ExtensionSlotManager;
 import org.incenp.obofoundry.sssom.ExtraMetadataPolicy;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
-import org.incenp.obofoundry.sssom.Validator;
 import org.incenp.obofoundry.sssom.model.BuiltinPrefix;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
@@ -206,7 +205,7 @@ public class RDFConverter {
         Set<String> usedPrefixes = prefixManager != null ? new HashSet<String>() : null;
 
         // Determine mininum compliant version
-        ms.setSssomVersion(new Validator().getCompliantVersion(ms));
+        ms.setSssomVersion(Version.getCompliantVersion(ms));
 
         // Create the mapping set node
         Resource set = ms.getMappingSetId() != null ? Values.iri(ms.getMappingSetId())

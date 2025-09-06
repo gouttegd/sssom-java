@@ -19,6 +19,12 @@
 package org.incenp.obofoundry.sssom.model;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.incenp.obofoundry.sssom.VersionComplianceVisitor;
+import org.incenp.obofoundry.sssom.VersionEnforcerVisitor;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -89,6 +95,69 @@ public enum Version {
      */
     public boolean isCompatibleWith(Version target) {
         return (major == target.major) && (minor <= target.minor);
+    }
+
+    /**
+     * Ensures the provided mapping set is compatible with this version.
+     * <p>
+     * Any slot or slot value that requires a higher version will be forcibly
+     * removed from the set.
+     * 
+     * @param ms The set that must be made compliant with this version of the
+     *           specification.
+     */
+    public void enforceCompliance(MappingSet ms) {
+        if ( this == LATEST ) {
+            // Nothing to do to make a set compliant with the latest version
+            return;
+        }
+        SlotHelper.getMappingSetHelper().visitSlots(ms, new VersionEnforcerVisitor<MappingSet>(this));
+        VersionEnforcerVisitor<Mapping> v = new VersionEnforcerVisitor<Mapping>(this);
+        for ( Mapping m : ms.getMappings() ) {
+            SlotHelper.getMappingHelper().visitSlots(m, v);
+        }
+    }
+
+    /**
+     * Checks that the given mapping set is compatible with this version.
+     * 
+     * @param ms The set whose compliance must be checked.
+     * @return {@code true} if the set is compatible with this version, or
+     *         {@code false} if it requires a higher version.
+     */
+    public boolean isCompliant(MappingSet ms) {
+        return Version.getCompliantVersion(ms).isCompatibleWith(this);
+    }
+
+    /**
+     * Gets the minimum version of the SSSOM specification that the given set is
+     * compliant with.
+     * 
+     * @param ms The set whose compliance is to be checked.
+     * @return The earliest version of the SSSOM specification that defines all
+     *         slots and values required by the set.
+     */
+    public static Version getCompliantVersion(MappingSet ms) {
+        Set<Version> versions = new HashSet<>();
+
+        // Check minimal version required by set metadata
+        SlotHelper.getMappingSetHelper().visitSlots(ms, new VersionComplianceVisitor<MappingSet>(versions));
+        Version highest = Version.getHighestVersion(versions);
+        if ( highest == Version.LATEST || ms.getMappings() == null ) {
+            return highest;
+        }
+
+        // Then check the mappings themselves. If one mapping requires the highest
+        // supported version, then we can stop immediately, no need to loop over the
+        // entire set.
+        int nMappings = ms.getMappings().size();
+        VersionComplianceVisitor<Mapping> v = new VersionComplianceVisitor<>(versions);
+        for ( int i = 0; i < nMappings && highest != Version.LATEST; i++ ) {
+            SlotHelper.getMappingHelper().visitSlots(ms.getMappings().get(i), v);
+            highest = Version.getHighestVersion(versions);
+        }
+
+        return highest;
     }
 
     /**
