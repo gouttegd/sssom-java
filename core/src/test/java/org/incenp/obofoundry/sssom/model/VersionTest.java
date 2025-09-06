@@ -125,11 +125,13 @@ public class VersionTest {
         set.setComment("A comment");
         set.setPublicationDate(LocalDate.now());
         set.setMappingToolId("tool:id");
-        set.getMappings(true).add(Mapping.builder().subjectType(EntityType.COMPOSED_ENTITY_EXPRESSION).build());
+        set.getMappings(true).add(Mapping.builder().subjectType(EntityType.COMPOSED_ENTITY_EXPRESSION)
+                .predicateType(EntityType.OWL_ANNOTATION_PROPERTY).build());
 
         Version.SSSOM_1_0.enforceCompliance(set);
         Assertions.assertTrue(Version.SSSOM_1_0.isCompliant(set));
         Assertions.assertNull(set.getMappingToolId());
         Assertions.assertNull(set.getMappings().get(0).getSubjectType());
+        Assertions.assertNull(set.getMappings().get(0).getPredicateType());
     }
 }

@@ -36,7 +36,8 @@ public class VersionEnforcerVisitor<T> extends SlotVisitorBase<T> {
 
     @Override
     public void visit(EntityTypeSlot<T> slot, T object, EntityType value) {
-        if ( targetVersion == Version.SSSOM_1_0 && value == EntityType.COMPOSED_ENTITY_EXPRESSION ) {
+        if ( !slot.getCompliantVersion().isCompatibleWith(targetVersion)
+                || (targetVersion == Version.SSSOM_1_0 && value == EntityType.COMPOSED_ENTITY_EXPRESSION) ) {
             slot.setValue(object, (Object) null);
         }
     }
