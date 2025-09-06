@@ -23,8 +23,10 @@ import java.util.Set;
 
 import org.incenp.obofoundry.sssom.PropagationPolicy;
 import org.incenp.obofoundry.sssom.model.CommonPredicate;
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -250,6 +252,29 @@ public class SlotPropagatorTest {
         Assertions.assertTrue(condensed.isEmpty());
         Assertions.assertNull(ms.getMappingTool());
         Assertions.assertEquals("sample mapping tool", ms.getMappings().get(0).getMappingTool());
+    }
+
+    @Test
+    void testCondenseForTargetVersion() {
+        MappingSet ms = getSampleSet();
+        for ( Mapping m : ms.getMappings() ) {
+            m.setSubjectType(EntityType.OWL_CLASS);
+            // curation_rule_text has been added to the MappingSet class in 1.1
+            m.getCurationRuleText(true).add("a curation rule");
+        }
+
+        SlotPropagator sp = new SlotPropagator();
+        sp.setMaxVersion(Version.SSSOM_1_0);
+        Set<String> condensed = sp.condense(ms, false);
+
+        Assertions.assertTrue(condensed.contains("subject_type"));
+        Assertions.assertFalse(condensed.contains("curation_rule_text"));
+        Assertions.assertNull(ms.getCurationRuleText());
+
+        sp.setMaxVersion(Version.SSSOM_1_1);
+        condensed = sp.condense(ms, false);
+        Assertions.assertTrue(condensed.contains("curation_rule_text"));
+        Assertions.assertEquals(ms.getCurationRuleText().get(0), "a curation rule");
     }
 
     @Test

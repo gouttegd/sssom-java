@@ -21,12 +21,14 @@ package org.incenp.obofoundry.sssom.slots;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.incenp.obofoundry.sssom.PropagationPolicy;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 
 /**
  * A helper class to implement the propagation of slots from the mapping set
@@ -60,24 +62,15 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
  * </ul>
  */
 public class SlotPropagator {
-    private static Set<String> slots = new HashSet<String>();
 
-    static {
-        // Prepare the list of propagatable slots.
-        for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
-            if ( slot.isPropagatable() ) {
-                slots.add(slot.getName());
-            }
-        }
-    }
-
-    private PropagationPolicy policy;
+    private Set<String> slots = null;
+    private PropagationPolicy policy = PropagationPolicy.AlwaysReplace;
+    private Version maxVersion = Version.LATEST;
 
     /**
      * Creates a new instance using the default propagation policy (always replace).
      */
     public SlotPropagator() {
-        this.policy = PropagationPolicy.AlwaysReplace;
     }
 
     /**
@@ -98,6 +91,24 @@ public class SlotPropagator {
      */
     public void setStrategy(PropagationPolicy policy) {
         this.policy = policy;
+    }
+
+    /**
+     * Sets the highest version of the SSSOM specification to use for deciding which
+     * slots should be affected by propagation or condensation operations.
+     * <p>
+     * This property allows to deal with the fact that some slots have existed since
+     * version 1.0 but have only been added to the MappingSet class (and made
+     * propagatable) in version 1.1. If we want to produce a SSSOM 1.0 compliant
+     * set, such a slot must not condensed.
+     * 
+     * @param maxVersion The target SSSOM version.
+     */
+    public void setMaxVersion(Version maxVersion) {
+        if ( this.maxVersion != maxVersion ) {
+            this.maxVersion = maxVersion;
+            slots = null;
+        }
     }
 
     /**
@@ -129,7 +140,7 @@ public class SlotPropagator {
         // set level.
         Map<String, Object> values = new HashMap<String, Object>();
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setSlots(slots); // Visit only propagatable slots
+        setHelper.setSlots(getSlots()); // Visit only propagatable slots
         setHelper.visitSlots(mappingSet, (slot, m, value) -> values.put(slot.getName(), value));
 
         // Prepare to visit the slots on the individual mappings. We only need to visit
@@ -200,7 +211,7 @@ public class SlotPropagator {
         // slots.
         Map<String, Set<Object>> values = new HashMap<String, Set<Object>>();
         SlotHelper<Mapping> mappingHelper = SlotHelper.getMappingHelper(true);
-        mappingHelper.setSlots(new ArrayList<String>(slots), false);
+        mappingHelper.setSlots(new ArrayList<String>(getSlots()), false);
         for ( Mapping mapping : mappingSet.getMappings() ) {
             mappingHelper.visitSlots(mapping, (slot, m, value) -> values
                     .computeIfAbsent(slot.getName(), (s) -> new HashSet<Object>()).add(value), true);
@@ -209,7 +220,7 @@ public class SlotPropagator {
         // Visit the condensable slots on the mapping set level and set them to the
         // corresponding collected value.
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setSlots(slots);
+        setHelper.setSlots(getSlots());
         Set<String> condensedSlots = new HashSet<String>();
         ISimpleSlotVisitor<MappingSet, Void> v = (slot, ms, value) -> {
             String slotName = slot.getName();
@@ -248,6 +259,20 @@ public class SlotPropagator {
         }
 
         return condensedSlots;
+    }
+
+    private Set<String> getSlots() {
+        if ( slots == null ) {
+            slots = new HashSet<>();
+            List<Slot<MappingSet>> allSlots = maxVersion == Version.LATEST ? SlotHelper.getMappingSetHelper().getSlots()
+                    : SlotHelper.getMappingSetHelper().getSlots(maxVersion);
+            for ( Slot<MappingSet> slot : allSlots ) {
+                if ( slot.isPropagatable() ) {
+                    slots.add(slot.getName());
+                }
+            }
+        }
+        return slots;
     }
 
     private class NullifyVisitor<T> extends SlotVisitorBase<T> {

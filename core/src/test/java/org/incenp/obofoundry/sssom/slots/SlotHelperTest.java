@@ -22,10 +22,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.MappingSet;
+import org.incenp.obofoundry.sssom.model.Version;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -114,6 +117,18 @@ public class SlotHelperTest {
         Assertions.assertEquals(3, slots.size());
     }
     
+    @Test
+    void testGetSlotsForVersion() {
+        List<Slot<MappingSet>> slots = SlotHelper.getMappingSetHelper().getSlots(Version.SSSOM_1_0);
+        Set<String> slotNames = new HashSet<>();
+        for (Slot<MappingSet> slot : slots) {
+            slotNames.add(slot.getName());
+        }
+
+        Assertions.assertTrue(slotNames.contains("subject_type"));
+        Assertions.assertFalse(slotNames.contains("mapping_tool_id"));
+    }
+
     private class MappingSetTestVisitor extends SlotVisitorBase<MappingSet> {
         List<String> visitedValues = new ArrayList<String>();
 

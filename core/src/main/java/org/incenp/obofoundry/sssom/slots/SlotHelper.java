@@ -192,6 +192,25 @@ public class SlotHelper<T> {
     }
 
     /**
+     * Gets a subset of the current list of slots, containing only the slots that
+     * are compatible with the given version of the SSSOM specification.
+     * 
+     * @param maxVersion The version of the SSSOM specification for which to
+     *                   retrieve the slots.
+     * @return A list of all the slots that are compatible with the given SSSOM
+     *         version.
+     */
+    public List<Slot<T>> getSlots(Version maxVersion) {
+        ArrayList<Slot<T>> theSlots = new ArrayList<>();
+        for ( Slot<T> slot : slots ) {
+            if ( slot.getCompliantVersion().isCompatibleWith(maxVersion) ) {
+                theSlots.add(slot);
+            }
+        }
+        return theSlots;
+    }
+
+    /**
      * Gets the current list of slot names to be visited. They are listed in the
      * order they would be visited.
      * 
