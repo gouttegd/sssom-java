@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -917,6 +920,72 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
         case "semantic_similarity_score":
         case "similarity_score":
             filter = (mapping) -> testValue.apply(mapping.getSimilarityScore());
+            break;
+        }
+
+        return addFilter(new NamedFilter(asText, filter));
+    }
+
+    private LocalDate parseDate(String text) {
+        LocalDate value = null;
+        try {
+            value = LocalDate.parse(text, DateTimeFormatter.ISO_DATE);
+        } catch ( DateTimeParseException e ) {
+            errors.add(new SSSOMTransformError(String.format("Invalid date: %s", text)));
+        }
+        return value;
+    }
+
+    @Override
+    public IMappingFilter visitDateFilterItem(SSSOMTransformParser.DateFilterItemContext ctx) {
+        String fieldName = ctx.dateField().getText();
+        String asText;
+
+        Function<LocalDate, Boolean> testValue;
+
+        if ( ctx.EMPTY() != null ) {
+            asText = String.format("%s==|", fieldName);
+            testValue = (v) -> v == null;
+        } else {
+            String operator = ctx.numOp().getText();
+            LocalDate value = parseDate(ctx.DATE().getText());
+            if ( value == null ) {
+                return null;
+            }
+            asText = String.format("%s%s%s", fieldName, operator, value.toString());
+
+            switch ( operator ) {
+            case "==":
+            default:
+                testValue = (v) -> v != null && v.isEqual(value);
+                break;
+
+            case ">":
+                testValue = (v) -> v != null && v.isAfter(value);
+                break;
+
+            case ">=":
+                testValue = (v) -> v != null && (v.isEqual(value) || v.isAfter(value));
+                break;
+
+            case "<":
+                testValue = (v) -> v != null && v.isBefore(value);
+                break;
+
+            case "<=":
+                testValue = (v) -> v != null && (v.isEqual(value) || v.isBefore(value));
+                break;
+            }
+        }
+
+        IMappingFilter filter = null;
+        switch ( fieldName ) {
+        case "mapping_date":
+            filter = (mapping) -> testValue.apply(mapping.getMappingDate());
+            break;
+
+        case "publication_date":
+            filter = (mapping) -> testValue.apply(mapping.getPublicationDate());
             break;
         }
 

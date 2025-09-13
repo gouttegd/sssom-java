@@ -19,6 +19,7 @@ filterItem: idFilterItem
           | textFilterItem
           | multiTextFilterItem
           | numFilterItem
+          | dateFilterItem
           | cardFilterItem
           | predicateModifierFilterItem
           | entityTypeFilterItem
@@ -37,6 +38,9 @@ multiTextFilterItem         : mulTxField '==' string;
 
 numFilterItem               : numField numOp DOUBLE
                             | numField '==' EMPTY;
+
+dateFilterItem              : dateField numOp DATE
+                            | dateField '==' EMPTY;
 
 cardFilterItem              : cardField '==' CARDVALUE
                             | cardField '==' EMPTY;
@@ -115,6 +119,10 @@ numField  : 'confidence'
           | 'similarity_score'
           ;
 
+dateField : 'mapping_date'
+          | 'publication_date'
+          ;
+
 numOp     : '==' | '>' | '<' | '>=' | '<=';
 
 binaryOp  : '&&'
@@ -154,6 +162,8 @@ FUNCTION  : [a-zA-Z_] [a-zA-Z0-9_]+ '(';
 SQ_STRING : '\'' (SQ_ESCAPE|.)*? '\'';
 
 DQ_STRING : '"' (DQ_ESCAPE|.)*? '"';
+
+DATE      : [0-9][0-9][0-9][0-9] '-' [0-1][0-9] '-' [0-3][0-9];
 
 TAG       : [a-zA-Z0-9-]+;
 

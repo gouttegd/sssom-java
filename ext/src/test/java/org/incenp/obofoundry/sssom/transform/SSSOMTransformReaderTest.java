@@ -19,6 +19,7 @@
 package org.incenp.obofoundry.sssom.transform;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -345,6 +346,28 @@ public class SSSOMTransformReaderTest {
         checkFilter("!confidence==~ -> action();\n", one, true);
         checkFilter("!confidence==~ -> action();\n", half, true);
         checkFilter("!confidence==~ -> action();\n", none, false);
+    }
+
+    /*
+     * Test that a mapping is correctly selected by a filter on a date slot.
+     */
+    @Test
+    void testDateFilter() {
+        Mapping feb1 = Mapping.builder().mappingDate(LocalDate.of(2025, 2, 1)).build();
+
+        checkFilter("mapping_date==2025-02-01 -> action();\n", feb1, true);
+        checkFilter("publication_date==2025-02-01 -> action();\n", feb1, false);
+        checkFilter("publication_date==~ -> action();\n", feb1, true);
+
+        checkFilter("mapping_date==2025-02-02 -> action();\n", feb1, false);
+        checkFilter("mapping_date>2025-01-31 -> action();\n", feb1, true);
+        checkFilter("mapping_date>=2025-02-01 -> action();\n", feb1, true);
+        checkFilter("mapping_date<2025-02-01 -> action();\n", feb1, false);
+        checkFilter("mapping_date<=2025-02-01 -> action();\n", feb1, true);
+
+        // Test some invalid dates
+        parseRule("mapping_date==2025-02-49 -> action();", null);
+        parseRule("mapping_date==2025-02-39 -> action();", null);
     }
 
     /*

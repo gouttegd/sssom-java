@@ -252,20 +252,28 @@ creator==ORCID:*
   least one ORCID identifier. A mapping with no creator IDs or with only
   creator IDs of another type than ORCIDs will not match.
   
-*** 3.1.4. Filters on numeric slots
+*** 3.1.4. Filters on numeric and date slots
 
   For the two filters that act on numeric slots (<<<confidence>>> and
-  <<<similarity_score>>>), in addition to the equality operator
-  (<<<==>>>), it is possible to use one of the following inequality
-  operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and <<<\<=>>>. They have the
-  traditional meaning you could expect. For example:
+  <<<similarity_score>>>) and the two filters that act on date slots
+  (<<<mapping_date>>> and <<<publication_date>>>) in addition to the
+  equality operator (<<<==>>>), it is possible to use one of the
+  following inequality operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and
+  <<<\<=>>>. They have the traditional meaning you could expect. For
+  example:
   
 +-----------------------------------------------------------------------
 confidence>=0.8
 +-----------------------------------------------------------------------
 
   will match any mapping with a confidence value higher than or equal to
-  0.8.
+  0.8, and:
+  
++-----------------------------------------------------------------------
+publication_date>2025-02-01
++-----------------------------------------------------------------------
+
+  will match any mapping published after the 1st of February, 2025.
   
 *** 3.1.5. Filtering on mapping predicate
 
@@ -335,8 +343,8 @@ mapping_tool==""
 author==~
 +-----------------------------------------------------------------------
 
-  That syntax is also accepted by the filters on numeric slots and on
-  <<<mapping_cardinality>>>.
+  That syntax is also accepted by the filters on numeric slots, date
+  slots, and on <<<mapping_cardinality>>>.
   
 *** 3.1.8. Function filters
 
