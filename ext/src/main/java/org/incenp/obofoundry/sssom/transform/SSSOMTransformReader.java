@@ -730,6 +730,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
                     && mapping.getPredicateModifier() != PredicateModifier.NOT;
             break;
 
+        case "raw_predicate":
+            filter = (mapping) -> testValue.apply(mapping.getPredicateId());
+            break;
+
         case "record":
             filter = (mapping) -> testValue.apply(mapping.getRecordId());
             break;

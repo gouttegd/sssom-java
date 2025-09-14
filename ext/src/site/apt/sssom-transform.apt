@@ -285,6 +285,10 @@ publication_date>2025-02-01
   mapping will not be a match for the filter even if its predicate does
   correspond to the pattern that the filter is looking for.
   
+  To filter on the predicate <only> without taking any predicate
+  modifier into account, you may use the <<<raw_predicate==...>>>
+  filter.
+  
 *** 3.1.6. Filtering on cardinality
 
   Whenever the <<<mapping_cardinality==>>> filter is used, the SSSOM/T

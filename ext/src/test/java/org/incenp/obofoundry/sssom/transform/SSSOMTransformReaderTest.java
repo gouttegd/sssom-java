@@ -28,6 +28,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingCardinality;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -222,6 +223,33 @@ public class SSSOMTransformReaderTest {
         checkFilter("!subject==~ -> action();\n", org2, true);
         checkFilter("!subject==~ -> action();\n", empty, false);
         checkFilter("!subject==~ -> action();\n", none, false);
+    }
+
+    /*
+     * Test that is mapping is correctly selected by a filter on the predicate ID
+     * slot, taking into account predicate_modifier as needed.
+     */
+    @Test
+    void testPredicateFilter() {
+        Mapping exactMatch = Mapping.builder().predicateId("http://www.w3.org/2004/02/skos/core#exactMatch").build();
+        Mapping broadMatch = Mapping.builder().predicateId("http://www.w3.org/2004/02/skos/core#broadMatch").build();
+        Mapping notExactMatch = Mapping.builder().predicateId("http://www.w3.org/2004/02/skos/core#exactMatch")
+                .predicateModifier(PredicateModifier.NOT).build();
+
+        checkFilter("predicate==skos:exactMatch -> action();\n", exactMatch, true);
+
+        // False, predicate is not skos:exactMatch
+        checkFilter("predicate==skos:exactMatch -> action();\n", broadMatch, false);
+        // True, for the same reason
+        checkFilter("!predicate==skos:exactMatch -> action();\n", broadMatch, true);
+
+        // False since the skos:exactMatch predicate is negated
+        checkFilter("predicate==skos:exactMatch -> action();\n", notExactMatch, false);
+        // True, for the same reason
+        checkFilter("!predicate==skos:exactMatch -> action();\n", notExactMatch, true);
+
+        // True, even if predicate is negated
+        checkFilter("raw_predicate==skos:exactMatch -> action();\n", notExactMatch, true);
     }
 
     /*
