@@ -42,6 +42,7 @@ public class RDFWriter extends SSSOMWriter {
     private static final String PAV_NS = "http://purl.org/pav/";
 
     private org.eclipse.rdf4j.rio.RDFWriter writer;
+    private boolean directTriples = false;
 
     /**
      * Creates a new instance that will write data to the specified file.
@@ -76,6 +77,19 @@ public class RDFWriter extends SSSOMWriter {
         writer.getWriterConfig().set(BasicWriterSettings.INLINE_BLANK_NODES, true);
     }
 
+    /**
+     * Configures the writer to inject “direct triples” or not.
+     * 
+     * @param withDirectTriples If {@code true}, for every mapping record the writer
+     *                          will inject a triple of the form
+     *                          {@code ?subject_id ?predicate_id ?object_id .} in
+     *                          addition to the standard reified representation of
+     *                          the record.
+     */
+    public void setInjectDirectTriples(boolean withDirectTriples) {
+        directTriples = withDirectTriples;
+    }
+
     @Override
     protected void doWrite(MappingSet mappingSet) throws IOException {
         // We might need those prefixes as some SSSOM slots are represented in RDF using
@@ -83,7 +97,7 @@ public class RDFWriter extends SSSOMWriter {
         prefixManager.add("dcterms", DCTERMS_NS);
         prefixManager.add("pav", PAV_NS);
 
-        RDFConverter converter = new RDFConverter(extraPolicy);
+        RDFConverter converter = new RDFConverter(extraPolicy, directTriples);
         converter.excludeMappingSlots(condenseSet(mappingSet));
         Model rdfSet = converter.toRDF(mappingSet, prefixManager);
 

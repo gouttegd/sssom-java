@@ -285,6 +285,11 @@ sssom-cli set.sssom.tsv:metadata.yaml
   option is equivalent to using <<<--output-format json>>>,
   <<<--json-short-iris>>>, and <<<--json-write-ld-context>>> combined.
   
+  When writing to RDF Turtle, the <<<--rdf-direct-triples>>> option can
+  be used to enable the production of “direct triples” of the form
+  <<<?subject_id ?predicate_id ?object_id .>>>, in addition to the
+  standard reified representation of mapping records.
+  
 ** 2.5. Slot condensation
 
   By default, when writing the result set, “propagatable slots” are

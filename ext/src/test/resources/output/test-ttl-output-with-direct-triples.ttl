@@ -1,0 +1,63 @@
+@prefix COMENT: <https://example.com/entities/> .
+@prefix COMPID: <https://example.com/people/> .
+@prefix FBbt: <http://purl.obolibrary.org/obo/FBbt_> .
+@prefix ORGENT: <https://example.org/entities/> .
+@prefix ORGPID: <https://example.org/people/> .
+@prefix UBERON: <http://purl.obolibrary.org/obo/UBERON_> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix semapv: <https://w3id.org/semapv/vocab/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sssom: <https://w3id.org/sssom/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+FBbt:12345678 skos:closeMatch UBERON:1234567 .
+
+ORGENT:0001 skos:closeMatch COMENT:0011 .
+
+ORGENT:0002 skos:closeMatch COMENT:0012 .
+
+<https://example.org/sets/exo2c> a sssom:MappingSet;
+  dcterms:creator COMPID:0000-0000-0002-5678, ORGPID:0000-0000-0001-1234;
+  dcterms:license <https://creativecommons.org/licenses/by/4.0/>;
+  sssom:mappings [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource FBbt:12345678;
+      owl:annotatedTarget UBERON:1234567;
+      sssom:mapping_justification semapv:ManualMappingCuration
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0001;
+      owl:annotatedTarget COMENT:0011;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "alpha";
+      sssom:subject_label "alice";
+      sssom:subject_type owl:Class
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0002;
+      owl:annotatedTarget COMENT:0012;
+      sssom:confidence 7.0E-1;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "beta";
+      sssom:subject_label "bob";
+      sssom:subject_type owl:Class
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0003;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "Third entity";
+      sssom:object_type rdfs:Literal
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:exactMatch;
+      owl:annotatedSource ORGENT:0004;
+      owl:annotatedTarget sssom:NoTermFound;
+      sssom:mapping_justification semapv:ManualMappingCuration
+    ], [ a owl:Axiom;
+      owl:annotatedProperty skos:exactMatch;
+      owl:annotatedSource ORGENT:0005;
+      owl:annotatedTarget COMENT:0005;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:predicate_modifier sssom:NegatedPredicate
+    ] .

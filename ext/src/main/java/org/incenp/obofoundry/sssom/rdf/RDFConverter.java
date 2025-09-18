@@ -84,6 +84,7 @@ public class RDFConverter {
     private Version assumedVersion = Version.SSSOM_1_0;
     private int bnodeCounter;
     private Set<String> excludedSlots;
+    private boolean directTriples = false;
 
     /**
      * Creates a new instance with the default policy for converting non-standard
@@ -115,6 +116,22 @@ public class RDFConverter {
     public RDFConverter(ExtraMetadataPolicy policy, Version assumedVersion) {
         extraPolicy = policy;
         this.assumedVersion = assumedVersion;
+    }
+
+    /**
+     * Creates a new instance with an explicit policy for converting non-standard
+     * metadata and optionally inject direct triples for mapping records.
+     * 
+     * @param policy            The non-standard metadata policy.
+     * @param withDirectTriples If {@code true}, for every mapping record a direct
+     *                          triple of the form
+     *                          {@code ?subject_id ?predicate_id ?object_id .} will
+     *                          be injected, in addition to the standard reified
+     *                          form.
+     */
+    public RDFConverter(ExtraMetadataPolicy policy, boolean withDirectTriples) {
+        extraPolicy = policy;
+        directTriples = withDirectTriples;
     }
 
     /*
@@ -237,6 +254,11 @@ public class RDFConverter {
             // Add mapping metadata slots
             mappingVisitor.subject = mappingNode;
             mappingHelper.visitSlots(mapping, mappingVisitor);
+
+            if ( injectDirectTriple(mapping) ) {
+                model.add(Values.iri(mapping.getSubjectId()), Values.iri(mapping.getPredicateId()),
+                        Values.iri(mapping.getObjectId()));
+            }
         }
 
         // Add namespace declarations
@@ -416,6 +438,21 @@ public class RDFConverter {
         }
         helper.excludeSlots(Set.of("record_id"));
         return helper;
+    }
+
+    /*
+     * Decides whether a mapping should be rendered as a "direct triple".
+     * 
+     * This excludes (1) literal mappings, (2) mappings to sssom:NoTermFound, (3)
+     * negated mappings, as tentatively recommended by the current spec proposal.
+     * This also excludes any mapping that is missing at least one component of the
+     * direct triple; such mappings are not supposed to exist, but there’s nothing
+     * preventing client code from manufacturing one.
+     */
+    private boolean injectDirectTriple(Mapping mapping) {
+        return directTriples && !mapping.isLiteral() && !mapping.isUnmapped()
+                && mapping.getPredicateModifier() != PredicateModifier.NOT && mapping.getSubjectId() != null
+                && mapping.getPredicateId() != null && mapping.getObjectId() != null;
     }
 
     /*

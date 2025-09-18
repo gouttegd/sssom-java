@@ -270,6 +270,10 @@ public class SimpleCLI implements Runnable {
             enableSSSOMPyJSON(arg);
         }
 
+        @Option(names = {"--rdf-direct-triples" },
+                description = "Inject direct triples when writing in RDF/TTL format.")
+        boolean rdfDirectTriples;
+
         @Option(names = {"--sorting" }, negatable = true, defaultValue = "true", fallbackValue = "true",
                 description = "Enable/disable sorting of mappings. This is enabled by default.")
         boolean sortMappings;
@@ -701,6 +705,7 @@ public class SimpleCLI implements Runnable {
             }
             outputOpts.defaultWriteExtraMetadata = ExtraMetadataPolicy.UNDEFINED;
             outputOpts.defaultEnableCondensation = false;
+            ((RDFWriter) writer).setInjectDirectTriples(outputOpts.rdfDirectTriples);
             break;
 
         case TSV:

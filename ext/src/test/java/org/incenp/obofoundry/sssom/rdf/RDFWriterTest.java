@@ -134,6 +134,28 @@ public class RDFWriterTest {
                 (w) -> w.setExtraMetadataPolicy(ExtraMetadataPolicy.UNDEFINED));
     }
 
+    @Test
+    void testWriteDirectTriples() throws IOException {
+        MappingSet ms = getTestSet();
+        ms.getMappings()
+                .add(Mapping.builder().subjectId("https://example.org/entities/0003")
+                        .predicateId("http://www.w3.org/2004/02/skos/core#closeMatch").objectLabel("Third entity")
+                        .objectType(EntityType.RDFS_LITERAL)
+                        .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration").build());
+        ms.getMappings()
+                .add(Mapping.builder().subjectId("https://example.org/entities/0004")
+                        .predicateId("http://www.w3.org/2004/02/skos/core#exactMatch")
+                        .objectId("https://w3id.org/sssom/NoTermFound")
+                        .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration").build());
+        ms.getMappings()
+                .add(Mapping.builder().subjectId("https://example.org/entities/0005")
+                        .predicateId("http://www.w3.org/2004/02/skos/core#exactMatch")
+                        .objectId("https://example.com/entities/0005").predicateModifier(PredicateModifier.NOT)
+                        .mappingJustification("https://w3id.org/semapv/vocab/ManualMappingCuration").build());
+
+        assertWrittenAsExpected(ms, "test-ttl-output-with-direct-triples", null, (w) -> w.setInjectDirectTriples(true));
+    }
+
     private void assertWrittenAsExpected(MappingSet ms, String expectedBasename, String actualBasename,
             Consumer<RDFWriter> consumer) throws IOException {
         if ( actualBasename == null ) {
