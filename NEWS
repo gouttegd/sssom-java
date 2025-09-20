@@ -1,3 +1,20 @@
+Changes in sssom-java 1.9.0
+---------------------------
+
+    * core:
+      * Add helper methods to enforce compliance with a given version.
+      * Silently accept some incorrect, but non-ambiguous enum values.
+    * RDF support:
+      * Allow optional injection of “direct triples”.
+    * SSSOM/T:
+      * New `mapping_date`, `publication_date` filters.
+      * New `raw_predicate` filter.
+      * Removal of all support for deprecated, pre-1.0 features of SSSOM/T-OWL.
+    * sssom-cli
+      * New `--force-version` option.
+      * New `--extensions-from-other`, `--extensions-to-other` options.
+
+
 Changes in sssom-java 1.8.2
 ---------------------------
 
