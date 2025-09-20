@@ -57,6 +57,7 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.incenp.obofoundry.sssom.util.ExtendedPrefixMap;
+import org.incenp.obofoundry.sssom.util.ExtensionSlotHelper;
 import org.incenp.obofoundry.sssom.util.ReaderFactory;
 import org.incenp.obofoundry.sssom.util.SerialisationFormat;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -151,6 +152,10 @@ public class SimpleCLI implements Runnable {
                 description = "Whether to accept non-standard metadata in the input set(s). Allowed values: ${COMPLETION-CANDIDATES}. Default is NONE.")
         ExtraMetadataPolicy acceptExtraMetadata = ExtraMetadataPolicy.NONE;
 
+        @Option(names = "--extensions-from-other",
+                description = "Converts 'other' slot values into extension slots.")
+        boolean extensionsFromOther;
+
         @Option(names = "--propagation", negatable = true,
                 defaultValue = "true", fallbackValue = "true",
                 description = "Enable/disable propagation of propagatable slots. This is enabled by default.")
@@ -225,6 +230,10 @@ public class SimpleCLI implements Runnable {
         ExtraMetadataPolicy getExtraMetadataPolicy() {
             return writeExtraMetadata != null ? writeExtraMetadata : defaultWriteExtraMetadata;
         }
+
+        @Option(names = "--extensions-to-other",
+                description = "Encode extension slots into 'other' slots.")
+        boolean extensionsToOther;
 
         @Option(names = "--condensation", negatable = true,
                 defaultValue = "true", fallbackValue = "true",
@@ -477,6 +486,10 @@ public class SimpleCLI implements Runnable {
             }
         }
 
+        if ( inputOpts.extensionsFromOther ) {
+            ExtensionSlotHelper.fromOther(ms, true);
+        }
+
         return ms;
     }
 
@@ -626,6 +639,10 @@ public class SimpleCLI implements Runnable {
         } else if ( outputOpts.prefixMapSource == OutputMapSource.BOTH ) {
             // Add the SSSOM/T map to the input map (the SSSOM/T map takes precedence)
             set.getCurieMap().putAll(transOpts.prefixMap);
+        }
+
+        if ( outputOpts.extensionsToOther ) {
+            ExtensionSlotHelper.toOther(set, false);
         }
 
         if ( outputOpts.splitDirectory != null ) {

@@ -1,0 +1,32 @@
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  COMPID: https://example.com/people/
+#  EXPROP: https://example.org/properties/
+#  ORGENT: https://example.org/entities/
+#  ORGPID: https://example.org/people/
+#mapping_set_id: https://example.org/sets/exo2c-with-extensions
+#mapping_set_title: O2C set with extensions
+#creator_id:
+#  - ORGPID:0000-0000-0001-1234
+#  - COMPID:0000-0000-0002-5678
+#license: https://creativecommons.org/licenses/by/4.0/
+#publication_date: 2023-09-13
+#other: ext_foo=Foo A
+#extension_definitions:
+#  - slot_name: ext_bar
+#    property: EXPROP:barProperty
+#    type_hint: xsd:integer
+#  - slot_name: ext_baz
+#    property: EXPROP:bazProperty
+#    type_hint: linkml:Uriorcurie
+#  - slot_name: ext_foo
+#    property: EXPROP:fooProperty
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	other
+ORGENT:0001	alice	skos:closeMatch	COMENT:0011	alpha	semapv:ManualMappingCuration	ext_bar=111|ext_baz=ORGENT:BAZ_0001
+ORGENT:0002	bob	skos:closeMatch	COMENT:0012	beta	semapv:ManualMappingCuration	ext_bar=112|ext_baz=ORGENT:BAZ_0002
+ORGENT:0004	daphne	skos:closeMatch	COMENT:0014	delta	semapv:ManualMappingCuration	ext_bar=114
+ORGENT:0005	eve	skos:closeMatch	COMENT:0015	epsilon	semapv:ManualMappingCuration	ext_bar=115|ext_baz=ORGENT:BAZ_0005
+ORGENT:0006	fanny	skos:closeMatch	COMENT:0016	zeta	semapv:ManualMappingCuration	ext_bar=116|ext_baz=ORGENT:BAZ_0006
+ORGENT:0007	gavin	skos:exactMatch	COMENT:0013	gamma	semapv:ManualMappingCuration	ext_bar=117|ext_baz=ORGENT:BAZ_0007
+ORGENT:0008	hector	skos:closeMatch	COMENT:0017	eta	semapv:ManualMappingCuration	ext_bar=118|ext_baz=ORGENT:BAZ_0008
+ORGENT:0009	ivan	skos:exactMatch	COMENT:0019	iota	semapv:ManualMappingCuration	ext_bar=119|ext_baz=ORGENT:BAZ_0009
