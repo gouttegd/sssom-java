@@ -1,0 +1,29 @@
+@prefix COMENT: <https://example.com/entities/> .
+@prefix ORGENT: <https://example.org/entities/> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix semapv: <https://w3id.org/semapv/vocab/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sssom: <https://w3id.org/sssom/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://example.org/sets/test-mapping-date> a sssom:MappingSet;
+  dcterms:license "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI;
+  sssom:mappings [ a owl:Axiom;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0001;
+      owl:annotatedTarget COMENT:0011;
+      pav:authoredOn "2025-10-27"^^xsd:date;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "alpha";
+      sssom:subject_label "alice"
+    ], [ a owl:Axiom;
+      dcterms:created "2025-10-27"^^xsd:date;
+      owl:annotatedProperty skos:closeMatch;
+      owl:annotatedSource ORGENT:0002;
+      owl:annotatedTarget COMENT:0012;
+      sssom:mapping_justification semapv:ManualMappingCuration;
+      sssom:object_label "beta";
+      sssom:subject_label "bob"
+    ] .

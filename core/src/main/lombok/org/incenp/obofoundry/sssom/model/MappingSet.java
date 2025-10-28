@@ -124,7 +124,7 @@ public class MappingSet  {
 
     @JsonProperty("mapping_date")
     @Propagatable
-    @SlotURI("http://purl.org/pav/authoredOn")
+    @SlotURI("http://purl.org/dc/terms/created")
     private LocalDate mappingDate;
 
     @JsonProperty("publication_date")

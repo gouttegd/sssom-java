@@ -143,7 +143,7 @@ public class Mapping  {
     private String mappingToolVersion;
 
     @JsonProperty("mapping_date")
-    @SlotURI("http://purl.org/pav/authoredOn")
+    @SlotURI("http://purl.org/dc/terms/created")
     private LocalDate mappingDate;
 
     @JsonProperty("publication_date")

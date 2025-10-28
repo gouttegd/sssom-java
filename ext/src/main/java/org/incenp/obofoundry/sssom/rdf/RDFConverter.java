@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,12 +80,21 @@ import org.incenp.obofoundry.sssom.slots.VersionSlot;
  */
 public class RDFConverter {
 
+    private final static Map<String, String> OLD_SLOT_URIS;
+
     private ExtraMetadataPolicy extraPolicy;
     private ExtensionSlotManager extMgr;
     private Version assumedVersion = Version.SSSOM_1_0;
     private int bnodeCounter;
     private Set<String> excludedSlots;
     private boolean directTriples = false;
+
+    static {
+        Map<String, String> oldSlotURIs = new HashMap<>();
+        oldSlotURIs.put("http://purl.org/pav/authoredOn", "http://purl.org/dc/terms/created");
+
+        OLD_SLOT_URIS = Collections.unmodifiableMap(oldSlotURIs);
+    }
 
     /**
      * Creates a new instance with the default policy for converting non-standard
@@ -320,7 +330,7 @@ public class RDFConverter {
                 // We have dealt with that one already, skip
                 continue;
             }
-            Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByURI(st.getPredicate().stringValue());
+            Slot<MappingSet> slot = SlotHelper.getMappingSetHelper().getSlotByURI(getSlotURI(st));
             if ( slot != null && slot.getCompliantVersion().isCompatibleWith(version) ) {
                 // Statement is a mapping set metadata slot
                 visitor.rdfValue = st.getObject();
@@ -393,7 +403,7 @@ public class RDFConverter {
         }
         SlotSetterVisitor<Mapping> visitor = new SlotSetterVisitor<Mapping>(targetVersion);
         for ( Statement st : model.filter(mappingNode, null, null) ) {
-            Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(st.getPredicate().stringValue());
+            Slot<Mapping> slot = SlotHelper.getMappingHelper().getSlotByURI(getSlotURI(st));
             if ( slot != null && slot.getCompliantVersion().isCompatibleWith(targetVersion) ) {
                 // Statement is a mapping metadata slot
                 visitor.rdfValue = st.getObject();
@@ -426,6 +436,15 @@ public class RDFConverter {
      */
     private SSSOMFormatException getTypingError(String slotName) {
         return getTypingError(slotName, null);
+    }
+
+    /*
+     * Gets the slot URI for a given statement, automatically converting previously
+     * accepted URI into its new form.
+     */
+    private String getSlotURI(Statement st) {
+        String predicate = st.getPredicate().stringValue();
+        return OLD_SLOT_URIS.getOrDefault(predicate, predicate);
     }
 
     /*

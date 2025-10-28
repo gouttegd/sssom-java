@@ -317,4 +317,18 @@ public class RDFReaderTest {
             Assertions.fail(e);
         }
     }
+
+    @Test
+    void testMappingDateSlot() throws IOException {
+        RDFReader reader = new RDFReader("src/test/resources/sets/test-mapping-date.ttl");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertEquals(LocalDate.of(2025, 10, 27), ms.getMappings().get(0).getMappingDate());
+            Assertions.assertEquals(LocalDate.of(2025, 10, 27), ms.getMappings().get(1).getMappingDate());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
 }
