@@ -329,7 +329,6 @@ public class SSSOMTransformApplicationTest {
             IMappingTransformer<Mapping> o = application.onPreprocessingAction("assign", arguments, keyedArguments);
 
             Mapping m = o.transform(new Mapping());
-            System.err.printf("Sexpr: %s\n", new Mapping().toSExpr());
             // Expected Z-Base32-encoded SHA2-256 hash of "(7:mapping())"
             String hash = "ffofqqzha5wawq3qx78yj6pjxtep1hw4pjeabuox9gzawuf7bwwo";
             Assertions.assertEquals("https://example.org/records/" + hash, m.getRecordId());

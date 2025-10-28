@@ -62,7 +62,6 @@ public class SSSOMTHasExtensionFunction implements ISSSOMTFunction<IMappingFilte
 
     @Override
     public IMappingFilter call(List<String> arguments, Map<String, String> keyedArguments) throws SSSOMTransformError {
-        System.err.printf("arg0: %s\n", arguments.get(0));
         return new SSSOMTHasExtensionFunction(arguments.get(0));
     }
 
