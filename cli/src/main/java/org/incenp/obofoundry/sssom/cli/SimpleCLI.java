@@ -198,6 +198,11 @@ public class SimpleCLI implements Runnable {
                 description = "Split the set along subject and object prefix names and write the split sets in the specified directory.")
         String splitDirectory;
 
+        @Option(names = "--split-with-predicates",
+                description = "When splitting, include the predicate CURIE in the split identifier.")
+        boolean splitWithPredicates;
+
+
         @Option(names = { "-c", "--force-cardinality" },
                 hidden = true,
                 description = "Include mapping cardinality values.")
@@ -646,7 +651,7 @@ public class SimpleCLI implements Runnable {
         }
 
         if ( outputOpts.splitDirectory != null ) {
-            writeSplitSet(set, outputOpts.splitDirectory);
+            writeSplitSet(set, outputOpts.splitDirectory, outputOpts.splitWithPredicates);
             return; // Skip writing the full set when writing splits
         }
         boolean stdout = outputOpts.file.equals("-");
@@ -660,7 +665,7 @@ public class SimpleCLI implements Runnable {
         }
     }
 
-    private void writeSplitSet(MappingSet ms, String directory) {
+    private void writeSplitSet(MappingSet ms, String directory, boolean splitWithPredicates) {
         File dir = new File(directory);
         if ( !dir.isDirectory() && !dir.mkdirs() ) {
             helper.error("cannot create directory %s", directory);
@@ -677,7 +682,19 @@ public class SimpleCLI implements Runnable {
             String subjectPrefixName = pm.getPrefixName(mapping.getSubjectId());
             String objectPrefixName = pm.getPrefixName(mapping.getObjectId());
             if ( subjectPrefixName != null && objectPrefixName != null ) {
-                String splitId = subjectPrefixName + "-to-" + objectPrefixName;
+                String splitId;
+                if (splitWithPredicates) {
+                    String predicatePrefixName = pm.getPrefixName(mapping.getPredicateId());
+                    if (predicatePrefixName != null) {
+                        splitId = subjectPrefixName + "-" + pm.shortenIdentifier(mapping.getPredicateId()) + "-" + objectPrefixName;
+                        splitId = splitId.replace(":", "_");
+                    } else {
+                        splitId = subjectPrefixName + "-to-" + objectPrefixName;
+                    }
+                } else {
+                    splitId = subjectPrefixName + "-to-" + objectPrefixName;
+                }
+
                 mappingsBySplit.computeIfAbsent(splitId, k -> new ArrayList<Mapping>()).add(mapping);
             }
         }
