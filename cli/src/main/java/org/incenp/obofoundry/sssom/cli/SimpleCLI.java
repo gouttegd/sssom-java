@@ -683,9 +683,9 @@ public class SimpleCLI implements Runnable {
             String objectPrefixName = pm.getPrefixName(mapping.getObjectId());
             if ( subjectPrefixName != null && objectPrefixName != null ) {
                 String splitId;
-                if (splitWithPredicates) {
+                if ( splitWithPredicates ) {
                     String predicatePrefixName = pm.getPrefixName(mapping.getPredicateId());
-                    if (predicatePrefixName != null) {
+                    if ( predicatePrefixName != null ) {
                         splitId = subjectPrefixName + "-" + pm.shortenIdentifier(mapping.getPredicateId()) + "-" + objectPrefixName;
                         splitId = splitId.replace(":", "_");
                     } else {

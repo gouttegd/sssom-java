@@ -255,6 +255,27 @@ public class SSSOMCLITest {
     }
 
     @Test
+    void testSplitWithPredicatesOutput() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, null,
+                new String[] { "--split=src/test/resources/output/split", "--split-with-predicates" });
+
+        File dir = new File("src/test/resources/output/split");
+        Assertions.assertTrue(dir.isDirectory());
+
+        File exactMatchSet = new File("src/test/resources/output/split/ORGENT-skos_exactMatch-COMENT.sssom.tsv");
+        File exactMatchSetExpected = new File("src/test/resources/output/ORGENT-skos_exactMatch-COMENT.sssom.tsv");
+        Assertions.assertTrue(FileUtils.contentEquals(exactMatchSetExpected, exactMatchSet));
+
+        File closeMatchSet = new File("src/test/resources/output/split/ORGENT-skos_closeMatch-COMENT.sssom.tsv");
+        File closeMatchSetExpected = new File("src/test/resources/output/ORGENT-skos_closeMatch-COMENT.sssom.tsv");
+        Assertions.assertTrue(FileUtils.contentEquals(closeMatchSetExpected, closeMatchSet));
+
+        exactMatchSet.delete();
+        closeMatchSet.delete();
+        dir.delete();
+    }
+
+    @Test
     void testSplitOutputDirectoryError() throws IOException {
         // Split directory path exists but is not a directory
         TestUtils.runCommand(1, new String[] { "exo2c.sssom.tsv", "exo2n.sssom.tsv" }, null,

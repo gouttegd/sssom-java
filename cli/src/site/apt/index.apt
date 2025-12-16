@@ -234,6 +234,10 @@ sssom-cli set.sssom.tsv:metadata.yaml
   <<<--split>>> option, which accepts the name of a directory where the
   split sets will be written.
   
+  With the additional <<<--split-by-predicates>>> option, the set will
+  be split along the matching predicates, in addition to the subject
+  and object IDs.
+  
 ** 2.4. Output format
 
   SSSOM-CLI can write the output set in the SSSOM/TSV format, the
