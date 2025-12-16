@@ -62,7 +62,7 @@ public class SSSOMTShortFunction implements IFormatModifierFunction {
 
             List<String> shortenedList = new ArrayList<String>();
             for ( String s : valueAsList ) {
-                shortenedList.add(pfxMgr.expandIdentifier(s));
+                shortenedList.add(pfxMgr.shortenIdentifier(s));
             }
             return shortenedList;
         }
