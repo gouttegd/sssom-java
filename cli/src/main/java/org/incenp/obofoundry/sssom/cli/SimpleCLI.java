@@ -51,8 +51,13 @@ import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
 import org.incenp.obofoundry.sssom.rdf.RDFWriter;
+import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
+import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
+import org.incenp.obofoundry.sssom.transform.SSSOMTPrefixFunction;
+import org.incenp.obofoundry.sssom.transform.SSSOMTReplaceModifierFunction;
+import org.incenp.obofoundry.sssom.transform.SSSOMTShortFunction;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
@@ -200,8 +205,12 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--split-with-predicates",
                 description = "When splitting, include the predicate CURIE in the split identifier.")
-        boolean splitWithPredicates;
+        private void splitWithPredicates(boolean value) {
+            splitByFormat = "%{subject_id|prefix}-%{predicate_id|short|replace(':', '_')}-%{object_id|prefix}";
+        }
 
+        @Option(names = "--split-by", description = "When splitting, split mappings along an arbitrarily specified format string.")
+        String splitByFormat = "%{subject_id|prefix}-to-%{object_id|prefix}";
 
         @Option(names = { "-c", "--force-cardinality" },
                 hidden = true,
@@ -651,7 +660,7 @@ public class SimpleCLI implements Runnable {
         }
 
         if ( outputOpts.splitDirectory != null ) {
-            writeSplitSet(set, outputOpts.splitDirectory, outputOpts.splitWithPredicates);
+            writeSplitSet(set, outputOpts.splitDirectory, outputOpts.splitByFormat);
             return; // Skip writing the full set when writing splits
         }
         boolean stdout = outputOpts.file.equals("-");
@@ -665,38 +674,26 @@ public class SimpleCLI implements Runnable {
         }
     }
 
-    private void writeSplitSet(MappingSet ms, String directory, boolean splitWithPredicates) {
+    private void writeSplitSet(MappingSet ms, String directory, String format) {
         File dir = new File(directory);
         if ( !dir.isDirectory() && !dir.mkdirs() ) {
             helper.error("cannot create directory %s", directory);
         }
 
-        HashMap<String, List<Mapping>> mappingsBySplit = new HashMap<String, List<Mapping>>();
         PrefixManager pm = new PrefixManager();
         pm.add(ms.getCurieMap());
 
-        for ( Mapping mapping : ms.getMappings() ) {
-            if ( mapping.isLiteral() ) {
-                continue;
-            }
-            String subjectPrefixName = pm.getPrefixName(mapping.getSubjectId());
-            String objectPrefixName = pm.getPrefixName(mapping.getObjectId());
-            if ( subjectPrefixName != null && objectPrefixName != null ) {
-                String splitId;
-                if ( splitWithPredicates ) {
-                    String predicatePrefixName = pm.getPrefixName(mapping.getPredicateId());
-                    if ( predicatePrefixName != null ) {
-                        splitId = subjectPrefixName + "-" + pm.shortenIdentifier(mapping.getPredicateId()) + "-" + objectPrefixName;
-                        splitId = splitId.replace(":", "_");
-                    } else {
-                        splitId = subjectPrefixName + "-to-" + objectPrefixName;
-                    }
-                } else {
-                    splitId = subjectPrefixName + "-to-" + objectPrefixName;
-                }
+        MappingFormatter mf = new MappingFormatter();
+        mf.setStandardSubstitutions();
+        mf.setModifier(new SSSOMTShortFunction(pm));
+        mf.setModifier(new SSSOMTPrefixFunction(pm));
+        mf.setModifier(new SSSOMTReplaceModifierFunction());
+        IMappingTransformer<String> formatter = mf.getTransformer(format);
 
-                mappingsBySplit.computeIfAbsent(splitId, k -> new ArrayList<Mapping>()).add(mapping);
-            }
+        HashMap<String, List<Mapping>> mappingsBySplit = new HashMap<String, List<Mapping>>();
+        for ( Mapping mapping : ms.getMappings() ) {
+            String splitId = formatter.transform(mapping);
+            mappingsBySplit.computeIfAbsent(splitId, k -> new ArrayList<Mapping>()).add(mapping);
         }
 
         for ( String splitId : mappingsBySplit.keySet() ) {
