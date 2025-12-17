@@ -137,4 +137,28 @@ public class PrefixManagerTest {
                 pm.expandIdentifier("obo:FBbt_12345678"));
         Assertions.assertEquals("FBbt:12345678", pm.shortenIdentifier("http://purl.obolibrary.org/obo/FBbt_12345678"));
     }
+
+    @Test
+    void testGetPrefixOrLocalName() {
+        PrefixManager pm = new PrefixManager();
+
+        Assertions.assertEquals("exactMatch", pm.getLocalName("http://www.w3.org/2004/02/skos/core#exactMatch"));
+        Assertions.assertNull(pm.getLocalName("https://example.org/undeclared/prefix"));
+
+        pm.add("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
+        pm.add("obo", "http://purl.obolibrary.org/obo/");
+        Assertions.assertEquals("12345678", pm.getLocalName("http://purl.obolibrary.org/obo/FBbt_12345678"));
+    }
+
+    @Test
+    void testGetPrefixName() {
+        PrefixManager pm = new PrefixManager();
+
+        Assertions.assertEquals("skos", pm.getPrefixName("http://www.w3.org/2004/02/skos/core#exactMatch"));
+        Assertions.assertNull(pm.getPrefixName("https://example.org/undeclared/prefix"));
+
+        pm.add("FBbt", "http://purl.obolibrary.org/obo/FBbt_");
+        pm.add("obo", "http://purl.obolibrary.org/obo/");
+        Assertions.assertEquals("FBbt", pm.getPrefixName("http://purl.obolibrary.org/obo/FBbt_12345678"));
+    }
 }

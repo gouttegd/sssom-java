@@ -237,6 +237,7 @@ public class MappingFormatter {
         if ( pfxMgr != null ) {
             setModifier(new SSSOMTShortFunction(pfxMgr));
             setModifier(new SSSOMTPrefixFunction(pfxMgr));
+            setModifier(new SSSOMTSuffixFunction(pfxMgr));
         }
     }
 

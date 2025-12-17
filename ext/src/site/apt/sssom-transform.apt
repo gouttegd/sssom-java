@@ -1007,6 +1007,32 @@ predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui="
 +-----------------------------------------------------------------------
 "Mapping tool: %{mapping_tool|default('unknown tool')}"
 +-----------------------------------------------------------------------
+
+*** 6.5.6. <replace>
+
+  This modifier allows to perform a basic find-and-replace operation on
+  the substituted value.
+  
+  For example, after shortening an identifier (with the <<<short>>>
+  modifier), to replace the colon (<<<:>>>) within the short identifier
+  by an underscore (<<<_>>>):
+  
++-----------------------------------------------------------------------
+"Subject ID: %{subject_id|short|replace(':', '_')}"
++-----------------------------------------------------------------------
+
+*** 6.5.7. <prefix>
+
+  This modifier condenses the substituted value (which is expected to be
+  a full-length IRI) into a shortened identifier, then truncates the
+  shortened identifier to keep only the prefix part.
+  
+*** 6.5.8. <suffix>
+
+  This modifier condenses the substituted value (which is expected to be
+  a full-length IRI) into a shortened identifier, then truncates the
+  shortened identifier to keep only the suffix (also known as the “local
+  name”).
   
 * 7. Grouping rules
 

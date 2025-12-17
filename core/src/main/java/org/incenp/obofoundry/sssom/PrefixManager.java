@@ -145,6 +145,24 @@ public class PrefixManager {
     }
 
     /**
+     * Gets the local part of the shortened form of given identifier.
+     * 
+     * @param iri The identifier for which to get the local part.
+     * @return The local name of the identifier, that is, everything after the
+     *         longest matching prefix; or {@code null} if the original identifier
+     *         could not be shortened.
+     */
+    public String getLocalName(String iri) {
+        String prefixName = getPrefixName(iri);
+        if ( prefixName != null ) {
+            int prefixLen = prefixMap.get(prefixName).length();
+            return iri.substring(prefixLen);
+        }
+
+        return null;
+    }
+
+    /**
      * Shortens an identifier according to the prefix map.
      * 
      * @param iri The identifier to shorten.
