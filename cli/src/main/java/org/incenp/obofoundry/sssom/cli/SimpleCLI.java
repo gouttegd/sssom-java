@@ -55,9 +55,6 @@ import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
 import org.incenp.obofoundry.sssom.transform.MappingProcessingRule;
 import org.incenp.obofoundry.sssom.transform.MappingProcessor;
-import org.incenp.obofoundry.sssom.transform.SSSOMTPrefixFunction;
-import org.incenp.obofoundry.sssom.transform.SSSOMTReplaceModifierFunction;
-import org.incenp.obofoundry.sssom.transform.SSSOMTShortFunction;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
@@ -684,10 +681,9 @@ public class SimpleCLI implements Runnable {
         pm.add(ms.getCurieMap());
 
         MappingFormatter mf = new MappingFormatter();
+        mf.setPrefixManager(pm);
         mf.setStandardSubstitutions();
-        mf.setModifier(new SSSOMTShortFunction(pm));
-        mf.setModifier(new SSSOMTPrefixFunction(pm));
-        mf.setModifier(new SSSOMTReplaceModifierFunction());
+        mf.setStandardModifiers();
         IMappingTransformer<String> formatter = mf.getTransformer(format);
 
         HashMap<String, List<Mapping>> mappingsBySplit = new HashMap<String, List<Mapping>>();

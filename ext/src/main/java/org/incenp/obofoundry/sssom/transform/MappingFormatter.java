@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
@@ -73,6 +74,7 @@ public class MappingFormatter {
     private Map<String, IFormatModifierFunction> modifiers = new HashMap<String, IFormatModifierFunction>();
 
     private PrefixManager pfxMgr;
+    private MappingHasher hasher = new MappingHasher();
 
     /**
      * Sets the prefix manager to use when attempting to resolve a placeholder name
@@ -181,6 +183,8 @@ public class MappingFormatter {
         placeholders.put("subject_source_version", (m) -> m.getSubjectSourceVersion());
         placeholders.put("subject_type", (m) -> m.getSubjectType());
 
+        placeholders.put("hash", (m) -> hasher.hash(m));
+
         // Don't bother checking if we replaced existing substitutions, always clear the
         // cache.
         cache.clear();
@@ -215,6 +219,25 @@ public class MappingFormatter {
             cache.clear();
         }
         modifiers.put(name, modifier);
+    }
+
+    /**
+     * Register the "standards" modifier functions available in this package.
+     * <p>
+     * The modifier functions that require a prefix manager to work are only
+     * registered if a prefix manager has been set with
+     * {@link #setPrefixManager(PrefixManager)}.
+     */
+    public void setStandardModifiers() {
+        setModifier(new SSSOMTFormatFunction());
+        setModifier(new SSSOMTListItemFunction());
+        setModifier(new SSSOMTFlattenFunction());
+        setModifier(new SSSOMTDefaultModifierFunction());
+        setModifier(new SSSOMTReplaceModifierFunction());
+        if ( pfxMgr != null ) {
+            setModifier(new SSSOMTShortFunction(pfxMgr));
+            setModifier(new SSSOMTPrefixFunction(pfxMgr));
+        }
     }
 
     /**

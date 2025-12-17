@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.uriexpr.SSSOMTUriExpressionContainsFunction;
@@ -43,7 +42,6 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
     private PrefixManager pfxMgr;
     private VariableManager varMgr = new VariableManager();
     private MappingFormatter formatter = new MappingFormatter();
-    private MappingHasher hasher = new MappingHasher();
     private int serial;
 
     private Map<String, ISSSOMTFunction<IMappingFilter>> filters = new HashMap<String, ISSSOMTFunction<IMappingFilter>>();
@@ -167,11 +165,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
 
         formatter.setPrefixManager(prefixManager);
         formatter.setStandardSubstitutions();
-        formatter.setModifier(new SSSOMTShortFunction(pfxMgr));
-        formatter.setModifier(new SSSOMTFormatFunction());
-        formatter.setModifier(new SSSOMTListItemFunction());
-        formatter.setModifier(new SSSOMTFlattenFunction());
-        formatter.setModifier(new SSSOMTDefaultModifierFunction());
+        formatter.setStandardModifiers();
 
         registerDirective(new SSSOMTSetvarFunction(this));
         registerCallback(new SSSOMTSetvarCallbackFunction(this));
@@ -188,7 +182,6 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         formatter.setModifier(new SSSOMTUriExpressionSlotValueFunction(pfxMgr));
 
         // Additional experimental stuff
-        formatter.setSubstitution("hash", (mapping) -> hasher.hash(mapping));
         formatter.setSubstitution("serial", (mapping) -> serial++);
         registerFilter(new SSSOMTDuplicateFunction(this));
         registerFilter(new SSSOMTHasExtensionFunction());
