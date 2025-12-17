@@ -1034,6 +1034,11 @@ predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui="
   shortened identifier to keep only the suffix (also known as the “local
   name”).
   
+*** 6.5.9. <lower> and <upper>
+
+  These modifiers turn the substituted text into lower case and upper
+  case, respectively.
+  
 * 7. Grouping rules
 
   If several actions need to be performed on the same selection of

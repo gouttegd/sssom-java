@@ -234,6 +234,8 @@ public class MappingFormatter {
         setModifier(new SSSOMTFlattenFunction());
         setModifier(new SSSOMTDefaultModifierFunction());
         setModifier(new SSSOMTReplaceModifierFunction());
+        setModifier(new SimpleStringModifierFunction("upper", (s) -> s.toUpperCase()));
+        setModifier(new SimpleStringModifierFunction("lower", (s) -> s.toLowerCase()));
         if ( pfxMgr != null ) {
             setModifier(new SSSOMTShortFunction(pfxMgr));
             setModifier(new SSSOMTPrefixFunction(pfxMgr));
