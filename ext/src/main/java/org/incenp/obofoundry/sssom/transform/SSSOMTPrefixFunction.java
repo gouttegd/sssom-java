@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
@@ -30,7 +29,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
  * by the prefix part of its short form. It does not take any additional
  * argument.
  */
-public class SSSOMTPrefixFunction implements IFormatModifierFunction {
+public class SSSOMTPrefixFunction extends BaseStringModifierFunction {
 
     private PrefixManager pfxMgr;
 
@@ -55,19 +54,7 @@ public class SSSOMTPrefixFunction implements IFormatModifierFunction {
     }
 
     @Override
-    public Object call(Object value, List<String> extra) {
-        if (List.class.isInstance(value)) {
-            // Get the prefix name for all IRIs in the list
-            @SuppressWarnings("unchecked")
-            List<String> valueAsList = List.class.cast(value);
-
-            List<String> prefixList = new ArrayList<String>();
-            for (String s : valueAsList) {
-                prefixList.add(pfxMgr.getPrefixName(s));
-            }
-            return prefixList;
-        }
+    protected String apply(Object value, List<String> extra) {
         return pfxMgr.getPrefixName(value.toString());
     }
-
 }

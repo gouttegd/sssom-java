@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
@@ -30,7 +29,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
  * by the local part (the "suffix") of its short form. It does not take any
  * additional argument.
  */
-public class SSSOMTSuffixFunction implements IFormatModifierFunction {
+public class SSSOMTSuffixFunction extends BaseStringModifierFunction {
 
     private PrefixManager pfxMgr;
 
@@ -55,19 +54,7 @@ public class SSSOMTSuffixFunction implements IFormatModifierFunction {
     }
 
     @Override
-    public Object call(Object value, List<String> extra) {
-        if ( List.class.isInstance(value) ) {
-            @SuppressWarnings("unchecked")
-            List<String> valueAsList = List.class.cast(value);
-
-            List<String> suffixList = new ArrayList<String>();
-            ;
-            for ( String s : valueAsList ) {
-                suffixList.add(pfxMgr.getLocalName(s));
-            }
-            return suffixList;
-        }
+    protected String apply(Object value, List<String> extra) {
         return pfxMgr.getLocalName(value.toString());
     }
-
 }

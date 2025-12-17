@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +34,7 @@ import java.util.List;
  * "%{predicate_id|short|replace(':', '_')}
  * </pre>
  */
-public class SSSOMTReplaceModifierFunction implements IFormatModifierFunction {
+public class SSSOMTReplaceModifierFunction extends BaseStringModifierFunction {
 
     @Override
     public String getName() {
@@ -48,22 +47,7 @@ public class SSSOMTReplaceModifierFunction implements IFormatModifierFunction {
     }
 
     @Override
-    public Object call(Object value, List<String> extra) {
-        String find = extra.get(0);
-        String replace = extra.get(1);
-
-        if ( List.class.isInstance(value) ) {
-            @SuppressWarnings("unchecked")
-            List<String> valueAsList = List.class.cast(value);
-
-            List<String> replacedList = new ArrayList<String>();
-            for ( String s : valueAsList ) {
-                replacedList.add(s.replace(find, replace));
-            }
-
-            return replacedList;
-        }
-        return value.toString().replace(find, replace);
+    protected String apply(Object value, List<String> extra) {
+        return value.toString().replace(extra.get(0), extra.get(1));
     }
-
 }

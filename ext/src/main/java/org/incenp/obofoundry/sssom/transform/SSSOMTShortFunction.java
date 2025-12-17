@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.incenp.obofoundry.sssom.PrefixManager;
@@ -29,7 +28,7 @@ import org.incenp.obofoundry.sssom.PrefixManager;
  * This function shortens the substituted text, which is expected to be a IRI,
  * into its “CURIE” form. It does not take any additional argument.
  */
-public class SSSOMTShortFunction implements IFormatModifierFunction {
+public class SSSOMTShortFunction extends BaseStringModifierFunction {
 
     private PrefixManager pfxMgr;
 
@@ -54,20 +53,7 @@ public class SSSOMTShortFunction implements IFormatModifierFunction {
     }
 
     @Override
-    public Object call(Object value, List<String> arguments) {
-        if ( List.class.isInstance(value) ) {
-            // Shorten all IRIs in the list
-            @SuppressWarnings("unchecked")
-            List<String> valueAsList = List.class.cast(value);
-
-            List<String> shortenedList = new ArrayList<String>();
-            for ( String s : valueAsList ) {
-                shortenedList.add(pfxMgr.shortenIdentifier(s));
-            }
-            return shortenedList;
-        }
-
+    protected String apply(Object value, List<String> extra) {
         return pfxMgr.shortenIdentifier(value.toString());
     }
-
 }

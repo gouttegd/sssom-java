@@ -18,7 +18,6 @@
 
 package org.incenp.obofoundry.sssom.transform;
 
-import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 
@@ -41,7 +40,7 @@ import java.util.List;
  * If called on a list-typed value, the formatting will be applied to all
  * elements of the list.
  */
-public class SSSOMTFormatFunction implements IFormatModifierFunction {
+public class SSSOMTFormatFunction extends BaseStringModifierFunction {
 
     @Override
     public String getName() {
@@ -54,29 +53,11 @@ public class SSSOMTFormatFunction implements IFormatModifierFunction {
     }
 
     @Override
-    public Object call(Object value, List<String> extra) {
-        String format = extra.get(0);
-
-        if ( List.class.isInstance(value) ) {
-            @SuppressWarnings("unchecked")
-            List<String> valueAsList = List.class.cast(value);
-
-            ArrayList<String> formattedList = new ArrayList<String>();
-            for ( String s : valueAsList ) {
-                try {
-                    formattedList.add(String.format(format, s));
-                } catch ( IllegalFormatException e ) {
-                    formattedList.add(s);
-                }
-            }
-
-            return formattedList;
-        }
-
+    protected String apply(Object value, List<String> extra) {
         try {
-            return String.format(format, value);
-        } catch ( IllegalFormatException e ) {
-            return value;
+            return String.format(extra.get(0), value);
+        } catch ( IllegalFormatException e) {
+            return e.getMessage();
         }
     }
 }
