@@ -1,0 +1,256 @@
+    ----------------------
+    Mapping format strings
+    ----------------------
+
+Mapping format strings
+
+  The SSSOM-Ext library provides a facility to turn a mapping object
+  into an arbitrarily defined text representation, using a “format
+  string” loosely inspired from Python’s “f-strings”.
+  
+%{toc|section=1|fromDepth=2|toDepth=3}
+
+* 1. General syntax
+
+  A mapping format string is a normal string that may contain
+  <placeholders> that will be automatically replaced, when the string is
+  applied to a mapping, by values derived from that particular mapping.
+  
+  A placeholder may take two different forms:
+  
+  * a “bracketed form”, where the name of the placeholder is enclosed in
+    curly brackets and preceded by a <<<%>>> character, as in
+    <<<%\{PLACEHOLDER}>>>;
+  
+  * a “un-bracketed form”, where the name of the placeholder is simply
+    preceded by a <<<%>>> character, as in <<<%PLACEHOLDER>>>.
+    
+  []
+  
+  When using the un-bracketed form, a placeholder name must start with a
+  letter, and must contain only letters and underscore characters
+  (<<<_>>>). The bracketed form does not have such a limitation, and a
+  bracketed placeholder may contain any character except <<<|>>> (which
+  is used to introduce a <format modifier>, see below) and <<<}>>>
+  (which is used to mark the end of the placeholder).
+  
+* 2. Available placeholders
+  
+  There is at least one placeholder for each of the slots associated
+  with the <Mapping> class of the SSSOM specification. They use the same
+  name of the name of the slot itself.
+  
+  For example, to introduce the subject ID of a mapping into a string:
+  
++-----------------------------------------------------------------------
+"The mapping subject is %{subject_id}."
++-----------------------------------------------------------------------
+
+  Or, using the un-bracketed form:
+  
++-----------------------------------------------------------------------
+"The mapping subject is %subject_id, the object is %object_id."
++-----------------------------------------------------------------------
+
+  Applications using mapping format strings may define additional,
+  application-specific placeholders.
+  
+  The following special placeholder is also available: <<<hash>>>. It
+  inserts a hash value calculated on all the slots of the mapping the
+  format string is applied to, so that the hash is unique for any given
+  mapping.
+  
+* 3. Format modifiers
+
+  When using the bracketed form, the placeholder itself may be followed,
+  within the curly brackets, by one or more <format modifiers> as
+  follows:
+  
++-----------------------------------------------------------------------
+"%{PLACEHOLDER_NAME|MOD1|MOD2|MOD3}"
++-----------------------------------------------------------------------
+
+  In that example, <MOD1>, <MOD2>, and <MOD3> are three format modifiers
+  that are applied successively to the value injected into the string by
+  the <PLACEHOLDER_NAME> placeholder. That is, the <MOD1> modifier takes
+  the value of the placeholder, modifies it somehow, and passes the
+  result to the <MOD2> modifier, which in turn modifies it as well and
+  passes it to the <MOD3> modifier; the value that is eventually
+  inserted into the string is the output of that last modifier.
+  
+  Some format modifiers may accept arguments of their own, as in this
+  example:
+  
++-----------------------------------------------------------------------
+"%{PLACEHOLDER_NAME|MOD1(ARG1, 'ARG 2')|MOD2}"
++-----------------------------------------------------------------------
+
+  Here, the <MOD1> modifier is given two arguments, <<<ARG1>>> and
+  <<<ARG 2>>>. Arguments to format modifiers may be quoted or unquoted.
+  
+  The following subsections describe the generally available format
+  modifiers. Applications using mapping format strings may additionally
+  define their own specific modifiers.
+  
+  Unless otherwise specified, when a format modifier is applied to a
+  placeholder that returns a <list> of values (e.g. <<<author_id>>>,
+  <<<creator_id>>>, <<<see_also>>>, etc.), the modifier is applied
+  sequentially to every value in the list.
+
+** 3.1. Modifiers that manipulate identifiers
+
+  The modifiers defined in this section expect as input a full-length
+  IRI (or a <list> of full-length IRIs), so they would typically be used
+  after the placeholder for an identifier-containing slot such as
+  <<<subject_id>>>, <<<object_id>>>, <<<creator_id>>>, etc.
+  
+*** 3.1.1. <short>
+
+  The <short> format modifier attempts to condense its input into a
+  short identifier or CURIE.
+  
+  For example, to insert the short form of a mapping’s predicate ID:
+  
++-----------------------------------------------------------------------
+"The predicate is %{predicate_id|short}".
++-----------------------------------------------------------------------
+
+  To insert the (short) IDs of all the authors of a mapping:
+  
++-----------------------------------------------------------------------
+"Authored by: %{author_id|short}."
++-----------------------------------------------------------------------
+
+*** 3.1.2. <prefix>
+
+  The <prefix> modifier attempts to condense its input into a shortened
+  identifier, then truncates the shortened identifier to keep only the
+  prefix part.
+  
+*** 3.1.3. <suffix>
+
+  The <suffix> modifier attempts to condense its input into a shortened
+  identifier, then truncates the shortened identifier to keep only the
+  suffix part (also known sometimes as the ”local name”).
+  
+** 3.2. Generic string manipulation modifiers
+
+*** 3.2.1. <format>
+
+  The <format> modifier allows to apply arbitrary formatting to a value.
+  It expects a single argument, which should be a format string as
+  expected by Java’s <<<String.format()>>> method and containing a
+  single format specifier, which will be replaced by the value the
+  modifier is applied to.
+  
+  For example, to apply a custom formatting to the double-typed
+  <<<confidence>>> slot, one might use something like this:
+  
++-----------------------------------------------------------------------
+"Confidence: %{confidence|format('%.03f')}."
++-----------------------------------------------------------------------
+
+*** 3.2.2. <replace>
+
+  The <replace> modifier allows to perform a basic find-and-replace
+  operation on the inserted value.
+  
+  For example, after shortening an identifier (with the <<<short>>>
+  modifier described above), to replace the colon (<<<:>>>) within the
+  short identifier by an underscore (<<<_>>>):
+  
++-----------------------------------------------------------------------
+"Subject ID: %{subject_id|short|replace(':', '_')}."
++-----------------------------------------------------------------------
+
+*** 3.2.3. <lower>
+
+  The <lower> modifier turns its input into a lower case string.
+  
+*** 3.2.4. <upper>
+
+  The <upper> modifier turns its input into a upper case string.
+  
+** 3.3. Modifiers that act on list values
+
+  The following modifiers are specifically intended to work on values
+  inserted from a multi-valued slot.
+  
+*** 3.3.1. <list_item>
+
+  The <list_item> modifier accepts a mandatory argument which should be
+  the 1-based index of an item in the list of values from the
+  multi-valued slot. It produces the value of that particular item, and
+  discards the other values.
+  
+  For example, to insert the ID of only the first author of a mapping:
+  
++-----------------------------------------------------------------------
+"First author: %{author_id|list_item(1)}."
++-----------------------------------------------------------------------
+
+  Likewise, but to insert the ID in its short form, by combining with
+  the <short> modifier:
+  
++-----------------------------------------------------------------------
+"First author: %{author_id|list_item(1)|short}."
++-----------------------------------------------------------------------
+
+  Of note, that last example would produce the same result as
+  
++-----------------------------------------------------------------------
+"First author: %{author_id|short|list_item(1)}."
++-----------------------------------------------------------------------
+
+  In the former example, we first pick only the first author ID, then
+  shortens it; in the latter, we first shorten all author IDs, then pick
+  the first (shortened) ID.
+  
+*** 3.3.2. <flatten>
+
+  The <flatten> modifier transforms a list of values into a single
+  string value. It accepts up to three arguments, all optional:
+  
+  * the separator to insert between each value (by default <<<, >>>, a
+    comma followed by a space);
+    
+  * the string to insert at the beginning of the list (by default an
+    empty string);
+    
+  * the string to insert at the end of the list (also an empty string by
+    default).
+    
+  []
+  
+  For example, to insert the list of author IDs as a semicolon-separated
+  list enclosed in parentheses:
+  
++-----------------------------------------------------------------------
+"Authors: %{author_id|flatten(';', '(', ')')}."
++-----------------------------------------------------------------------
+
+  Likewise, but with shortened IDs:
+  
++-----------------------------------------------------------------------
+"Authors: %{author_id|short|flatten(';', '(', ')')}."
++-----------------------------------------------------------------------
+
+  Note that here, the <short> modifier <must> be used before the
+  <flatten> modifier, since the output of the <flatten> modifier is a
+  string that no longer looks like a IRI and therefore cannot be
+  shortened; the IDs must be shortened first, and then the list of
+  (shortened) IDs can be flattened into a single string.
+  
+** 3.4. Other modifiers
+
+*** 3.4.1. <default>
+
+  The <default> modifier allows to specify a default value to insert
+  into a string if the original substituted value is empty.
+  
+  For example, to insert the name of the mapping tool used to create the
+  mapping, or a default string indicating that the tool is unknown:
+  
++-----------------------------------------------------------------------
+"Mapping tool: %{mapping_tool|default('unknown tool')}."
++-----------------------------------------------------------------------

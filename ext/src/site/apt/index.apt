@@ -13,7 +13,10 @@ The SSSOM Extended Library
   rule-based arbitrary {{{./transformations.html}tranformations}} of
   SSSOM mappings into other kind of objects. That includes a parser to
   read such transformations rules from a custom, ad-hoc language called
-  {{{./sssom-transform.html}SSSOM/Transform}} or <SSSOM/T>.
+  {{{./sssom-transform.html}SSSOM/Transform}} or <SSSOM/T>. That also
+  includes a {{{./formatting.html}mapping formatter}} facility, to
+  easily generate text strings derived from the contents of a mapping
+  object.
   
   It also provides helper classes to facilitate the exploitation of
   mappings in a OWL context (in the {{{../apidocs/org/incenp/obofoundry/sssom/owl/package-summary.html}

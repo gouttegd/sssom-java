@@ -206,7 +206,9 @@ public class SimpleCLI implements Runnable {
             splitByFormat = "%{subject_id|prefix}-%{predicate_id|short|replace(':', '_')}-%{object_id|prefix}";
         }
 
-        @Option(names = "--split-by", description = "When splitting, split mappings along an arbitrarily specified format string.")
+        @Option(names = "--split-by",
+                paramLabel="FMT",
+                description = "When splitting, split mappings along an arbitrarily specified format string.")
         String splitByFormat = "%{subject_id|prefix}-to-%{object_id|prefix}";
 
         @Option(names = { "-c", "--force-cardinality" },

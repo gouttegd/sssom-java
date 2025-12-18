@@ -526,112 +526,32 @@ FUNCTION("string argument", <IRI_argument>, CURIE:argument, /flag="argument");
   <always> expanded into their full-length form.
   
 ** 5.2. Placeholder expansion in string arguments
-
-  String arguments in a function call can contain <placeholders> which
-  will be automatically replaced by some value.
   
-  A placeholder may take two different forms:
-  
-  * a “bracketed form”, where the name of the placeholder is enclosed in
-    curly brackets and preceded by a <<<%>>> character, as in
-    <<<%\{PLACEHOLDER}>>>;
-    
-  * a “un-bracketed form”, where the name of the placeholder is simply
-    preceded by a <<<%>>> character, as in <<<%PLACEHOLDER>>>.
-    
-  []
-  
-  When using the un-bracketed form, a placeholder name must start with a
-  letter, and must contain only letters and underscore (<<<_>>>)
-  characters. The bracketed form does not have such a limitation, and a
-  bracketed placeholder may contain any character except <<<|>>> and
-  <<<}>>>.
-  
-  All SSSOM/T dialects define at least one placeholder for each of the
-  slots associated to the <Mapping> class in the SSSOM specification.
-  Those placeholders use the same name as the name of the slot itself.
-  
-  For example, to insert into the argument to a function call the
-  label of the subject of the mapping being currently processed, it is
-  possible to do:
+  When the argument is a string, some functions allow it to contain
+  <placeholders> which will be automatically replaced by some values
+  derived from the mapping that is currently being processed. For
+  example:
   
 +-----------------------------------------------------------------------
-my_function("The label of this mapping is %{subject_label}.");
+FUNCTION("The subject ID is %{subject_id}.")
 +-----------------------------------------------------------------------
 
-  or, using the un-bracketed form:
+  See the documentation about {{{./formatting.html}mapping format strings}}
+  for details about the syntax of placeholders.
   
-+-----------------------------------------------------------------------
-my_function("The label of this mapping is %subject_label.");
-+-----------------------------------------------------------------------
-
-  As a convenience, when a string argument is made entirely of a
-  single bracketed placeholder, the enclosing quotes may be omitted.
-  For example, this:
+  SSSOM/T dialects may define additional placeholders and/or format
+  modifiers to those described in the aforementioned documentation.
   
-+-----------------------------------------------------------------------
-my_function(%{subject_id});
-+-----------------------------------------------------------------------
-
-  is equivalent to:
+  Custom placeholders, also called <variables>, may also be defined
+  within a SSSOM/T script with the {{{#a6.3.1._set_var} set_var function}}.
   
-+-----------------------------------------------------------------------
-my_function("%{subject_id}");
-+-----------------------------------------------------------------------
-
-  SSSOM/T dialects may define additional placeholders, and custom
-  placeholders may also be defined in a SSSOM/T ruleset by the directive
-  function {{{6.1.1. The set_var directive}set_var}}.
-  
-  Note that not all SSSOM/T functions accept the use of placeholders
-  within their arguments. Consult the documentation of each function to
-  find out whether the use of placeholders is possible or not.
-
-** 5.3. Special placeholders
-
-  In addition to the placeholders representing the slots of the
-  <Mapping> class, the following special placeholders are also
-  available:
+  The following additional placeholder is available in all SSSOM/T
+  dialects:
   
   * <<<serial>>>: inserts an integer whose value is incremented every
-    time the placeholder is used on a mapping;
-  
-  * <<<hash>>>: inserts a hash value calculated on all the slots of
-    the current mapping, so that the hash is unique for any given
-    mapping.
+    time the placeholder is used on a mapping.
     
   []
-  
-** 5.4. Format modifiers
-
-  When using the bracketed syntax to insert a placeholder inside a
-  string argument, the placeholder itself may be followed by one or
-  more <format modifier> as follows:
-  
-+-----------------------------------------------------------------------
-my_function("Subject ID: %{subject_id|mod1|mod2|mod3}");
-+-----------------------------------------------------------------------
-
-  In that example, the <mod1> modifier takes the value of the current
-  mapping’s subject ID, modifies it somehow, and passes the result to
-  the <mod2> modifier, which in turn modifies it as well and passes it
-  to the <mod3> modifier; the value eventually inserted into the string
-  is the output of that last modifier.
-  
-  Format modifiers can optionally accept arguments of their own, as in
-  this example:
-  
-+-----------------------------------------------------------------------
-FUNCTION("Subject ID: %{subject_id|mod1(arg1, 'arg 2')|mod2}");
-+-----------------------------------------------------------------------
-
-  Here, the <mod1> modifier is given two arguments: <<<arg1>>> and
-  <<<arg 2>>>. As hinted by that example, arguments to format modifiers
-  may be quoted or unquoted.
-  
-  The base SSSOM/T language defines a few standard format modifiers,
-  {{{6.5. Format modifier functions}described below}}. SSSOM/T dialects
-  may define additional modifiers.
   
 * 6. Base SSSOM/T functions
 
@@ -642,9 +562,9 @@ FUNCTION("Subject ID: %{subject_id|mod1(arg1, 'arg 2')|mod2}");
 
 *** 6.1.1. <set_var>
 
-  This directive allows to define an additional placeholder name (also
-  called a <variable>) that can later be used in function arguments. It
-  expects two arguments: the name of the placeholder, and its value.
+  This directive allows to define an additional placeholder name that
+  can later be used in function arguments. It expects two arguments: the
+  name of the placeholder, and its value.
   
   For example:
   
@@ -669,7 +589,8 @@ my_function("My variable has the value %{MY_VARIABLE}");
 
   This filter can be used to select mappings for which a mapping-derived
   value is the same as for a previous mapping. It expects one argument,
-  which is the mapping-derived value to check against.
+  which is the mapping-derived value (expressed by means of
+  placeholders) to check against.
   
   Whenever it is called on a given mapping, the filter obtains derives
   the corresponding value and records it. If the value has not been seen
@@ -693,8 +614,7 @@ is_duplicate("%{subject_id}%{predicate_id}%{object_id}") -> stop();
   which will drop all mappings that have the same subject / object /
   predicate triple (again, except the first such mapping).
   
-  Use the filter with the special
-  {{{5.3. Special placeholders} <hash> substitution}} to drop mappings
+  Use the filter with the special <hash> placeholder to drop mappings
   that are completely identical:
   
 +-----------------------------------------------------------------------
@@ -900,144 +820,6 @@ predicate==* -> replace("object_id", "https://meshb.nlm.nih.gov/record/ui[?]ui="
   how the <<<?>>> character in the original IRI prefix had to be
   escaped, since that character has a special meaning in regular
   expressions.
-
-** 6.5. Format modifier functions
-  
-*** 6.5.1. <short>
-
-  The <short> format modifier does not take any argument. It attempts
-  to condense its input (which is expected to be a full-length IRI)
-  into a short identifier or CURIE, based on the prefix declarations in
-  the SSSOM/T ruleset.
-  
-  For example, to insert the short form of the current mapping’s
-  predicate ID:
-  
-+-----------------------------------------------------------------------
-"The predicate is %{predicate_id|short}."
-+-----------------------------------------------------------------------
-
-  When used on a multi-valued slot, the <short> modifier will attempt to
-  shorten all items in the list. For example, to insert the (short) IDs
-  of all the authors of a mapping:
-  
-+-----------------------------------------------------------------------
-"Authored by: %{author_id|short}."
-+-----------------------------------------------------------------------
-
-*** 6.5.2. <list_item>
-
-  The <list_item> modifier works specifically on multi-valued slots. It
-  accepts an argument which is the 1-based index of an item in the list
-  of values in the multi-valued slot, and produces the value of that
-  item.
-  
-  For example, to insert the ID of only the first author of a mapping:
-  
-+-----------------------------------------------------------------------
-"First author: %{author_id|list_item(1)}."
-+-----------------------------------------------------------------------
-
-  Likewise, but to insert the ID in its short form, by combining with
-  the <short> modifier:
-  
-+-----------------------------------------------------------------------
-"First author: %{author_id|list_item(1)|short}."
-+-----------------------------------------------------------------------
-
-*** 6.5.3. <flatten>
-
-  This is another modifier that works specifically on multi-valued
-  slots. It transforms a list of values into a single string. It accepts
-  up to the three arguments, all optional:
-  
-  * the separator to insert between each value (by default <<<, >>>);
-  
-  * the string to insert at the beginning of the list (by default an
-    empty string);
-    
-  * the string to insert at the end of the list (also an empty string by
-    default).
-    
-  []
-  
-  For example, to insert the list of author IDs as a semicolon-separated
-  list enclosed in parentheses:
-  
-+-----------------------------------------------------------------------
-"Authors: %{author_id|flatten('; ', '(', ')')}."
-+-----------------------------------------------------------------------
-
-  Likewise, but with shortened IDs:
-  
-+-----------------------------------------------------------------------
-"Authors: %{author_id|short|flatten(';', '(', ')')}."
-+-----------------------------------------------------------------------
-
-  Note in that example that the <short> modifier must be used <before>
-  the <flatten> modifier, since the output of the <flatten> modifier is
-  a string that no longer looks like a IRI and therefore cannot be
-  shortened; the IDs must be shortened first, and then the list of
-  (shortened) IDs can be flattened into a string.
-  
-*** 6.5.4. <format>
-
-  This modifier allows to apply arbitrary formatting to a value. It
-  expects a single argument which should a a format string as expected
-  by Java’s <<<String.format()>>> method and containing a single format
-  specifier, which will be replaced by the value the modifier is applied
-  to.
-  
-  For example, to apply a custom formatting to the double-typed
-  <<<confidence>>> slot, you could use something like:
-  
-+-----------------------------------------------------------------------
-"Confidence: %{confidence|format('%.03f')}"
-+-----------------------------------------------------------------------
-
-*** 6.5.5. <default>
-
-  This modifier allows to specify a default value to insert into a
-  string if the original substituted value is null or empty.
-  
-  For example, to insert the name of the mapping tool used to create the
-  current mapping, or a default string indicating that the tool is
-  unknown:
-  
-+-----------------------------------------------------------------------
-"Mapping tool: %{mapping_tool|default('unknown tool')}"
-+-----------------------------------------------------------------------
-
-*** 6.5.6. <replace>
-
-  This modifier allows to perform a basic find-and-replace operation on
-  the substituted value.
-  
-  For example, after shortening an identifier (with the <<<short>>>
-  modifier), to replace the colon (<<<:>>>) within the short identifier
-  by an underscore (<<<_>>>):
-  
-+-----------------------------------------------------------------------
-"Subject ID: %{subject_id|short|replace(':', '_')}"
-+-----------------------------------------------------------------------
-
-*** 6.5.7. <prefix>
-
-  This modifier condenses the substituted value (which is expected to be
-  a full-length IRI) into a shortened identifier, then truncates the
-  shortened identifier to keep only the prefix part.
-  
-*** 6.5.8. <suffix>
-
-  This modifier condenses the substituted value (which is expected to be
-  a full-length IRI) into a shortened identifier, then truncates the
-  shortened identifier to keep only the suffix (also known as the “local
-  name”).
-  
-*** 6.5.9. <lower> and <upper>
-
-  These modifiers turn the substituted text into lower case and upper
-  case, respectively.
   
 * 7. Grouping rules
 

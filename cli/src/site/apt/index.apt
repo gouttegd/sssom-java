@@ -230,13 +230,50 @@ sssom-cli set.sssom.tsv:metadata.yaml
 ** 2.3. Splitting the result set
 
   Instead of writing a single mapping set, it is possible to split the
-  result set along the subject and object prefixes with the
-  <<<--split>>> option, which accepts the name of a directory where the
-  split sets will be written.
+  result set, and write the mappings into different files depending on
+  the value of their slots.
   
-  With the additional <<<--split-by-predicates>>> option, the set will
-  be split along the matching predicates, in addition to the subject
-  and object IDs.
+  This is done by two options.
+  
+  The <<<--split>>> option triggers the splitting feature. It expects as
+  argument the name of a directory (which will be created if it does not
+  already exist) where the split sets will be written.
+  
+  The <<<--split-by>>> option specifies how exactly the mappings will be
+  distributed into different files. It expects an argument that must be
+  a {{{../sssom-ext/formatting.html}mapping format string}}. All mappings
+  that produce the same string when that format string is applied to
+  them will be written into the same file (whose name is also dictated
+  by the format string).
+  
+  For example, with:
+  
++-----------------------------------------------------------------------
+--split=<DIR> --split-by="%{predicate_id|suffix|lower}"
++-----------------------------------------------------------------------
+
+  all mappings that have the predicate <<<skos:exactMatch>>> will be
+  written into a file named <<<exactmatch.sssom.tsv>>> in the <<<DIR>>>
+  directory, all mappings with the predicate <<<skos:closeMatch>>> will
+  be written into a file named <<<closematch.sssom.tsv>>>, and so on.
+  
+  When the <<<--split-by>>> option is not specified, it defaults to:
+  
++-----------------------------------------------------------------------
+--split-by="%{subject_id|prefix}_%{object_id|prefix}"
++-----------------------------------------------------------------------
+
+  which splits the set along the subject and object prefixes.
+  
+  For convenience, there is also a third option,
+  <<<--split-by-predicates>>>, which is equivalent to:
+  
++-----------------------------------------------------------------------
+--split-by="%{subject_id|prefix}_%{predicate_id|short|replace(':', '_')}_%{object_id|prefix}"
++-----------------------------------------------------------------------
+
+  That is, it splits the set along the subject and object prefixes, and
+  the predicate IDs.
   
 ** 2.4. Output format
 

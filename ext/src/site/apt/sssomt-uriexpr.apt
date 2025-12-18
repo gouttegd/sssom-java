@@ -62,7 +62,7 @@ uriexpr_contains(%{subject_id}, 'disease', MONDO:*) -> ...;
 
 * 2. <uriexpr_slot_value>
 
-  This is a {{{./sssom-transform.html#5.4. Format modifiers}format modifier}}
+  This is a {{{./formatting.html#3. Format modifiers}format modifier}}
   function that allows to extract the value of a particular slot within
   a URI Expression.
   
