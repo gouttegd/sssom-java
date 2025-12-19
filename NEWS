@@ -1,3 +1,10 @@
+Changes in sssom-java 1.10.0
+----------------------------
+
+    * New format modifier functions: `prefix`, `suffix`, `lower`, and `upper`.
+    * New `--split-by` option in SSSOM-CLI to fully control how sets are split.
+
+
 Changes in sssom-java 1.9.1
 ---------------------------
 
