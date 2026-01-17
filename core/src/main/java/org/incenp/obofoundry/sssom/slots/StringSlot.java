@@ -60,7 +60,7 @@ public class StringSlot<T> extends Slot<T> {
 
     @Override
     public void setValue(T object, String value) {
-        if ( isMultivalued() ) {
+        if ( isMultivalued() && value != null ) {
             @SuppressWarnings("unchecked")
             List<String> values = (List<String>) getValue(object);
             if ( values == null ) {

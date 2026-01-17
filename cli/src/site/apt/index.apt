@@ -227,6 +227,21 @@ sssom-cli set.sssom.tsv:metadata.yaml
   which case the output metadata will <only> come from the
   <<<--output-metadata>>> option.
   
+  The metadata of the output set can also be assigned on a per-slot
+  basis using the <<<--annotate>>> option. The option expects an
+  argument of the form <<<SLOT=VALUE>>>, where <<<SLOT>>> is the name
+  of the metadata slot to which the <<<VALUE>>> will be assigned. The
+  option may be repeated as any times as needed to assign values to
+  several slots. If the value is absent (as in <<<--annotate SLOT=>>>),
+  any existing value on the slot will be unset.
+  
+  For multi-valued slots, the value assigned with <<<--annotate>>> will
+  replace any existing value. To <append> another value to any existing
+  value, use the form <<<--annotate SLOT+=VALUE>>> instead.
+  
+  Values set through the <<<--annotate>>> option take precedence over
+  values set through the <<<--output-metadata>>> option.
+  
 ** 2.3. Splitting the result set
 
   Instead of writing a single mapping set, it is possible to split the

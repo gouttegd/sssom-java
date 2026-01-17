@@ -492,4 +492,11 @@ public class SSSOMCLITest {
                 "exo2c-updated-from-ont2-missing-imports.sssom.tsv", new String[] { "--update-from-ontology",
                         "../ext/src/test/resources/owl/ont2.ofn", "--ignore-missing-imports" });
     }
+
+    @Test
+    void testAnnotation() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-annotated.sssom.tsv",
+                new String[] { "--annotate", "creator_id=https://example.org/people/0000-0000-0001-5678",
+                        "--annotate", "creator_id+=https://example.org/people/0000-0000-0002-1234" });
+    }
 }

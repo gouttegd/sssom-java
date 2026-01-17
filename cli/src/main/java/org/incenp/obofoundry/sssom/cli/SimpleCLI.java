@@ -322,6 +322,12 @@ public class SimpleCLI implements Runnable {
                 converter = VersionConverter.class,
                 description = "The version of the SSSOM specification the result set must be compliant with. Default is the latest supported version.")
         Version forceVersion = Version.LATEST;
+
+        @Option(names= { "--annotate" },
+                paramLabel = "SLOT(+)=VALUE",
+                converter = AnnotationOptionConverter.class,
+                description = "Annotate the mapping set with the specified value.")
+        AnnotationOption[] annotations;
     }
 
     enum OutputMapSource {
@@ -632,6 +638,12 @@ public class SimpleCLI implements Runnable {
                 } catch ( OWLOntologyCreationException e ) {
                     helper.error("cannot read ontology %s: %s", ontFile, e.getMessage());
                 }
+            }
+        }
+
+        if ( outputOpts.annotations != null ) {
+            for ( AnnotationOption annot : outputOpts.annotations ) {
+                annot.apply(ms);
             }
         }
     }
