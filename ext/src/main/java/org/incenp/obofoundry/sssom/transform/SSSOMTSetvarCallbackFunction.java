@@ -28,7 +28,7 @@ import java.util.Map;
  * is called when "set_var" is found after a filter, as in:
  * 
  * <pre>
- * predicate==skos:exactMatch -> set_var("MYVAR", "value for exact mappings");
+ * predicate==skos:exactMatch -&gt; set_var("MYVAR", "value for exact mappings");
  * </pre>
  * <p>
  * It sets the value that the indicated variable should take for mappings that

@@ -37,7 +37,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  * have the same predicate and the same object source:
  * 
  * <pre>
- * ... -> infer_cardinality("predicate_id", "object_source");
+ * ... -&gt; infer_cardinality("predicate_id", "object_source");
  * </pre>
  */
 public class SSSOMTInferCardinalityFunction

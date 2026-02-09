@@ -55,7 +55,7 @@ import org.incenp.obofoundry.sssom.slots.SlotHelper;
  * label:
  * 
  * <pre>
- * editor.addDelayedAssign("object_label", (mapping) -> String.format("same as %s", mapping -> getSubjectLabel()));
+ * editor.addDelayedAssign("object_label", (mapping) -&gt; String.format("same as %s", mapping -&gt; getSubjectLabel()));
  * </pre>
  * 
  * <p>
