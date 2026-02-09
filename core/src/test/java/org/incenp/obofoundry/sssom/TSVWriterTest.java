@@ -333,8 +333,27 @@ public class TSVWriterTest {
         ms.getMappings().get(0).setComment("Value\twith\ttab\tcharacters");
         ms.getMappings().get(0).setObjectLabel("Value with \"quote\" characters");
         ms.getMappings().get(0).setIssueTrackerItem("Value with\nnew line character");
+        ms.getMappings().get(0).getAuthorLabel(true).add("Alice");
+        ms.getMappings().get(0).getAuthorLabel().add("Bob\tand\tCharlie");
 
         assertWrittenAsExpected(ms, "test-escaping-tsv", null, null, null);
+    }
+
+    @Test
+    void testEscapingPipeCharacter() throws IOException, SSSOMFormatException {
+        MappingSet ms = getTestSet();
+        ms.setMappingSetId("https://example.org/sets/test-escaping-pipe");
+        ms.getMappings().get(0).getAuthorLabel(true).add("Alice|Bob");
+        ms.getMappings().get(0).getAuthorLabel().add("Charlie");
+
+        Mapping m2 = ms.getMappings().get(0).toBuilder().subjectId("https://example.org/entities/0002")
+                .authorLabel(new ArrayList<>()).build();
+        m2.getAuthorLabel().add("Alice\\Bob");
+        m2.getAuthorLabel().add("Charlie\\");
+        m2.getAuthorLabel().add("David\\|Eve\\");
+        ms.getMappings().add(m2);
+
+        assertWrittenAsExpected(ms, "test-escaping-pipe", null, null, null);
     }
 
     @Test

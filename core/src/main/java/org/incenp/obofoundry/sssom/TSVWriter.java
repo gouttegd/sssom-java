@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.incenp.obofoundry.sssom.model.ExtensionDefinition;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -71,9 +70,6 @@ import org.incenp.obofoundry.sssom.slots.VersionSlot;
  * </pre>
  */
 public class TSVWriter extends SSSOMWriter {
-
-    private static final Pattern tsvSpecialChars = Pattern.compile("[\t\n\r\"]");
-    private static final Pattern csvSpecialChars = Pattern.compile("[,\n\r\"]");
 
     private BufferedWriter tsvWriter, metaWriter;
     private Set<String> usedPrefixes = new HashSet<String>();
@@ -630,16 +626,7 @@ public class TSVWriter extends SSSOMWriter {
                 results.add("");
                 return;
             }
-
-            StringBuilder sb = new StringBuilder();
-            for ( int i = 0, n = values.size(); i < n; i++ ) {
-                String value = values.get(i);
-                sb.append(escapeTSV(value));
-                if ( i < n - 1 ) {
-                    sb.append('|');
-                }
-            }
-            results.add(sb.toString());
+            results.add(escapeTSV(values));
         }
 
         @Override
@@ -649,15 +636,7 @@ public class TSVWriter extends SSSOMWriter {
                 return;
             }
 
-            StringBuilder sb = new StringBuilder();
-            for ( int i = 0, n = values.size(); i < n; i++ ) {
-                String value = values.get(i);
-                sb.append(escapeTSV(prefixManager.shortenIdentifier(value)));
-                if ( i < n - 1 ) {
-                    sb.append('|');
-                }
-            }
-            results.add(sb.toString());
+            results.add(escapeTSV(prefixManager.shortenIdentifiers(values)));
         }
 
         @Override
@@ -691,12 +670,117 @@ public class TSVWriter extends SSSOMWriter {
          * https://datatracker.ietf.org/doc/html/rfc4180#section-2
          */
         private String escapeTSV(String value) {
-            Pattern specialChars = isCSV ? csvSpecialChars : tsvSpecialChars;
-            if ( specialChars.matcher(value).find() ) {
-                return "\"" + value.replace("\"", "\"\"") + "\"";
-            } else {
-                return value;
+            StringBuilder sb = new StringBuilder();
+            int len = value.length();
+            boolean quotesNeeded = false;
+            for ( int i = 0; i < len; i++ ) {
+                char c = value.charAt(i);
+                switch ( c ) {
+                case ',':
+                    if ( isCSV ) {
+                        quotesNeeded = true;
+                    }
+                    break;
+
+                case '\t':
+                    if ( !isCSV ) {
+                        quotesNeeded = true;
+                    }
+                    break;
+
+                case '\n':
+                case '\r':
+                    quotesNeeded = true;
+                    break;
+
+                case '"':
+                    quotesNeeded = true;
+                    sb.append('"');
+                    break;
+                }
+                sb.append(c);
             }
+
+            if ( quotesNeeded ) {
+                sb.insert(0, '"');
+                sb.append('"');
+            }
+
+            return sb.toString();
+        }
+
+        /*
+         * Likewise, but for multi-valued slots, where in addition we need to escape
+         * pipe characters. The duplicated code from the previous method is unfortunate,
+         * but we can't simply call that method because we don't want to quote
+         * <em>individual</em> values here, it is the entire |-separated multivalue that
+         * must be quoted if any single value within it contains quote-triggering
+         * characters.
+         */
+        private String escapeTSV(List<String> values) {
+            StringBuilder sb = new StringBuilder();
+            boolean quotesNeeded = false;
+            int nValues = values.size();
+            for ( int i = 0; i < nValues; i++ ) {
+                String value = values.get(i);
+                if ( i > 0 ) {
+                    sb.append('|');
+                }
+
+                int len = value.length();
+                for ( int j = 0; j < len; j++ ) {
+                    char c = value.charAt(j);
+                    switch ( c ) {
+                    case ',':
+                        if ( isCSV ) {
+                            quotesNeeded = true;
+                        }
+                        break;
+
+                    case '\t':
+                        if ( !isCSV ) {
+                            quotesNeeded = true;
+                        }
+                        break;
+
+                    case '\r':
+                    case '\n':
+                        quotesNeeded = true;
+                        break;
+
+                    case '"':
+                        quotesNeeded = true;
+                        sb.append('"');
+                        break;
+
+                    case '\\':
+                        // The backslash needs escaping only if (1) it is followed by another backslash
+                        // or a pipe, or (2) it is the last character of the current value and there are
+                        // more values to follow.
+                        if ( j < len - 1 ) {
+                            char next = value.charAt(j + 1);
+                            if ( next == '\\' || next == '|' ) {
+                                sb.append('\\');
+                            }
+                        } else if ( i < nValues - 1 ) {
+                            sb.append('\\');
+                        }
+                        break;
+
+                    case '|':
+                        sb.append('\\');
+                        break;
+                    }
+                    sb.append(c);
+                }
+            }
+
+            if ( quotesNeeded ) {
+                sb.insert(0, '"');
+                sb.append('"');
+            }
+
+            return sb.toString();
         }
     }
 }

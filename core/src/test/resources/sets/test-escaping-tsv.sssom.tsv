@@ -3,6 +3,6 @@
 #  ORGENT: https://example.org/entities/
 #mapping_set_id: https://example.org/sets/test-escaping-tsv
 #license: https://creativecommons.org/licenses/by/4.0/
-subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	issue_tracker_item	comment
-ORGENT:0001	Value with , characters	skos:closeMatch	COMENT:0011	"Value with ""quote"" characters"	semapv:ManualMappingCuration	"Value with
+subject_id	subject_label	predicate_id	object_id	object_label	mapping_justification	author_label	issue_tracker_item	comment
+ORGENT:0001	Value with , characters	skos:closeMatch	COMENT:0011	"Value with ""quote"" characters"	semapv:ManualMappingCuration	"Alice|Bob	and	Charlie"	"Value with
 new line character"	"Value	with	tab	characters"

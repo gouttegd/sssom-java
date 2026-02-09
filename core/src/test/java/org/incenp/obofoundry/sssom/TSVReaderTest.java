@@ -493,6 +493,28 @@ public class TSVReaderTest {
         Assertions.assertEquals("Value\u0009with\u0009tab\u0009characters", m.getComment());
         Assertions.assertEquals("Value with \"quote\" characters", m.getObjectLabel());
         Assertions.assertEquals("Value with\nnew line character", m.getIssueTrackerItem());
+        Assertions.assertEquals("Alice", m.getAuthorLabel().get(0));
+        Assertions.assertEquals("Bob\tand\tCharlie", m.getAuthorLabel().get(1));
+    }
+
+    /*
+     * Test that the parser can handle escaped pipe characters in multi-valued
+     * slots.
+     */
+    @Test
+    void testEscapedPipe() throws IOException, SSSOMFormatException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/test-escaping-pipe.sssom.tsv");
+        MappingSet ms = reader.read();
+        Mapping m = ms.getMappings().get(0);
+
+        Assertions.assertEquals("Alice|Bob", m.getAuthorLabel().get(0));
+        Assertions.assertEquals("Charlie", m.getAuthorLabel().get(1));
+
+        m = ms.getMappings().get(1);
+        Assertions.assertEquals(3, m.getAuthorLabel().size());
+        Assertions.assertEquals("Alice\\Bob", m.getAuthorLabel().get(0));
+        Assertions.assertEquals("Charlie\\", m.getAuthorLabel().get(1));
+        Assertions.assertEquals("David\\|Eve\\", m.getAuthorLabel().get(2));
     }
 
     /*
