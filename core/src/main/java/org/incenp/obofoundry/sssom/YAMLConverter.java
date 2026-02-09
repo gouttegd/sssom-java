@@ -400,13 +400,56 @@ public class YAMLConverter {
              * they were single-valued, which is strictly speaking but happens in the wild
              * (including in the examples shown in the SSSOM documentation!).
              */
-            for ( String item : rawValue.toString().split("\\|") ) {
+            for ( String item : splitString(rawValue.toString()) ) {
                 value.add(item);
             }
         } else {
             throw getTypingError(slotName);
         }
         return value;
+    }
+
+    /*
+     * Splits a string along pipe (`|`) characters, with support for backslash
+     * escaping.
+     */
+    private List<String> splitString(String value) {
+        ArrayList<String> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        int len = value.length();
+        boolean escaped = false;
+        for ( int i = 0; i < len; i++ ) {
+            char c = value.charAt(i);
+            if ( escaped ) {
+                sb.append(c);
+                escaped = false;
+            } else if ( c == '\\' ) {
+                // The backslash is treated as an escape character only if it is followed by
+                // another backslash or a pipe.
+                if ( i < len - 1 ) {
+                    char next = value.charAt(i + 1);
+                    if ( next == '\\' || next == '|' ) {
+                        escaped = true;
+                    }
+                }
+                // Otherwise it is a normal character.
+                if ( !escaped ) {
+                    sb.append(c);
+                }
+            } else if ( c == '|' ) {
+                if ( sb.length() > 0 ) {
+                    list.add(sb.toString());
+                    sb.delete(0, sb.length());
+                }
+            } else {
+                sb.append(c);
+            }
+        }
+        if ( sb.length() > 0 ) {
+            list.add(sb.toString());
+        }
+
+        return list;
     }
 
     /*
