@@ -56,6 +56,7 @@ public class YAMLConverter {
     private ExtensionSlotManager extensionManager;
     private ExtraMetadataPolicy extraPolicy = ExtraMetadataPolicy.NONE;
     private Version assumedVersion = Version.SSSOM_1_0;
+    private boolean supportEscapedPipes = false;
 
     /**
      * Creates a new YAML converter.
@@ -184,6 +185,7 @@ public class YAMLConverter {
         if ( version == Version.UNKNOWN ) {
             version = Version.LATEST;
         }
+        supportEscapedPipes = version != Version.SSSOM_1_0;
 
         // Process the CURIE map, so that we can expand CURIEs as soon as possible
         Object rawCurieMap = rawMap.getOrDefault("curie_map", new HashMap<String, String>());
@@ -423,7 +425,7 @@ public class YAMLConverter {
             if ( escaped ) {
                 sb.append(c);
                 escaped = false;
-            } else if ( c == '\\' ) {
+            } else if ( c == '\\' && supportEscapedPipes ) {
                 // The backslash is treated as an escape character only if it is followed by
                 // another backslash or a pipe.
                 if ( i < len - 1 ) {

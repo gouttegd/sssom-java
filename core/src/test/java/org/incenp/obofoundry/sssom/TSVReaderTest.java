@@ -504,6 +504,7 @@ public class TSVReaderTest {
     @Test
     void testEscapedPipe() throws IOException, SSSOMFormatException {
         TSVReader reader = new TSVReader("src/test/resources/sets/test-escaping-pipe.sssom.tsv");
+        reader.setAssumedVersion(Version.SSSOM_1_1);
         MappingSet ms = reader.read();
         Mapping m = ms.getMappings().get(0);
 
@@ -515,6 +516,15 @@ public class TSVReaderTest {
         Assertions.assertEquals("Alice\\Bob", m.getAuthorLabel().get(0));
         Assertions.assertEquals("Charlie\\", m.getAuthorLabel().get(1));
         Assertions.assertEquals("David\\|Eve\\", m.getAuthorLabel().get(2));
+
+        // Try again in SSSOM 1.0 compliance mode; there should be no escaping
+        reader = new TSVReader("src/test/resources/sets/test-escaping-pipe.sssom.tsv");
+        reader.setAssumedVersion(Version.SSSOM_1_0);
+        m = reader.read().getMappings().get(0);
+
+        Assertions.assertEquals("Alice\\", m.getAuthorLabel().get(0));
+        Assertions.assertEquals("Bob", m.getAuthorLabel().get(1));
+        Assertions.assertEquals("Charlie", m.getAuthorLabel().get(2));
     }
 
     /*
