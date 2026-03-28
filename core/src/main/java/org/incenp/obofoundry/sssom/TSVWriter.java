@@ -753,21 +753,8 @@ public class TSVWriter extends SSSOMWriter {
                         sb.append('"');
                         break;
 
-                    case '\\':
-                        // The backslash needs escaping only if (1) it is followed by another backslash
-                        // or a pipe, or (2) it is the last character of the current value and there are
-                        // more values to follow.
-                        if ( j < len - 1 ) {
-                            char next = value.charAt(j + 1);
-                            if ( next == '\\' || next == '|' ) {
-                                sb.append('\\');
-                            }
-                        } else if ( i < nValues - 1 ) {
-                            sb.append('\\');
-                        }
-                        break;
-
                     case '|':
+                    case '\\':
                         sb.append('\\');
                         break;
                     }
