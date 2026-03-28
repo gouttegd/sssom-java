@@ -58,7 +58,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <lombok.encoding>UTF-8</lombok.encoding>
   </properties>
 
   <dependencies>
@@ -130,6 +129,7 @@
             </goals>
             <configuration>
               <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser,org.incenp.obofoundry.sssom.tests</excludePackageNames>
+              <doclint>all,-missing</doclint>
             </configuration>
           </execution>
         </executions>
@@ -221,6 +221,7 @@
         </reportSets>
         <configuration>
           <excludePackageNames>org.incenp.obofoundry.sssom.transform.parser,org.incenp.obofoundry.sssom.cli,org.incenp.obofoundry.sssom.robot</excludePackageNames>
+          <doclint>all,-missing</doclint>
         </configuration>
       </plugin>
     </plugins>

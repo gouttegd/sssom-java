@@ -12,7 +12,7 @@ The SSSOM/T-OWL dialect
   This page describes the specific functions of the SSSOM/T-OWL dialect.
   
   Note: For a quick overview of the dialect, you may want to jump to the
-  {{{6. Examples}Examples section}} at first, then come back to learn
+  {{{#a6._Examples}Examples section}} at first, then come back to learn
   more about each function.
 
 %{toc|section=1|fromDepth=2|toDepth=3}
@@ -370,7 +370,7 @@ AnnotationAssertion(
   entities are known to the Manchester parser, either by having them
   declared in the helper ontology, or by declaring them explicitly at
   the beginning of the SSSOM/T-OWL ruleset using the
-  {{{2.1. declare}declare}} directive.
+  {{{#a2.1._declare}declare}} directive.
   
 *** 4.2.1. Referencing entities within the Manchester expression
 
@@ -424,7 +424,7 @@ AnnotationAssertion(
 
   By default, <create_axiom> creates un-annotated axioms. It can be made
   to annotate the axioms it creates
-  {{{4.1.2. Axiom annotations}in a similar fashion}} as the <direct>
+  {{{#a4.1.2._Axiom_annotations}in a similar fashion}} as the <direct>
   function, by adding <<</annots>>> and <<</annots_uris>>> flags.
   
   For example, to annotate a _SubClassOf_ axiom with annotations from
@@ -497,13 +497,13 @@ AnnotationAssertion(
 *** 5.1.1. <declare_class>
 
   This was the ancient way of declaring a OWL class to ensure it was
-  known to the Manchester parser. The {{{2.1. declare}<declare>}}
+  known to the Manchester parser. The {{{#a2.1._declare}<declare>}}
   directive must be used instead.
 
 *** 5.1.2. <declare_object_property>
 
   This was the ancient way of declaring an object property to ensure it
-  was known to the Manchester parser. The {{{2.1. declare}<declare>}}
+  was known to the Manchester parser. The {{{#a2.1._declare}<declare>}}
   directive, with the <<</type="object_property">>> flag, must be used
   instead.
   
@@ -525,7 +525,7 @@ declare(BFO:0000051, /type="object_property");
   a given value depending on whether the subject or the object of a
   mapping was a descendant of a given entity.
   
-  Use the {{{3.2. is_a}<is_a>}} filter function combined with
+  Use the {{{#a3.2._is_a}<is_a>}} filter function combined with
   {{{./sssom-transform.html#a6.1.1._set_var}<set_var>}} instead.
 
 ** 5.2. Preprocessor functions
@@ -534,7 +534,7 @@ declare(BFO:0000051, /type="object_property");
 
   This preprocessor allowed to drop a mapping if its subject did not
   exist or was obsolete in the helper ontology. Use the
-  {{{3.1. exists}<exists>}} filter instead, combined with the
+  {{{#a3.1._exists}<exists>}} filter instead, combined with the
   {{{./sssom-transform.html#a6.4.1._stop}<stop>}} preprocessor.
   
   That is, replace for example
@@ -551,7 +551,7 @@ subject==UBERON:* && !exists(%{subject_id}) -> stop();
 
 *** 5.2.2. <check_object_existence>
 
-  Similar to {{{5.2.1. check_subject_existence}<check_subject_existence>}}
+  Similar to {{{#a5.2.1._check_subject_existence}<check_subject_existence>}}
   but for checking the object of a mapping instead of the subject.
   
   Same replacement, for example replace
@@ -571,14 +571,14 @@ object==UBERON:* && !exists(%{object_id}) -> stop();
 *** 5.3.1. <annotate_subject>
 
   This function allowed to annotate the subject of a mapping. Use the
-  {{{4.3. annotate}<annotate>}} function instead, with
+  {{{#a4.3._annotate}<annotate>}} function instead, with
   <<<%\{subject_id\}>>> as the first argument.
 
 *** 5.3.2. <annotate_object>
 
-  Similar to {{{5.3.1. annotate_subject}<annotate_subject>}}, but to
+  Similar to {{{#a5.3.1._annotate_subject}<annotate_subject>}}, but to
   annotate the object of a mapping. Use the
-  {{{4.3. annotate}<annotate>}} function instead, with
+  {{{#a4.3._annotate}<annotate>}} function instead, with
   <<<%\{object_id\}>>> as the first argument.
 
 ** 5.4. The <*_curie> placeholders
