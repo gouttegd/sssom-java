@@ -24,7 +24,7 @@ ROBOT inject command
   
   The command will generate OWL axioms according to instructions
   provided by other command line options (see
-  {{{5.Specifying the axioms to generate}Specifying the axioms to generate}}
+  {{{#a3._Specifying_the_axioms_to_generate}Specifying the axioms to generate}}
   below). The default behaviour is
   then to inject (merge) those axioms into the ontology that is
   currently manipulated by the ROBOT pipeline.
@@ -52,7 +52,7 @@ ROBOT inject command
   
   Using <<<--no-merge>>> alone makes little sense as it will result in
   the axioms being sent to nowhere (unless a
-  {{{6.2. Write generated axiom to different files}dispatch table}} is
+  {{{#a4.2._Write_generated_axiom_to_different_files}dispatch table}} is
   also used, when generating axioms from a ruleset).
   
   The option <<<--create>>> instructs the command to create a <new>
@@ -193,12 +193,12 @@ ROBOT inject command
   precedence over ROBOT’s built-in prefixes and prefixes declared in the
   input prefix map.
   
-  Of note, the use of the {{{6.5.1. short}<short>}} format modifier
-  requires that a suitable prefix has been declared to shorten the ID
-  the modifier is applied to. Without such a prefix, the identifier is
-  written in its canonical full-form and a warning will be emitted.
-  Use the <<<--error-on-unshortenable-iris>>> option to force the
-  command to error out if that happens.
+  Of note, the use of the {{{../sssom-ext/formatting.html#a4.5.1._short}<short>}}
+  format modifier requires that a suitable prefix has been declared to
+  shorten the ID the modifier is applied to. Without such a prefix, the
+  identifier is written in its canonical full-form and a warning will be
+  emitted. Use the <<<--error-on-unshortenable-iris>>> option to force
+  the command to error out if that happens.
   
 *** 3.2.2. Examples
   

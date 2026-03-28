@@ -92,7 +92,7 @@ prefix semapv: <https://w3id.org/semapv/vocab/>
 ** 2.2. The directive section
 
   In SSSOM/T, a <directive> is a function call (see
-  {{{5. Function calls}below}} for the generic syntax of function calls)
+  {{{#a5._Function_calls}below}} for the generic syntax of function calls)
   that appears on its own in a ruleset (not associated to any <filter>),
   just after the prefix declarations (if any) but before any <rule>.
   
@@ -101,7 +101,7 @@ prefix semapv: <https://w3id.org/semapv/vocab/>
   transformation rules.
   
   The base SSSOM/T language currently defines only one directive,
-  {{{6.1.1. set_var}set_var}}.
+  {{{#a6.1.1._set_var}set_var}}.
   
 ** 2.3. The rule section
 
@@ -114,9 +114,9 @@ prefix semapv: <https://w3id.org/semapv/vocab/>
 FILTER -> ACTION;
 +-----------------------------------------------------------------------
 
-  where <FILTER> is an {{{3. Filters}expression}} that will determine to 
+  where <FILTER> is an {{{#a3._Filters}expression}} that will determine to 
   which mappings the rule is applied, and <ACTION> describes
-  {{{4. Actions}what will happen}} when the rule is applied to those
+  {{{#a4._Actions}what will happen}} when the rule is applied to those
   mappings.
   
   Rules are applied in the order in which they appear in the SSSOM/T
@@ -297,7 +297,7 @@ publication_date>2025-02-01
   <effective> cardinality values, computed on the entire set just before
   the filter is applied.
   
-  However, any use of the {{{6.3.2. infer_cardinality}infer_cardinality}}
+  However, any use of the {{{#a6.3.2._infer_cardinality}infer_cardinality}}
   function anywhere in the ruleset will disable that behaviour, because
   it is then assumed that the ruleset is taking responsibility for
   computing cardinality values as required.
@@ -354,7 +354,7 @@ author==~
 
   Lastly, an atomic filter may also take the form of a call to a
   filter function. See the
-  {{{6.2. Filter functions}corresponding section}} for a list of filter
+  {{{#a6.2._Filter_functions}corresponding section}} for a list of filter
   functions available in the base SSSOM/T language. SSSOM/T dialects may
   also add their own filter functions.
   
@@ -426,7 +426,7 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   <<<skos:exactMatch>>>.
   
   Note that because of the particular behaviour of the <<<predicate>>>
-  filter ({{{3.1.5. Filtering on mapping predicate}see above}}), in this
+  filter ({{{#a3.1.5._Filtering_on_mapping_predicate}see above}}), in this
   example, the filter <would> match a mapping that has a
   <<<skos:exactMatch>>> predicate coupled to the predicate modifier
   <Not>: the <<<predicate==skos:exactMatch>>> would initially reject
@@ -474,8 +474,8 @@ predicate==skos:exactMatch && (mapping_justification==semapv:ManualMappingCurati
   The base SSSOM/T language described here does not specify any
   generator functions (since such functions are specific to a given
   SSSOM/T dialect). It defines a handful of
-  {{{6.4. Preprocessor functions}preprocessor functions}} and
-  {{{6.3. Callback functions}callback functions}}.
+  {{{#a6.4._Preprocessor_functions}preprocessor functions}} and
+  {{{#a6.3._Callback functions}callback functions}}.
 
 * 5. Function calls
 
@@ -543,7 +543,7 @@ FUNCTION("The subject ID is %{subject_id}.")
   modifiers to those described in the aforementioned documentation.
   
   Custom placeholders, also called <variables>, may also be defined
-  within a SSSOM/T script with the {{{#a6.3.1._set_var} set_var function}}.
+  within a SSSOM/T script with the {{{./formatting.html#a3.1.1._short} set_var function}}.
   
   The following additional placeholder is available in all SSSOM/T
   dialects:
@@ -638,7 +638,7 @@ has_extension(PROP:fooProperty) -> stop();
 *** 6.3.1. <set_var>
 
   This is in fact the same function as the
-  {{{6.1.1. set_var}set_var directive}} above, except in a different
+  {{{#a6.1.1._set_var}set_var directive}} above, except in a different
   context.
   
   When called as the <ACTION> part of a rule (after a filter), it will
@@ -705,7 +705,7 @@ predicate==* -> infer_cardinality("predicate_id", "object_source");
   using some built-in knowledge about which predicates are invertible;
   if it fails (because the original predicate has no known inverse
   predicate), the mapping will be excluded from any further processing
-  (as if it has been the target of the {{{6.4.1. stop}stop}} function).
+  (as if it has been the target of the {{{#a6.4.1._stop}stop}} function).
   
   See the
   {{{https://mapping-commons.github.io/sssom/chaining-rules/#inverse}SSSOM documentation}}
@@ -753,7 +753,7 @@ justification==semapv:ManualMappingCuration && subject==CL:* -> invert();
   The second argument:
   
   * may contain
-    {{{5.2. Placeholder expansion in string arguments}placeholders}};
+    {{{#a5.2._Placeholder_expansion_in_string_arguments}placeholders}};
   
   * may be an empty string, to indicate that the slot should have no
     value (any existing value for that slot would then be removed);
@@ -803,7 +803,7 @@ predicate==* -> assign("comment", "Mapping between '%{subject_label}' and '%{obj
   Currently, that function is only available for slots whose values are
   either strings or list-of-strings (including entity references).
   
-  As for the {{{6.4.3. assign}assign}} function, it is possible to
+  As for the {{{#a6.4.3._assign}assign}} function, it is possible to
   modify more than one slot in a single call by adding extra triplets of
   arguments.
   

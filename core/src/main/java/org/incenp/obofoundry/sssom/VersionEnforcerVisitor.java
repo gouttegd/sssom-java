@@ -12,7 +12,8 @@ import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
  * Helper object to forcibly remove from a set or a mapping all slots or slot
  * values that are incompatible with a given version of the SSSOM specification.
  * 
- * @param <T>
+ * @param <T> The type of object to visit (<code>Mapping</code> or
+ *            <code>MappingSet</code>).
  */
 public class VersionEnforcerVisitor<T> extends SlotVisitorBase<T> {
 
