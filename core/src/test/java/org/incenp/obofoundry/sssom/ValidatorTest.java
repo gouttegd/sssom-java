@@ -19,6 +19,8 @@
 package org.incenp.obofoundry.sssom;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.EnumSet;
 
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -178,5 +180,25 @@ public class ValidatorTest {
         Assertions.assertFalse(errors.isEmpty());
         Assertions.assertFalse(errors.contains(ValidationError.MISSING_SET_ID));
         Assertions.assertFalse(errors.contains(ValidationError.MISSING_LICENSE));
+    }
+
+    @Test
+    void testMissingReviewer() throws SSSOMFormatException, IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c.sssom.tsv");
+        MappingSet ms = reader.read();
+        Validator v = new Validator(ValidationLevel.EXTENDED);
+
+        ms.getMappings().get(1).setReviewDate(LocalDate.of(2026, 3, 31));
+        ms.getMappings().get(2).setReviewDate(LocalDate.of(2026, 3, 31));
+        ms.getMappings().get(3).setReviewDate(LocalDate.of(2026, 3, 31));
+        Assertions.assertTrue(v.validate(ms).contains(ValidationError.MISSING_REVIEWER));
+
+        ms.getMappings().get(1).setReviewerId(new ArrayList<>());
+        ms.getMappings().get(2).getReviewerId(true).add("https://example.org/people/0000-0000-0001-1234");
+        ms.getMappings().get(3).getReviewerLabel(true).add("Alice");
+        Assertions.assertTrue(v.validate(ms).contains(ValidationError.MISSING_REVIEWER));
+
+        ms.getMappings().get(1).getReviewerId(true).add("https://example.org/people/0000-0000-0001-1234");
+        Assertions.assertTrue(v.validate(ms).isEmpty());
     }
 }

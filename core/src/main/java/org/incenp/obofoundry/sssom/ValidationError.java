@@ -34,7 +34,8 @@ public enum ValidationError {
     MISSING_JUSTIFICATION("Missing justification"),
     INVALID_PREDICATE_TYPE("Invalid predicate type"),
     MISSING_RECORD_ID("Records with missing ID", true),
-    DUPLICATED_RECORD_ID("Records with duplicated ID", true);
+    DUPLICATED_RECORD_ID("Records with duplicated ID", true),
+    MISSING_REVIEWER("Missing reviewer ID or label");
 
     private String msg;
     private boolean setLevel;

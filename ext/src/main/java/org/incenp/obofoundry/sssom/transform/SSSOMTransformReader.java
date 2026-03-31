@@ -991,6 +991,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
         case "publication_date":
             filter = (mapping) -> testValue.apply(mapping.getPublicationDate());
             break;
+
+        case "review_date":
+            filter = (mapping) -> testValue.apply(mapping.getReviewDate());
+            break;
         }
 
         return addFilter(new NamedFilter(asText, filter));
