@@ -162,6 +162,10 @@ public class Mapping  {
     @SlotURI("http://purl.org/dc/terms/issued")
     private LocalDate publicationDate;
 
+    @JsonProperty("review_date")
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private LocalDate reviewDate;
+
     private Double confidence;
 
     @JsonProperty("curation_rule")
@@ -255,6 +259,7 @@ public class Mapping  {
             final String mappingToolVersion,
             final LocalDate mappingDate,
             final LocalDate publicationDate,
+            final LocalDate reviewDate,
             final Double confidence,
             final List<String> curationRule,
             final List<String> curationRuleText,
@@ -304,6 +309,7 @@ public class Mapping  {
         this.mappingToolVersion = mappingToolVersion;
         this.mappingDate = mappingDate;
         this.publicationDate = publicationDate;
+        this.reviewDate = reviewDate;
         this.confidence = confidence;
         this.curationRule = curationRule;
         this.curationRuleText = curationRuleText;
@@ -900,6 +906,20 @@ public class Mapping  {
      */
     public void setPublicationDate(final LocalDate value) {
         this.publicationDate = value;
+    }
+
+    /**
+     * Gets the value of the <code>review_date</code> slot.
+     */
+    public LocalDate getReviewDate() {
+        return this.reviewDate;
+    }
+
+    /**
+     * Sets the value of the <code>review_date</code> slot.
+     */
+    public void setReviewDate(final LocalDate value) {
+        this.reviewDate = value;
     }
 
     /**
@@ -1576,6 +1596,10 @@ public class Mapping  {
             String v = String.valueOf(publicationDate);
             sb.append(String.format("(16:publication_date%d:%s)", v.length(), v));
         }
+        if ( reviewDate != null ) {
+            String v = String.valueOf(reviewDate);
+            sb.append(String.format("(11:review_date%d:%s)", v.length(), v));
+        }
         if ( confidence != null ) {
             String v = floatFormatter.format(confidence);
             sb.append(String.format("(10:confidence%d:%s)", v.length(), v));
@@ -1933,6 +1957,11 @@ public class Mapping  {
             sb.append(this.publicationDate);
             sb.append(",");
         }
+        if ( this.reviewDate != null ) {
+            sb.append("review_date=");
+            sb.append(this.reviewDate);
+            sb.append(",");
+        }
         if ( this.confidence != null ) {
             sb.append("confidence=");
             sb.append(this.confidence);
@@ -2057,6 +2086,7 @@ public class Mapping  {
         if ( this.mappingToolVersion == null ? other.mappingToolVersion != null : !this.mappingToolVersion.equals(other.mappingToolVersion)) return false;
         if ( this.mappingDate == null ? other.mappingDate != null : !this.mappingDate.equals(other.mappingDate)) return false;
         if ( this.publicationDate == null ? other.publicationDate != null : !this.publicationDate.equals(other.publicationDate)) return false;
+        if ( this.reviewDate == null ? other.reviewDate != null : !this.reviewDate.equals(other.reviewDate)) return false;
         if ( this.confidence == null ? other.confidence != null : !this.confidence.equals(other.confidence)) return false;
         if ( this.curationRule == null ? other.curationRule != null : !this.curationRule.equals(other.curationRule)) return false;
         if ( this.curationRuleText == null ? other.curationRuleText != null : !this.curationRuleText.equals(other.curationRuleText)) return false;
@@ -2117,6 +2147,7 @@ public class Mapping  {
         result = result * PRIME + (this.mappingToolVersion == null ? 43 : this.mappingToolVersion.hashCode());
         result = result * PRIME + (this.mappingDate == null ? 43 : this.mappingDate.hashCode());
         result = result * PRIME + (this.publicationDate == null ? 43 : this.publicationDate.hashCode());
+        result = result * PRIME + (this.reviewDate == null ? 43 : this.reviewDate.hashCode());
         result = result * PRIME + (this.confidence == null ? 43 : this.confidence.hashCode());
         result = result * PRIME + (this.curationRule == null ? 43 : this.curationRule.hashCode());
         result = result * PRIME + (this.curationRuleText == null ? 43 : this.curationRuleText.hashCode());
@@ -2170,6 +2201,7 @@ public class Mapping  {
         private String mappingToolVersion;
         private LocalDate mappingDate;
         private LocalDate publicationDate;
+        private LocalDate reviewDate;
         private Double confidence;
         private List<String> curationRule;
         private List<String> curationRuleText;
@@ -2359,6 +2391,11 @@ public class Mapping  {
             return this;
         }
 
+        public Mapping.MappingBuilder reviewDate(final LocalDate reviewDate) {
+            this.reviewDate = reviewDate;
+            return this;
+        }
+
         public Mapping.MappingBuilder confidence(final Double confidence) {
             this.confidence = confidence;
             return this;
@@ -2469,6 +2506,7 @@ public class Mapping  {
                 this.mappingToolVersion,
                 this.mappingDate,
                 this.publicationDate,
+                this.reviewDate,
                 this.confidence,
                 this.curationRule,
                 this.curationRuleText,
@@ -2521,6 +2559,7 @@ public class Mapping  {
                 + ", mappingToolVersion=" + this.mappingToolVersion
                 + ", mappingDate=" + this.mappingDate
                 + ", publicationDate=" + this.publicationDate
+                + ", reviewDate=" + this.reviewDate
                 + ", confidence=" + this.confidence
                 + ", curationRule=" + this.curationRule
                 + ", curationRuleText=" + this.curationRuleText
@@ -2579,6 +2618,7 @@ public class Mapping  {
             .mappingToolVersion(this.mappingToolVersion)
             .mappingDate(this.mappingDate)
             .publicationDate(this.publicationDate)
+            .reviewDate(this.reviewDate)
             .confidence(this.confidence)
             .curationRule(this.curationRule)
             .curationRuleText(this.curationRuleText)
