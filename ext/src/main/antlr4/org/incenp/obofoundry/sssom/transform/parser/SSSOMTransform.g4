@@ -122,6 +122,7 @@ numField  : 'confidence'
 
 dateField : 'mapping_date'
           | 'publication_date'
+          | 'review_date'
           ;
 
 numOp     : '==' | '>' | '<' | '>=' | '<=';

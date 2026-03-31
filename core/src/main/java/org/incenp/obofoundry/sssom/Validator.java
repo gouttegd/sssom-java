@@ -29,6 +29,7 @@ import org.incenp.obofoundry.sssom.checks.MissingLicenseValidator;
 import org.incenp.obofoundry.sssom.checks.MissingObjectValidator;
 import org.incenp.obofoundry.sssom.checks.MissingPredicateValidator;
 import org.incenp.obofoundry.sssom.checks.MissingRecordIdValidator;
+import org.incenp.obofoundry.sssom.checks.MissingReviewerValidator;
 import org.incenp.obofoundry.sssom.checks.MissingSetIdValidator;
 import org.incenp.obofoundry.sssom.checks.MissingSubjectValidator;
 import org.incenp.obofoundry.sssom.checks.PredicateTypeValidator;
@@ -81,6 +82,7 @@ public class Validator {
             setValidators.add(new MissingSetIdValidator());
             setValidators.add(new MissingLicenseValidator());
             setValidators.add(new RedefinedBuiltinPrefixValidator());
+            mappingValidators.add(new MissingReviewerValidator());
             // Fall-through
 
         case MINIMAL:
