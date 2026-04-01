@@ -5,10 +5,9 @@ SSSOM Java - SSSOM library for Java
 ===================================
 
 SSSOM-Java is an implementation of the [Simple Standard for Sharing
-Ontology Mappings
-(SSSOM)](https://mapping-commons.github.io/sssom/home/) specification
-for the Java language – just a hobby, won’t be big and professional like
-`sssom-py`.
+Ontology Mappings (SSSOM)](https://mapping-commons.github.io/sssom/)
+specification for the Java language – just a hobby, won’t be big and
+professional like `sssom-py`.
 
 The project provides a Java library that can be used to support the
 SSSOM standard in a Java application, a program to manipulate mapping
