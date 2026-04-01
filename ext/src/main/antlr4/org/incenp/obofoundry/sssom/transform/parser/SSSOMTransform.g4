@@ -116,6 +116,7 @@ idValue   : CURIE
           ;
 
 numField  : 'confidence'
+          | 'reviewer_confidence'
           | 'semantic_similarity_score'
           | 'similarity_score'
           ;

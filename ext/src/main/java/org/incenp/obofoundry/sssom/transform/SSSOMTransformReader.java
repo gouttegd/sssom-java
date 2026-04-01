@@ -921,6 +921,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
             filter = (mapping) -> testValue.apply(mapping.getConfidence());
             break;
 
+        case "reviewer_confidence":
+            filter = (mapping) -> testValue.apply(mapping.getReviewerConfidence());
+            break;
+
         case "semantic_similarity_score":
         case "similarity_score":
             filter = (mapping) -> testValue.apply(mapping.getSimilarityScore());

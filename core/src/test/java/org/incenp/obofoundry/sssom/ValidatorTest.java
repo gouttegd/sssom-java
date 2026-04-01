@@ -200,5 +200,10 @@ public class ValidatorTest {
 
         ms.getMappings().get(1).getReviewerId(true).add("https://example.org/people/0000-0000-0001-1234");
         Assertions.assertTrue(v.validate(ms).isEmpty());
+
+        ms.getMappings().get(4).setReviewerConfidence(0.5);
+        Assertions.assertTrue(v.validate(ms).contains(ValidationError.MISSING_REVIEWER));
+        ms.getMappings().get(4).getReviewerLabel(true).add("Alice");
+        Assertions.assertTrue(v.validate(ms).isEmpty());
     }
 }

@@ -29,7 +29,7 @@ public class MissingReviewerValidator implements IMappingValidator {
 
     @Override
     public ValidationError validate(Mapping mapping) {
-        if ( mapping.getReviewDate() != null ) {
+        if ( mapping.getReviewDate() != null || mapping.getReviewerConfidence() != null ) {
             if ( (mapping.getReviewerId() == null || mapping.getReviewerId().isEmpty())
                     && (mapping.getReviewerLabel() == null || mapping.getReviewerLabel().isEmpty()) ) {
                 return ValidationError.MISSING_REVIEWER;
