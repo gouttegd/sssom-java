@@ -289,21 +289,6 @@ public class SSSOMTransformApplicationTest {
     }
 
     @Test
-    void testEditPreprocessor() {
-        arguments.add("object_label=New label");
-
-        try {
-            IMappingTransformer<Mapping> o = application.onPreprocessingAction("edit", arguments, keyedArguments);
-            Assertions.assertInstanceOf(MappingEditor.class, o);
-
-            Mapping m = o.transform(new Mapping());
-            Assertions.assertEquals("New label", m.getObjectLabel());
-        } catch ( SSSOMTransformError e ) {
-            Assertions.fail(e);
-        }
-    }
-
-    @Test
     void testSerialSubstitution() {
         arguments.add("record_id");
         arguments.add("https://example.org/records/%{serial|format(%07d)}");

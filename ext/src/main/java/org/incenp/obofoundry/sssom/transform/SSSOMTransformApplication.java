@@ -174,7 +174,6 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         registerPreprocessor(new SSSOMTInvertFunction(this));
         registerPreprocessor(new SSSOMTAssignFunction(this));
         registerPreprocessor(new SSSOMTReplaceFunction(this));
-        registerPreprocessor(new SSSOMTEditFunction(this));
 
         // Enable support for URI Expressions
         registerFilter(new SSSOMTUriExpressionContainsFunction<T>(this));
