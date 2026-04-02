@@ -42,10 +42,10 @@ public class ValidatorTest {
 
         Validator v = new Validator();
         for ( int i = 0, n = ms.getMappings().size(); i < n; i++ ) {
-            Assertions.assertEquals(expectedErrors[i].getMessage(), v.validate(ms.getMappings().get(i)));
+            Assertions.assertTrue(v.validate(ms.getMappings().get(i), false).contains(expectedErrors[i]));
         }
 
-        // Same but with the new interface
+        // Same but by checking the entire set in one go
         EnumSet<ValidationError> errors = v.validate(ms);
         Assertions.assertTrue(errors.contains(ValidationError.MISSING_SUBJECT));
         Assertions.assertTrue(errors.contains(ValidationError.MISSING_OBJECT));
@@ -60,15 +60,16 @@ public class ValidatorTest {
         reader.setValidationEnabled(false);
         MappingSet ms = reader.read();
 
-        String[] expectedErrors = { null, null, ValidationError.INVALID_PREDICATE_TYPE.getMessage(),
-                ValidationError.INVALID_PREDICATE_TYPE.getMessage() };
+        ValidationError[] expectedErrors = { null, null, ValidationError.INVALID_PREDICATE_TYPE,
+                ValidationError.INVALID_PREDICATE_TYPE };
 
         Validator v = new Validator();
         for ( int i = 0, n = ms.getMappings().size(); i < n; i++ ) {
-            Assertions.assertEquals(expectedErrors[i], v.validate(ms.getMappings().get(i)));
+            EnumSet<ValidationError> result = v.validate(ms.getMappings().get(i), true);
+            Assertions.assertTrue(expectedErrors[i] == null ? result.isEmpty() : result.contains(expectedErrors[i]));
         }
 
-        // Same but with the new interface
+        // Same but by checking the entire set in one go
         EnumSet<ValidationError> errors = v.validate(ms);
         Assertions.assertTrue(errors.contains(ValidationError.INVALID_PREDICATE_TYPE));
         Assertions.assertEquals(1, errors.size());

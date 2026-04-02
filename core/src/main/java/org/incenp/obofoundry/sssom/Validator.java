@@ -161,13 +161,40 @@ public class Validator {
     }
 
     /**
+     * Validates an individual mapping.
+     * 
+     * @param mapping   The mapping to validate.
+     * @param earlyExit If {@code true}, the method will return at most one
+     *                  validation error. Otherwise all validation steps are
+     *                  performed regardless of the result of the previous steps.
+     * @return A set of all the validation errors encountered when checking the
+     *         mapping set (will be empty if the mapping set is in fact valid).
+     */
+    public EnumSet<ValidationError> validate(Mapping mapping, boolean earlyExit) {
+        EnumSet<ValidationError> result = EnumSet.noneOf(ValidationError.class);
+        for ( IMappingValidator v : mappingValidators ) {
+            if ( v instanceof IMappingSetValidator ) {
+                continue;
+            }
+            ValidationError error = v.validate(mapping);
+            if ( error != null ) {
+                result.add(error);
+                if ( earlyExit ) {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Validates an individual mapping. This method checks that the slots that are
      * required by the specification are present and non-empty.
      * 
      * @param mapping The mapping to validate.
      * @return An error message if the mapping is invalid, otherwise {@code null}.
-     * @deprecated Use {@link #validate(MappingSet)} to validate an entire mapping
-     *             set instead.
+     * @deprecated Use {@link #validate(Mapping, boolean)} instead, or
+     *             {@link #validate(MappingSet)} to validate an entire mapping set.
      */
     @Deprecated
     public String validate(Mapping mapping) {
