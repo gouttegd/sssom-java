@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.Cardinalizer;
 import org.incenp.obofoundry.sssom.MergeOption;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.SSSOMReader;
@@ -194,7 +195,7 @@ public class SSSOMInjectionCommand implements Command, IMappingProcessorListener
             pm.add(mappingSet.getCurieMap());
         }
 
-        MappingCardinality.inferCardinality(mappingSet.getMappings());
+        new Cardinalizer().fillCardinality(mappingSet.getMappings());
 
         if ( line.hasOption("invert") ) {
             axiomGenerator.addRule(null, (mapping) -> mapping.invert(), null);

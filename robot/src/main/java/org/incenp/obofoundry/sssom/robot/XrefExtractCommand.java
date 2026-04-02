@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.incenp.obofoundry.sssom.Cardinalizer;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVWriter;
@@ -175,7 +176,7 @@ public class XrefExtractCommand implements Command {
         }
 
         if ( line.hasOption("drop-duplicates") ) {
-            MappingCardinality.inferCardinality(ms.getMappings());
+            new Cardinalizer().fillCardinality(ms.getMappings());
             List<Mapping> filteredIn = new ArrayList<Mapping>();
             List<Mapping> filteredOut = new ArrayList<Mapping>();
 
