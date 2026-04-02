@@ -377,6 +377,19 @@ public class SSSOMTransformReaderTest {
     }
 
     /*
+     * Test that a mapping is correctly selected by a filter on a numeric slot that
+     * accepts negative values.
+     */
+    @Test
+    void testNegativeNumericFilter() {
+        Mapping minusHalf = Mapping.builder().reviewerAgreement(-0.5).build();
+        Mapping plusHalf = Mapping.builder().reviewerAgreement(0.5).build();
+
+        checkFilter("reviewer_agreement<-0.2 -> action();\n", minusHalf, true);
+        checkFilter("reviewer_agreement<-0.2 -> action();\n", plusHalf, false);
+    }
+
+    /*
      * Test that a mapping is correctly selected by a filter on a date slot.
      */
     @Test

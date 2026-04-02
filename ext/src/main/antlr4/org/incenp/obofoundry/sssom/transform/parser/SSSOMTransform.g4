@@ -116,7 +116,7 @@ idValue   : CURIE
           ;
 
 numField  : 'confidence'
-          | 'reviewer_confidence'
+          | 'reviewer_agreement'
           | 'semantic_similarity_score'
           | 'similarity_score'
           ;
@@ -178,7 +178,7 @@ PREFIX    : [a-zA-Z0-9_]+ ':';
 
 IRI       : '<' [a-zA-Z0-9_/:#%=.?&*+-]+ '>';
 
-DOUBLE    : [0-9]+ '.' [0-9]+;
+DOUBLE    : '-'? [0-9]+ '.' [0-9]+;
 
 PLACEHOLDER: '%{' [a-zA-Z] [a-zA-Z0-9_]* ('|' [a-zA-Z] [a-zA-Z0-9_]*)? '}';
 

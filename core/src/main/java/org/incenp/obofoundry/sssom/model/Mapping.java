@@ -168,9 +168,9 @@ public class Mapping  {
 
     private Double confidence;
 
-    @JsonProperty("reviewer_confidence")
+    @JsonProperty("reviewer_agreement")
     @Versionable(addedIn = Version.SSSOM_1_1)
-    private Double reviewerConfidence;
+    private Double reviewerAgreement;
 
     @JsonProperty("curation_rule")
     @EntityReference
@@ -265,7 +265,7 @@ public class Mapping  {
             final LocalDate publicationDate,
             final LocalDate reviewDate,
             final Double confidence,
-            final Double reviewerConfidence,
+            final Double reviewerAgreement,
             final List<String> curationRule,
             final List<String> curationRuleText,
             final List<String> subjectMatchField,
@@ -316,7 +316,7 @@ public class Mapping  {
         this.publicationDate = publicationDate;
         this.reviewDate = reviewDate;
         this.confidence = confidence;
-        this.reviewerConfidence = reviewerConfidence;
+        this.reviewerAgreement = reviewerAgreement;
         this.curationRule = curationRule;
         this.curationRuleText = curationRuleText;
         this.subjectMatchField = subjectMatchField;
@@ -949,23 +949,23 @@ public class Mapping  {
     }
 
     /**
-     * Gets the value of the <code>reviewer_confidence</code> slot.
+     * Gets the value of the <code>reviewer_agreement</code> slot.
      */
-    public Double getReviewerConfidence() {
-        return this.reviewerConfidence;
+    public Double getReviewerAgreement() {
+        return this.reviewerAgreement;
     }
 
     /**
-     * Sets the value of the <code>reviewer_confidence</code> slot.
+     * Sets the value of the <code>reviewer_agreement</code> slot.
      */
-    public void setReviewerConfidence(final Double value) {
+    public void setReviewerAgreement(final Double value) {
         if ( value != null && value > 1.0 ) {
-            throw new IllegalArgumentException("Invalid value for reviewer_confidence");
+            throw new IllegalArgumentException("Invalid value for reviewer_agreement");
         }
-        if ( value != null && value < 0.0 ) {
-            throw new IllegalArgumentException("Invalid value for reviewer_confidence");
+        if ( value != null && value < -1.0 ) {
+            throw new IllegalArgumentException("Invalid value for reviewer_agreement");
         }
-        this.reviewerConfidence = value;
+        this.reviewerAgreement = value;
     }
 
     /**
@@ -1630,9 +1630,9 @@ public class Mapping  {
             String v = floatFormatter.format(confidence);
             sb.append(String.format("(10:confidence%d:%s)", v.length(), v));
         }
-        if ( reviewerConfidence != null ) {
-            String v = floatFormatter.format(reviewerConfidence);
-            sb.append(String.format("(19:reviewer_confidence%d:%s)", v.length(), v));
+        if ( reviewerAgreement != null ) {
+            String v = floatFormatter.format(reviewerAgreement);
+            sb.append(String.format("(18:reviewer_agreement%d:%s)", v.length(), v));
         }
         if ( curationRule != null ) {
             sb.append("(13:curation_rule(");
@@ -1997,9 +1997,9 @@ public class Mapping  {
             sb.append(this.confidence);
             sb.append(",");
         }
-        if ( this.reviewerConfidence != null ) {
-            sb.append("reviewer_confidence=");
-            sb.append(this.reviewerConfidence);
+        if ( this.reviewerAgreement != null ) {
+            sb.append("reviewer_agreement=");
+            sb.append(this.reviewerAgreement);
             sb.append(",");
         }
         if ( this.curationRule != null ) {
@@ -2123,7 +2123,7 @@ public class Mapping  {
         if ( this.publicationDate == null ? other.publicationDate != null : !this.publicationDate.equals(other.publicationDate)) return false;
         if ( this.reviewDate == null ? other.reviewDate != null : !this.reviewDate.equals(other.reviewDate)) return false;
         if ( this.confidence == null ? other.confidence != null : !this.confidence.equals(other.confidence)) return false;
-        if ( this.reviewerConfidence == null ? other.reviewerConfidence != null : !this.reviewerConfidence.equals(other.reviewerConfidence)) return false;
+        if ( this.reviewerAgreement == null ? other.reviewerAgreement != null : !this.reviewerAgreement.equals(other.reviewerAgreement)) return false;
         if ( this.curationRule == null ? other.curationRule != null : !this.curationRule.equals(other.curationRule)) return false;
         if ( this.curationRuleText == null ? other.curationRuleText != null : !this.curationRuleText.equals(other.curationRuleText)) return false;
         if ( this.subjectMatchField == null ? other.subjectMatchField != null : !this.subjectMatchField.equals(other.subjectMatchField)) return false;
@@ -2185,7 +2185,7 @@ public class Mapping  {
         result = result * PRIME + (this.publicationDate == null ? 43 : this.publicationDate.hashCode());
         result = result * PRIME + (this.reviewDate == null ? 43 : this.reviewDate.hashCode());
         result = result * PRIME + (this.confidence == null ? 43 : this.confidence.hashCode());
-        result = result * PRIME + (this.reviewerConfidence == null ? 43 : this.reviewerConfidence.hashCode());
+        result = result * PRIME + (this.reviewerAgreement == null ? 43 : this.reviewerAgreement.hashCode());
         result = result * PRIME + (this.curationRule == null ? 43 : this.curationRule.hashCode());
         result = result * PRIME + (this.curationRuleText == null ? 43 : this.curationRuleText.hashCode());
         result = result * PRIME + (this.subjectMatchField == null ? 43 : this.subjectMatchField.hashCode());
@@ -2240,7 +2240,7 @@ public class Mapping  {
         private LocalDate publicationDate;
         private LocalDate reviewDate;
         private Double confidence;
-        private Double reviewerConfidence;
+        private Double reviewerAgreement;
         private List<String> curationRule;
         private List<String> curationRuleText;
         private List<String> subjectMatchField;
@@ -2439,8 +2439,8 @@ public class Mapping  {
             return this;
         }
 
-        public Mapping.MappingBuilder reviewerConfidence(final Double reviewerConfidence) {
-            this.reviewerConfidence = reviewerConfidence;
+        public Mapping.MappingBuilder reviewerAgreement(final Double reviewerAgreement) {
+            this.reviewerAgreement = reviewerAgreement;
             return this;
         }
 
@@ -2551,7 +2551,7 @@ public class Mapping  {
                 this.publicationDate,
                 this.reviewDate,
                 this.confidence,
-                this.reviewerConfidence,
+                this.reviewerAgreement,
                 this.curationRule,
                 this.curationRuleText,
                 this.subjectMatchField,
@@ -2605,7 +2605,7 @@ public class Mapping  {
                 + ", publicationDate=" + this.publicationDate
                 + ", reviewDate=" + this.reviewDate
                 + ", confidence=" + this.confidence
-                + ", reviewerConfidence=" + this.reviewerConfidence
+                + ", reviewerAgreement=" + this.reviewerAgreement
                 + ", curationRule=" + this.curationRule
                 + ", curationRuleText=" + this.curationRuleText
                 + ", subjectMatchField=" + this.subjectMatchField
@@ -2665,7 +2665,7 @@ public class Mapping  {
             .publicationDate(this.publicationDate)
             .reviewDate(this.reviewDate)
             .confidence(this.confidence)
-            .reviewerConfidence(this.reviewerConfidence)
+            .reviewerAgreement(this.reviewerAgreement)
             .curationRule(this.curationRule)
             .curationRuleText(this.curationRuleText)
             .subjectMatchField(this.subjectMatchField)
