@@ -254,13 +254,13 @@ creator==ORCID:*
   
 *** 3.1.4. Filters on numeric and date slots
 
-  For the two filters that act on numeric slots (<<<confidence>>> and
-  <<<similarity_score>>>) and the two filters that act on date slots
-  (<<<mapping_date>>> and <<<publication_date>>>) in addition to the
-  equality operator (<<<==>>>), it is possible to use one of the
-  following inequality operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and
-  <<<\<=>>>. They have the traditional meaning you could expect. For
-  example:
+  For the filters that act on numeric slots (<<<confidence>>>,
+  <<<reviewer_agreement>>> and <<<similarity_score>>>) and the filters
+  that act on date slots (<<<mapping_date>>>, <<<review_date>>> and
+  <<<publication_date>>>) in addition to the equality operator
+  (<<<==>>>), it is possible to use one of the following inequality
+  operators: <<<\>>>>, <<<\>>>>=, <<<\<>>>, and <<<\<=>>>. They have the
+  traditional meaning you could expect. For example:
   
 +-----------------------------------------------------------------------
 confidence>=0.8
@@ -621,7 +621,7 @@ is_duplicate("%{subject_id}%{predicate_id}%{object_id}") -> stop();
 is_duplicate(%{hash}) -> stop();
 +-----------------------------------------------------------------------
 
-*** 6.2.2 <has_extension>
+*** 6.2.2. <has_extension>
 
   This filter can be used to select mappings that have a particular
   extension slot. It expects one argument, which is the property
@@ -632,6 +632,38 @@ is_duplicate(%{hash}) -> stop();
 +-----------------------------------------------------------------------
 has_extension(PROP:fooProperty) -> stop();
 +-----------------------------------------------------------------------
+
+*** 6.2.3. <confidence>
+
+  This filter can be used to select mappings based on their
+  <aggregated confidence>, which is a single value that reflects the
+  values of both the <<<confidence>>> slot and the
+  <<<reviewer_agreement>>> slot. It expects one argument, which is the
+  threshold value to filter against: the filter will select only the
+  mappings whose aggregated confidence is above the given threshold.
+  
+  Note that the threshold must be specified as a string value (between
+  quotes), not as a numeric value. It can be prefixed with a '<'
+  character to invert the filtering logic (selecting only the mappings
+  whose aggregated confidence is <lower> than the threshold).
+  
+  Example, to drop mappings with an aggregated confidence lower than
+  0.8:
+  
++-----------------------------------------------------------------------
+confidence("<0.8") -> stop();
++-----------------------------------------------------------------------
+
+  This is <not> the same thing as:
+  
++-----------------------------------------------------------------------
+confidence<0.8 -> stop();
++-----------------------------------------------------------------------
+
+  because (1) the latter only takes into account the <<<confidence>>>
+  slot, while the former also takes into account the
+  <<<reviewer_agreement>>> slot; and (2) the former assumes a default
+  value of 1.0 for both those slots, if they are not set.
 
 ** 6.3. Callback functions
 

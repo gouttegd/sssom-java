@@ -378,4 +378,30 @@ public class SSSOMTransformApplicationTest {
             Assertions.fail(e);
         }
     }
+
+    @Test
+    void testConfidenceFilter() {
+        Mapping m1 = Mapping.builder().confidence(0.4).reviewerAgreement(0.0).build();
+        Mapping m2 = Mapping.builder().confidence(0.6).reviewerAgreement(0.0).build();
+
+        try {
+            arguments.add("<.5");
+            IMappingFilter f = application.onFilter("confidence", arguments, keyedArguments);
+            Assertions.assertTrue(f.filter(m1));
+            Assertions.assertFalse(f.filter(m2));
+
+            arguments.set(0, ">0.5");
+            f = application.onFilter("confidence", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(m1));
+            Assertions.assertTrue(f.filter(m2));
+
+            arguments.set(0, "0.5");
+            f = application.onFilter("confidence", arguments, keyedArguments);
+            Assertions.assertFalse(f.filter(m1));
+            Assertions.assertTrue(f.filter(m2));
+
+        } catch ( SSSOMTransformError e ) {
+            Assertions.fail(e);
+        }
+    }
 }

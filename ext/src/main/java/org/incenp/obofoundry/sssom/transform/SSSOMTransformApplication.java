@@ -185,6 +185,7 @@ public class SSSOMTransformApplication<T> implements ISSSOMTransformApplication<
         formatter.setSubstitution("serial", (mapping) -> serial++);
         registerFilter(new SSSOMTDuplicateFunction(this));
         registerFilter(new SSSOMTHasExtensionFunction());
+        registerFilter(new SSSOMTConfidenceFilterFunction());
     }
 
     @Override
