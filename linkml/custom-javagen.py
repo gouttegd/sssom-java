@@ -149,12 +149,12 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
      */
     public void {{ gen.get_write_accessor_name(f.source_slot) }}(final {{ gen.get_range(f) }} value) {
         {%- if f.source_slot.maximum_value is not none %}
-        if ( value > {{ f.source_slot.maximum_value }} ) {
+        if ( value != null && value > {{ f.source_slot.maximum_value }} ) {
             throw new IllegalArgumentException("Invalid value for {{ f.source_slot.name }}");
         }
         {%- endif %}
         {%- if f.source_slot.minimum_value is not none %}
-        if ( value < {{ f.source_slot.minimum_value }} ) {
+        if ( value != null && value < {{ f.source_slot.minimum_value }} ) {
             throw new IllegalArgumentException("Invalid value for {{ f.source_slot.name }}");
         }
         {%- endif %}

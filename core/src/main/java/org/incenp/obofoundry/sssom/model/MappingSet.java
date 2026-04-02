@@ -453,10 +453,10 @@ public class MappingSet  {
      * Sets the value of the <code>mapping_set_confidence</code> slot.
      */
     public void setMappingSetConfidence(final Double value) {
-        if ( value > 1.0 ) {
+        if ( value != null && value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for mapping_set_confidence");
         }
-        if ( value < 0.0 ) {
+        if ( value != null && value < 0.0 ) {
             throw new IllegalArgumentException("Invalid value for mapping_set_confidence");
         }
         this.mappingSetConfidence = value;

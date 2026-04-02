@@ -118,10 +118,10 @@ public class MappingSetReference  {
      * Sets the value of the <code>registry_confidence</code> slot.
      */
     public void setRegistryConfidence(final Double value) {
-        if ( value > 1.0 ) {
+        if ( value != null && value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for registry_confidence");
         }
-        if ( value < 0.0 ) {
+        if ( value != null && value < 0.0 ) {
             throw new IllegalArgumentException("Invalid value for registry_confidence");
         }
         this.registryConfidence = value;

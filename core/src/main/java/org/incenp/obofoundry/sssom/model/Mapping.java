@@ -939,10 +939,10 @@ public class Mapping  {
      * Sets the value of the <code>confidence</code> slot.
      */
     public void setConfidence(final Double value) {
-        if ( value > 1.0 ) {
+        if ( value != null && value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for confidence");
         }
-        if ( value < 0.0 ) {
+        if ( value != null && value < 0.0 ) {
             throw new IllegalArgumentException("Invalid value for confidence");
         }
         this.confidence = value;
@@ -959,10 +959,10 @@ public class Mapping  {
      * Sets the value of the <code>reviewer_confidence</code> slot.
      */
     public void setReviewerConfidence(final Double value) {
-        if ( value > 1.0 ) {
+        if ( value != null && value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for reviewer_confidence");
         }
-        if ( value < 0.0 ) {
+        if ( value != null && value < 0.0 ) {
             throw new IllegalArgumentException("Invalid value for reviewer_confidence");
         }
         this.reviewerConfidence = value;
@@ -1182,10 +1182,10 @@ public class Mapping  {
      * Sets the value of the <code>similarity_score</code> slot.
      */
     public void setSimilarityScore(final Double value) {
-        if ( value > 1.0 ) {
+        if ( value != null && value > 1.0 ) {
             throw new IllegalArgumentException("Invalid value for similarity_score");
         }
-        if ( value < 0.0 ) {
+        if ( value != null && value < 0.0 ) {
             throw new IllegalArgumentException("Invalid value for similarity_score");
         }
         this.similarityScore = value;
