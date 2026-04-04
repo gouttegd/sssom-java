@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2025 Damien Goutte-Gattat
+ * Copyright © 2026 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,9 @@ import org.incenp.obofoundry.sssom.ValidationError;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
- * Checks that a mapping record that has a <code>review_date</code> also has
- * either a <code>reviewer_id</code> or a <code>reviewer_label</code>.
+ * Checks that a mapping record that has a <code>review_date</code> or a
+ * <code>reviewer_agreement</code> also has either a <code>reviewer_id</code> or
+ * a <code>reviewer_label</code>.
  */
 public class MissingReviewerValidator implements IMappingValidator {
 

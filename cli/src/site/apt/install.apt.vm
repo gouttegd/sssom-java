@@ -76,7 +76,7 @@ OpenJDK 64-Bit Server VM (build 21.0.8+9-Debian-1, mixed mode, sharing)
 $ chmod 755 sssom-cli
 $ ./sssom-cli --version
 sssom-cli (SSSOM-Java ${project.version})
-Copyright © 2023,2024,2025 Damien Goutte-Gattat
+Copyright © 2023,2024,2025,2026 Damien Goutte-Gattat
 
 This program is released under the GNU General Public License.
 See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.
@@ -88,7 +88,7 @@ See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.
 +-----------------------------------------------------------------------
 > java -jar sssom-cli --version
 sssom-cli (SSSOM-Java ${project.version})
-Copyright © 2023,2024,2025 Damien Goutte-Gattat
+Copyright © 2023,2024,2025,2026 Damien Goutte-Gattat
 
 This program is released under the GNU General Public License.
 See the COPYING file or <http://www.gnu.org/licenses/gpl.html>.

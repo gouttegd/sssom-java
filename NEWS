@@ -1,3 +1,16 @@
+Changes in sssom-java 1.11.0
+----------------------------
+
+    * core:
+      * Add support for new slots `review_date` and `reviewer_agreement`.
+      * Support escaping of `|` characters in multivalued slots in SSSOM/TSV.
+    * sssom-cli:
+      * Add `--annotate SLOT_NAME=VALUE` option.
+    * SSSOM/T:
+      * Add filter function `confidence()`.
+      * Remove deprecated `edit()` function (long replaced by `assign()`).
+
+
 Changes in sssom-java 1.10.0
 ----------------------------
 
