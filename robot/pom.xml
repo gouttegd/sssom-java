@@ -25,12 +25,12 @@
     <dependency>
       <groupId>org.obolibrary.robot</groupId>
       <artifactId>robot-command</artifactId>
-      <version>1.9.8</version>
+      <version>1.9.10</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.18</version>
+      <version>1.5.32</version>
     </dependency>
   </dependencies>
 
@@ -39,7 +39,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.6.2</version>
         <executions>
           <execution>
             <id>robot-standalone</id>
