@@ -643,7 +643,7 @@ has_extension(PROP:fooProperty) -> stop();
   mappings whose aggregated confidence is above the given threshold.
   
   Note that the threshold must be specified as a string value (between
-  quotes), not as a numeric value. It can be prefixed with a '<'
+  quotes), not as a numeric value. It can be prefixed with a '\<'
   character to invert the filtering logic (selecting only the mappings
   whose aggregated confidence is <lower> than the threshold).
   
@@ -746,7 +746,7 @@ predicate==* -> infer_cardinality("predicate_id", "object_source");
   Example:
   
 +-----------------------------------------------------------------------
-!justification===semapv:ManualMappingCuration -> stop();
+!justification==semapv:ManualMappingCuration -> stop();
 subject==CL:* -> invert();
 +-----------------------------------------------------------------------
 

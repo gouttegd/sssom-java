@@ -599,7 +599,7 @@ subject==* -> include();
   selected object, and must follow one of the following forms:
   
   [slot(NAME)] To retrieve the value of the metadata slot <NAME>. If
-               <NAME> is the name of the multi-valued slot (e.g.
+               <NAME> is the name of a multi-valued slot (e.g.
                <<<creator_id>>>), the first value will be retrieved.
 
   [slot(NAME, N)] To retrieve the <Nth> value from the metadata slot
@@ -627,7 +627,7 @@ subject==* -> include();
   [set.slot(creator_id, 2)] Retrieves the ID of the second creator of
   							the set.
   
-  [set.slot(see_also)] Retrievse the first <<<see_also>>> link of the
+  [set.slot(see_also)] Retrieves the first <<<see_also>>> link of the
   					   set (equivalent to <<<set.slot(see_also, 1)>>>).
 
   [set.extension(https://example.org/property)] Retrieves the value of
