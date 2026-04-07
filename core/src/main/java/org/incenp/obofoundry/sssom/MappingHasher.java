@@ -33,15 +33,29 @@ public class MappingHasher {
     private static char[] ZB32 = { 'y', 'b', 'n', 'd', 'r', 'f', 'g', '8', 'e', 'j', 'k', 'm', 'c', 'p', 'q', 'x', 'o',
             't', '1', 'u', 'w', 'i', 's', 'z', 'a', '3', '4', '5', 'h', '7', '6', '9' };
     private MessageDigest md;
+    private boolean useHex;
 
     /**
      * Creates a new instance.
      */
     public MappingHasher() {
+        this(false);
+    }
+
+    /**
+     * Creates a new instances that produces hexadecimal-encoded hash values.
+     * 
+     * @param useHex If <code>true</code>, this instance will produce hash values
+     *               that are encoded in hexadecimal, rather than in ZBase32
+     *               encoding.
+     */
+    public MappingHasher(boolean useHex) {
         try {
             md = MessageDigest.getInstance("SHA-256");
         } catch ( NoSuchAlgorithmException e ) {
+
         }
+        this.useHex = useHex;
     }
 
     /**
@@ -51,15 +65,40 @@ public class MappingHasher {
      * @return The unique hash for the mapping.
      */
     public String hash(Mapping mapping) {
+        byte[] digest;
         if ( md != null ) {
-            byte[] digest = md.digest(mapping.toSExpr().getBytes(StandardCharsets.UTF_8));
+            digest = md.digest(mapping.toSExpr().getBytes(StandardCharsets.UTF_8));
             md.reset();
-            return toZBase32(digest);
         } else {
             // SHA2-256 not available? This should probably never happen, but just in case
             // we fall back to the built-in Java hash code.
-            return Integer.toHexString(mapping.hashCode());
+            digest = new byte[4];
+            int hashcode = mapping.hashCode();
+            digest[0] = (byte) (hashcode & 0xFF);
+            digest[1] = (byte) ((hashcode & 0xFF00) >> 8);
+            digest[2] = (byte) ((hashcode & 0xFF0000) >> 16);
+            digest[3] = (byte) ((hashcode & 0xFF000000) >> 24);
         }
+
+        return useHex ? toHexadecimal(digest) : toZBase32(digest);
+    }
+
+    /**
+     * Encodes a buffer into its hexadecimal representation.
+     * 
+     * @param digest The input buffer to encode.
+     * @return The hexadecimal representation of the input buffer.
+     */
+    public static String toHexadecimal(byte[] digest) {
+        StringBuffer sb = new StringBuffer();
+        for ( int i = 0; i < digest.length; i++ ) {
+            int high = (digest[i] & 0xF0) >> 4;
+            int low = digest[i] & 0x0F;
+
+            sb.append((char) (high >= 10 ? high - 10 + 'A' : high + '0'));
+            sb.append((char) (low >= 10 ? low - 10 + 'A' : low + '0'));
+        }
+        return sb.toString();
     }
 
     /**

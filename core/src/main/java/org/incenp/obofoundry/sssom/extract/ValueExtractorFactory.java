@@ -106,6 +106,8 @@ public class ValueExtractorFactory {
             return new SExpressionExtractor(mappingNo);
         } else if ( expression.equals("special(hash)") ) {
             return new HashExtractor(mappingNo);
+        } else if ( expression.equals("special(hexhash") ) {
+            return new HexHashExtractor(mappingNo);
         }
 
         throw new ExtractorSyntaxException();

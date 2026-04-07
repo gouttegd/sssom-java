@@ -49,4 +49,18 @@ public class MappingHasherTest {
         String hash = "4jfngj8y8bh9fu7ahhj9ic6miqz78cskxhyo61zkgb3gjte3ocuo";
         Assertions.assertEquals(hash, new MappingHasher().hash(m));
     }
+
+    @Test
+    void testHexadecimalEncoding() {
+        Mapping m = new Mapping();
+        m.setSubjectId("SUBJECT");
+        m.getAuthorId(true).add("AUTHOR");
+        m.setConfidence(0.7);
+        m.getExtensions(true).put("PROPERTY", new ExtensionValue(LocalDate.of(2025, 6, 1)));
+
+        // Expected hex-encoded SHA2-256 hash of
+        // "(7:mapping((10:subject_id7:SUBJECT)(9:author_id(6:AUTHOR))(10:confidence3:0.7)(10:extensions((8:PROPERTY10:2025-06-01)))))"
+        String hash = "D24A2324E03879F2CFB8E713FAB3CBABAFD3B2CA7F010F4AEA307264C5198327";
+        Assertions.assertEquals(hash, new MappingHasher(true).hash(m));
+    }
 }

@@ -1,6 +1,6 @@
 /*
  * SSSOM-Java - SSSOM library for Java
- * Copyright © 2025 Damien Goutte-Gattat
+ * Copyright © 2026 Damien Goutte-Gattat
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the Gnu General Public License
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -22,13 +22,13 @@ import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
 /**
- * Extracts the standard SSSOM hash for a mapping.
+ * Extracts a hexadecimal-encoded form of the standard SSSOM hash for a mapping.
  * <p>
- * This is used by expressions of the form {@code mapping(N).special(hash)}.
+ * This is used by expressions of the form {@code mapping(N).special(hexhash)}.
  */
-public class HashExtractor extends MappingValueExtractor {
-    
-    private MappingHasher hasher = new MappingHasher();
+public class HexHashExtractor extends MappingValueExtractor {
+
+    private MappingHasher hasher = new MappingHasher(true);
 
     /**
      * Creates a new instance.
@@ -37,17 +37,17 @@ public class HashExtractor extends MappingValueExtractor {
      *                  hash, or (if negative) the 1-based index starting from the
      *                  last mapping.
      */
-    public HashExtractor(int mappingNo) {
+    public HexHashExtractor(int mappingNo) {
         super(mappingNo);
-    }
-
-    @Override
-    protected Object extract(Mapping mapping) {
-        return hasher.hash(mapping);
     }
 
     @Override
     public Class<?> getType() {
         return String.class;
+    }
+
+    @Override
+    protected Object extract(Mapping mapping) {
+        return hasher.hash(mapping);
     }
 }
