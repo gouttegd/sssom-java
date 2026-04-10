@@ -58,9 +58,13 @@ public class MappingHasherTest {
         m.setConfidence(0.7);
         m.getExtensions(true).put("PROPERTY", new ExtensionValue(LocalDate.of(2025, 6, 1)));
 
-        // Expected hex-encoded SHA2-256 hash of
+        // Expected hex-encoded FNV64 hash of
         // "(7:mapping((10:subject_id7:SUBJECT)(9:author_id(6:AUTHOR))(10:confidence3:0.7)(10:extensions((8:PROPERTY10:2025-06-01)))))"
-        String hash = "D24A2324E03879F2CFB8E713FAB3CBABAFD3B2CA7F010F4AEA307264C5198327";
+        //
+        // Obtained with:
+        // FNVhash -t 64 "<S-expression>"
+        // where FNVhash is the test program provided with RFC 9923
+        String hash = "D24B0A1BF19449DD";
         Assertions.assertEquals(hash, new MappingHasher(true).hash(m));
     }
 }
