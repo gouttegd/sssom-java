@@ -36,58 +36,99 @@ public class MappingHasher {
     private static char[] ZB32 = { 'y', 'b', 'n', 'd', 'r', 'f', 'g', '8', 'e', 'j', 'k', 'm', 'c', 'p', 'q', 'x', 'o',
             't', '1', 'u', 'w', 'i', 's', 'z', 'a', '3', '4', '5', 'h', '7', '6', '9' };
     private MessageDigest md;
+    private HashEncoding encoding;
 
     /**
-     * Creates a new instance.
+     * Creates a new instance that will produce the standard hash defined by the
+     * SSSOM specification.
+     * <p>
+     * The definition of the “SSSOM standard hash” is still under work. For now, it
+     * is a ZBase32-encoded SHA2-256 hash of the canonical S-expression that
+     * represents a mapping record. This may change in the future.
      */
     public MappingHasher() {
-        this(false);
+        this(HashFunction.SHA2_256, HashEncoding.ZBASE32);
     }
 
     /**
-     * Creates a new instance that produces fast, FNV64-based hexadecimal-encoded
-     * hash values.
+     * Creates a new instance that will produce an “alternative” type of hash.
+     * <p>
+     * This constructor is mostly intended for testing purposes, until a decision is
+     * reached amongst SSSOM developers about what the “standard SSSOM hash” should
+     * be.
      * 
-     * @param useFNV If <code>true</code>, this instance will produce hash values
-     *               using the FNV64 function, rather than the SHA2-256 function.
+     * @param altHash If <code>true</code>, this instance will produce an
+     *                “alternative” hash. Otherwise, it will produce the same
+     *                standard hash as {@link #MappingHasher()}.
      */
-    public MappingHasher(boolean useFNV) {
-        if ( !useFNV) {
-            try {
-                md = MessageDigest.getInstance("SHA-256");
-            } catch ( NoSuchAlgorithmException e ) { }
-        }
+    public MappingHasher(boolean altHash) {
+        this(altHash ? HashFunction.FNV64 : HashFunction.SHA2_256, altHash ? HashEncoding.BASE16 : HashEncoding.ZBASE32);
     }
 
     /**
-     * Hashes the given mapping using the SSSOM standard hash procedure.
+     * Creates a new instance will full control over the production of the hash.
+     * <p>
+     * As for {@link #MappingHasher(boolean)}, this constructor is mostly intended
+     * for development and testing purposes, while the details about the “SSSOM
+     * standard hash” are being finalised. It may be removed after that.
+     * 
+     * @param function The hash function to use.
+     * @param encoding The encoding to use to encode the output of the hash
+     *                 function.
+     */
+    public MappingHasher(HashFunction function, HashEncoding encoding) {
+        if ( function.algName != null ) {
+            try {
+                md = MessageDigest.getInstance(function.algName);
+            } catch ( NoSuchAlgorithmException e ) {
+            }
+        }
+        this.encoding = encoding;
+    }
+
+    /**
+     * Hashes the given mapping.
      * 
      * @param mapping The mapping to hash.
      * @return The unique hash for the mapping.
      */
     public String hash(Mapping mapping) {
-        if ( md != null ) {
-            byte[] digest = md.digest(mapping.toSExpr().getBytes(StandardCharsets.UTF_8));
-            md.reset();
-            return toZBase32(digest);
-        } else {
-            // Either SHA2-256 is not available (which should likely never happen), or the
-            // user specifically asked for FNV64 hashes.
-            long hash = FNV64_OFFSET;
-            for ( byte b : mapping.toSExpr().getBytes(StandardCharsets.UTF_8) ) {
-                hash ^= b;
-                hash *= FNV64_PRIME;
-            }
+        byte[] input = mapping.toSExpr().getBytes(StandardCharsets.UTF_8);
+        byte[] digest;
 
-            StringBuffer sb = new StringBuffer();
-            for ( int i = 0; i < 8; i++ ) {
-                int hi = (byte) ((hash >> (i * 8 + 4)) & 0x0F);
-                int lo = (byte) ((hash >> (i * 8)) & 0x0F);
-                sb.append((char) (hi >= 10 ? hi - 10 + 'A' : hi + '0'));
-                sb.append((char) (lo >= 10 ? lo - 10 + 'A' : lo + '0'));
-            }
-            return sb.toString();
+        if ( md != null ) {
+            digest = md.digest(input);
+            md.reset();
+        } else {
+            digest = fnv64(input);
         }
+
+        return encoding == HashEncoding.ZBASE32 ? toZBase32(digest) : toHexadecimal(digest);
+    }
+
+    /**
+     * Generates a FNV64 hash.
+     * <p>
+     * This method implements the 64-bit variant of the FNV-1a hash function as
+     * defined in <a href="https://www.rfc-editor.org/rfc/rfc9923.html">RFC
+     * 9923</a>.
+     * 
+     * @param input The data to hash.
+     * @return The resulting hash value, as an array of bytes in little endian
+     *         order.
+     */
+    public static byte[] fnv64(byte[] input) {
+        long hash = FNV64_OFFSET;
+        for ( byte b : input ) {
+            hash ^= b;
+            hash *= FNV64_PRIME;
+        }
+
+        byte[] digest = new byte[8];
+        for ( int i = 0; i < 8; i++ ) {
+            digest[i] = (byte) ((hash >> (i * 8)) & 0xFF);
+        }
+        return digest;
     }
 
     /**
@@ -132,5 +173,51 @@ public class MappingHasher {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Encodes a buffer into its hexadecimal representation.
+     * <p>
+     * This method implements the Base16 encoding as defined in
+     * <a href="https://datatracker.ietf.org/doc/html/rfc4648#section-8">RFC
+     * 4648</a>.
+     * 
+     * @param digest The input buffer to encode.
+     * @return The hexadecimal representation of the input buffer.
+     */
+    public static String toHexadecimal(byte[] digest) {
+        StringBuffer sb = new StringBuffer();
+        for ( int i = 0; i < digest.length; i++ ) {
+            int hi = (digest[i] & 0xF0) >> 4;
+            int lo = digest[i] & 0x0F;
+
+            sb.append((char) (hi >= 10 ? hi - 10 + 'A' : hi + '0'));
+            sb.append((char) (lo >= 10 ? lo - 10 + 'A' : lo + '0'));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * The hash function to use to hash the canonical S-expression of a mapping
+     * record.
+     */
+    public enum HashFunction {
+        SHA2_256("SHA-256"),
+        FNV64(null);
+
+        String algName;
+
+        HashFunction(String algName) {
+            this.algName = algName;
+        }
+    }
+
+    /**
+     * The encoding to use to transform the array of bytes produced by the hash
+     * function into a printable string.
+     */
+    public enum HashEncoding {
+        ZBASE32,
+        BASE16
     }
 }

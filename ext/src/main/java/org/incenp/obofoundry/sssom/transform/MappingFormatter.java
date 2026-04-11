@@ -75,7 +75,7 @@ public class MappingFormatter {
 
     private PrefixManager pfxMgr;
     private MappingHasher hasher = new MappingHasher();
-    private MappingHasher hexHasher = new MappingHasher(true);
+    private MappingHasher altHasher = new MappingHasher(true);
 
     /**
      * Sets the prefix manager to use when attempting to resolve a placeholder name
@@ -185,7 +185,7 @@ public class MappingFormatter {
         placeholders.put("subject_type", (m) -> m.getSubjectType());
 
         placeholders.put("hash", (m) -> hasher.hash(m));
-        placeholders.put("hexhash", (m) -> hexHasher.hash(m));
+        placeholders.put("althash", (m) -> altHasher.hash(m));
 
         // Don't bother checking if we replaced existing substitutions, always clear the
         // cache.

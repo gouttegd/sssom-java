@@ -24,9 +24,9 @@ import org.incenp.obofoundry.sssom.model.Mapping;
 /**
  * Extracts a hexadecimal-encoded form of the standard SSSOM hash for a mapping.
  * <p>
- * This is used by expressions of the form {@code mapping(N).special(hexhash)}.
+ * This is used by expressions of the form {@code mapping(N).special(althash)}.
  */
-public class HexHashExtractor extends MappingValueExtractor {
+public class AltHashExtractor extends MappingValueExtractor {
 
     private MappingHasher hasher = new MappingHasher(true);
 
@@ -37,7 +37,7 @@ public class HexHashExtractor extends MappingValueExtractor {
      *                  hash, or (if negative) the 1-based index starting from the
      *                  last mapping.
      */
-    public HexHashExtractor(int mappingNo) {
+    public AltHashExtractor(int mappingNo) {
         super(mappingNo);
     }
 
