@@ -41,36 +41,27 @@ public class MappingHasher {
     /**
      * Creates a new instance that will produce the standard hash defined by the
      * SSSOM specification.
-     * <p>
-     * The definition of the “SSSOM standard hash” is still under work. For now, it
-     * is a ZBase32-encoded SHA2-256 hash of the canonical S-expression that
-     * represents a mapping record. This may change in the future.
      */
     public MappingHasher() {
-        this(HashFunction.SHA2_256, HashEncoding.ZBASE32);
+        this(HashFunction.FNV64, HashEncoding.BASE16);
     }
 
     /**
-     * Creates a new instance that will produce an “alternative” type of hash.
+     * Creates a new instance that will produce a “legacy” hash.
      * <p>
-     * This constructor is mostly intended for testing purposes, until a decision is
-     * reached amongst SSSOM developers about what the “standard SSSOM hash” should
-     * be.
+     * The “legacy” hash is the hash that was produced by prior versions of
+     * SSSOM-Java, before the SSSOM standard hash function was formally specified.
      * 
-     * @param altHash If <code>true</code>, this instance will produce an
-     *                “alternative” hash. Otherwise, it will produce the same
-     *                standard hash as {@link #MappingHasher()}.
+     * @param legacy If <code>true</code>, this instance will produce a “legacy”
+     *               hash. Otherwise, it will produce the same standard hash as
+     *               {@link #MappingHasher()}.
      */
-    public MappingHasher(boolean altHash) {
-        this(altHash ? HashFunction.FNV64 : HashFunction.SHA2_256, altHash ? HashEncoding.BASE16 : HashEncoding.ZBASE32);
+    public MappingHasher(boolean legacy) {
+        this(legacy ? HashFunction.SHA2_256 : HashFunction.FNV64, legacy ? HashEncoding.ZBASE32 : HashEncoding.BASE16);
     }
 
     /**
      * Creates a new instance will full control over the production of the hash.
-     * <p>
-     * As for {@link #MappingHasher(boolean)}, this constructor is mostly intended
-     * for development and testing purposes, while the details about the “SSSOM
-     * standard hash” are being finalised. It may be removed after that.
      * 
      * @param function The hash function to use.
      * @param encoding The encoding to use to encode the output of the hash

@@ -314,8 +314,8 @@ public class SSSOMTransformApplicationTest {
             IMappingTransformer<Mapping> o = application.onPreprocessingAction("assign", arguments, keyedArguments);
 
             Mapping m = o.transform(new Mapping());
-            // Expected Z-Base32-encoded SHA2-256 hash of "(7:mapping())"
-            String hash = "ffofqqzha5wawq3qx78yj6pjxtep1hw4pjeabuox9gzawuf7bwwo";
+            // Expected hex-encoded FNV64 hash of "(7:mapping())"
+            String hash = "DE826BEA31BF18F6";
             Assertions.assertEquals("https://example.org/records/" + hash, m.getRecordId());
 
         } catch ( SSSOMTransformError e ) {

@@ -34,7 +34,7 @@ public class MappingHasherTest {
     }
 
     @Test
-    void testSimpleHashing() {
+    void testLegacyHashing() {
         Mapping m = new Mapping();
         m.setSubjectId("SUBJECT");
         m.getAuthorId(true).add("AUTHOR");
@@ -47,11 +47,11 @@ public class MappingHasherTest {
         // Obtained with:
         // echo -n "<S-EXPRESSION>" | openssl dgst -sha256 -binary | zbase32
         String hash = "4jfngj8y8bh9fu7ahhj9ic6miqz78cskxhyo61zkgb3gjte3ocuo";
-        Assertions.assertEquals(hash, new MappingHasher().hash(m));
+        Assertions.assertEquals(hash, new MappingHasher(true).hash(m));
     }
 
     @Test
-    void testHexadecimalEncoding() {
+    void testStandardHashing() {
         Mapping m = new Mapping();
         m.setSubjectId("SUBJECT");
         m.getAuthorId(true).add("AUTHOR");
@@ -65,6 +65,6 @@ public class MappingHasherTest {
         // FNVhash -t 64 "<S-expression>"
         // where FNVhash is the test program provided with RFC 9923
         String hash = "D24B0A1BF19449DD";
-        Assertions.assertEquals(hash, new MappingHasher(true).hash(m));
+        Assertions.assertEquals(hash, new MappingHasher().hash(m));
     }
 }
