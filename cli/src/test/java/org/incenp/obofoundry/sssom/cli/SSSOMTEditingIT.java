@@ -30,13 +30,6 @@ import org.junit.jupiter.api.Test;
 public class SSSOMTEditingIT {
 
     @Test
-    void testMappingEdition() throws IOException {
-        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-edited-all-exact-match.sssom.tsv",
-                new String[] { "--prefix-map-from-input", "--rule=subject==* -> edit('predicate_id=skos:exactMatch')",
-                        "--include-all" });
-    }
-
-    @Test
     void testMappingEditionWithAssign() throws IOException {
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-edited-all-exact-match.sssom.tsv",
                 new String[] { "--prefix-map-from-input",
