@@ -22,6 +22,7 @@ import java.time.LocalDate;
 
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -66,5 +67,23 @@ public class MappingHasherTest {
         // where FNVhash is the test program provided with RFC 9923
         String hash = "D24B0A1BF19449DD";
         Assertions.assertEquals(hash, new MappingHasher().hash(m));
+    }
+
+    @Test
+    void testMappingSamenessIdentifierHashing() {
+        Mapping m = new Mapping();
+        m.setSubjectId("http://example.org/feline");
+        m.setPredicateId("http://www.w3.org/2002/07/owl#sameAs");
+        m.setObjectId("http://example.com/cat");
+
+        // Expected hex-encoded SHA2-256 hash of
+        // "http://example.org/feline http://www.w3.org/2002/07/owl#sameAs
+        // http://example.com/cat"
+        String hash = "mapping:95a088082ab2b2a68638aebbcc3fe3e0f229da75a8b5bdbb9f3f8cd5e1e4286e";
+        MappingHasher hasher = new MappingHasher(HashType.MAPPING_SAMENESS_ID);
+        Assertions.assertEquals(hash, hasher.hash(m));
+
+        m.setPredicateModifier(PredicateModifier.NOT);
+        Assertions.assertEquals(hash + "~", hasher.hash(m));
     }
 }

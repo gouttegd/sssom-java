@@ -23,6 +23,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.model.PredicateModifier;
 
 /**
  * Creates deterministic hash values from mappings.
@@ -37,13 +38,44 @@ public class MappingHasher {
             't', '1', 'u', 'w', 'i', 's', 'z', 'a', '3', '4', '5', 'h', '7', '6', '9' };
     private MessageDigest md;
     private HashEncoding encoding;
+    private HashType type;
 
     /**
      * Creates a new instance that will produce the standard hash defined by the
      * SSSOM specification.
      */
     public MappingHasher() {
-        this(HashFunction.FNV64, HashEncoding.BASE16);
+        this(HashType.STANDARD);
+    }
+
+    /**
+     * Creates a new instance that will produce the requested type of hash.
+     * 
+     * @param type The type of hash to produce.
+     */
+    public MappingHasher(HashType type) {
+        this.type = type;
+        switch ( type ) {
+        case STANDARD:
+            this.encoding = HashEncoding.BASE16;
+            break;
+
+        case LEGACY:
+            try {
+                md = MessageDigest.getInstance(HashFunction.SHA2_256.algName);
+            } catch ( NoSuchAlgorithmException e ) {
+            }
+            this.encoding = HashEncoding.ZBASE32;
+            break;
+
+        case MAPPING_SAMENESS_ID:
+            try {
+                md = MessageDigest.getInstance(HashFunction.SHA2_256.algName);
+            } catch ( NoSuchAlgorithmException e ) {
+            }
+            this.encoding = HashEncoding.LOWERCASE_BASE16;
+            break;
+        }
     }
 
     /**
@@ -55,9 +87,12 @@ public class MappingHasher {
      * @param legacy If <code>true</code>, this instance will produce a “legacy”
      *               hash. Otherwise, it will produce the same standard hash as
      *               {@link #MappingHasher()}.
+     * @deprecated Use {@link #MappingHasher(HashType)} with {@link HashType#LEGACY}
+     *             instead.
      */
+    @Deprecated
     public MappingHasher(boolean legacy) {
-        this(legacy ? HashFunction.SHA2_256 : HashFunction.FNV64, legacy ? HashEncoding.ZBASE32 : HashEncoding.BASE16);
+        this(HashType.LEGACY);
     }
 
     /**
@@ -67,7 +102,7 @@ public class MappingHasher {
      * @param encoding The encoding to use to encode the output of the hash
      *                 function.
      */
-    public MappingHasher(HashFunction function, HashEncoding encoding) {
+    protected MappingHasher(HashFunction function, HashEncoding encoding) {
         if ( function.algName != null ) {
             try {
                 md = MessageDigest.getInstance(function.algName);
@@ -84,8 +119,16 @@ public class MappingHasher {
      * @return The unique hash for the mapping.
      */
     public String hash(Mapping mapping) {
-        byte[] input = mapping.toSExpr().getBytes(StandardCharsets.UTF_8);
+        byte[] input;
         byte[] digest;
+        String output = null;
+
+        if ( type == HashType.MAPPING_SAMENESS_ID ) {
+            String inputString = mapping.getSubjectId() + " " + mapping.getPredicateId() + " " + mapping.getObjectId();
+            input = inputString.getBytes(StandardCharsets.UTF_8);
+        } else {
+            input = mapping.toSExpr().getBytes(StandardCharsets.UTF_8);
+        }
 
         if ( md != null ) {
             digest = md.digest(input);
@@ -94,7 +137,25 @@ public class MappingHasher {
             digest = fnv64(input);
         }
 
-        return encoding == HashEncoding.ZBASE32 ? toZBase32(digest) : toHexadecimal(digest);
+        switch ( encoding ) {
+        case ZBASE32:
+            output = toZBase32(digest);
+            break;
+
+        case BASE16:
+            output = toHexadecimal(digest, false);
+            break;
+
+        case LOWERCASE_BASE16:
+            output = toHexadecimal(digest, true);
+            break;
+        }
+
+        if ( type == HashType.MAPPING_SAMENESS_ID ) {
+            return "mapping:" + output + (mapping.getPredicateModifier() == PredicateModifier.NOT ? "~" : "");
+        } else {
+            return output;
+        }
     }
 
     /**
@@ -177,13 +238,25 @@ public class MappingHasher {
      * @return The hexadecimal representation of the input buffer.
      */
     public static String toHexadecimal(byte[] digest) {
+        return toHexadecimal(digest, false);
+    }
+
+    /**
+     * Encodes a buffer into its hexadecimal representation, optional in lowercase.
+     * 
+     * @param digest The input buffer to encode.
+     * @param lower  If <code>true</code>, lowercase characters are used.
+     * @return The hexadecimal representation of the input buffer.
+     */
+    public static String toHexadecimal(byte[] digest, boolean lower) {
         StringBuffer sb = new StringBuffer();
+        int offset = lower ? 'a' : 'A';
         for ( int i = 0; i < digest.length; i++ ) {
             int hi = (digest[i] & 0xF0) >> 4;
             int lo = digest[i] & 0x0F;
 
-            sb.append((char) (hi >= 10 ? hi - 10 + 'A' : hi + '0'));
-            sb.append((char) (lo >= 10 ? lo - 10 + 'A' : lo + '0'));
+            sb.append((char) (hi >= 10 ? hi - 10 + offset : hi + '0'));
+            sb.append((char) (lo >= 10 ? lo - 10 + offset : lo + '0'));
         }
         return sb.toString();
     }
@@ -209,6 +282,7 @@ public class MappingHasher {
      */
     public enum HashEncoding {
         ZBASE32,
-        BASE16
+        BASE16,
+        LOWERCASE_BASE16
     }
 }
