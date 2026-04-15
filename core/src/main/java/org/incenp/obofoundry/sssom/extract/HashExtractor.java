@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.extract;
 
+import org.incenp.obofoundry.sssom.HashType;
 import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.model.Mapping;
 
@@ -28,7 +29,7 @@ import org.incenp.obofoundry.sssom.model.Mapping;
  */
 public class HashExtractor extends MappingValueExtractor {
     
-    private MappingHasher hasher = new MappingHasher();
+    private MappingHasher hasher;
 
     /**
      * Creates a new instance.
@@ -39,6 +40,20 @@ public class HashExtractor extends MappingValueExtractor {
      */
     public HashExtractor(int mappingNo) {
         super(mappingNo);
+        hasher = new MappingHasher(HashType.STANDARD);
+    }
+
+    /**
+     * Creates a new instance to extract a specific type of hash.
+     * 
+     * @param mappingNo The 0-based index of the mapping from which to extract the
+     *                  hash, or (if negative) the 1-based index starting from the
+     *                  last mapping.
+     * @param type      The type of hash to extract.
+     */
+    public HashExtractor(int mappingNo, HashType type) {
+        super(mappingNo);
+        hasher = new MappingHasher(type);
     }
 
     @Override

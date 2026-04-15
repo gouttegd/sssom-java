@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.incenp.obofoundry.sssom.HashType;
 import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -75,7 +76,8 @@ public class MappingFormatter {
 
     private PrefixManager pfxMgr;
     private MappingHasher hasher = new MappingHasher();
-    private MappingHasher altHasher = new MappingHasher(true);
+    private MappingHasher legacyHasher = new MappingHasher(HashType.LEGACY);
+    private MappingHasher samenessHasher = new MappingHasher(HashType.MAPPING_SAMENESS_ID);
 
     /**
      * Sets the prefix manager to use when attempting to resolve a placeholder name
@@ -185,7 +187,8 @@ public class MappingFormatter {
         placeholders.put("subject_type", (m) -> m.getSubjectType());
 
         placeholders.put("hash", (m) -> hasher.hash(m));
-        placeholders.put("althash", (m) -> altHasher.hash(m));
+        placeholders.put("legacy_hash", (m) -> legacyHasher.hash(m));
+        placeholders.put("mapping_sameness_id", (m) -> samenessHasher.hash(m));
 
         // Don't bother checking if we replaced existing substitutions, always clear the
         // cache.

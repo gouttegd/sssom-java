@@ -18,6 +18,7 @@
 
 package org.incenp.obofoundry.sssom.extract;
 
+import org.incenp.obofoundry.sssom.HashType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.slots.Slot;
@@ -106,8 +107,10 @@ public class ValueExtractorFactory {
             return new SExpressionExtractor(mappingNo);
         } else if ( expression.equals("special(hash)") ) {
             return new HashExtractor(mappingNo);
-        } else if ( expression.equals("special(althash)") ) {
-            return new AltHashExtractor(mappingNo);
+        } else if ( expression.equals("special(legacy_hash)") ) {
+            return new HashExtractor(mappingNo, HashType.LEGACY);
+        } else if ( expression.equals("special(mapping_sameness_id") ) {
+            return new HashExtractor(mappingNo, HashType.MAPPING_SAMENESS_ID);
         }
 
         throw new ExtractorSyntaxException();
