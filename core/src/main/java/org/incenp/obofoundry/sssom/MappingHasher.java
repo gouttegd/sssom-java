@@ -32,10 +32,12 @@ public class MappingHasher {
 
     private final static long FNV64_PRIME = 1099511628211L;
     private final static long FNV64_OFFSET = -3750763034362895579L;
+    private final static String HASH_ALGO = "SHA-256";
 
     // Z-Base32 output alphabet
-    private static char[] ZB32 = { 'y', 'b', 'n', 'd', 'r', 'f', 'g', '8', 'e', 'j', 'k', 'm', 'c', 'p', 'q', 'x', 'o',
-            't', '1', 'u', 'w', 'i', 's', 'z', 'a', '3', '4', '5', 'h', '7', '6', '9' };
+    private final static char[] ZB32 = { 'y', 'b', 'n', 'd', 'r', 'f', 'g', '8', 'e', 'j', 'k', 'm', 'c', 'p', 'q', 'x',
+            'o', 't', '1', 'u', 'w', 'i', 's', 'z', 'a', '3', '4', '5', 'h', '7', '6', '9' };
+
     private MessageDigest md;
     private HashEncoding encoding;
     private HashType type;
@@ -62,7 +64,7 @@ public class MappingHasher {
 
         case LEGACY:
             try {
-                md = MessageDigest.getInstance(HashFunction.SHA2_256.algName);
+                md = MessageDigest.getInstance(HASH_ALGO);
             } catch ( NoSuchAlgorithmException e ) {
             }
             this.encoding = HashEncoding.ZBASE32;
@@ -70,46 +72,12 @@ public class MappingHasher {
 
         case MAPPING_SAMENESS_ID:
             try {
-                md = MessageDigest.getInstance(HashFunction.SHA2_256.algName);
+                md = MessageDigest.getInstance(HASH_ALGO);
             } catch ( NoSuchAlgorithmException e ) {
             }
             this.encoding = HashEncoding.LOWERCASE_BASE16;
             break;
         }
-    }
-
-    /**
-     * Creates a new instance that will produce a “legacy” hash.
-     * <p>
-     * The “legacy” hash is the hash that was produced by prior versions of
-     * SSSOM-Java, before the SSSOM standard hash function was formally specified.
-     * 
-     * @param legacy If <code>true</code>, this instance will produce a “legacy”
-     *               hash. Otherwise, it will produce the same standard hash as
-     *               {@link #MappingHasher()}.
-     * @deprecated Use {@link #MappingHasher(HashType)} with {@link HashType#LEGACY}
-     *             instead.
-     */
-    @Deprecated
-    public MappingHasher(boolean legacy) {
-        this(HashType.LEGACY);
-    }
-
-    /**
-     * Creates a new instance will full control over the production of the hash.
-     * 
-     * @param function The hash function to use.
-     * @param encoding The encoding to use to encode the output of the hash
-     *                 function.
-     */
-    protected MappingHasher(HashFunction function, HashEncoding encoding) {
-        if ( function.algName != null ) {
-            try {
-                md = MessageDigest.getInstance(function.algName);
-            } catch ( NoSuchAlgorithmException e ) {
-            }
-        }
-        this.encoding = encoding;
     }
 
     /**
@@ -262,25 +230,10 @@ public class MappingHasher {
     }
 
     /**
-     * The hash function to use to hash the canonical S-expression of a mapping
-     * record.
-     */
-    public enum HashFunction {
-        SHA2_256("SHA-256"),
-        FNV64(null);
-
-        String algName;
-
-        HashFunction(String algName) {
-            this.algName = algName;
-        }
-    }
-
-    /**
      * The encoding to use to transform the array of bytes produced by the hash
      * function into a printable string.
      */
-    public enum HashEncoding {
+    private enum HashEncoding {
         ZBASE32,
         BASE16,
         LOWERCASE_BASE16
