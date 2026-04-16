@@ -20,4 +20,4 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build package
-      run: mvn -B package site
+      run: mvn -B -Dgpg.skip=true verify site
