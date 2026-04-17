@@ -109,7 +109,7 @@ public class ValueExtractorFactory {
             return new HashExtractor(mappingNo);
         } else if ( expression.equals("special(legacy_hash)") ) {
             return new HashExtractor(mappingNo, HashType.LEGACY);
-        } else if ( expression.equals("special(mapping_sameness_id") ) {
+        } else if ( expression.equals("special(mapping_sameness_id)") ) {
             return new HashExtractor(mappingNo, HashType.MAPPING_SAMENESS_ID);
         }
 
