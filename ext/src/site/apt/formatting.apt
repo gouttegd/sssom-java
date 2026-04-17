@@ -60,6 +60,21 @@ Mapping format strings
   format string is applied to, so that the hash is unique for any given
   mapping.
   
+  The following special placeholders are also available:
+  
+  * <<<hash>>>: Inserts a hash value calculated on all the slots of the
+    mapping the format string is applied to, so that the hash is unique
+    for any given mapping.
+    
+  * <<<mapping_sameness_id>>>: Similar to <<<hash>>>, but the hash value
+    is calculated only on the subject, predicate, and object IDs (and
+    the predicate modifier, if present), so that the value is the same
+    for all mapping records that are about the same mapping. This
+    follows the {{{https://ts4nfdi.github.io/mapping-sameness-identifier/}Mapping Sameness identifier}}
+    proposal.
+
+  []
+  
 * 3. Format modifiers
 
   When using the bracketed form, the placeholder itself may be followed,

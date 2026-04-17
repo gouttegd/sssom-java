@@ -618,6 +618,11 @@ subject==* -> include();
   [special(hash)] To retrieve the standard SSSOM hash of a mapping. This
                   is only available if the selected object is a mapping.
 
+  [special(mapping_sameness_id)] To retrieve the
+                                 {{{https://ts4nfdi.github.io/mapping-sameness-identifier/}Mapping Sameness Identifier}}
+                                 of a mapping. This is only available if
+                                 the selected object is a mapping.
+
   []
 
 ** 5.2. Examples of extractor expressions

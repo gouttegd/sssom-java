@@ -1,3 +1,9 @@
+Changes in sssom-java 1.11.2
+----------------------------
+
+    * Add support for the newly defined “Mapping Sameness Identifier”.
+
+
 Changes in sssom-java 1.11.1
 ----------------------------
 
