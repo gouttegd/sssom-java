@@ -55,11 +55,6 @@ Mapping format strings
   Applications using mapping format strings may define additional,
   application-specific placeholders.
   
-  The following special placeholder is also available: <<<hash>>>. It
-  inserts a hash value calculated on all the slots of the mapping the
-  format string is applied to, so that the hash is unique for any given
-  mapping.
-  
   The following special placeholders are also available:
   
   * <<<hash>>>: Inserts a hash value calculated on all the slots of the
