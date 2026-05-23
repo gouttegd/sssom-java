@@ -871,6 +871,10 @@ class ParseTree2FilterVisitor<T> extends SSSOMTransformBaseVisitor<IMappingFilte
         case "subject_preprocessing":
             filter = (mapping) -> testValue.apply(mapping.getSubjectPreprocessing());
             break;
+
+        case "derived_from":
+            filter = (mapping) -> testValue.apply(mapping.getDerivedFrom());
+            break;
         }
 
         return addFilter(new NamedFilter(String.format("%s==%s", fieldName, value), filter));
