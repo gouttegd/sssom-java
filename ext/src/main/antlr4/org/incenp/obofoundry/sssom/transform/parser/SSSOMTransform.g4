@@ -77,6 +77,7 @@ mulIdField: 'author'
           | 'reviewer'
           | 'subject_match_field'
           | 'subject_preprocessing'
+          | 'derived_from'
           ;
 
 txField   : 'comment'
