@@ -213,6 +213,12 @@ public class Mapping  {
     @EntityReference
     private String issueTrackerItem;
 
+    @JsonProperty("derived_from")
+    @EntityReference
+    @SlotURI("http://www.w3.org/ns/prov#wasDerivedFrom")
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private List<String> derivedFrom;
+
     private String other;
 
     @SlotURI("http://www.w3.org/2000/01/rdf-schema#comment")
@@ -277,6 +283,7 @@ public class Mapping  {
             final String similarityMeasure,
             final List<String> seeAlso,
             final String issueTrackerItem,
+            final List<String> derivedFrom,
             final String other,
             final String comment,
             final Map<String,ExtensionValue> extensions) {
@@ -328,6 +335,7 @@ public class Mapping  {
         this.similarityMeasure = similarityMeasure;
         this.seeAlso = seeAlso;
         this.issueTrackerItem = issueTrackerItem;
+        this.derivedFrom = derivedFrom;
         this.other = other;
         this.comment = comment;
         this.extensions = extensions;
@@ -1249,6 +1257,35 @@ public class Mapping  {
     }
 
     /**
+     * Gets the value of the <code>derived_from</code> slot.
+     */
+    public List<String> getDerivedFrom() {
+        return this.derivedFrom;
+    }
+
+    /**
+     * Gets the list of <code>derived_from</code> values, optionally
+     * initializing the list if needed.
+     *
+     * @param set If {@code true}, the underlying field will be initialized to
+     *            an empty list if it happens to be {@code null}.
+     * @return The list of derived_from values.
+     */
+    public List<String> getDerivedFrom(boolean set) {
+        if ( derivedFrom == null && set ) {
+            derivedFrom = new ArrayList<>();
+        }
+        return derivedFrom;
+    }
+
+    /**
+     * Sets the value of the <code>derived_from</code> slot.
+     */
+    public void setDerivedFrom(final List<String> value) {
+        this.derivedFrom = value;
+    }
+
+    /**
      * Gets the value of the <code>other</code> slot.
      */
     public String getOther() {
@@ -1758,6 +1795,20 @@ public class Mapping  {
             String v = String.valueOf(issueTrackerItem);
             sb.append(String.format("(18:issue_tracker_item%d:%s)", v.length(), v));
         }
+        if ( derivedFrom != null ) {
+            sb.append("(12:derived_from(");
+            List<String> tmp = null;
+            if ( derivedFrom.size() > 1 ) {
+                tmp = new ArrayList<>(derivedFrom);
+                Collections.sort(tmp);
+            } else {
+                tmp = derivedFrom;
+            }
+            for ( String v : tmp ) {
+                sb.append(String.format("%d:%s", v.length(), v));
+            }
+            sb.append("))");
+        }
         if ( other != null ) {
             String v = String.valueOf(other);
             sb.append(String.format("(5:other%d:%s)", v.length(), v));
@@ -2057,6 +2108,11 @@ public class Mapping  {
             sb.append(this.issueTrackerItem);
             sb.append(",");
         }
+        if ( this.derivedFrom != null ) {
+            sb.append("derived_from=");
+            sb.append(this.derivedFrom);
+            sb.append(",");
+        }
         if ( this.other != null ) {
             sb.append("other=");
             sb.append(this.other);
@@ -2135,6 +2191,7 @@ public class Mapping  {
         if ( this.similarityMeasure == null ? other.similarityMeasure != null : !this.similarityMeasure.equals(other.similarityMeasure)) return false;
         if ( this.seeAlso == null ? other.seeAlso != null : !this.seeAlso.equals(other.seeAlso)) return false;
         if ( this.issueTrackerItem == null ? other.issueTrackerItem != null : !this.issueTrackerItem.equals(other.issueTrackerItem)) return false;
+        if ( this.derivedFrom == null ? other.derivedFrom != null : !this.derivedFrom.equals(other.derivedFrom)) return false;
         if ( this.other == null ? other.other != null : !this.other.equals(other.other)) return false;
         if ( this.comment == null ? other.comment != null : !this.comment.equals(other.comment)) return false;
         if ( this.extensions == null ? other.extensions != null : !this.extensions.equals(other.extensions)) return false;
@@ -2197,6 +2254,7 @@ public class Mapping  {
         result = result * PRIME + (this.similarityMeasure == null ? 43 : this.similarityMeasure.hashCode());
         result = result * PRIME + (this.seeAlso == null ? 43 : this.seeAlso.hashCode());
         result = result * PRIME + (this.issueTrackerItem == null ? 43 : this.issueTrackerItem.hashCode());
+        result = result * PRIME + (this.derivedFrom == null ? 43 : this.derivedFrom.hashCode());
         result = result * PRIME + (this.other == null ? 43 : this.other.hashCode());
         result = result * PRIME + (this.comment == null ? 43 : this.comment.hashCode());
         result = result * PRIME + (this.extensions == null ? 43 : this.extensions.hashCode());
@@ -2252,6 +2310,7 @@ public class Mapping  {
         private String similarityMeasure;
         private List<String> seeAlso;
         private String issueTrackerItem;
+        private List<String> derivedFrom;
         private String other;
         private String comment;
         private Map<String,ExtensionValue> extensions;
@@ -2499,6 +2558,11 @@ public class Mapping  {
             return this;
         }
 
+        public Mapping.MappingBuilder derivedFrom(final List<String> derivedFrom) {
+            this.derivedFrom = derivedFrom;
+            return this;
+        }
+
         public Mapping.MappingBuilder other(final String other) {
             this.other = other;
             return this;
@@ -2563,6 +2627,7 @@ public class Mapping  {
                 this.similarityMeasure,
                 this.seeAlso,
                 this.issueTrackerItem,
+                this.derivedFrom,
                 this.other,
                 this.comment,
                 this.extensions);
@@ -2617,6 +2682,7 @@ public class Mapping  {
                 + ", similarityMeasure=" + this.similarityMeasure
                 + ", seeAlso=" + this.seeAlso
                 + ", issueTrackerItem=" + this.issueTrackerItem
+                + ", derivedFrom=" + this.derivedFrom
                 + ", other=" + this.other
                 + ", comment=" + this.comment
                 + ", extensions=" + this.extensions + ")";
@@ -2677,6 +2743,7 @@ public class Mapping  {
             .similarityMeasure(this.similarityMeasure)
             .seeAlso(this.seeAlso)
             .issueTrackerItem(this.issueTrackerItem)
+            .derivedFrom(this.derivedFrom)
             .other(this.other)
             .comment(this.comment)
             .extensions(this.extensions);
