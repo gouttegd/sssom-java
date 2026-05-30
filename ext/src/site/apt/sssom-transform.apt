@@ -771,6 +771,32 @@ justification==semapv:ManualMappingCuration && subject==CL:* -> invert();
   – they have been excluded from the <invert()> rule, but not removed,
   so they will be seen be any rule that may follow.
   
+  The <invert> function optionally accepts two boolean flags:
+  
+  * <<</fill_justification>>>: If set to <<<yes>>>, the <<<mapping_justification>>>
+    slot of the inverted mapping will be set to <<<semapv:MappingInversion>>>.
+    
+  * <<</fill_derived_from>>>: If set to <<<yes>>>, the
+    {{{https://ts4nfdi.github.io/mapping-sameness-identifier/}Mapping Sameness Identifier}}
+    of the original mapping will be appended to the <<<derived_from>>>
+    slot of the inverted mapping.
+  
+  []
+  
+  Essentially, the following call:
+  
++-----------------------------------------------------------------------
+... -> invert(/fill_justification="yes", /fill_derived_from="yes");
++-----------------------------------------------------------------------
+
+  is a shortcut for:
+  
++-----------------------------------------------------------------------
+... -> assign("mapping_justification", semapv:MappingInversion,
+              "derived_from", "%{mapping_sameness_id}");
+... -> invert();
++-----------------------------------------------------------------------
+  
 *** 6.4.3. <assign>
 
   This function allows to modify the selected mapping by assigning a

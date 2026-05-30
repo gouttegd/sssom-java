@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.HashType;
+import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
@@ -148,6 +150,8 @@ public class SSSOMTransformApplicationTest {
         m.setAuthorId(new ArrayList<String>());
         m.getAuthorId().add("http://www.w3.org/2004/02/skos/core#closeMatch");
         arguments.add("%{author_id|list_item(1)}");
+        keyedArguments.put("fill_justification", "yes");
+        keyedArguments.put("fill_derived_from", "ON");
 
         try {
             IMappingTransformer<Mapping> o = application.onPreprocessingAction("invert", arguments, keyedArguments);
@@ -156,6 +160,9 @@ public class SSSOMTransformApplicationTest {
             Mapping inverted = o.transform(m);
             Assertions.assertEquals(m.getSubjectId(), inverted.getObjectId());
             Assertions.assertEquals("http://www.w3.org/2004/02/skos/core#closeMatch", inverted.getPredicateId());
+            Assertions.assertEquals("https://w3id.org/semapv/vocab/MappingInversion", inverted.getMappingJustification());
+            Assertions.assertEquals(new MappingHasher(HashType.MAPPING_SAMENESS_ID).hash(m),
+                    inverted.getDerivedFrom().get(0));
         } catch ( SSSOMTransformError e ) {
             Assertions.fail(e);
         }
