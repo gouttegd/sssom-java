@@ -29,6 +29,8 @@ import org.incenp.obofoundry.sssom.MappingHasher;
 import org.incenp.obofoundry.sssom.PrefixManager;
 import org.incenp.obofoundry.sssom.model.ExtensionValue;
 import org.incenp.obofoundry.sssom.model.Mapping;
+import org.incenp.obofoundry.sssom.slots.Slot;
+import org.incenp.obofoundry.sssom.slots.SlotHelper;
 
 /**
  * Helper class to format mappings into strings.
@@ -136,60 +138,9 @@ public class MappingFormatter {
      * so on for all the standard fields.
      */
     public void setStandardSubstitutions() {
-        // This is somewhat cumbersome, but only needs to be done once, so it would not
-        // really be worth it to resort to reflection to automatically generate those
-        // substitutions.
-        placeholders.put("author_id", (m) -> m.getAuthorId());
-        placeholders.put("author_label", (m) -> m.getAuthorLabel());
-        placeholders.put("comment", (m) -> m.getComment());
-        placeholders.put("confidence", (m) -> m.getConfidence());
-        placeholders.put("cardinality_scope", (m) -> m.getCardinalityScope());
-        placeholders.put("creator_id", (m) -> m.getCreatorId());
-        placeholders.put("creator_label", (m) -> m.getCreatorLabel());
-        placeholders.put("curation_rule", (m) -> m.getCurationRule());
-        placeholders.put("curation_rule_text", (m) -> m.getCurationRuleText());
-        placeholders.put("derived_from", (m) -> m.getDerivedFrom());
-        placeholders.put("issue_tracker_item", (m) -> m.getIssueTrackerItem());
-        placeholders.put("license", (m) -> m.getLicense());
-        placeholders.put("mapping_cardinality", (m) -> m.getMappingCardinality());
-        placeholders.put("mapping_date", (m) -> m.getMappingDate());
-        placeholders.put("mapping_justification", (m) -> m.getMappingJustification());
-        placeholders.put("mapping_provider", (m) -> m.getMappingProvider());
-        placeholders.put("mapping_source", (m) -> m.getMappingSource());
-        placeholders.put("mapping_tool", (m) -> m.getMappingTool());
-        placeholders.put("mapping_tool_id", (m) -> m.getMappingToolId());
-        placeholders.put("mapping_tool_version", (m) -> m.getMappingToolVersion());
-        placeholders.put("match_string", (m) -> m.getMatchString());
-        placeholders.put("object_category", (m) -> m.getObjectCategory());
-        placeholders.put("object_id", (m) -> m.getObjectId());
-        placeholders.put("object_label", (m) -> m.getObjectLabel());
-        placeholders.put("object_match_field", (m) -> m.getObjectMatchField());
-        placeholders.put("object_preprocessing", (m) -> m.getObjectPreprocessing());
-        placeholders.put("object_source", (m) -> m.getObjectSource());
-        placeholders.put("object_source_version", (m) -> m.getObjectSourceVersion());
-        placeholders.put("object_type", (m) -> m.getObjectType());
-        placeholders.put("other", (m) -> m.getOther());
-        placeholders.put("predicate_id", (m) -> m.getPredicateId());
-        placeholders.put("predicate_label", (m) -> m.getPredicateLabel());
-        placeholders.put("predicate_modifier", (m) -> m.getPredicateModifier());
-        placeholders.put("predicate_type", (m) -> m.getPredicateType());
-        placeholders.put("publication_date", (m) -> m.getPublicationDate());
-        placeholders.put("record_id", (m) -> m.getRecordId());
-        placeholders.put("review_date", (m) -> m.getReviewDate());
-        placeholders.put("reviewer_agreement", (m) -> m.getReviewerAgreement());
-        placeholders.put("reviewer_id", (m) -> m.getReviewerId());
-        placeholders.put("reviewer_label", (m) -> m.getReviewerLabel());
-        placeholders.put("see_also", (m) -> m.getSeeAlso());
-        placeholders.put("similarity_measure", (m) -> m.getSimilarityMeasure());
-        placeholders.put("similarity_score", (m) -> m.getSimilarityScore());
-        placeholders.put("subject_category", (m) -> m.getSubjectCategory());
-        placeholders.put("subject_id", (m) -> m.getSubjectId());
-        placeholders.put("subject_label", (m) -> m.getSubjectLabel());
-        placeholders.put("subject_match_field", (m) -> m.getSubjectMatchField());
-        placeholders.put("subject_preprocessing", (m) -> m.getSubjectPreprocessing());
-        placeholders.put("subject_source", (m) -> m.getSubjectSource());
-        placeholders.put("subject_source_version", (m) -> m.getSubjectSourceVersion());
-        placeholders.put("subject_type", (m) -> m.getSubjectType());
+        for ( Slot<Mapping> slot : SlotHelper.getMappingHelper().getSlots() ) {
+            placeholders.put(slot.getName(), (m) -> slot.getValue(m));
+        }
 
         placeholders.put("hash", (m) -> hasher.hash(m));
         placeholders.put("legacy_hash", (m) -> legacyHasher.hash(m));
