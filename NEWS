@@ -1,3 +1,11 @@
+Changes in sssom-java 1.11.3
+----------------------------
+
+    * Add support for the new slot `derived_from`.
+    * Add missing standard substitutions in SSSOM/T.
+    * Add optional flags to SSSOM/T’s `invert` function.
+
+
 Changes in sssom-java 1.11.2
 ----------------------------
 
