@@ -143,10 +143,12 @@ public class MappingFormatter {
         placeholders.put("author_label", (m) -> m.getAuthorLabel());
         placeholders.put("comment", (m) -> m.getComment());
         placeholders.put("confidence", (m) -> m.getConfidence());
+        placeholders.put("cardinality_scope", (m) -> m.getCardinalityScope());
         placeholders.put("creator_id", (m) -> m.getCreatorId());
         placeholders.put("creator_label", (m) -> m.getCreatorLabel());
         placeholders.put("curation_rule", (m) -> m.getCurationRule());
         placeholders.put("curation_rule_text", (m) -> m.getCurationRuleText());
+        placeholders.put("derived_from", (m) -> m.getDerivedFrom());
         placeholders.put("issue_tracker_item", (m) -> m.getIssueTrackerItem());
         placeholders.put("license", (m) -> m.getLicense());
         placeholders.put("mapping_cardinality", (m) -> m.getMappingCardinality());
@@ -170,8 +172,11 @@ public class MappingFormatter {
         placeholders.put("predicate_id", (m) -> m.getPredicateId());
         placeholders.put("predicate_label", (m) -> m.getPredicateLabel());
         placeholders.put("predicate_modifier", (m) -> m.getPredicateModifier());
+        placeholders.put("predicate_type", (m) -> m.getPredicateType());
         placeholders.put("publication_date", (m) -> m.getPublicationDate());
         placeholders.put("record_id", (m) -> m.getRecordId());
+        placeholders.put("review_date", (m) -> m.getReviewDate());
+        placeholders.put("reviewer_agreement", (m) -> m.getReviewerAgreement());
         placeholders.put("reviewer_id", (m) -> m.getReviewerId());
         placeholders.put("reviewer_label", (m) -> m.getReviewerLabel());
         placeholders.put("see_also", (m) -> m.getSeeAlso());
