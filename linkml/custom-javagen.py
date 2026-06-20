@@ -581,11 +581,14 @@ class CustomJavaGenerator(JavaGenerator):
             return field.range
 
 
-@click.argument("yamlfile", type=click.Path(exists=True, dir_okay=False))
-@click.option("--output-directory", default="output", show_default=True)
+@click.option("--sssom-schema",
+              type=click.Path(exists=True, dir_okay=False),
+              default="linkml/sssom_schema.yaml")
+@click.option("--output-directory",
+              default="core/src/main/java/org/incenp/obofoundry/sssom/model")
 @click.command()
-def cli(yamlfile, output_directory=None):
-    gen = CustomJavaGenerator(yamlfile)
+def cli(sssom_schema, output_directory):
+    gen = CustomJavaGenerator(sssom_schema)
     gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix", "NoTermFound", "Versionable"])
 
 if __name__ == "__main__":
