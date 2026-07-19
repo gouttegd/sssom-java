@@ -265,7 +265,7 @@ public class TSVWriter extends SSSOMWriter {
             sb.append(linePrefix);
             sb.append(slot.getName());
             sb.append(": ");
-            escapeYAML(sb, slot.isEntityReference() ? prefixManager.shortenIdentifier(value) : value);
+            escapeYAML(sb, value);
             sb.append('\n');
         }
 
@@ -548,7 +548,7 @@ public class TSVWriter extends SSSOMWriter {
                     break;
 
                 case 0x2029: // Unicode paragraph separator
-                    sb.append("\\N");
+                    sb.append("\\P");
                     quote = true;
                     break;
 
