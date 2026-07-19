@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -230,12 +229,13 @@ public class TSVWriter extends SSSOMWriter {
         tsvWriter.append('\n');
 
         // Write the individual mappings
-        MappingSlotVisitor mappingVisitor = new MappingSlotVisitor(extraSlots);
+        MappingTSVWriterVisitor mappingVisitor = new MappingTSVWriterVisitor(prefixManager,
+                extraPolicy != ExtraMetadataPolicy.NONE ? extraSlots : null, isCSV);
         for ( Mapping mapping : mappingSet.getMappings() ) {
             helper.visitSlots(mapping, mappingVisitor, true);
-            tsvWriter.append(String.join(sep, mappingVisitor.results));
+            tsvWriter.append(String.join(sep, mappingVisitor.getValues()));
             tsvWriter.append('\n');
-            mappingVisitor.results.clear();
+            mappingVisitor.reset();
         }
 
         tsvWriter.close();
@@ -595,192 +595,6 @@ public class TSVWriter extends SSSOMWriter {
                 }
                 sb.append('"');
             }
-        }
-    }
-
-    /*
-     * Visits all slots in a mapping to render their values as a TSV cell.
-     */
-    private class MappingSlotVisitor extends SlotVisitorBase<Mapping> {
-        private List<ExtensionDefinition> definitions;
-        List<String> results;
-
-        MappingSlotVisitor(List<ExtensionDefinition> extraSlots) {
-            definitions = extraSlots;
-            results = new ArrayList<String>();
-        }
-
-        @Override
-        public void visit(Slot<Mapping> slot, Mapping object, Object value) {
-            results.add(value == null ? "" : escapeTSV(value.toString()));
-        }
-
-        @Override
-        public void visit(EntityReferenceSlot<Mapping> slot, Mapping object, String value) {
-            results.add(value == null ? "" : escapeTSV(prefixManager.shortenIdentifier(value)));
-        }
-
-        @Override
-        public void visit(StringSlot<Mapping> slot, Mapping object, List<String> values) {
-            if ( values == null ) {
-                results.add("");
-                return;
-            }
-            results.add(escapeTSV(values));
-        }
-
-        @Override
-        public void visit(EntityReferenceSlot<Mapping> slot, Mapping object, List<String> values) {
-            if ( values == null ) {
-                results.add("");
-                return;
-            }
-
-            results.add(escapeTSV(prefixManager.shortenIdentifiers(values)));
-        }
-
-        @Override
-        public void visit(DoubleSlot<Mapping> slot, Mapping object, Double value) {
-            results.add(value == null ? "" : SSSOMUtils.format(value));
-        }
-
-        @Override
-        public void visit(DateSlot<Mapping> slot, Mapping object, LocalDate value) {
-            results.add(value == null ? "" : value.format(DateTimeFormatter.ISO_DATE));
-        }
-
-        @Override
-        public void visit(ExtensionSlot<Mapping> slot, Mapping object, Map<String, ExtensionValue> extensions) {
-            if ( extraPolicy == ExtraMetadataPolicy.NONE || extensions == null ) {
-                return;
-            }
-
-            for ( ExtensionDefinition definition : definitions ) {
-                ExtensionValue ev = extensions.get(definition.getProperty());
-                if ( ev != null ) {
-                    results.add(ev.isIdentifier() ? prefixManager.shortenIdentifier(ev.asString()) : ev.toString());
-                } else {
-                    results.add("");
-                }
-            }
-        }
-
-        /*
-         * Apply CSV-style escaping rules
-         * https://datatracker.ietf.org/doc/html/rfc4180#section-2
-         */
-        private String escapeTSV(String value) {
-            StringBuilder sb = new StringBuilder();
-            int len = value.length();
-            boolean quotesNeeded = false;
-            for ( int i = 0; i < len; i++ ) {
-                char c = value.charAt(i);
-                switch ( c ) {
-                case ',':
-                    if ( isCSV ) {
-                        quotesNeeded = true;
-                    }
-                    break;
-
-                case '\t':
-                    if ( !isCSV ) {
-                        quotesNeeded = true;
-                    }
-                    break;
-
-                case '\n':
-                case '\r':
-                    quotesNeeded = true;
-                    break;
-
-                case '"':
-                    quotesNeeded = true;
-                    sb.append('"');
-                    break;
-                }
-                sb.append(c);
-            }
-
-            if ( quotesNeeded ) {
-                sb.insert(0, '"');
-                sb.append('"');
-            }
-
-            return sb.toString();
-        }
-
-        /*
-         * Likewise, but for multi-valued slots, where in addition we need to escape
-         * pipe characters. The duplicated code from the previous method is unfortunate,
-         * but we can't simply call that method because we don't want to quote
-         * <em>individual</em> values here, it is the entire |-separated multivalue that
-         * must be quoted if any single value within it contains quote-triggering
-         * characters.
-         */
-        private String escapeTSV(List<String> values) {
-            StringBuilder sb = new StringBuilder();
-            boolean quotesNeeded = false;
-            int nValues = values.size();
-            for ( int i = 0; i < nValues; i++ ) {
-                String value = values.get(i);
-                if ( i > 0 ) {
-                    sb.append('|');
-                }
-
-                int len = value.length();
-                for ( int j = 0; j < len; j++ ) {
-                    char c = value.charAt(j);
-                    switch ( c ) {
-                    case ',':
-                        if ( isCSV ) {
-                            quotesNeeded = true;
-                        }
-                        break;
-
-                    case '\t':
-                        if ( !isCSV ) {
-                            quotesNeeded = true;
-                        }
-                        break;
-
-                    case '\r':
-                    case '\n':
-                        quotesNeeded = true;
-                        break;
-
-                    case '"':
-                        quotesNeeded = true;
-                        sb.append('"');
-                        break;
-
-                    case '\\':
-                        // The backslash needs escaping only if (1) it is followed by another backslash
-                        // or a pipe, or (2) it is the last character of the current value and there are
-                        // more values to follow.
-                        if ( j < len - 1 ) {
-                            char next = value.charAt(j + 1);
-                            if ( next == '\\' || next == '|' ) {
-                                sb.append('\\');
-                            }
-                        } else if ( i < nValues - 1 ) {
-                            sb.append('\\');
-                        }
-                        break;
-
-                    case '|':
-                        sb.append('\\');
-                        break;
-                    }
-                    sb.append(c);
-                }
-            }
-
-            if ( quotesNeeded ) {
-                sb.insert(0, '"');
-                sb.append('"');
-            }
-
-            return sb.toString();
         }
     }
 }
