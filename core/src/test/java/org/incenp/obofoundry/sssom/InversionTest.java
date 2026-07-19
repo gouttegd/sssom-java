@@ -58,7 +58,7 @@ public class InversionTest {
 
     @Test
     void testNonInvertibleMapping() {
-        Mapping mapping = getSampleMapping("http://www.w3.org/2004/02/skos/core#closeMatch");
+        Mapping mapping = getSampleMapping("http://www.w3.org/2000/01/rdf-schema#subPropertyOf");
 
         Mapping inverted = mapping.invert();
         Assertions.assertNull(inverted);

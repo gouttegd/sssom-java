@@ -32,10 +32,22 @@ public enum CommonPredicate {
     SKOS_EXACT_MATCH                    ("http://www.w3.org/2004/02/skos/core#exactMatch",          true                                                            ),
     SKOS_NARROW_MATCH                   ("http://www.w3.org/2004/02/skos/core#narrowMatch",                 "http://www.w3.org/2004/02/skos/core#broadMatch"        ),
     SKOS_BROAD_MATCH                    ("http://www.w3.org/2004/02/skos/core#broadMatch",                  "http://www.w3.org/2004/02/skos/core#narrowMatch"       ),
+    SKOS_RELATED_MATCH                  ("http://www.w3.org/2004/02/skos/core#relatedMatch",        true                                                            ),
+    SKOS_CLOSE_MATCH                    ("http://www.w3.org/2004/02/skos/core#closeMatch",          true                                                            ),
+    OWL_SAME_AS                         ("http://www.w3.org/2002/07/owl#sameAs",                    true                                                            ),
     OWL_EQUIVALENT_CLASS                ("http://www.w3.org/2002/07/owl#equivalentClass",           true                                                            ),
+    OWL_EQUIVALENT_PROPERTY             ("http://www.w3.org/2002/07/owl#equivalentProperty",        true                                                            ),
+    /* FIXME: SSSOM-Py claims that rdfs:subClassOf has an inverse predicate
+     * (sssom:superClassOf) coming out of nowhere.
+     * See <https://github.com/mapping-commons/sssom/issues/559>. */
+    RDFS_SUBCLASS_OF                    ("http://www.w3.org/2000/01/rdf-schema#subClassOf"                                                                          ),
+    RDFS_SUBPROPERTY_OF                 ("http://www.w3.org/2000/01/rdf-schema#subPropertyOf"                                                                       ),
+    RDFS_SEE_ALSO                       ("http://www.w3.org/2000/01/rdf-schema#seeAlso",            true                                                            ),
+    OIO_HAS_DB_XREF                     ("http://www.geneontology.org/formats/oboInOwl#hasDbXref",  true                                                            ),
     SEMAPV_CROSS_SPECIES_EXACT_MATCH    ("https://w3id.org/semapv/vocab/crossSpeciesExactMatch",    true                                                            ),
     SEMAPV_CROSS_SPECIES_NARROW_MATCH   ("https://w3id.org/semapv/vocab/crossSpeciesNarrowMatch",           "https://w3id.org/semapv/vocab/crossSpeciesBroadMatch"  ),
-    SEMAPV_CROSS_SPECIES_BROAD_MATCH    ("https://w3id.org/semapv/vocab/crossSpeciesBroadMatch",            "https://w3id.org/semapv/vocab/crossSpeciesNarrowMatch" );
+    SEMAPV_CROSS_SPECIES_BROAD_MATCH    ("https://w3id.org/semapv/vocab/crossSpeciesBroadMatch",            "https://w3id.org/semapv/vocab/crossSpeciesNarrowMatch" ),
+    SEMAPV_CROSS_SPECIES_CLOSE_MATCH    ("https://w3id.org/semapv/vocab/crossSpeciesCloseMatch",    true                                                            );
     // @formatter:on
 
     private final static Map<String, CommonPredicate> MAP;
