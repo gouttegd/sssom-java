@@ -48,6 +48,7 @@ import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.slots.VersionSlot;
+import org.incenp.obofoundry.sssom.util.JSONBuilder;
 
 /**
  * A writer to serialise a SSSOM mapping set into a JSON format.
@@ -60,9 +61,7 @@ import org.incenp.obofoundry.sssom.slots.VersionSlot;
 public class JSONWriter extends SSSOMWriter {
 
     private Writer writer;
-    private StringBuilder buffer = new StringBuilder();
-    private int indentLevel = 0;
-    private boolean firstItem = false;
+    private JSONBuilder builder = new JSONBuilder();
     private boolean shortenIRIs = false;
     private boolean curieMapInContext = false;
 
@@ -138,162 +137,43 @@ public class JSONWriter extends SSSOMWriter {
         // Determine minimum compliant version
         mappingSet.setSssomVersion(Version.getCompliantVersion(mappingSet));
 
-        startDict();
-
         if ( shortenIRIs ) {
             // Write the CURIE map
             Set<String> usedPrefixes = getUsedPrefixes(mappingSet);
             if ( !usedPrefixes.isEmpty() ) {
-                addKey(curieMapInContext ? "@context" : "curie_map");
-                startDict();
+                builder.addKey(curieMapInContext ? "@context" : "curie_map");
+                builder.startDict();
                 List<String> sortedPrefixes = new ArrayList<String>(getUsedPrefixes(mappingSet));
                 sortedPrefixes.sort((a, b) -> a.compareTo(b));
                 for ( String prefixName : sortedPrefixes ) {
                     if ( prefixName != null ) {
-                        addKey(prefixName);
-                        addValue(prefixManager.getPrefix(prefixName));
+                        builder.addKey(prefixName);
+                        builder.addValue(prefixManager.getPrefix(prefixName));
                     }
                 }
-                endDict();
+                builder.endDict();
             }
         }
 
         // Write the rest of the set metadata
         SlotVisitor<MappingSet> visitor = new SlotVisitor<MappingSet>();
         SlotHelper.getMappingSetHelper().visitSlots(mappingSet, visitor);
-        writer.append(buffer.toString());
-        buffer.delete(0, buffer.length());
 
         // Write the mappings
-        addKey("mappings");
-        startList();
+        builder.addKey("mappings");
+        builder.startList();
         SlotHelper<Mapping> helper = SlotHelper.getMappingHelper(true);
         helper.excludeSlots(condensedSlots);
         SlotVisitor<Mapping> vm = new SlotVisitor<Mapping>();
         for ( Mapping m : mappingSet.getMappings() ) {
-            addItem();
-            startDict();
+            builder.startDict();
             helper.visitSlots(m, vm);
-            endDict();
-
-            writer.append(buffer.toString());
-            buffer.delete(0, buffer.length());
+            builder.endDict();
         }
-        endList();
+        builder.endList();
 
-        endDict();
-
-        writer.append(buffer.toString());
-        writer.append('\n');
+        writer.append(builder.close());
         writer.close();
-    }
-
-    /* Starts writing a JSON dictionary. */
-    private void startDict() {
-        buffer.append("{");
-        indentLevel += 1;
-        firstItem = true;
-    }
-
-    /* Appends a new key in a JSON dictionary. */
-    private void addKey(String key) {
-        if ( !firstItem ) {
-            buffer.append(',');
-        }
-        buffer.append('\n');
-        buffer.append("  ".repeat(indentLevel));
-        buffer.append('"');
-        buffer.append(key);
-        buffer.append("\": ");
-        firstItem = false;
-    }
-
-    /* Appends a string value to the JSON flow. */
-    private void addValue(String value) {
-        buffer.append('"');
-        // Escaping string value according to JSON rules
-        // (https://www.ietf.org/rfc/rfc4627.html#section-2.5)
-        for ( int i = 0, n = value.length(); i < n; i++ ) {
-            int c = value.codePointAt(i);
-            switch ( c ) {
-            case '"':
-            case '\\':
-                buffer.append('\\');
-                buffer.appendCodePoint(c);
-                break;
-
-            case 0x08: // Backspace
-                buffer.append("\\b");
-                break;
-
-            case 0x09: // Horizontal tab
-                buffer.append("\\t");
-                break;
-
-            case 0x0A: // Line feed
-                buffer.append("\\n");
-                break;
-
-            case 0x0C: // Form feed
-                buffer.append("\\f");
-                break;
-
-            case 0x0D: // Carriage return
-                buffer.append("\\r");
-                break;
-
-            default:
-                if ( c <= 0x1F ) {
-                    buffer.append(String.format("\\u%04x", c));
-                } else {
-                    buffer.appendCodePoint(c);
-                }
-            }
-        }
-        buffer.append('"');
-    }
-
-    /* Appends a double value (unquoted) to the JSON flow. */
-    private void addValue(Double value) {
-        buffer.append(SSSOMUtils.format(value));
-    }
-
-    /* Appends a value to the JSON flow. */
-    private void addValue(Object value) {
-        buffer.append(value.toString());
-    }
-
-    /* Closes a JSON dictionary. */
-    private void endDict() {
-        indentLevel -= 1;
-        buffer.append('\n');
-        buffer.append("  ".repeat(indentLevel));
-        buffer.append("}");
-    }
-
-    /* Starts writing a JSON list. */
-    private void startList() {
-        buffer.append("[");
-        indentLevel += 1;
-        firstItem = true;
-    }
-
-    /* Appends a new item in a JSON list. */
-    private void addItem() {
-        if ( !firstItem ) {
-            buffer.append(',');
-        }
-        buffer.append('\n');
-        buffer.append("  ".repeat(indentLevel));
-        firstItem = false;
-    }
-
-    /* Closes a JSON list. */
-    private void endList() {
-        indentLevel -= 1;
-        buffer.append('\n');
-        buffer.append("  ".repeat(indentLevel));
-        buffer.append("]");
     }
 
     /*
@@ -303,52 +183,50 @@ public class JSONWriter extends SSSOMWriter {
 
         @Override
         public void visit(Slot<T> slot, T object, Object value) {
-            addKey(slot.getName());
-            addValue(value.toString());
+            builder.addKey(slot.getName());
+            builder.addValue(value.toString());
         }
 
         @Override
         public void visit(EntityReferenceSlot<T> slot, T object, String value) {
-            addKey(slot.getName());
-            addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
+            builder.addKey(slot.getName());
+            builder.addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
         }
 
         @Override
         public void visit(StringSlot<T> slot, T object, List<String> values) {
             if ( values.size() > 0 ) {
-                addKey(slot.getName());
-                startList();
+                builder.addKey(slot.getName());
+                builder.startList();
                 for ( String value : values ) {
-                    addItem();
-                    addValue(value);
+                    builder.addValue(value);
                 }
-                endList();
+                builder.endList();
             }
         }
 
         @Override
         public void visit(EntityReferenceSlot<T> slot, T object, List<String> values) {
             if ( values.size() > 0 ) {
-                addKey(slot.getName());
-                startList();
+                builder.addKey(slot.getName());
+                builder.startList();
                 for ( String value : values ) {
-                    addItem();
-                    addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
+                    builder.addValue(shortenIRIs ? prefixManager.shortenIdentifier(value) : value);
                 }
-                endList();
+                builder.endList();
             }
         }
 
         @Override
         public void visit(DoubleSlot<T> slot, T object, Double value) {
-            addKey(slot.getName());
-            addValue(value);
+            builder.addKey(slot.getName());
+            builder.addValue(value);
         }
 
         @Override
         public void visit(DateSlot<T> slot, T object, LocalDate value) {
-            addKey(slot.getName());
-            addValue(SSSOMUtils.format(value));
+            builder.addKey(slot.getName());
+            builder.addValue(SSSOMUtils.format(value));
         }
 
         @Override
@@ -359,32 +237,31 @@ public class JSONWriter extends SSSOMWriter {
         @Override
         public void visit(VersionSlot<T> slot, T object, Version value) {
             if ( value != Version.SSSOM_1_0 && value != Version.UNKNOWN ) {
-                addKey(slot.getName());
-                addValue(value.toString());
+                builder.addKey(slot.getName());
+                builder.addValue(value.toString());
             }
         }
 
         @Override
         public void visit(ExtensionDefinitionSlot<T> slot, T object, List<ExtensionDefinition> definitions) {
             if ( extraPolicy == ExtraMetadataPolicy.DEFINED && !definitions.isEmpty() ) {
-                addKey("extension_definitions");
-                startList();
+                builder.addKey("extension_definitions");
+                builder.startList();
                 for ( ExtensionDefinition definition : definitions ) {
-                    addItem();
-                    startDict();
-                    addKey("slot_name");
-                    addValue(definition.getSlotName());
-                    addKey("property");
-                    addValue(shortenIRIs ? prefixManager.shortenIdentifier(definition.getProperty())
+                    builder.startDict();
+                    builder.addKey("slot_name");
+                    builder.addValue(definition.getSlotName());
+                    builder.addKey("property");
+                    builder.addValue(shortenIRIs ? prefixManager.shortenIdentifier(definition.getProperty())
                             : definition.getProperty());
                     if ( definition.getEffectiveType() != ValueType.STRING ) {
-                        addKey("type_hint");
-                        addValue(shortenIRIs ? prefixManager.shortenIdentifier(definition.getTypeHint())
+                        builder.addKey("type_hint");
+                        builder.addValue(shortenIRIs ? prefixManager.shortenIdentifier(definition.getTypeHint())
                                 : definition.getTypeHint());
                     }
-                    endDict();
+                    builder.endDict();
                 }
-                endList();
+                builder.endList();
             }
         }
 
@@ -394,23 +271,23 @@ public class JSONWriter extends SSSOMWriter {
                 for ( ExtensionDefinition definition : extensionManager.getDefinitions(true, false) ) {
                     ExtensionValue value = extensions.get(definition.getProperty());
                     if ( value != null ) {
-                        addKey(definition.getSlotName());
+                        builder.addKey(definition.getSlotName());
                         switch ( value.getType() ) {
                         case BOOLEAN:
-                            addValue(value.asBoolean());
+                            builder.addValue(value.asBoolean());
                             break;
                         case DOUBLE:
-                            addValue(value.asDouble());
+                            builder.addValue(value.asDouble());
                             break;
                         case INTEGER:
-                            addValue(value.asInteger());
+                            builder.addValue(value.asInteger());
                             break;
                         case IDENTIFIER:
-                            addValue(
+                            builder.addValue(
                                     shortenIRIs ? prefixManager.shortenIdentifier(value.asString()) : value.asString());
                             break;
                         default:
-                            addValue(value.toString());
+                            builder.addValue(value.toString());
                             break;
                         }
                     }
