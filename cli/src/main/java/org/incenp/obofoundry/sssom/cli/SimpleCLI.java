@@ -76,6 +76,7 @@ import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 import picocli.CommandLine.ParseResult;
 import picocli.CommandLine.Spec;
+import picocli.CommandLine.TypeConversionException;
 
 /**
  * A command-line interface to manipulate mapping sets.
@@ -175,8 +176,8 @@ public class SimpleCLI implements Runnable {
 
         @Option(names = "--input-format", paramLabel = "FMT",
                 description = "Expect input in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is inferred whenever possible.",
-                converter = SerialisationFormatConverter.class,
-                completionCandidates = SerialisationFormatCompletionCandidates.class)
+                converter = InputSerialisationFormatConverter.class,
+                completionCandidates = InputSerialisationFormatCompletionCandidates.class)
         SerialisationFormat inputFormat = null;
     }
 
@@ -263,8 +264,8 @@ public class SimpleCLI implements Runnable {
         @Option(names = { "-f", "--output-format" },
                 paramLabel = "FMT",
                 description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is tsv.",
-                converter = SerialisationFormatConverter.class,
-                completionCandidates = SerialisationFormatCompletionCandidates.class)
+                converter = OutputSerialisationFormatConverter.class,
+                completionCandidates = OutputSerialisationFormatCompletionCandidates.class)
         SerialisationFormat outputFormat = null;
 
         @Option(names = { "-j", "--json-output" }, hidden = true)
@@ -406,20 +407,49 @@ public class SimpleCLI implements Runnable {
         final String OWLAPI_MISSING_IMPORT_PROPERTY = "org.semanticweb.owlapi.model.parameters.ConfigurationOptions.MISSING_IMPORT_HANDLING_STRATEGY";
     }
 
-    private static class SerialisationFormatConverter implements ITypeConverter<SerialisationFormat> {
+    private static class InputSerialisationFormatConverter implements ITypeConverter<SerialisationFormat> {
 
         @Override
-        public SerialisationFormat convert(String value) throws Exception {
-            return SerialisationFormat.fromName(value);
+        public SerialisationFormat convert(String value) throws TypeConversionException {
+            SerialisationFormat fmt = SerialisationFormat.fromName(value);
+            if ( fmt == null ) {
+                throw new TypeConversionException("Unknown serialisation format: " + value);
+            } else if ( !fmt.isReadable() ) {
+                throw new TypeConversionException("Unsupported input serialisation format: " + value);
+            }
+            return fmt;
         }
     }
 
-    private static class SerialisationFormatCompletionCandidates extends ArrayList<String> {
+    private static class InputSerialisationFormatCompletionCandidates extends ArrayList<String> {
         private static final long serialVersionUID = 1L;
 
         @SuppressWarnings("unused")
-        SerialisationFormatCompletionCandidates() {
-            super(SerialisationFormat.getShortNames());
+        InputSerialisationFormatCompletionCandidates() {
+            super(SerialisationFormat.getReadableShortNames());
+        }
+    }
+
+    private static class OutputSerialisationFormatConverter implements ITypeConverter<SerialisationFormat> {
+
+        @Override
+        public SerialisationFormat convert(String value) throws TypeConversionException {
+            SerialisationFormat fmt = SerialisationFormat.fromName(value);
+            if ( fmt == null ) {
+                throw new TypeConversionException("Unknown serialisation format: " + value);
+            } else if ( !fmt.isWritable() ) {
+                throw new TypeConversionException("Unsupported output serialisation format: " + value);
+            }
+            return fmt;
+        }
+    }
+
+    private static class OutputSerialisationFormatCompletionCandidates extends ArrayList<String> {
+        private static final long serialVersionUID = 1L;
+
+        @SuppressWarnings("unused")
+        OutputSerialisationFormatCompletionCandidates() {
+            super(SerialisationFormat.getWritableShortNames());
         }
     }
 
@@ -482,7 +512,7 @@ public class SimpleCLI implements Runnable {
             } catch ( IOException ioe ) {
                 helper.error("Cannot read file %s: %s", input, ioe.getMessage());
             } catch ( SSSOMFormatException sfe ) {
-                helper.error("Invalid SSSOM data in file %s: %s", input, sfe.getMessage());
+                helper.error("Cannot load SSSOM data in file %s: %s", input, sfe.getMessage());
             }
         }
 

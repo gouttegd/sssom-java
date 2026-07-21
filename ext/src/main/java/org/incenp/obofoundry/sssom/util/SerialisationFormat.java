@@ -31,53 +31,70 @@ public enum SerialisationFormat {
     /**
      * SSSOM/TSV, the main format specifically designed to serialise SSSOM mappings.
      */
-    TSV("SSSOM/TSV", "tsv", ".sssom.tsv"),
+    TSV("SSSOM/TSV", "tsv", ".sssom.tsv", true, true),
 
     /**
      * SSSOM/CSV, variant used comma-separated columns.
      */
-    CSV("SSSOM/CSV", "csv", ".sssom.csv"),
+    CSV("SSSOM/CSV", "csv", ".sssom.csv", true, true),
 
     /**
      * SSSOM/JSON, the other format described in the SSSOM specification.
      */
-    JSON("SSSOM/JSON", "json", ".sssom.json"),
+    JSON("SSSOM/JSON", "json", ".sssom.json", true, true),
 
     /**
      * RDF/Turtle, a RDF representation of SSSOM objects in the Turtle syntax.
      */
-    RDF_TURTLE("RDF Turtle", "ttl", ".ttl");
+    RDF_TURTLE("RDF Turtle", "ttl", ".ttl", true, true);
 
     private final static Map<String, SerialisationFormat> NAMES_MAP;
     private final static Map<String, SerialisationFormat> EXTENSIONS_MAP;
     private final static List<String> SHORT_NAMES;
+    private final static List<String> READABLE_SHORT_NAMES;
+    private final static List<String> WRITABLE_SHORT_NAMES;
 
     static {
         Map<String, SerialisationFormat> byNames = new HashMap<String, SerialisationFormat>();
         Map<String, SerialisationFormat> byExtensions = new HashMap<String, SerialisationFormat>();
         List<String> shortNames = new ArrayList<String>();
+        List<String> readableShortNames = new ArrayList<String>();
+        List<String> writableShortNames = new ArrayList<String>();
 
         for ( SerialisationFormat value : SerialisationFormat.values() ) {
             byNames.put(value.shortName, value);
             byNames.put(value.name.toLowerCase(), value);
             byExtensions.put(value.extension, value);
             shortNames.add(value.shortName);
+            if ( value.isReadable() ) {
+                readableShortNames.add(value.shortName);
+            }
+            if ( value.isWritable() ) {
+                writableShortNames.add(value.shortName);
+            }
+
         }
 
         NAMES_MAP = Collections.unmodifiableMap(byNames);
         EXTENSIONS_MAP = Collections.unmodifiableMap(byExtensions);
         SHORT_NAMES = Collections.unmodifiableList(shortNames);
+        READABLE_SHORT_NAMES = Collections.unmodifiableList(readableShortNames);
+        WRITABLE_SHORT_NAMES = Collections.unmodifiableList(writableShortNames);
     }
 
     private String name;
     private String shortName;
     private String extension;
+    private boolean canRead;
+    private boolean canWrite;
 
 
-    SerialisationFormat(String name, String shortName, String extension) {
+    SerialisationFormat(String name, String shortName, String extension, boolean canRead, boolean canWrite) {
         this.name = name;
         this.shortName = shortName;
         this.extension = extension;
+        this.canRead = canRead;
+        this.canWrite = canWrite;
     }
 
     /**
@@ -113,12 +130,48 @@ public enum SerialisationFormat {
     }
 
     /**
+     * Indicates whether reading from this format is supported.
+     * 
+     * @return <code>true</code> if the SSSOM-Java library can read this format.
+     */
+    public boolean isReadable() {
+        return canRead;
+    }
+
+    /**
+     * Indicates whether writing to this format is supported.
+     * 
+     * @return <code>true</code> if the SSSOM-Java library can write to this format.
+     */
+    public boolean isWritable() {
+        return canWrite;
+    }
+
+    /**
      * Gets a list of all available format short names.
      * 
      * @return The available formats, as a list of short names.
      */
     public static List<String> getShortNames() {
         return SHORT_NAMES;
+    }
+
+    /**
+     * Gets a list of the short names of all formats supported in reading mode.
+     * 
+     * @return The formats this library can read from, as a list of short names.
+     */
+    public static List<String> getReadableShortNames() {
+        return READABLE_SHORT_NAMES;
+    }
+
+    /**
+     * Gets a list of the short names of all formats supported in writing mode.
+     * 
+     * @return The formats this library can write to, as a list of short names.
+     */
+    public static List<String> getWritableShortNames() {
+        return WRITABLE_SHORT_NAMES;
     }
 
     /**

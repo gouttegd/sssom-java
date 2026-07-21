@@ -68,8 +68,8 @@ public class ReaderFactory {
      *         file.
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the provided file.
-     * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     * @throws SSSOMFormatException If no known and readable serialisation format
+     *                              could be recognised.
      */
     public SSSOMReader getReader(File file) throws IOException, SSSOMFormatException {
         return getReader(new BufferedReader(new FileReader(file)), file.getPath());
@@ -83,8 +83,8 @@ public class ReaderFactory {
      *         stream.
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicated stream.
-     * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     * @throws SSSOMFormatException If no known and readable serialisation format
+     *                              could be recognised.
      */
     public SSSOMReader getReader(InputStream stream) throws IOException, SSSOMFormatException {
         return getReader(new BufferedReader(new InputStreamReader(stream)));
@@ -99,8 +99,8 @@ public class ReaderFactory {
      *         file.
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicated file.
-     * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     * @throws SSSOMFormatException If no known and readable serialisation format
+     *                              could be recognised.
      */
     public SSSOMReader getReader(String filename) throws IOException, SSSOMFormatException {
         return getReader(new BufferedReader(new FileReader(new File(filename))), filename);
@@ -118,8 +118,8 @@ public class ReaderFactory {
      *         file.
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicated file.
-     * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     * @throws SSSOMFormatException If no known and readable serialisation format
+     *                              could be recognised.
      */
     public SSSOMReader getReader(String filename, boolean allowStdin) throws IOException, SSSOMFormatException {
         return getReader(filename, allowStdin, null);
@@ -139,7 +139,8 @@ public class ReaderFactory {
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicated file.
      * @throws SSSOMFormatException If the format is not explicitly specified and no
-     *                              known format can be determined.
+     *                              known format can be determined, or the format is
+     *                              not one this library supports reading from.
      */
     public SSSOMReader getReader(String filename, boolean allowStdin, SerialisationFormat fmt)
             throws IOException, SSSOMFormatException {
@@ -169,8 +170,8 @@ public class ReaderFactory {
      *         file.
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicated files.
-     * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     * @throws SSSOMFormatException If no known and readable serialisation format
+     *                              could be recognised.
      */
     public SSSOMReader getReader(String filename, String metaFilename) throws IOException, SSSOMFormatException {
         if ( metaFilename != null ) {
@@ -196,8 +197,8 @@ public class ReaderFactory {
      *         file.
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicate files.
-     * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     * @throws SSSOMFormatException If no known and readable serialisation format
+     *                              could be recognised.
      */
     public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin)
             throws IOException, SSSOMFormatException {
@@ -224,7 +225,8 @@ public class ReaderFactory {
      * @throws IOException          If any I/O error occurs when trying to read from
      *                              the indicated files.
      * @throws SSSOMFormatException If the format is not specified and no known
-     *                              format can be determined.
+     *                              format can be determined, or if the format is
+     *                              not one this library supports reading from.
      */
     public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin, SerialisationFormat fmt)
             throws IOException, SSSOMFormatException {
@@ -289,7 +291,8 @@ public class ReaderFactory {
      * @throws IOException          If any I/O error occurs when trying to infer the
      *                              serialisation format.
      * @throws SSSOMFormatException If no known serialisation format could be
-     *                              recognised.
+     *                              recognised, or if the recognised format is not
+     *                              one this library supports reading from.
      */
     public SSSOMReader getReader(Reader reader, String filename) throws IOException, SSSOMFormatException {
         SSSOMReader br = null;
@@ -304,6 +307,9 @@ public class ReaderFactory {
         }
         if ( format == null ) {
             throw new SSSOMFormatException("Unrecognised SSSOM serialisation format");
+        }
+        if ( !format.isReadable() ) {
+            throw new SSSOMFormatException("Unsupported SSSOM serialisation format");
         }
         switch ( format ) {
         case RDF_TURTLE:
@@ -335,12 +341,17 @@ public class ReaderFactory {
      * @param reader The reader to read from.
      * @param fmt    The expected serialisation format.
      * @return A suitable SSSOM reader.
-     * @throws IOException If the serialisation format is not specified.
+     * @throws IOException          If the serialisation format is not specified.
+     * @throws SSSOMFormatException If the specified format is not one this library
+     *                              supports reading from.
      */
-    public SSSOMReader getReader(Reader reader, SerialisationFormat fmt) throws IOException {
+    public SSSOMReader getReader(Reader reader, SerialisationFormat fmt) throws IOException, SSSOMFormatException {
         SSSOMReader br = null;
         if ( fmt == null ) {
             throw new IOException("Expected serialisation format must be specified");
+        }
+        if ( !fmt.isReadable() ) {
+            throw new SSSOMFormatException("Reading from the specified format is not supported");
         }
         switch ( fmt ) {
         case RDF_TURTLE:
