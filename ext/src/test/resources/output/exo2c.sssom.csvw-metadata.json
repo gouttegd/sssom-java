@@ -1,0 +1,44 @@
+{
+  "@context": [
+    "http://www.w3.org/ns/csvw"
+  ],
+  "@type": "Table",
+  "url": "exo2c.sssom.csvw",
+  "dialect": {
+    "header": false
+  },
+  "tableSchema": {
+    "columns": [
+      {
+        "name": "subject_id",
+        "propertyUrl": "http://www.w3.org/2002/07/owl#annotatedSource",
+        "datatype": "string"
+      },
+      {
+        "name": "subject_label",
+        "propertyUrl": "https://w3id.org/sssom/subject_label",
+        "datatype": "string"
+      },
+      {
+        "name": "predicate_id",
+        "propertyUrl": "http://www.w3.org/2002/07/owl#annotatedProperty",
+        "datatype": "string"
+      },
+      {
+        "name": "object_id",
+        "propertyUrl": "http://www.w3.org/2002/07/owl#annotatedTarget",
+        "datatype": "string"
+      },
+      {
+        "name": "object_label",
+        "propertyUrl": "https://w3id.org/sssom/object_label",
+        "datatype": "string"
+      },
+      {
+        "name": "mapping_justification",
+        "propertyUrl": "https://w3id.org/sssom/mapping_justification",
+        "datatype": "string"
+      }
+    ]
+  }
+}

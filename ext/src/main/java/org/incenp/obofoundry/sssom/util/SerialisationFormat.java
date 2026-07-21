@@ -46,7 +46,13 @@ public enum SerialisationFormat {
     /**
      * RDF/Turtle, a RDF representation of SSSOM objects in the Turtle syntax.
      */
-    RDF_TURTLE("RDF Turtle", "ttl", ".ttl", true, true);
+    RDF_TURTLE("RDF Turtle", "ttl", ".ttl", true, true),
+
+    /**
+     * CSV for Web, a variant of CSV with an accompanying schema file
+     * (experimental).
+     */
+    CSVW("CSV-for-Web", "csvw", ".sssom.csvw", false, true);
 
     private final static Map<String, SerialisationFormat> NAMES_MAP;
     private final static Map<String, SerialisationFormat> EXTENSIONS_MAP;

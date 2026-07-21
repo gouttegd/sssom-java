@@ -1,0 +1,8 @@
+ORGENT:0001,alice,skos:closeMatch,COMENT:0011,alpha,semapv:ManualMappingCuration,111,ORGENT:BAZ_0001
+ORGENT:0002,bob,skos:closeMatch,COMENT:0012,beta,semapv:ManualMappingCuration,112,ORGENT:BAZ_0002
+ORGENT:0004,daphne,skos:closeMatch,COMENT:0014,delta,semapv:ManualMappingCuration,114,
+ORGENT:0005,eve,skos:closeMatch,COMENT:0015,epsilon,semapv:ManualMappingCuration,115,ORGENT:BAZ_0005
+ORGENT:0006,fanny,skos:closeMatch,COMENT:0016,zeta,semapv:ManualMappingCuration,116,ORGENT:BAZ_0006
+ORGENT:0007,gavin,skos:exactMatch,COMENT:0013,gamma,semapv:ManualMappingCuration,117,ORGENT:BAZ_0007
+ORGENT:0008,hector,skos:closeMatch,COMENT:0017,eta,semapv:ManualMappingCuration,118,ORGENT:BAZ_0008
+ORGENT:0009,ivan,skos:exactMatch,COMENT:0019,iota,semapv:ManualMappingCuration,119,ORGENT:BAZ_0009

@@ -58,6 +58,7 @@ import org.incenp.obofoundry.sssom.transform.MappingProcessor;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
+import org.incenp.obofoundry.sssom.util.CSVWWriter;
 import org.incenp.obofoundry.sssom.util.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.util.ExtensionSlotHelper;
 import org.incenp.obofoundry.sssom.util.ReaderFactory;
@@ -777,6 +778,17 @@ public class SimpleCLI implements Runnable {
             outputOpts.defaultWriteExtraMetadata = ExtraMetadataPolicy.UNDEFINED;
             outputOpts.defaultEnableCondensation = false;
             ((RDFWriter) writer).setInjectDirectTriples(outputOpts.rdfDirectTriples);
+            break;
+
+        case CSVW:
+            if ( stdout ) {
+                if ( metaFilename == null ) {
+                    metaFilename = "csv-metadata.json";
+                }
+                writer = new CSVWWriter(System.out, new FileOutputStream(metaFilename));
+            } else {
+                writer = new CSVWWriter(filename, metaFilename);
+            }
             break;
 
         case TSV:
