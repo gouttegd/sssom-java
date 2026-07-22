@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -174,6 +175,7 @@ public class CSVWWriter extends SSSOMWriter {
         json.endList();
         json.addKey("@type");
         json.addValue("Table");
+        describeMappingSet(mappingSet);
         if ( csvUrl != null ) {
             json.addKey("url");
             json.addValue(csvUrl);
@@ -202,6 +204,33 @@ public class CSVWWriter extends SSSOMWriter {
         // Assemble and write the final JSON file
         metaWriter.append(json.close());
         metaWriter.close();
+    }
+
+    private void describeMappingSet(MappingSet ms) {
+        if ( ms.getMappingSetTitle() != null ) {
+            json.addKey("dc:title");
+            json.addValue(ms.getMappingSetTitle());
+        }
+        if ( ms.getMappingSetDescription() != null ) {
+            json.addKey("dc:description");
+            json.addValue(ms.getMappingSetDescription());
+        }
+        if ( ms.getLicense() != null ) {
+            json.addKey("dc:license");
+            json.addValue(ms.getLicense());
+        }
+        if ( ms.getPublicationDate() != null ) {
+            json.addKey("dc:issued");
+            json.addValue(ms.getPublicationDate().format(DateTimeFormatter.ISO_DATE));
+        }
+        if ( ms.getCreatorId() != null && !ms.getCreatorId().isEmpty() ) {
+            json.addKey("dc:creator");
+            json.startList();
+            for ( String creator : ms.getCreatorId() ) {
+                json.addValue(creator);
+            }
+            json.endList();
+        }
     }
 
     private void describeColumn(Slot<Mapping> slot) {

@@ -3,6 +3,13 @@
     "http://www.w3.org/ns/csvw"
   ],
   "@type": "Table",
+  "dc:title": "O2C set with extensions",
+  "dc:license": "https://creativecommons.org/licenses/by/4.0/",
+  "dc:issued": "2023-09-13",
+  "dc:creator": [
+    "https://example.org/people/0000-0000-0001-1234",
+    "https://example.com/people/0000-0000-0002-5678"
+  ],
   "url": "exo2c-with-extensions.sssom.csvw",
   "dialect": {
     "header": false
