@@ -11,12 +11,19 @@ professional like `sssom-py`.
 
 The project provides a Java library that can be used to support the
 SSSOM standard in a Java application, a program to manipulate mapping
-sets from the command line, and a pluggable command for the
+sets from the command line, and a plugin for the
 [ROBOT](http://robot.obolibrary.org/) ontology manipulation tool.
 
-Features
---------
-* Reading a SSSOM mapping set from the TSV serialisation format.
+Java library
+------------
+The library allows to read and write mapping sets from/to any of the
+following supported serialisation formats:
+
+* SSOM/TSV;
+* SSSOM/JSON;
+* RDF/Turtle.
+
+For example, reading a mapping set from a SSSOM/TSV file:
 
 ```java
 import org.incenp.obofoundry.sssom.model.MappingSet;
@@ -42,28 +49,33 @@ for (Mapping m : mappingSet.getMappings()) {
 }
 ```
 
-* Writing a SSSOM mapping set to the TSV serialisation format.
+The library has **full support** for the entire SSSOM specification,
+including [extensions](https://mapping-commons.github.io/sssom/dev/spec-model/#non-standard-slots).
 
-```java
-import org.incenp.obofoundry.sssom.model.MappingSet;
-import org.incenp.obofoundry.sssom.TSVWriter;
+It also provides a domain-specific language for the manipulation of
+SSSOM mappings: [SSSOM/Transform]((https://incenp.org/dvlpt/sssom-java/sssom-transform.html)
+(SSSOM/T).
 
-[...]
-MappingSet mappingSet = ...;
-try {
-    TSVWriter writer = new TSVWriter("my-mappings.sssom.tsv");
-    writer.write(mappingSet);
-} catch (IOException e) {
-    // I/O error
-}
-```
+Command-line tool
+-----------------
+A Unix-like filter command that takes one or more mapping set(s) as
+input and produces another mapping set as output, and can be used to,
+among other things:
 
-* Reading/writing a mapping set from/to the JSON serialisation format.
+* validate mapping sets;
 
-* Reading/writing a mapping set from/to the RDF/Turtle serialisation
-  format.
+* merge several mapping sets into one;
 
-* Extracting SSSOM mappings from a OWL ontology with ROBOT:
+* convert a set from one format to another.
+
+The command additionally allows to perform arbitrary manipulations on
+mappings through the SSSOM/Transform language.
+
+ROBOT plugin
+------------
+The ROBOT plugin adds three commands to the ROBOT command set:
+
+* A command to extract SSSOM mappings from a OWL ontology:
 
 ```sh
 robot sssom:xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
@@ -72,12 +84,13 @@ robot sssom:xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
 By default, this honours the `oboInOwl:treat-xrefs-as-...` annotations
 found in the ontology (contrary to `sssom parse` or `runoak mappings`).
 
-* Injecting arbitrary axioms into a OWL ontology with ROBOT, with the
-  axioms to inject being described by rules written in an ad-hoc
-  [SSSOM/Transform language](https://incenp.org/dvlpt/sssom-java/sssom-transform.html).
-  As an example, here is how to use it to generate bridging axioms
-  between the _Drosophila Anatomy Ontology_ (FBbt) and the taxon-neutral
-  ontologies UBERON and CL:
+* A command to inject SSSOM-derived axioms into a OWL ontology, with the
+  axioms to inject being described by rules written in the
+  SSSOM/Transfrorm language.
+
+For example, the following rule can generate bridging axioms between the
+_Drosophila Anatomy Ontology_ (FBbt) and the taxon-neutral ontologies
+UBERON and CL:
   
 ```
 subject==FBbt:* (object==CL:* || object==UBERON:*) {
@@ -99,35 +112,45 @@ robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
                --output bridged.owl
 ```
 
-* Renaming entities within a OWL ontology, using a SSSOM mapping set as
-the source of truth for which entity should be renamed and into what.
-
-* Manipulating mapping sets from the command line, with a dedicated
-  command-line tool named `sssom-cli`.
+* A command to rename entities within a OWL ontology, similar to the
+  builtin command `robot rename` but using a SSSOM mapping set as the
+  source of truth for which entity should be renamed and into what.
 
 Building
 --------
-Build by running `mvn clean package`. This will produce five distinct
-Jar files:
+Build the entire project with:
 
-* `sssom-core-x.y.z.jar` (in `core/target`): a minimal Java library,
-  containing only the classes implementing the SSSOM specification.
-* `sssom-ext-x.y.z.jar` (in `ext/target`): an extended library, built
-  on top of `sssom-core` and providing more classes to facilitate the
-  manipulation of mappings.
-* `sssom-robot-plugin-x.y.z.jar` (in `robot/target`): a file usable as a
-  ROBOT plugin.
-* `sssom-robot-standalone-x.y.z.jar` (in `robot/target`): a standalone
-  version of ROBOT (1.9.6), which includes the command(s) from the SSSOM
-  plugin as if they were built-in commands.
+```sh
+$ mvn clean package
+```
+
+This will produce four distinct Jar files:
+
+* `sssom-core-x.y.z.jar` (in `core/target`): the core Java library,
+  providing the essential parts of the SSSOM implementation with minimal
+  external dependencies;
+* `sssom-ext-x.y.z.jar` (in `ext/target`): the extended library, built
+  on top of `sssom-core` and providing additional features (including
+  support for RDF and the SSSOM/T language);
+* `sssom-robot-plugin-x.y.z.jar` (in `robot/target`): the ROBOT plugin;
 * `sssom-cli-x.y.z.jar` (in `cli/target`): the `sssom-cli` command-line
   tool, as a self-sufficient executable Jar archive.
+
+To re-generate the source files that are derived from the SSSOM LinkML
+schema (which should normally not be needed, unless the schema has been
+updated), use the `linkml/custom-javagen.py` script (this requires that
+the `linkml` package be present in the Python environment):
+
+```sh
+$ python linkml/custom-javagen.py
+```
 
 To use the library in a Java project, use the following identifiers:
 
 * _group ID_: `org.incenp`;
 * _artifact ID_: `sssom-core` for the core library, or `sssom-ext` for
-  extended library (which will bring in `sssom-core` as a dependency).
+  the extended library (which will bring in `sssom-core` as a
+  dependency).
 
 Homepage and repository
 -----------------------

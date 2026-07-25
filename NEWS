@@ -1,3 +1,10 @@
+Changes in sssom-java 1.12.0
+----------------------------
+
+    * Add support for “CSV for the Web” (CSVW) as an export format.
+    * Recognise (and invert) more standard predicates.
+
+
 Changes in sssom-java 1.11.3
 ----------------------------
 
