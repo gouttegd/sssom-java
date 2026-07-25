@@ -53,7 +53,7 @@ The library has **full support** for the entire SSSOM specification,
 including [extensions](https://mapping-commons.github.io/sssom/dev/spec-model/#non-standard-slots).
 
 It also provides a domain-specific language for the manipulation of
-SSSOM mappings: [SSSOM/Transform]((https://incenp.org/dvlpt/sssom-java/sssom-transform.html)
+SSSOM mappings: [SSSOM/Transform](https://incenp.org/dvlpt/sssom-java/sssom-transform.html)
 (SSSOM/T).
 
 Command-line tool
