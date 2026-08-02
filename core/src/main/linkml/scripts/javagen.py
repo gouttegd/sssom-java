@@ -106,18 +106,32 @@ class CustomJavaGenerator(JavaGenerator):
             return field.range
 
 
-@click.option("--sssom-schema",
-              type=click.Path(exists=True, dir_okay=False),
-              default=Path("core/src/main/linkml/schemas/sssom.yaml"))
 @click.option("--output-directory",
-              default=Path("core/src/main/java/org/incenp/obofoundry/sssom/model"))
+              type=click.Path(dir_okay=True, file_okay=False),
+              default=Path("core/src/main/java"))
+@click.option("--linkml-directory",
+              type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              default=Path("core/src/main/linkml/schemas"))
+@click.option("--templates-directory",
+              type=click.Path(dir_okay=True, file_okay=False, exists=True),
+              default=Path("core/src/main/linkml/templates"))
 @click.command()
-def cli(sssom_schema, output_directory):
-    gen = CustomJavaGenerator(sssom_schema,
-                              template_dir=Path("core/src/main/linkml/templates"),
-                              package="org.incenp.obofoundry.sssom.model")
-    bundle = gen.render(excluded=["Propagatable", "ExtensionDefinition", "Prefix", "NoTermFound", "Versionable"])
-    gen.serialize(output_directory, rendered_module=bundle)
+def cli(linkml_directory, output_directory, templates_directory):
+
+    excluded = ["Propagatable", "ExtensionDefinition", "Prefix",
+                "NoTermFound", "Versionable"]
+
+    for schema in linkml_directory.glob("**/*.yaml"):
+        package_dir = schema.relative_to(linkml_directory).parent
+        output_dir = output_directory / package_dir
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        package_name = package_dir.as_posix().replace("/", ".")
+        gen = CustomJavaGenerator(schema,
+                                  template_dir=templates_directory,
+                                  package=package_name)
+        bundle = gen.render(excluded=excluded)
+        gen.serialize(output_dir, rendered_module=bundle)
 
 
 if __name__ == "__main__":
