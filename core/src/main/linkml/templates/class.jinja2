@@ -1,22 +1,3 @@
-#!/usr/bin/env python3
-
-import os
-import click
-from linkml.generators.javagen import JavaGenerator
-from linkml.utils.generator import shared_arguments
-from jinja2 import Template
-from jsonasobj2 import as_dict
-
-custom_types = {
-    "date": "LocalDate",
-    "mapping_cardinality_enum": "MappingCardinality",
-    "entity_type_enum": "EntityType",
-    "predicate_modifier_enum": "PredicateModifier",
-    "sssom_version_enum": "Version",
-    "NonRelativeURI": "String",
-}
-
-class_template = """\
 /*
  * SSSOM-Java - SSSOM library for Java
  * Copyright © 2026 Damien Goutte-Gattat
@@ -35,7 +16,7 @@ class_template = """\
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.incenp.obofoundry.sssom.model;
+package {{ doc.package }};
 
 import java.util.List;
 import java.util.ArrayList;
@@ -502,94 +483,3 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     }
 }
 
-"""
-
-
-class CustomJavaGenerator(JavaGenerator):
-    """
-    A custom Java code generator that provides helper methods
-    to templates and allows.
-    """
-
-    def serialize(self, directory, excluded=[]):
-        """Generate the Java code.
-
-        :param directory: output directory where Java files are to be written
-        """
-
-        os.makedirs(directory, exist_ok=True)
-
-        template_obj = Template(class_template)
-        oodocs = self.create_documents()
-        for oodoc in [o for o in oodocs if o.name not in excluded]:
-            cls = oodoc.classes[0]
-            code = template_obj.render(doc=oodoc, cls=cls, gen=self)
-
-            path = os.path.join(directory, f"{oodoc.name}.java")
-            with open(path, "w", encoding="UTF-8") as stream:
-                stream.write(code)
-
-    def is_propagatable(self, slot_name):
-        """Check if a slot is marked as propagatable.
-
-        :param slot_name: the name of the slot to check
-        """
-
-        d = self.schemaview.annotation_dict(slot_name)
-        if d is not None:
-            return "propagated" in d
-        return False
-
-    def get_added_in_version(self, slot_name, class_name):
-        """Get the added_in annotation carried by this slot, if any.
-
-        :param slot_name: the name of the slot to check
-        :param class_name: the name of the class the slot belongs to
-        """
-
-        induced_slot = self.schemaview.induced_slot(slot_name, class_name)
-        added_in = as_dict(induced_slot.annotations).get("added_in", None)
-        if added_in is not None:
-            major, minor = added_in.get("value").split(".")
-            return f"Version.SSSOM_{major}_{minor}"
-        return None
-
-    def get_slot_suffixes(self, cls, prefix):
-        """Get the suffixes of all slots that start with the given prefix.
-
-        :param cls: the class to query for slot suffixes.
-        :param prefix: the prefix to look for in slot names.
-        """
-
-        n = len(prefix)
-        return [f.name[n:] for f in cls.fields if f.name.startswith(prefix)]
-
-    def get_range(self, field):
-        """Get the real range for a given field.
-
-        :param field: The field object produced by the code generator.
-        """
-        custom = custom_types.get(field.source_slot.range, None)
-        if custom:
-            if field.source_slot.multivalued:
-                return f"List<{custom}>"
-            else:
-                return custom
-        elif field.source_slot.name == "curie_map":
-            return "Map<String,String>"
-        else:
-            return field.range
-
-
-@click.option("--sssom-schema",
-              type=click.Path(exists=True, dir_okay=False),
-              default="linkml/sssom_schema.yaml")
-@click.option("--output-directory",
-              default="core/src/main/java/org/incenp/obofoundry/sssom/model")
-@click.command()
-def cli(sssom_schema, output_directory):
-    gen = CustomJavaGenerator(sssom_schema)
-    gen.serialize(output_directory, excluded=["Propagatable", "ExtensionDefinition", "Prefix", "NoTermFound", "Versionable"])
-
-if __name__ == "__main__":
-    cli()
