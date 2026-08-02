@@ -1,3 +1,9 @@
+Changes in sssom-jaba 1.12.1
+----------------------------
+
+    * Fix a bug leading to xsd:dateTime-typed extensions not being recognised.
+
+
 Changes in sssom-java 1.12.0
 ----------------------------
 
