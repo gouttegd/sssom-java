@@ -487,6 +487,13 @@ public class SSSOMCLITest {
     }
 
     @Test
+    void testUpdateFromOntologyWithMultipleCatalogLookups() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "exo2c-updated-from-ont4.sssom.tsv",
+                new String[] { "--update-from-ontology", "../ext/src/test/resources/owl/ont4.ofn", "--catalog",
+                        "../ext/src/test/resources/owl/catalog-v001.xml" });
+    }
+
+    @Test
     void testIgnoreMissingImports() throws IOException {
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" },
                 "exo2c-updated-from-ont2-missing-imports.sssom.tsv", new String[] { "--update-from-ontology",
