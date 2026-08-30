@@ -365,13 +365,13 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
         sb.append("{{ cls.name }}(");
 {%- for f in cls.fields %}
 {%-   if f.range in ["int", "float", "double", "boolean"] %}
-        sb.append("{{ gen.get_slot_actual_name(f.source_slot) }}=");
+        sb.append("{{ f.source_slot.alias|default(f.source_slot.name, true) }}=");
         sb.append(this.{{ f.name }});
         sb.append(",");
 {%-   else %}
  {%-  endif %}
         if ( this.{{ f.name }} != null ) {
-            sb.append("{{ gen.get_slot_actual_name(f.source_slot) }}=");
+            sb.append("{{ f.source_slot.alias|default(f.source_slot.name, true) }}=");
             sb.append(this.{{ f.name }});
             sb.append(",");
         }
