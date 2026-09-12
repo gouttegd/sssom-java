@@ -42,7 +42,9 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
     private final static Set<String> ANNOTATION_PREDICATES = new HashSet<String>();
     private final static String OWL_EQUIVALENT_CLASS = "http://www.w3.org/2002/07/owl#equivalentClass";
+    private final static String OWL_EQUIVALENT_PROPERTY = "http://www.w3.org/2002/07/owl#equivalentProperty";
     private final static String RDFS_SUBCLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
+    private final static String RDFS_SUBPROPERTY_OF = "http://www.w3.org/2000/01/rdf-schema#subPropertyOf";
 
     static {
         ANNOTATION_PREDICATES.add("http://www.geneontology.org/formats/oboInOwl#hasDbXref");
@@ -87,7 +89,8 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
          * annotation property` or `owl object property`;
          * 
          * (2) some built-in knowledge for a handful of predicates (owl:equivalentClass,
-         * rdfs:subClassOf, and the predicates listed in ANNOTATION_PREDICATES);
+         * rdfs:subClassOf, owl:equivalentProperty, rdfs:subPropertyOf, and the
+         * predicates listed in ANNOTATION_PREDICATES);
          * 
          * (3) the helper ontology, it it declares an annotation or object property with
          * a matching IRI.
@@ -103,20 +106,77 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
             axiom = factory.getOWLEquivalentClassesAxiom(factory.getOWLClass(object), factory.getOWLClass(object));
         } else if ( predicate.equals(RDFS_SUBCLASS_OF) ) {
             axiom = factory.getOWLSubClassOfAxiom(factory.getOWLClass(subject), factory.getOWLClass(object));
+        } else if ( predicate.equals(OWL_EQUIVALENT_PROPERTY) ) {
+            EntityType subjectType = getPropertyType(subject, mapping.getSubjectType(), false);
+            EntityType objectType = getPropertyType(object, mapping.getObjectType(), false);
+            if ( subjectType == objectType ) {
+                if ( subjectType == EntityType.OWL_OBJECT_PROPERTY ) {
+                    axiom = factory.getOWLEquivalentObjectPropertiesAxiom(factory.getOWLObjectProperty(subject),
+                            factory.getOWLObjectProperty(object));
+                } else if ( subjectType == EntityType.OWL_DATA_PROPERTY ) {
+                    axiom = factory.getOWLEquivalentDataPropertiesAxiom(factory.getOWLDataProperty(subject),
+                            factory.getOWLDataProperty(object));
+                }
+            }
+        } else if ( predicate.equals(RDFS_SUBPROPERTY_OF) ) {
+            EntityType subjectType = getPropertyType(subject, mapping.getSubjectType(), true);
+            EntityType objectType = getPropertyType(object, mapping.getObjectType(), true);
+            if ( subjectType == objectType ) {
+                if ( subjectType == EntityType.OWL_OBJECT_PROPERTY ) {
+                    axiom = factory.getOWLSubObjectPropertyOfAxiom(factory.getOWLObjectProperty(subject),
+                            factory.getOWLObjectProperty(object));
+                } else if ( subjectType == EntityType.OWL_DATA_PROPERTY ) {
+                    axiom = factory.getOWLSubDataPropertyOfAxiom(factory.getOWLDataProperty(subject),
+                            factory.getOWLDataProperty(object));
+                } else if ( subjectType == EntityType.OWL_ANNOTATION_PROPERTY ) {
+                    axiom = factory.getOWLSubAnnotationPropertyOfAxiom(factory.getOWLAnnotationProperty(subject),
+                            factory.getOWLAnnotationProperty(object));
+                }
+            }
         } else if ( ANNOTATION_PREDICATES.contains(predicate) ) {
             axiom = factory.getOWLAnnotationAssertionAxiom(factory.getOWLAnnotationProperty(IRI.create(predicate)),
                     subject, object);
-        } else {
+        }
+
+        if ( axiom == null ) {
             IRI predicateIRI = IRI.create(predicate);
             if ( ontology.containsAnnotationPropertyInSignature(predicateIRI) ) {
                 axiom = factory.getOWLAnnotationAssertionAxiom(factory.getOWLAnnotationProperty(predicateIRI), subject,
                         object);
-            } else if ( ontology.containsObjectPropertyInSignature(predicateIRI) ) {
+            } else if ( ontology.containsObjectPropertyInSignature(predicateIRI)
+                    && isClass(subject, mapping.getSubjectType()) && isClass(object, mapping.getObjectType()) ) {
                 axiom = factory.getOWLSubClassOfAxiom(factory.getOWLClass(subject), factory.getOWLObjectSomeValuesFrom(
                         factory.getOWLObjectProperty(predicateIRI), factory.getOWLClass(object)));
+            } else {
+                // If we still don't know, assume the predicate is an annotation property
+                axiom = factory.getOWLAnnotationAssertionAxiom(factory.getOWLAnnotationProperty(predicateIRI), subject,
+                        object);
             }
         }
 
         return axiom;
+    }
+
+    private EntityType getPropertyType(IRI entityId, EntityType explicit, boolean allowAnnotationProperty) {
+        if ( explicit != null ) {
+            return explicit;
+        } else if ( ontology.containsObjectPropertyInSignature(entityId) ) {
+            return EntityType.OWL_OBJECT_PROPERTY;
+        } else if ( allowAnnotationProperty && ontology.containsAnnotationPropertyInSignature(entityId) ) {
+            return EntityType.OWL_ANNOTATION_PROPERTY;
+        } else if ( ontology.containsDataPropertyInSignature(entityId) ) {
+            return EntityType.OWL_DATA_PROPERTY;
+        } else {
+            return null;
+        }
+    }
+
+    private boolean isClass(IRI entityId, EntityType explicit) {
+        if ( explicit != null ) {
+            return explicit == EntityType.OWL_CLASS || explicit == EntityType.RDFS_CLASS
+                    || explicit == EntityType.RDFS_RESOURCE;
+        } else {
+            return ontology.containsClassInSignature(entityId);
+        }
     }
 }
