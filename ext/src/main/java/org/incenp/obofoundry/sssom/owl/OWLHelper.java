@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.slots.SlotHelper;
@@ -146,15 +147,14 @@ public class OWLHelper {
 
             if ( !mode.contains(UpdateMode.ONLY_OBJECT) ) {
                 if ( !updateForEntity(m, IRI.create(m.getSubjectId()), ontology, language, langStrict, mode,
-                        (s) -> m.setSubjectLabel(s),
-                        (s) -> m.setSubjectSource(s)) ) {
+                        (s) -> m.setSubjectLabel(s), (s) -> m.setSubjectSource(s), (s) -> m.setSubjectType(s)) ) {
                     keep = false;
                 }
             }
 
             if ( !mode.contains(UpdateMode.ONLY_SUBJECT) ) {
                 if ( !updateForEntity(m, IRI.create(m.getObjectId()), ontology, language, langStrict, mode,
-                        (s) -> m.setObjectLabel(s), (s) -> m.setObjectSource(s)) ) {
+                        (s) -> m.setObjectLabel(s), (s) -> m.setObjectSource(s), (s) -> m.setObjectType(s)) ) {
                     keep = false;
                 }
             }
@@ -172,7 +172,7 @@ public class OWLHelper {
      */
     private static boolean updateForEntity(Mapping mapping, IRI entity, OWLOntology ontology, String language,
             boolean langStrict, EnumSet<UpdateMode> mode, Consumer<String> labelUpdater,
-            Consumer<String> sourceUpdater) {
+            Consumer<String> sourceUpdater, Consumer<EntityType> typeUpdater) {
         boolean keep = true;
         if ( ontology.containsEntityInSignature(entity, Imports.INCLUDED) ) {
             if ( isObsolete(ontology, entity) && mode.contains(UpdateMode.DELETE_OBSOLETE) ) {
@@ -188,6 +188,26 @@ public class OWLHelper {
                 IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orNull();
                 if ( ontologyIRI != null ) {
                     sourceUpdater.accept(ontologyIRI.toString());
+                }
+            }
+            if ( mode.contains(UpdateMode.UPDATE_TYPE) ) {
+                // The same entity can be of several types (due to punning), but we can only
+                // assign one type to a mapping subject or object. The precedence used here is
+                // purely arbitrary.
+                EntityType type = null;
+                if ( ontology.containsClassInSignature(entity) ) {
+                    type = EntityType.OWL_CLASS;
+                } else if ( ontology.containsObjectPropertyInSignature(entity) ) {
+                    type = EntityType.OWL_OBJECT_PROPERTY;
+                } else if ( ontology.containsAnnotationPropertyInSignature(entity) ) {
+                    type = EntityType.OWL_ANNOTATION_PROPERTY;
+                } else if ( ontology.containsDataPropertyInSignature(entity) ) {
+                    type = EntityType.OWL_DATA_PROPERTY;
+                } else if ( ontology.containsIndividualInSignature(entity) ) {
+                    type = EntityType.OWL_NAMED_INDIVIDUAL;
+                }
+                if ( type != null ) {
+                    typeUpdater.accept(type);
                 }
             }
         } else if ( mode.contains(UpdateMode.DELETE_MISSING) ) {
@@ -214,6 +234,12 @@ public class OWLHelper {
          * ontology IRI.
          */
         UPDATE_SOURCE,
+
+        /**
+         * Updates the object and subject types from the types of the corresponding
+         * entities in the ontology.
+         */
+        UPDATE_TYPE,
 
         /**
          * Removes any mapping whose subject or object does not exist in the ontology.

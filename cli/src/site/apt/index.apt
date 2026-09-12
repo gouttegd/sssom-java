@@ -435,6 +435,11 @@ sssom-cli set.sssom.tsv:metadata.yaml
            in the ontology, the mapping’s <<<subject_source>>> (resp.
            <<<object_source>>>) will be set to the ontology’s IRI.
   
+  [type] If the subject (respectively the object) of a mapping exists in
+         the ontology, the mapping’s <<<subject_type>>> (resp.
+         <<<object_type>>>) will be updated to match the type (if known)
+         of the corresponding entity in the ontology.
+  
   [existence] If the subject or the object of a mapping does not exist
               in the ontology or is deprecated, the mapping is removed
               from the set.

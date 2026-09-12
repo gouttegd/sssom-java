@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.owl;
 import java.util.ArrayList;
 import java.util.EnumSet;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
@@ -214,6 +215,16 @@ public class OWLHelperTest {
 
         OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.DELETE_OBSOLETE));
         Assertions.assertTrue(ms.getMappings().isEmpty());
+    }
+
+    @Test
+    void testUpdateSubjectType() {
+        MappingSet ms = MappingSet.builder().mappings(new ArrayList<Mapping>()).build();
+        ms.getMappings().add(Mapping.builder().subjectId(IRI_BASE + "no_label").objectId(IRI_BASE + "0001").build());
+
+        OWLHelper.updateMappingSet(ms, ontology, null, false, EnumSet.of(UpdateMode.UPDATE_TYPE));
+        Assertions.assertEquals(EntityType.OWL_CLASS, ms.getMappings().get(0).getSubjectType());
+        Assertions.assertNull(ms.getMappings().get(0).getObjectType());
     }
 
     private void testGetLabel(String id, String language, boolean strict, String expected) {

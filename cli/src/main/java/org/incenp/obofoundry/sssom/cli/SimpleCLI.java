@@ -392,7 +392,7 @@ public class SimpleCLI implements Runnable {
 
     private static class OntologyOptions {
         @Option(names = "--update-from-ontology",
-                paramLabel = "ONTOLOGY[:subject,object,label,source,existence]",
+                paramLabel = "ONTOLOGY[:subject,object,label,type,source,existence]",
                 description = "Update the set using data from the specified ontology.")
         String[] ontologiesForUpdate;
 
@@ -635,6 +635,11 @@ public class SimpleCLI implements Runnable {
                         case "label":
                             replace = true;
                             setMode.add(UpdateMode.UPDATE_LABEL);
+                            break;
+
+                        case "type":
+                            replace = true;
+                            setMode.add(UpdateMode.UPDATE_TYPE);
                             break;
 
                         case "source":
