@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.incenp.obofoundry.sssom.model.EntityType;
 import org.incenp.obofoundry.sssom.model.Mapping;
 import org.incenp.obofoundry.sssom.transform.IFormatModifierFunction;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
@@ -137,8 +138,8 @@ public class SSSOMTCreateAxiomFunction
     }
 
     private OWLAxiom parse(Mapping mapping, IMappingTransformer<String> expression) {
-        app.getEntityChecker().addClass(mapping.getSubjectId());
-        app.getEntityChecker().addClass(mapping.getObjectId());
+        declareEntity(mapping.getSubjectId(), mapping.getSubjectType());
+        declareEntity(mapping.getObjectId(), mapping.getObjectType());
 
         manParser.setStringToParse(expression.transform(mapping));
         return manParser.parseAxiom();
@@ -150,5 +151,47 @@ public class SSSOMTCreateAxiomFunction
         dummy.setObjectId("http://example.org/EX_0002");
 
         parse(dummy, expression);
+    }
+
+    private void declareEntity(String entityId, EntityType entityType) {
+        EditableEntityChecker checker = app.getEntityChecker();
+        if ( entityType != null ) {
+            switch ( entityType ) {
+            case OWL_CLASS:
+            case RDFS_CLASS:
+            case RDFS_RESOURCE:
+            case SKOS_CONCEPT:
+                checker.addClass(entityId);
+                break;
+            case OWL_ANNOTATION_PROPERTY:
+                checker.addAnnotationProperty(entityId);
+                break;
+            case OWL_DATA_PROPERTY:
+                checker.addDataproperty(entityId);
+                break;
+            case OWL_OBJECT_PROPERTY:
+                checker.addObjectProperty(entityId);
+                break;
+            case OWL_NAMED_INDIVIDUAL:
+                checker.addIndividual(entityId);
+                break;
+            case RDFS_DATATYPE:
+                checker.addDatatype(entityId);
+                break;
+            case COMPOSED_ENTITY_EXPRESSION:
+            case RDFS_LITERAL:
+                // Those two don't correspond to any kind of OWL entity; they should probably
+                // not be used with SSSOM/T-OWL to begin with.
+                break;
+            case RDF_PROPERTY:
+                // No way to know which kind of property it is; again, this should probably not
+                // be used with SSSOM/T-OWL.
+                break;
+            }
+        } else if ( !checker.isKnown(entityId) ) {
+            // If the entity has no explicitly specified type, we assume it is a class, but
+            // only if it is not already known as something else.
+            checker.addClass(entityId);
+        }
     }
 }

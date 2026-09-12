@@ -307,7 +307,7 @@ public class SSSOMTOwlApplicationTest {
             IMappingTransformer<OWLAxiom> g = app.onGeneratingAction("create_axiom", arguments, keyedArguments);
             Mapping m = new Mapping();
             m.setSubjectId(UBERON_0000105);
-            m.setObjectId("https://example.org/entities/0001");
+            m.setObjectId("https://example.org/entities/0002");
 
             OWLAxiom ax = g.transform(m);
             Assertions.assertTrue(ax.isOfType(AxiomType.SUBCLASS_OF));

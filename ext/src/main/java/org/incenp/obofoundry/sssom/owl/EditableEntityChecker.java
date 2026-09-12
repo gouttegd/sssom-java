@@ -210,6 +210,20 @@ public class EditableEntityChecker implements OWLEntityChecker, OWLEntityVisitor
         return null;
     }
 
+    /**
+     * Checks whether the given entity is known to this object.
+     * 
+     * @param name The name of the entity to check.
+     * @return <code>true</code> if the name corresponds to a known entity (whatever
+     *         its type), otherwise <code>false</code>.
+     */
+    public boolean isKnown(String name) {
+        name = getUnquotedIRI(name);
+        return classNames.contains(name) || objectPropertyNames.contains(name) || dataPropertyNames.contains(name)
+                || individualNames.contains(name) || datatypeNames.contains(name)
+                || annotationPropertyNames.contains(name);
+    }
+
     private String getUnquotedIRI(String name) {
         int len = name.length();
         if ( len > 1 && name.charAt(0) == '<' ) {
