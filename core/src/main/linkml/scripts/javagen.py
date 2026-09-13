@@ -29,14 +29,15 @@ class CustomJavaGenerator(JavaGenerator):
     (2) gives access to some annotations (to figure out whether a given
         slot is propagatable and when it was added to the schema);
     (3) allows to figure out whether a given slot pertains to the
-        or the object of a mapping;
+        subject or the object of a mapping;
     (4) allows to apply a custom map from LinkML ranges to Java types.
 
-    (1) and (2) should probably be generalized and upstreamed at some
-    point. (4) could also be upstreamed but there's an argument to be
-    made that subclassing the generator (as we do here) is in fact the
-    appropriate method of doing such customisations. (3) is completely
-    SSSOM-specific.
+    (1) should probably be generalized and upstreamed at some point. A
+    generalized form of (2) has already been upstreamed. (4) could also
+    be upstreamed but there's an argument to be made that subclassing
+    the generator (as we do here) is in fact the appropriate method of
+    doing such customisations. (3) is completely SSSOM-specific and has
+    nothing to do in the upstream Java generator.
     """
 
     def render(self, excluded=[]):

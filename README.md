@@ -77,8 +77,8 @@ The ROBOT plugin adds three commands to the ROBOT command set:
 
 * A command to extract SSSOM mappings from a OWL ontology:
 
-```sh
-robot sssom:xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
+```console
+$ robot sssom:xref-extract -i uberon.owl --mapping-file uberon-mappings.sssom.tsv
 ```
 
 By default, this honours the `oboInOwl:treat-xrefs-as-...` annotations
@@ -104,12 +104,12 @@ subject==FBbt:* (object==CL:* || object==UBERON:*) {
 Assuming this is written in a file named `bridge.rules`, one can then
 generate a merged ontology between FBbt, UBERON, and CL as follows: 
 
-```sh
-robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
-      sssom:inject --sssom fbbt-mappings.sssom.tsv \
-                   --ruleset bridge.rules \
-      annotate --ontology-iri http://purl.obolibrary.org/obo/bridged.owl \
-               --output bridged.owl
+```console
+$ robot merge -i uberon.owl -i cl.owl -i fbbt.owl \
+        sssom:inject --sssom fbbt-mappings.sssom.tsv \
+                     --ruleset bridge.rules \
+        annotate --ontology-iri http://purl.obolibrary.org/obo/bridged.owl \
+                 --output bridged.owl
 ```
 
 * A command to rename entities within a OWL ontology, similar to the
@@ -120,7 +120,7 @@ Building
 --------
 Build the entire project with:
 
-```sh
+```console
 $ mvn clean package
 ```
 
@@ -138,11 +138,12 @@ This will produce four distinct Jar files:
 
 To re-generate the source files that are derived from the SSSOM LinkML
 schema (which should normally not be needed, unless the schema has been
-updated), use the `linkml/custom-javagen.py` script (this requires that
-the `linkml` package be present in the Python environment):
+updated), use the `core/src/main/linkml/scripts/javagen.py` script (this
+requires that the `linkml` package be present in the Python
+environment):
 
-```sh
-$ python linkml/custom-javagen.py
+```console
+$ python core/src/main/linkml/scripts/javagen.py
 ```
 
 To use the library in a Java project, use the following identifiers:
