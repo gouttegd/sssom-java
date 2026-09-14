@@ -77,6 +77,14 @@ public class DirectAxiomGenerator implements IMappingTransformer<OWLAxiom> {
     public OWLAxiom transform(Mapping mapping) {
         OWLAxiom axiom = null;
         String predicate = mapping.getPredicateId();
+        String subj = mapping.getSubjectId();
+        String obj = mapping.getObjectId();
+
+        // Safety check - nothing to transform if we don't have a correct mapping
+        if ( predicate == null || subj == null || obj == null ) {
+            return null;
+        }
+
         EntityType predicateType = mapping.getPredicateType();
         IRI subject = IRI.create(mapping.getSubjectId());
         IRI object = IRI.create(mapping.getObjectId());
