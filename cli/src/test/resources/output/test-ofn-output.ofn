@@ -1,0 +1,36 @@
+Prefix(:=<https://example.org/sets/exo2c#>)
+Prefix(owl:=<http://www.w3.org/2002/07/owl#>)
+Prefix(rdf:=<http://www.w3.org/1999/02/22-rdf-syntax-ns#>)
+Prefix(xml:=<http://www.w3.org/XML/1998/namespace>)
+Prefix(xsd:=<http://www.w3.org/2001/XMLSchema#>)
+Prefix(rdfs:=<http://www.w3.org/2000/01/rdf-schema#>)
+
+
+Ontology(<https://example.org/sets/exo2c>
+Annotation(<http://purl.org/dc/terms/creator> <https://example.com/people/0000-0000-0002-5678>)
+Annotation(<http://purl.org/dc/terms/creator> <https://example.org/people/0000-0000-0001-1234>)
+Annotation(<http://purl.org/dc/terms/issued> "2023-09-13"^^xsd:date)
+Annotation(<http://purl.org/dc/terms/license> "https://creativecommons.org/licenses/by/4.0/"^^xsd:anyURI)
+Annotation(<http://purl.org/dc/terms/title> "O2C set")
+
+Declaration(AnnotationProperty(<http://purl.org/dc/terms/creator>))
+Declaration(AnnotationProperty(<http://purl.org/dc/terms/issued>))
+Declaration(AnnotationProperty(<http://purl.org/dc/terms/license>))
+Declaration(AnnotationProperty(<http://purl.org/dc/terms/title>))
+Declaration(AnnotationProperty(<http://www.w3.org/2004/02/skos/core#closeMatch>))
+Declaration(AnnotationProperty(<http://www.w3.org/2004/02/skos/core#exactMatch>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/mapping_justification>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/object_label>))
+Declaration(AnnotationProperty(<https://w3id.org/sssom/subject_label>))
+Declaration(Datatype(xsd:date))
+
+
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "alpha") Annotation(<https://w3id.org/sssom/subject_label> "alice") <http://www.w3.org/2004/02/skos/core#closeMatch> <https://example.org/entities/0001> <https://example.com/entities/0011>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "beta") Annotation(<https://w3id.org/sssom/subject_label> "bob") <http://www.w3.org/2004/02/skos/core#closeMatch> <https://example.org/entities/0002> <https://example.com/entities/0012>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "delta") Annotation(<https://w3id.org/sssom/subject_label> "daphne") <http://www.w3.org/2004/02/skos/core#closeMatch> <https://example.org/entities/0004> <https://example.com/entities/0014>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "epsilon") Annotation(<https://w3id.org/sssom/subject_label> "eve") <http://www.w3.org/2004/02/skos/core#closeMatch> <https://example.org/entities/0005> <https://example.com/entities/0015>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "zeta") Annotation(<https://w3id.org/sssom/subject_label> "fanny") <http://www.w3.org/2004/02/skos/core#closeMatch> <https://example.org/entities/0006> <https://example.com/entities/0016>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "gamma") Annotation(<https://w3id.org/sssom/subject_label> "gavin") <http://www.w3.org/2004/02/skos/core#exactMatch> <https://example.org/entities/0007> <https://example.com/entities/0013>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "eta") Annotation(<https://w3id.org/sssom/subject_label> "hector") <http://www.w3.org/2004/02/skos/core#closeMatch> <https://example.org/entities/0008> <https://example.com/entities/0017>)
+AnnotationAssertion(Annotation(<https://w3id.org/sssom/mapping_justification> <https://w3id.org/semapv/vocab/ManualMappingCuration>) Annotation(<https://w3id.org/sssom/object_label> "iota") Annotation(<https://w3id.org/sssom/subject_label> "ivan") <http://www.w3.org/2004/02/skos/core#exactMatch> <https://example.org/entities/0009> <https://example.com/entities/0019>)
+)

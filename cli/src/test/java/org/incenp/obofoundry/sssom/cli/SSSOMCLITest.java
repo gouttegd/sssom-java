@@ -310,6 +310,10 @@ public class SSSOMCLITest {
         // Check that we can get RDF Turtle output
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-ttl-output.ttl",
                 new String[] { "--output-format", "tTl" });
+
+        // Check that we can get OFN output
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-ofn-output.ofn",
+                new String[] { "--output-format", "ofn" });
     }
 
     @Test

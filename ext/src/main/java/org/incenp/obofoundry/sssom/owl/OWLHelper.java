@@ -291,8 +291,28 @@ public class OWLHelper {
      */
     public static void annotate(MappingSet ms, OWLOntology ontology, boolean setOntologyIRI,
             IMetadataTransformer<MappingSet, IRI> mapper) {
+        annotate(ms, ontology, setOntologyIRI, mapper, true);
+    }
+
+    /**
+     * Annotates an ontology with annotations derived from the metadata of a mapping
+     * set.
+     * 
+     * @param ms             The mapping set whose metadata are to be used to
+     *                       annotate the ontology.
+     * @param ontology       The ontology to be annotated.
+     * @param setOntologyIRI If {@code true}, the {@code mapping_set_id} slot will
+     *                       be set as the ontology IRI; otherwise, it will be set
+     *                       as an annotation like all the other slots.
+     * @param mapper         The mapper indicating which properties to use to render
+     *                       each metadata slot.
+     * @param withExtensions If {@code false}, extension slots will be excluded.
+     */
+    public static void annotate(MappingSet ms, OWLOntology ontology, boolean setOntologyIRI,
+            IMetadataTransformer<MappingSet, IRI> mapper, boolean withExtensions) {
         AnnotationVisitor<MappingSet> visitor = new AnnotationVisitor<>(
                 ontology.getOWLOntologyManager().getOWLDataFactory(), mapper);
+        visitor.renderExtensionSlots(withExtensions);
         SlotHelper<MappingSet> helper = SlotHelper.getMappingSetHelper(true);
         if ( setOntologyIRI ) {
             helper.excludeSlots(Collections.singleton("mapping_set_id"));
@@ -316,13 +336,30 @@ public class OWLHelper {
      * @throws OWLOntologyCreationException If the manager cannot creates the
      *                                      ontology for any reason.
      */
-    public static OWLOntology exportToOWL(MappingSet ms, OWLOntologyManager mgr)
+    public static OWLOntology exportToOWL(MappingSet ms, OWLOntologyManager mgr) throws OWLOntologyCreationException {
+        return exportToOWL(ms, mgr, true);
+    }
+
+    /**
+     * Exports a mapping set as an ontology.
+     * 
+     * @param ms             The mapping set to export.
+     * @param mgr            The ontology manager to which the newly created
+     *                       ontology will be attached.
+     * @param withExtensions If <code>true</code>, extension slots will be included
+     *                       in the export.
+     * @return The newly created ontology.
+     * @throws OWLOntologyCreationException If the manager cannot creates the
+     *                                      ontology for any reason.
+     */
+    public static OWLOntology exportToOWL(MappingSet ms, OWLOntologyManager mgr, boolean withExtensions)
             throws OWLOntologyCreationException {
         OWLOntology ont = mgr.createOntology();
-        annotate(ms, ont, true, new StandardMapMetadataTransformer<MappingSet>());
+        annotate(ms, ont, true, new StandardMapMetadataTransformer<MappingSet>(), withExtensions);
 
         AnnotatedAxiomGenerator g = new AnnotatedAxiomGenerator(ont, new DirectAxiomGenerator(ont),
                 new StandardMapMetadataTransformer<Mapping>());
+        g.annotateWithExtensions(withExtensions);
         Set<OWLAxiom> axioms = new HashSet<>();
         for ( Mapping mapping : ms.getMappings() ) {
             axioms.add(g.transform(mapping));

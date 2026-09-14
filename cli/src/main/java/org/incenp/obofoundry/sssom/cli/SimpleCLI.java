@@ -50,6 +50,7 @@ import org.incenp.obofoundry.sssom.model.MappingSet;
 import org.incenp.obofoundry.sssom.model.Version;
 import org.incenp.obofoundry.sssom.owl.OWLHelper;
 import org.incenp.obofoundry.sssom.owl.OWLHelper.UpdateMode;
+import org.incenp.obofoundry.sssom.owl.OWLWriter;
 import org.incenp.obofoundry.sssom.rdf.RDFWriter;
 import org.incenp.obofoundry.sssom.transform.IMappingTransformer;
 import org.incenp.obofoundry.sssom.transform.MappingFormatter;
@@ -794,6 +795,15 @@ public class SimpleCLI implements Runnable {
             } else {
                 writer = new CSVWWriter(filename, metaFilename);
             }
+            break;
+
+        case OFN:
+            if ( stdout ) {
+                writer = new OWLWriter(System.out);
+            } else {
+                writer = new OWLWriter(filename);
+            }
+            outputOpts.defaultEnableCondensation = false;
             break;
 
         case TSV:

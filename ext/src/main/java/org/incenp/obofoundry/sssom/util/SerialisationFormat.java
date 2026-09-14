@@ -52,7 +52,12 @@ public enum SerialisationFormat {
      * CSV for Web, a variant of CSV with an accompanying schema file
      * (experimental).
      */
-    CSVW("CSV-for-Web", "csvw", ".sssom.csvw", false, true);
+    CSVW("CSV-for-Web", "csvw", ".sssom.csvw", false, true),
+
+    /**
+     * OWL Functional Syntax (export only).
+     */
+    OFN("OWL Functional Syntax", "ofn", ".ofn", false, true);
 
     private final static Map<String, SerialisationFormat> NAMES_MAP;
     private final static Map<String, SerialisationFormat> EXTENSIONS_MAP;

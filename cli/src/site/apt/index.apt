@@ -293,7 +293,9 @@ sssom-cli set.sssom.tsv:metadata.yaml
 ** 2.4. Output format
 
   SSSOM-CLI can write the output set in the SSSOM/TSV format, the
-  SSSOM/CSV format, the SSSOM/JSON format, or the RDF Turtle format.
+  SSSOM/CSV format, the SSSOM/JSON format, the RDF Turtle format, the
+  “CSV for Web” format (experimental), and the OWL Functional Syntax
+  format.
   
   By default, it uses the extension of the output filename, if
   specified, to automatically determine the output format. Without an
@@ -311,17 +313,21 @@ sssom-cli set.sssom.tsv:metadata.yaml
   
   [ttl] Write output in RDF Turtle format.
   
+  [csvw] Write output in the “CSV for Web” format (experimental).
+  
+  [ofn] Write output in OWL Functional Syntax format.
+  
   []
   
-  Note that both the JSON and RDF formats are currently poorly
+  Note that both the JSON format and the OWL format are currently poorly
   specified, so the output produced by those options may change in the
   future. The SSSOM/CSV format is not officially part of the SSSOM
   specification at all. It is supported here merely as a convenience,
   but its use is best avoided.
   
-  In both JSON and RDF modes, the <<<--metadata-output>>> option above
-  is ignored, since those formats do not allow the use of an external
-  metadata file.
+  The <<<--metadata-output>>> option is only effective when writing to
+  the SSSOM/TSV or SSSOM/CSV format, since the other formats do not
+  allow the use of an external metadata file.
   
   Two more options control the behaviour of the JSON mode:
   
