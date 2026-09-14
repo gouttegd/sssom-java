@@ -66,6 +66,7 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
     private IMetadataTransformer<T, IRI> transformer;
     private Set<OWLAnnotation> annots;
     private boolean uriAsResource = false;
+    private boolean withExtensionSlots = true;
 
     /**
      * Creates a new instance that creates annotations using properties directly
@@ -108,6 +109,18 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
     }
 
     /**
+     * Specifies whether extension slots should be rendered as well as standard
+     * slots.
+     * <p>
+     * The default behaviour is to render extension slots.
+     * 
+     * @param value If <code>false</code>, extension slots will not be rendered.
+     */
+    public void renderExtensionSlots(boolean value) {
+        withExtensionSlots = value;
+    }
+
+    /**
      * Annotates an axiom with the annotations generated from the visited slots.
      * 
      * @param axiom The axiom to annotate.
@@ -118,18 +131,58 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
     }
 
     /**
+     * Annotates an axiom with the annotations generated from the visited slots.
+     * 
+     * @param axiom The axiom to annotate.
+     * @param reset If <code>true</code>, reset this visitor after annotating the
+     *              axiom, so that it is ready to visit the slots of another object.
+     * @return The annotated axiom.
+     */
+    public OWLAxiom annotate(OWLAxiom axiom, boolean reset) {
+        OWLAxiom annotated = annots.isEmpty() ? axiom : axiom.getAnnotatedAxiom(annots);
+        if ( reset ) {
+            annots.clear();
+        }
+        return annotated;
+    }
+
+    /**
      * Annotates an ontology with the annotations generated from the visited slots.
      * 
      * @param ontology The ontology to annotate.
      */
     public void annotate(OWLOntology ontology) {
+        annotate(ontology, false);
+    }
+
+    /**
+     * Annotates an ontology with the annotations generated from the visited slots.
+     * 
+     * @param ontology The ontology to annotate.
+     * @param reset    If <code>true</code>, reset this visitor after annotating the
+     *                 ontology, so that it is ready to visit the slots of another
+     *                 object.
+     */
+    public void annotate(OWLOntology ontology, boolean reset) {
         if ( !annots.isEmpty() ) {
             List<OWLOntologyChange> changes = new ArrayList<>();
             for ( OWLAnnotation annot : annots ) {
                 changes.add(new AddOntologyAnnotation(ontology, annot));
             }
             ontology.getOWLOntologyManager().applyChanges(changes);
+
+            if ( reset ) {
+                annots.clear();
+            }
         }
+    }
+
+    /**
+     * Resets this visitor. This clears all accumulated annotations from previously
+     * visited slots.
+     */
+    public void reset() {
+        annots.clear();
     }
 
     @Override
@@ -198,6 +251,9 @@ public class AnnotationVisitor<T> implements ISlotVisitor<T> {
 
     @Override
     public void visit(ExtensionSlot<T> slot, T object, Map<String, ExtensionValue> values) {
+        if ( !withExtensionSlots ) {
+            return;
+        }
         for ( String property : values.keySet() ) {
             ExtensionValue value = values.get(property);
             OWLAnnotationValue annotValue = null;
