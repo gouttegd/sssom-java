@@ -38,8 +38,8 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
 
     private OWLDataFactory factory;
     private IMappingTransformer<OWLAxiom> generator;
-    private IMetadataTransformer<Mapping, IRI> translator;
     private SlotHelper<Mapping> slotHelper;
+    private AnnotationVisitor<Mapping> visitor;
 
     /**
      * Creates a new instance that generate “direct” OWL axioms with standard
@@ -129,20 +129,32 @@ public class AnnotatedAxiomGenerator implements IMappingTransformer<OWLAxiom> {
             IMetadataTransformer<Mapping, IRI> slotTranslator, Collection<String> slots) {
         factory = ontology.getOWLOntologyManager().getOWLDataFactory();
         generator = innerGenerator;
-        translator = slotTranslator;
         slotHelper = SlotHelper.getMappingHelper(slots != null);
         if ( slots != null ) {
             slotHelper.setSlots(slots);
         }
+        visitor = new AnnotationVisitor<>(factory, slotTranslator);
+    }
+
+    /**
+     * Specifies whether extension slots should be used to annotate the generated
+     * axioms.
+     * <p>
+     * The default behaviour is to use both standard slots and extension slots.
+     * 
+     * @param enabled If <code>false</code>, extension slots will be ignored when
+     *                annotating the generated axioms.
+     */
+    public void annotateWithExtensions(boolean enabled) {
+        visitor.renderExtensionSlots(enabled);
     }
 
     @Override
     public OWLAxiom transform(Mapping mapping) {
         OWLAxiom axiom = generator.transform(mapping);
         if ( axiom != null ) {
-            AnnotationVisitor<Mapping> visitor = new AnnotationVisitor<>(factory, translator);
             slotHelper.visitSlots(mapping, visitor);
-            axiom = visitor.annotate(axiom);
+            axiom = visitor.annotate(axiom, true);
         }
         return axiom;
     }
