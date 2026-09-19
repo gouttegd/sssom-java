@@ -361,7 +361,7 @@ public class TSVReader extends SSSOMReader {
             converter.postMappings(ms);
 
             // Propagate values from set-level to mapping-level
-            new SlotPropagator(propagationPolicy).propagate(ms);
+            new SlotPropagator(propagationPolicy, ms.getSssomVersion()).propagate(ms);
         } else {
             ms.setMappings(new ArrayList<Mapping>());
             converter.postMappings(ms);

@@ -89,7 +89,7 @@ public class RDFReader extends SSSOMReader {
         reader.close();
 
         MappingSet ms = converter.fromRDF(model);
-        new SlotPropagator(propagationPolicy).propagate(ms);
+        new SlotPropagator(propagationPolicy, ms.getSssomVersion()).propagate(ms);
 
         validate(ms);
 

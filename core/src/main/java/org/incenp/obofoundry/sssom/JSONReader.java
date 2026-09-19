@@ -107,7 +107,7 @@ public class JSONReader extends SSSOMReader {
         } catch ( JsonParseException | JsonMappingException e ) {
             throw new SSSOMFormatException("Invalid JSON data", e);
         }
-        new SlotPropagator(propagationPolicy).propagate(ms);
+        new SlotPropagator(propagationPolicy, ms.getSssomVersion()).propagate(ms);
 
         // Post-reading checks
         // 1. Check there are no unresolvable CURIEs
