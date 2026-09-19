@@ -21,7 +21,6 @@ package org.incenp.obofoundry.sssom.slots;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -278,10 +277,8 @@ public class SlotPropagator {
     private Set<String> getSlots() {
         if ( slots == null ) {
             slots = new HashSet<>();
-            List<Slot<MappingSet>> allSlots = maxVersion == Version.LATEST ? SlotHelper.getMappingSetHelper().getSlots()
-                    : SlotHelper.getMappingSetHelper().getSlots(maxVersion);
-            for ( Slot<MappingSet> slot : allSlots ) {
-                if ( slot.isPropagatable() ) {
+            for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
+                if ( slot.isPropagatable(maxVersion) ) {
                     slots.add(slot.getName());
                 }
             }

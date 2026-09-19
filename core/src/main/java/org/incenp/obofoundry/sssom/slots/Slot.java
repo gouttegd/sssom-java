@@ -107,6 +107,21 @@ public class Slot<T> {
     }
 
     /**
+     * Indicates whether the slot is a "propagatable slot" for the specified version
+     * of the SSSOM specification.
+     * <p>
+     * A slot is propagatable in a SSSOM version <em>N</em> if (1) it exists in that
+     * version, (2) it is marked as being propagatable.
+     * 
+     * @param inVersion The target version of the SSSOM specification.
+     * @return {@code true} if the slot can be propagated in the specified SSSOM
+     *         version, otherwise {@code false}.
+     */
+    public boolean isPropagatable(Version inVersion) {
+        return field.isAnnotationPresent(Propagatable.class) && getCompliantVersion().isCompatibleWith(inVersion);
+    }
+
+    /**
      * Indicates whether the slot is expected to contain a URI.
      * 
      * @return {@code true} if the slot is defined as having a URI range, otherwise
