@@ -19,7 +19,7 @@ Java library
 The library allows to read and write mapping sets from/to any of the
 following supported serialisation formats:
 
-* SSOM/TSV;
+* SSSOM/TSV;
 * SSSOM/JSON;
 * RDF/Turtle.
 

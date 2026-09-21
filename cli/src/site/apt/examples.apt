@@ -45,12 +45,13 @@ $ sssom-cli --no-stdout my-set.sssom.tsv
 
   SSSOM-CLI can read a SSSOM file in any of the following formats: TSV,
   CSV, JSON, and RDF/Turtle. It can likewise write a file in any of
-  those formats.
+  those formats, as well as in OWL Functional Syntax (OFN) format.
   
   If the recommended file extensions (<<<.sssom.tsv>>>,
-  <<<.sssom.csv>>>, <<<.sssom.json>>>, or <<<.ttl>>>) are used, then
-  converting from one format to another is simply a matter of using the
-  <<<--output>>> option. For example, to convert from TSV to JSON:
+  <<<.sssom.csv>>>, <<<.sssom.json>>>, <<<.ttl>>>, or <<<.ofn>>>) are
+  used, then converting from one format to another is simply a matter
+  of using the <<<--output>>> option. For example, to convert from TSV
+  to JSON:
   
 +-----------------------------------------------------------------------
 $ sssom-cli my-set.sssom.tsv --output my-set.sssom.json
@@ -64,15 +65,21 @@ $ sssom-cli my-set.sssom.tsv --output my-set.sssom.json
 $ sssom-cli my-set.sssom.tsv --outout my-set.dat --output-format json
 +-----------------------------------------------------------------------
 
-  Note that conversion to OWL is <not> supported by SSSOM-CLI. Instead,
-  it is handled by the {{{../sssom-robot/index.html}ROBOT plugin}} and
-  its <<<sssom:inject>>> command:
+  Note that conversion to OFN may also be done using the
+  {{{../sssom-robot/index.html}ROBOT plugin}} and its <<<sssom:inject>>>
+  command:
   
 +-----------------------------------------------------------------------
 $ robot sssom:inject --sssom my-set.sssom.tsv \
                      --create --direct \
                      --output my-set.ofn
 +-----------------------------------------------------------------------
+
+  Compared to SSSOM-CLI, the <<<sssom:inject>>> command provides more
+  control over the rendering of the mapping set into OWL, and also
+  allows to export the set into any OWL format supported by the OWLAPI
+  (by chaining the <<<sssom:inject>>> command with a <<<convert>>>
+  command) instead of only OWL Functional Syntax.
 
 ** 2.2. Conversion to the latest version of the specification
 

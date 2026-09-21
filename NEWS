@@ -1,4 +1,16 @@
-Changes in sssom-jaba 1.12.1
+Changes in sssom-java 1.13.0
+----------------------------
+
+    * sssom-cli:
+      * Fixed a bug with the handling of XML Catalogs.
+      * New `type` flag for the `--update-from-ontology` option.
+      * Allow export to OWL Functional Syntax.
+    * SSSOM/T-OWL:
+      * Take subject and object types into account in `create_axiom`.
+      * Handling direct OWL generation for mappings between properties.
+
+
+Changes in sssom-java 1.12.1
 ----------------------------
 
     * Fix a bug leading to xsd:dateTime-typed extensions not being recognised.

@@ -28,7 +28,7 @@ Command-line tool
   
   The SSSOM/TSV, SSSOM/CSV, SSSOM/JSON, and RDF/Turtle formats are
   supported. SSSOM-CLI will attempt to automatically detect the format,
-  based on the filename’s extension if possible, or by peaking at the
+  based on the filename’s extension if possible, or by peeking at the
   first byte of input (if the extension is not recognized or when
   reading from standard input). Use the <<<--input-format>>> option
   to explicitly specify the expected format instead of relying on
