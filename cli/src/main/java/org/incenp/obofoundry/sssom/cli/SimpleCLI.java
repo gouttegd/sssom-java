@@ -263,6 +263,11 @@ public class SimpleCLI implements Runnable {
             return pr.hasMatchedOption("condensation") ? enableCondensation : defaultEnableCondensation;
         }
 
+        @Option(names = "--condense-all-slots",
+                defaultValue = "false",
+                description = "Condense all slots that can be condensed, even those for which the specification recommends against condensation. Note that `--no-condensation` takes precedence.")
+        boolean condenseAll;
+
         @Option(names = { "-f", "--output-format" },
                 paramLabel = "FMT",
                 description = "Write output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is tsv.",
@@ -824,6 +829,7 @@ public class SimpleCLI implements Runnable {
 
         writer.setExtraMetadataPolicy(outputOpts.getExtraMetadataPolicy());
         writer.setCondensationEnabled(outputOpts.isCondensationEnabled());
+        writer.setForceCondensation(outputOpts.condenseAll);
         writer.setSortingEnabled(outputOpts.sortMappings);
         writer.setTargetVersion(outputOpts.forceVersion);
         return writer;

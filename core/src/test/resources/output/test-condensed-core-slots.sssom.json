@@ -1,0 +1,27 @@
+{
+  "sssom_version": "1.1",
+  "mapping_set_id": "https://example.org/sets/exo2c",
+  "creator_id": [
+    "https://example.org/people/0000-0000-0001-1234",
+    "https://example.com/people/0000-0000-0002-5678"
+  ],
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "subject_type": "owl class",
+  "predicate_id": "http://www.w3.org/2004/02/skos#closeMatch",
+  "mapping_justification": "https://w3id.org/semapv/vocab/ManualMappingCuration",
+  "mappings": [
+    {
+      "subject_id": "https://example.org/entities/0001",
+      "subject_label": "alice",
+      "object_id": "https://example.com/entities/0011",
+      "object_label": "alpha"
+    },
+    {
+      "subject_id": "https://example.org/entities/0002",
+      "subject_label": "bob",
+      "object_id": "https://example.com/entities/0012",
+      "object_label": "beta",
+      "confidence": 0.7
+    }
+  ]
+}
