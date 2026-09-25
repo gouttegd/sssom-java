@@ -104,6 +104,18 @@ public class MappingSet  {
     @Propagatable
     private String objectSourceVersion;
 
+    @JsonProperty("predicate_id")
+    @EntityReference
+    @Propagatable(condensationDiscouraged=true)
+    @SlotURI("http://www.w3.org/2002/07/owl#annotatedProperty")
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private String predicateId;
+
+    @JsonProperty("predicate_label")
+    @Propagatable
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private String predicateLabel;
+
     @JsonProperty("predicate_type")
     @Propagatable
     @Versionable(addedIn = Version.SSSOM_1_1)
@@ -137,6 +149,12 @@ public class MappingSet  {
     @Propagatable
     @SlotURI("http://purl.org/dc/terms/created")
     private LocalDate mappingDate;
+
+    @JsonProperty("mapping_justification")
+    @EntityReference
+    @Propagatable(condensationDiscouraged=true)
+    @Versionable(addedIn = Version.SSSOM_1_1)
+    private String mappingJustification;
 
     @JsonProperty("publication_date")
     @SlotURI("http://purl.org/dc/terms/issued")
@@ -224,6 +242,8 @@ public class MappingSet  {
             final EntityType objectType,
             final String objectSource,
             final String objectSourceVersion,
+            final String predicateId,
+            final String predicateLabel,
             final EntityType predicateType,
             final String mappingProvider,
             final List<String> cardinalityScope,
@@ -231,6 +251,7 @@ public class MappingSet  {
             final String mappingToolId,
             final String mappingToolVersion,
             final LocalDate mappingDate,
+            final String mappingJustification,
             final LocalDate publicationDate,
             final List<String> subjectMatchField,
             final List<String> objectMatchField,
@@ -263,6 +284,8 @@ public class MappingSet  {
         this.objectType = objectType;
         this.objectSource = objectSource;
         this.objectSourceVersion = objectSourceVersion;
+        this.predicateId = predicateId;
+        this.predicateLabel = predicateLabel;
         this.predicateType = predicateType;
         this.mappingProvider = mappingProvider;
         this.cardinalityScope = cardinalityScope;
@@ -270,6 +293,7 @@ public class MappingSet  {
         this.mappingToolId = mappingToolId;
         this.mappingToolVersion = mappingToolVersion;
         this.mappingDate = mappingDate;
+        this.mappingJustification = mappingJustification;
         this.publicationDate = publicationDate;
         this.subjectMatchField = subjectMatchField;
         this.objectMatchField = objectMatchField;
@@ -619,6 +643,34 @@ public class MappingSet  {
     }
 
     /**
+     * Gets the value of the <code>predicate_id</code> slot.
+     */
+    public String getPredicateId() {
+        return this.predicateId;
+    }
+
+    /**
+     * Sets the value of the <code>predicate_id</code> slot.
+     */
+    public void setPredicateId(final String value) {
+        this.predicateId = value;
+    }
+
+    /**
+     * Gets the value of the <code>predicate_label</code> slot.
+     */
+    public String getPredicateLabel() {
+        return this.predicateLabel;
+    }
+
+    /**
+     * Sets the value of the <code>predicate_label</code> slot.
+     */
+    public void setPredicateLabel(final String value) {
+        this.predicateLabel = value;
+    }
+
+    /**
      * Gets the value of the <code>predicate_type</code> slot.
      */
     public EntityType getPredicateType() {
@@ -729,6 +781,20 @@ public class MappingSet  {
      */
     public void setMappingDate(final LocalDate value) {
         this.mappingDate = value;
+    }
+
+    /**
+     * Gets the value of the <code>mapping_justification</code> slot.
+     */
+    public String getMappingJustification() {
+        return this.mappingJustification;
+    }
+
+    /**
+     * Sets the value of the <code>mapping_justification</code> slot.
+     */
+    public void setMappingJustification(final String value) {
+        this.mappingJustification = value;
     }
 
     /**
@@ -1156,6 +1222,16 @@ public class MappingSet  {
             sb.append(this.objectSourceVersion);
             sb.append(",");
         }
+        if ( this.predicateId != null ) {
+            sb.append("predicate_id=");
+            sb.append(this.predicateId);
+            sb.append(",");
+        }
+        if ( this.predicateLabel != null ) {
+            sb.append("predicate_label=");
+            sb.append(this.predicateLabel);
+            sb.append(",");
+        }
         if ( this.predicateType != null ) {
             sb.append("predicate_type=");
             sb.append(this.predicateType);
@@ -1189,6 +1265,11 @@ public class MappingSet  {
         if ( this.mappingDate != null ) {
             sb.append("mapping_date=");
             sb.append(this.mappingDate);
+            sb.append(",");
+        }
+        if ( this.mappingJustification != null ) {
+            sb.append("mapping_justification=");
+            sb.append(this.mappingJustification);
             sb.append(",");
         }
         if ( this.publicationDate != null ) {
@@ -1294,6 +1375,8 @@ public class MappingSet  {
         if ( this.objectType == null ? other.objectType != null : !this.objectType.equals(other.objectType)) return false;
         if ( this.objectSource == null ? other.objectSource != null : !this.objectSource.equals(other.objectSource)) return false;
         if ( this.objectSourceVersion == null ? other.objectSourceVersion != null : !this.objectSourceVersion.equals(other.objectSourceVersion)) return false;
+        if ( this.predicateId == null ? other.predicateId != null : !this.predicateId.equals(other.predicateId)) return false;
+        if ( this.predicateLabel == null ? other.predicateLabel != null : !this.predicateLabel.equals(other.predicateLabel)) return false;
         if ( this.predicateType == null ? other.predicateType != null : !this.predicateType.equals(other.predicateType)) return false;
         if ( this.mappingProvider == null ? other.mappingProvider != null : !this.mappingProvider.equals(other.mappingProvider)) return false;
         if ( this.cardinalityScope == null ? other.cardinalityScope != null : !this.cardinalityScope.equals(other.cardinalityScope)) return false;
@@ -1301,6 +1384,7 @@ public class MappingSet  {
         if ( this.mappingToolId == null ? other.mappingToolId != null : !this.mappingToolId.equals(other.mappingToolId)) return false;
         if ( this.mappingToolVersion == null ? other.mappingToolVersion != null : !this.mappingToolVersion.equals(other.mappingToolVersion)) return false;
         if ( this.mappingDate == null ? other.mappingDate != null : !this.mappingDate.equals(other.mappingDate)) return false;
+        if ( this.mappingJustification == null ? other.mappingJustification != null : !this.mappingJustification.equals(other.mappingJustification)) return false;
         if ( this.publicationDate == null ? other.publicationDate != null : !this.publicationDate.equals(other.publicationDate)) return false;
         if ( this.subjectMatchField == null ? other.subjectMatchField != null : !this.subjectMatchField.equals(other.subjectMatchField)) return false;
         if ( this.objectMatchField == null ? other.objectMatchField != null : !this.objectMatchField.equals(other.objectMatchField)) return false;
@@ -1344,6 +1428,8 @@ public class MappingSet  {
         result = result * PRIME + (this.objectType == null ? 43 : this.objectType.hashCode());
         result = result * PRIME + (this.objectSource == null ? 43 : this.objectSource.hashCode());
         result = result * PRIME + (this.objectSourceVersion == null ? 43 : this.objectSourceVersion.hashCode());
+        result = result * PRIME + (this.predicateId == null ? 43 : this.predicateId.hashCode());
+        result = result * PRIME + (this.predicateLabel == null ? 43 : this.predicateLabel.hashCode());
         result = result * PRIME + (this.predicateType == null ? 43 : this.predicateType.hashCode());
         result = result * PRIME + (this.mappingProvider == null ? 43 : this.mappingProvider.hashCode());
         result = result * PRIME + (this.cardinalityScope == null ? 43 : this.cardinalityScope.hashCode());
@@ -1351,6 +1437,7 @@ public class MappingSet  {
         result = result * PRIME + (this.mappingToolId == null ? 43 : this.mappingToolId.hashCode());
         result = result * PRIME + (this.mappingToolVersion == null ? 43 : this.mappingToolVersion.hashCode());
         result = result * PRIME + (this.mappingDate == null ? 43 : this.mappingDate.hashCode());
+        result = result * PRIME + (this.mappingJustification == null ? 43 : this.mappingJustification.hashCode());
         result = result * PRIME + (this.publicationDate == null ? 43 : this.publicationDate.hashCode());
         result = result * PRIME + (this.subjectMatchField == null ? 43 : this.subjectMatchField.hashCode());
         result = result * PRIME + (this.objectMatchField == null ? 43 : this.objectMatchField.hashCode());
@@ -1387,6 +1474,8 @@ public class MappingSet  {
         private EntityType objectType;
         private String objectSource;
         private String objectSourceVersion;
+        private String predicateId;
+        private String predicateLabel;
         private EntityType predicateType;
         private String mappingProvider;
         private List<String> cardinalityScope;
@@ -1394,6 +1483,7 @@ public class MappingSet  {
         private String mappingToolId;
         private String mappingToolVersion;
         private LocalDate mappingDate;
+        private String mappingJustification;
         private LocalDate publicationDate;
         private List<String> subjectMatchField;
         private List<String> objectMatchField;
@@ -1502,6 +1592,16 @@ public class MappingSet  {
             return this;
         }
 
+        public MappingSet.MappingSetBuilder predicateId(final String predicateId) {
+            this.predicateId = predicateId;
+            return this;
+        }
+
+        public MappingSet.MappingSetBuilder predicateLabel(final String predicateLabel) {
+            this.predicateLabel = predicateLabel;
+            return this;
+        }
+
         public MappingSet.MappingSetBuilder predicateType(final EntityType predicateType) {
             this.predicateType = predicateType;
             return this;
@@ -1534,6 +1634,11 @@ public class MappingSet  {
 
         public MappingSet.MappingSetBuilder mappingDate(final LocalDate mappingDate) {
             this.mappingDate = mappingDate;
+            return this;
+        }
+
+        public MappingSet.MappingSetBuilder mappingJustification(final String mappingJustification) {
+            this.mappingJustification = mappingJustification;
             return this;
         }
 
@@ -1626,6 +1731,8 @@ public class MappingSet  {
                 this.objectType,
                 this.objectSource,
                 this.objectSourceVersion,
+                this.predicateId,
+                this.predicateLabel,
                 this.predicateType,
                 this.mappingProvider,
                 this.cardinalityScope,
@@ -1633,6 +1740,7 @@ public class MappingSet  {
                 this.mappingToolId,
                 this.mappingToolVersion,
                 this.mappingDate,
+                this.mappingJustification,
                 this.publicationDate,
                 this.subjectMatchField,
                 this.objectMatchField,
@@ -1668,6 +1776,8 @@ public class MappingSet  {
                 + ", objectType=" + this.objectType
                 + ", objectSource=" + this.objectSource
                 + ", objectSourceVersion=" + this.objectSourceVersion
+                + ", predicateId=" + this.predicateId
+                + ", predicateLabel=" + this.predicateLabel
                 + ", predicateType=" + this.predicateType
                 + ", mappingProvider=" + this.mappingProvider
                 + ", cardinalityScope=" + this.cardinalityScope
@@ -1675,6 +1785,7 @@ public class MappingSet  {
                 + ", mappingToolId=" + this.mappingToolId
                 + ", mappingToolVersion=" + this.mappingToolVersion
                 + ", mappingDate=" + this.mappingDate
+                + ", mappingJustification=" + this.mappingJustification
                 + ", publicationDate=" + this.publicationDate
                 + ", subjectMatchField=" + this.subjectMatchField
                 + ", objectMatchField=" + this.objectMatchField
@@ -1716,6 +1827,8 @@ public class MappingSet  {
             .objectType(this.objectType)
             .objectSource(this.objectSource)
             .objectSourceVersion(this.objectSourceVersion)
+            .predicateId(this.predicateId)
+            .predicateLabel(this.predicateLabel)
             .predicateType(this.predicateType)
             .mappingProvider(this.mappingProvider)
             .cardinalityScope(this.cardinalityScope)
@@ -1723,6 +1836,7 @@ public class MappingSet  {
             .mappingToolId(this.mappingToolId)
             .mappingToolVersion(this.mappingToolVersion)
             .mappingDate(this.mappingDate)
+            .mappingJustification(this.mappingJustification)
             .publicationDate(this.publicationDate)
             .subjectMatchField(this.subjectMatchField)
             .objectMatchField(this.objectMatchField)
