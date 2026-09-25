@@ -12,6 +12,7 @@ custom_types = {
     "predicate_modifier_enum": "PredicateModifier",
     "sssom_version_enum": "Version",
     "NonRelativeURI": "String",
+    "EntityReference": "String",
 }
 
 
