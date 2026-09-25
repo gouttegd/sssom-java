@@ -1496,6 +1496,11 @@ classes:
           Indicates whether a slot can be propagated from a mapping down to
           individual mappings.
         range: boolean
+      condensation_discouraged:
+        description:
+          If true, this indicates that, while the slot is propagatable, SSSOM
+          writers SHOULD avoid condensing it.
+        range: boolean
   Versionable:
     class_uri: sssom:Versionable
     description:
