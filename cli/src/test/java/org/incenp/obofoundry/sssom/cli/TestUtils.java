@@ -19,10 +19,13 @@
 package org.incenp.obofoundry.sssom.cli;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Assertions;
 
 /**
@@ -92,6 +95,59 @@ public class TestUtils {
             if ( same ) {
                 written.delete();
             }
+        }
+    }
+
+    /**
+     * Checks that two files have the same contents, and throws an assertion error
+     * if not.
+     * 
+     * @param expected The name of the file containing the expected contents. The
+     *                 file is expected to be in the
+     *                 {@code src/test/resources/output} directory.
+     * @param written  The name of the file to check. The file is expected to be in
+     *                 the same directory as {@code expected}. If the check passes,
+     *                 that file will be automatically deleted.
+     * @throws IOException If any I/O error occurs.
+     */
+    public static void assertFileEquals(String expected, String written) throws IOException {
+        File expectedFile = new File("src/test/resources/output/" + expected);
+        File writtenFile = new File("src/test/resources/output/" + written);
+        boolean same = FileUtils.contentEquals(expectedFile, writtenFile);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            writtenFile.delete();
+        }
+    }
+
+    /**
+     * Checks that two GZipped files have the same contents, and throws an assertion
+     * error if not.
+     * <p>
+     * We cannot directly compare the <em>compressed</em> contents (e.g. with
+     * {@link FileUtils#contentEquals(File, File)}) because the GZip output may vary
+     * from one version of the JRE to another. So we need a distinct method to
+     * uncompress the files first and then compare the uncompressed contents.
+     * 
+     * @param expected The name of the file containing the expected contents. The
+     *                 file is expected to be in the
+     *                 {@code src/test/resources/output} directory.
+     * @param written  The name of the file to check. The file is expected to be in
+     *                 the same directory as {@code expected}. If the check passes,
+     *                 that file will be automatically deleted.
+     * @throws IOException If any I/O error occurs.
+     */
+    public static void assertGZipFileEquals(String expected, String written) throws IOException {
+        File expectedFile = new File("src/test/resources/output/" + expected);
+        File writtenFile = new File("src/test/resources/output/" + written);
+        GZIPInputStream expectedInput = new GZIPInputStream(new FileInputStream(expectedFile));
+        GZIPInputStream writtenInput = new GZIPInputStream(new FileInputStream(writtenFile));
+        boolean same = IOUtils.contentEquals(expectedInput, writtenInput);
+        expectedInput.close();
+        writtenInput.close();
+        Assertions.assertTrue(same);
+        if ( same ) {
+            writtenFile.delete();
         }
     }
 }

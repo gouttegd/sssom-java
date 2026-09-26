@@ -36,6 +36,14 @@ Command-line tool
   files – it is not possible to explicitly specify a different format
   for each file.
   
+  SSSOM-CLI supports reading from GZip-compressed files. If a filename
+  ends with <<<.gz>>>, the file will be assumed to be compressed and
+  will be automatically uncompressed on-the-fly. Use the
+  <<<--input-compression gzip>>> option to explicitly indicate that
+  input file(s) are compressed, regardless of the presence of a
+  <<<.gz>>> extension. (As with the <<<--input-format>>> option, the
+  <<<--input-compression>>> option applies to <all> input files.)
+  
   To read both from the standard input and from one or several file(s),
   use the special value <<<->>> as a positional argument. For example,
   the following command reads a set from <<<file1.sssom.tsv>>> and from
@@ -351,6 +359,11 @@ sssom-cli set.sssom.tsv:metadata.yaml
   be used to enable the production of “direct triples” of the form
   <<<?subject_id ?predicate_id ?object_id .>>>, in addition to the
   standard reified representation of mapping records.
+  
+  Files in all formats can be written compressed with GZip. Compression
+  is requested either with the <<<--output-compression gzip>>> option,
+  or simply by specifying an output filename that ends with a <<<.gz>>>
+  extension.
   
 ** 2.5. Slot condensation
 

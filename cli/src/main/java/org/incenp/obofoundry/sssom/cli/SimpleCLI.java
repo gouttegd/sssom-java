@@ -21,11 +21,13 @@ package org.incenp.obofoundry.sssom.cli;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 import javax.xml.catalog.CatalogException;
 
@@ -60,6 +62,7 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformApplication;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.incenp.obofoundry.sssom.transform.SSSOMTransformReader;
 import org.incenp.obofoundry.sssom.util.CSVWWriter;
+import org.incenp.obofoundry.sssom.util.CompressionFormat;
 import org.incenp.obofoundry.sssom.util.ExtendedPrefixMap;
 import org.incenp.obofoundry.sssom.util.ExtensionSlotHelper;
 import org.incenp.obofoundry.sssom.util.ReaderFactory;
@@ -181,6 +184,10 @@ public class SimpleCLI implements Runnable {
                 converter = InputSerialisationFormatConverter.class,
                 completionCandidates = InputSerialisationFormatCompletionCandidates.class)
         SerialisationFormat inputFormat = null;
+
+        @Option(names = "--input-compression", paramLabel ="COMP",
+                description = "Expect input to be compressed in the specified format. Allowed values: ${COMPLETION-CANDIDATES}. Default is inferred from filenames whenever possible.")
+        CompressionFormat compression = null;
     }
 
     @ArgGroup(validate = false, heading = "%nOutput options:%n")
@@ -294,6 +301,10 @@ public class SimpleCLI implements Runnable {
         private void oldEnableSSSOMPyJSON(boolean arg) {
             enableSSSOMPyJSON(arg);
         }
+
+        @Option(names = "--output-compression", paramLabel = "COMP",
+                description = "Compress output in the specified format. Allowed values: ${COMPLETION-CANDIDATES}.")
+        CompressionFormat compression = null;
 
         @Option(names = {"--rdf-direct-triples" },
                 description = "Inject direct triples when writing in RDF/TTL format.")
@@ -498,7 +509,8 @@ public class SimpleCLI implements Runnable {
             String tsvFile = items[0];
             String metaFile = items.length == 2 ? items[1] : null;
             try {
-                SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true, inputOpts.inputFormat);
+                SSSOMReader reader = readerFactory.getReader(tsvFile, metaFile, true, inputOpts.inputFormat,
+                        inputOpts.compression);
                 reader.setExtraMetadataPolicy(inputOpts.acceptExtraMetadata);
                 reader.setPropagationEnabled(inputOpts.enablePropagation);
                 reader.setAssumedVersion(inputOpts.assumedVersion);
@@ -716,7 +728,7 @@ public class SimpleCLI implements Runnable {
             return;
         }
         try {
-            getWriter(outputOpts.file, outputOpts.metaFile, outputOpts.outputFormat).write(set);
+            getWriter(outputOpts.file, outputOpts.metaFile, outputOpts.outputFormat, outputOpts.compression).write(set);
         } catch ( IOException ioe ) {
             helper.error("cannot write to file %s: %s", stdout ? "-" : outputOpts.file, ioe.getMessage());
         }
@@ -751,73 +763,54 @@ public class SimpleCLI implements Runnable {
                     : SerialisationFormat.TSV;
             File output = new File(dir, splitId + fmt.getExtension());
             try {
-                getWriter(output.getPath(), null, fmt).write(splitSet);
+                getWriter(output.getPath(), null, fmt, outputOpts.compression).write(splitSet);
             } catch ( IOException ioe ) {
                 helper.error("cannot write to file %s: %s", output.getName(), ioe.getMessage());
             }
         }
     }
 
-    private SSSOMWriter getWriter(String filename, String metaFilename, SerialisationFormat fmt) throws IOException {
-        boolean stdout = filename.equals("-");
+    private SSSOMWriter getWriter(String filename, String metaFilename, SerialisationFormat fmt, CompressionFormat comp)
+            throws IOException {
+        OutputStream stream = getOutputStream(filename, comp);
+        SSSOMWriter writer;
         if ( fmt == null ) {
             fmt = getOutputFormat(filename);
         }
-        SSSOMWriter writer;
         switch ( fmt ) {
         case JSON:
-            if ( stdout ) {
-                writer = new JSONWriter(System.out);
-            } else {
-                writer = new JSONWriter(filename);
-            }
+            writer = new JSONWriter(stream);
             ((JSONWriter) writer).setShortenIRIs(outputOpts.jsonShortenIRIs);
             ((JSONWriter) writer).setWriteCurieMapInContext(outputOpts.jsonWriteContext);
             break;
 
         case RDF_TURTLE:
-            if ( stdout ) {
-                writer = new RDFWriter(System.out);
-            } else {
-                writer = new RDFWriter(filename);
-            }
+            writer = new RDFWriter(stream);
             outputOpts.defaultWriteExtraMetadata = ExtraMetadataPolicy.UNDEFINED;
             outputOpts.defaultEnableCondensation = false;
             ((RDFWriter) writer).setInjectDirectTriples(outputOpts.rdfDirectTriples);
             break;
 
         case CSVW:
-            if ( stdout ) {
-                if ( metaFilename == null ) {
-                    metaFilename = "csv-metadata.json";
-                }
-                writer = new CSVWWriter(System.out, new FileOutputStream(metaFilename));
-            } else {
-                writer = new CSVWWriter(filename, metaFilename);
+            if ( metaFilename == null ) {
+                metaFilename = "csv-metadata.json";
             }
+            writer = new CSVWWriter(stream, getOutputStream(metaFilename, comp));
             break;
 
         case OFN:
-            if ( stdout ) {
-                writer = new OWLWriter(System.out);
-            } else {
-                writer = new OWLWriter(filename);
-            }
+            writer = new OWLWriter(stream);
             outputOpts.defaultEnableCondensation = false;
             break;
 
         case TSV:
         case CSV:
         default:
-            if ( stdout ) {
-                FileOutputStream metaStream = null;
-                if ( metaFilename != null ) {
-                    metaStream = new FileOutputStream(metaFilename);
-                }
-                writer = new TSVWriter(System.out, metaStream);
-            } else {
-                writer = new TSVWriter(filename, metaFilename);
+            OutputStream metaStream = null;
+            if ( metaFilename != null ) {
+                metaStream = getOutputStream(metaFilename, comp);
             }
+            writer = new TSVWriter(stream, metaStream);
             ((TSVWriter) writer).enableCSV(fmt == SerialisationFormat.CSV);
             break;
         }
@@ -830,12 +823,39 @@ public class SimpleCLI implements Runnable {
     }
 
     private SerialisationFormat getOutputFormat(String filename) {
+        for ( CompressionFormat fmt : CompressionFormat.values() ) {
+            if ( filename.endsWith(fmt.getExtension()) ) {
+                filename = filename.substring(0, fmt.getExtension().length());
+                break;
+            }
+        }
         for ( SerialisationFormat fmt : SerialisationFormat.values() ) {
             if ( filename.endsWith(fmt.getExtension()) ) {
                 return fmt;
             }
         }
         return SerialisationFormat.TSV;
+    }
+
+    private OutputStream getOutputStream(String filename, CompressionFormat comp)
+            throws IOException {
+        OutputStream out = filename.equals("-") ? System.out : new FileOutputStream(filename);
+        if ( comp == null ) {
+            for ( CompressionFormat fmt : CompressionFormat.values() ) {
+                if ( filename.endsWith(fmt.getExtension()) ) {
+                    comp = fmt;
+                    break;
+                }
+            }
+        }
+        if ( comp != null ) {
+            switch ( comp ) {
+            case GZIP:
+                out = new GZIPOutputStream(out);
+                break;
+            }
+        }
+        return out;
     }
 
     /*

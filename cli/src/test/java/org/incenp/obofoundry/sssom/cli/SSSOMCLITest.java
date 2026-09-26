@@ -21,6 +21,7 @@ package org.incenp.obofoundry.sssom.cli;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.Assertions;
@@ -94,6 +95,20 @@ public class SSSOMCLITest {
         TestUtils.runCommand(0, new String[] { "src/test/resources/sets/exo2c.ttl" }, "exo2c.sssom.tsv", null);
         TestUtils.runCommand(0, new String[] { "src/test/resources/sets/exo2c.sssom.json" },
                 "exo2c.sssom.tsv", null);
+    }
+
+    @Test
+    void testReadingGZippedFile() throws IOException {
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv.gz" }, null, null);
+    }
+
+    @Test
+    void testReadingGZippedInput() throws IOException {
+        InputStream input = new FileInputStream("../ext/src/test/resources/sets/exo2c.sssom.tsv.gz");
+        System.setIn(input);
+        TestUtils.runCommand(0, null, null, new String[] { "--input-compression", "gzip" });
+        input.close();
+
     }
 
     @Test
@@ -314,6 +329,50 @@ public class SSSOMCLITest {
         // Check that we can get OFN output
         TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, "test-ofn-output.ofn",
                 new String[] { "--output-format", "ofn" });
+    }
+
+    @Test
+    void testGZippedOutput() throws IOException {
+        // Explicitly specified output compression
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, null,
+                new String[] {
+                        "--output-compression", "gzip",
+                        "--output", "src/test/resources/output/test-gzipped-2.sssom.tsv.gz"
+                });
+        TestUtils.assertGZipFileEquals("test-gzipped.sssom.tsv.gz", "test-gzipped-2.sssom.tsv.gz");
+
+        // Same, but let the command infer the compression
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, null,
+                new String[] { "--output", "src/test/resources/output/test-gzipped-2.sssom.tsv.gz" });
+        TestUtils.assertGZipFileEquals("test-gzipped.sssom.tsv.gz", "test-gzipped-2.sssom.tsv.gz");
+        
+        // We can compress the TSV file while leaving the metadata file uncompressed
+        TestUtils.runCommand(0, new String[] {"exo2c.sssom.tsv"}, null,
+                new String[] {
+                        "--output", "src/test/resources/output/test-gzipped-tsv-2.sssom.tsv.gz",
+                        "--metadata-output", "src/test/resources/output/test-ungzipped-meta-2.sssom.yml"
+                });
+        TestUtils.assertGZipFileEquals("test-gzipped-tsv.sssom.tsv.gz", "test-gzipped-tsv-2.sssom.tsv.gz");
+        TestUtils.assertFileEquals("test-ungzipped-meta.sssom.yml", "test-ungzipped-meta-2.sssom.yml");
+
+        // And the other round
+        TestUtils.runCommand(0, new String[] { "exo2c.sssom.tsv" }, null,
+                new String[] {
+                        "--output", "src/test/resources/output/test-ungzipped-tsv-2.sssom.tsv",
+                        "--metadata-output", "src/test/resources/output/test-gzipped-meta-2.sssom.yml.gz"
+                });
+        TestUtils.assertFileEquals("test-ungzipped-tsv.sssom.tsv", "test-ungzipped-tsv-2.sssom.tsv");
+        TestUtils.assertGZipFileEquals("test-gzipped-meta.sssom.yml.gz", "test-gzipped-meta-2.sssom.yml.gz");
+        
+        // Using --output-compression explicitly applies to both the TSV file and the metadata file
+        TestUtils.runCommand(0, new String[] {"exo2c.sssom.tsv"}, null,
+                new String[] {
+                        "--output-compression", "gzip",
+                        "--output", "src/test/resources/output/test-gzipped-tsv-2.sssom.tsv",
+                        "--metadata-output", "src/test/resources/output/test-gzipped-meta-2.sssom.yml"
+                });
+        TestUtils.assertGZipFileEquals("test-gzipped-tsv.sssom.tsv.gz", "test-gzipped-tsv-2.sssom.tsv");
+        TestUtils.assertGZipFileEquals("test-gzipped-meta.sssom.yml.gz", "test-gzipped-meta-2.sssom.yml");
     }
 
     @Test
