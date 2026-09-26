@@ -48,7 +48,7 @@ public class {{ cls.name }} {% if cls.is_a -%} extends {{ cls.is_a }} {%- endif 
     @EntityReference
     {%- endif %}
     {%- if cls.name == 'MappingSet' and gen.is_propagatable(f.source_slot.name) %}
-    @Propagatable
+    @Propagatable{% if gen.is_condensation_discouraged(f.source_slot.name) %}(condensationDiscouraged=true){% endif %}
     {%- endif %}
     {%- if f.source_slot.slot_uri %}
     @SlotURI("{{ f.slot_uri }}")

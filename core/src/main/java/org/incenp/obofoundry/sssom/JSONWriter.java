@@ -44,7 +44,6 @@ import org.incenp.obofoundry.sssom.slots.ExtensionDefinitionSlot;
 import org.incenp.obofoundry.sssom.slots.ExtensionSlot;
 import org.incenp.obofoundry.sssom.slots.Slot;
 import org.incenp.obofoundry.sssom.slots.SlotHelper;
-import org.incenp.obofoundry.sssom.slots.SlotPropagator;
 import org.incenp.obofoundry.sssom.slots.SlotVisitorBase;
 import org.incenp.obofoundry.sssom.slots.StringSlot;
 import org.incenp.obofoundry.sssom.slots.VersionSlot;
@@ -132,7 +131,7 @@ public class JSONWriter extends SSSOMWriter {
     @Override
     protected void doWrite(MappingSet mappingSet) throws IOException {
         // Condense the set
-        Set<String> condensedSlots = new SlotPropagator(condensationPolicy).condense(mappingSet, true);
+        Set<String> condensedSlots = condenseSet(mappingSet);
 
         // Determine minimum compliant version
         mappingSet.setSssomVersion(Version.getCompliantVersion(mappingSet));

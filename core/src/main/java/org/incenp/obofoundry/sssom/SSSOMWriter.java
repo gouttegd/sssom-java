@@ -47,6 +47,7 @@ public abstract class SSSOMWriter {
     protected Version targetVersion = Version.LATEST;
     protected ExtensionSlotManager extensionManager;
     protected PrefixManager prefixManager = new PrefixManager();
+    protected boolean forceCondensation = false;
     private boolean customMap = false;
     private boolean sortMappings = true;
 
@@ -83,6 +84,27 @@ public abstract class SSSOMWriter {
      */
     public void setCondensationEnabled(boolean enabled) {
         condensationPolicy = enabled ? PropagationPolicy.NeverReplace : PropagationPolicy.Disabled;
+    }
+
+    /**
+     * Enables or disables the condensation of “propagatable slots” that the SSSOM
+     * specification recommends <em>not</em> to condense.
+     * <p>
+     * The general rule about condensation is that all propagatable slots are
+     * condensable and should be condensed, but some slots are an exception in that,
+     * while they may be condensed, they generally should not be. The default
+     * behaviour of SSSOM writers is therefore not to condense such slots. Use this
+     * method to change that behaviour.
+     * <p>
+     * Note that {@link #setCondensationEnabled(boolean)} takes precedence over this
+     * method. That is, if condensation is disabled, then calling
+     * <code>setForceCondensation(true)</code> has no effect.
+     * 
+     * @param enabled If <code>true</code>, forces the writer to condense slots that
+     *                are better left non-condensed.
+     */
+    public void setForceCondensation(boolean enabled) {
+        forceCondensation = enabled;
     }
 
     /**
@@ -202,7 +224,7 @@ public abstract class SSSOMWriter {
      *         (may be empty if no slots have been condensed at all).
      */
     protected Set<String> condenseSet(MappingSet mappingSet) {
-        return new SlotPropagator(condensationPolicy, targetVersion).condense(mappingSet, true);
+        return new SlotPropagator(condensationPolicy, targetVersion, forceCondensation).condense(mappingSet, true);
     }
 
     /*

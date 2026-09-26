@@ -122,6 +122,18 @@ public class Slot<T> {
     }
 
     /**
+     * Indicates whether the SSSOM specification recommends against condensing this
+     * slot.
+     * 
+     * @return {@code true} if condensing the slot is discouraged by the
+     *         specification, otherwise {@code false}.
+     */
+    public boolean isCondensationDiscouraged() {
+        Propagatable annot = field.getAnnotation(Propagatable.class);
+        return annot != null ? annot.condensationDiscouraged() : false;
+    }
+
+    /**
      * Indicates whether the slot is expected to contain a URI.
      * 
      * @return {@code true} if the slot is defined as having a URI range, otherwise

@@ -309,6 +309,11 @@ slots:
     mappings:
       - owl:annotatedProperty
     range: EntityReference
+    instantiates:
+      - sssom:Propagatable
+    annotations:
+      propagated: true
+      condensation_discouraged: true
     required: true
     slot_uri: owl:annotatedProperty
     examples:
@@ -380,6 +385,10 @@ slots:
   predicate_label:
     description: The label of the predicate/relation of the mapping.
     range: string
+    instantiates:
+      - sssom:Propagatable
+    annotations:
+      propagated: true
     examples:
       - value: has cross-reference
         description:
@@ -447,6 +456,11 @@ slots:
       A mapping justification is an action (or the written representation of
       that action) of showing a mapping to be right or reasonable.
     range: EntityReference
+    instantiates:
+      - sssom:Propagatable
+    annotations:
+      propagated: true
+      condensation_discouraged: true
     pattern: "^semapv:(MappingReview|ManualMappingCuration|LogicalReasoning|LexicalMatching|CompositeMatching|UnspecifiedMatching|SemanticSimilarityThresholdMatching|LexicalSimilarityThresholdMatching|MappingChaining|MappingInversion|StructuralMatching|InstanceBasedMatching|BackgroundKnowledgeBasedMatching)$"
     required: true
     any_of:
@@ -1266,6 +1280,21 @@ classes:
           - sssom:Versionable
         annotations:
           added_in: "1.1"
+      predicate_id:
+        instantiates:
+          - sssom:Versionable
+        annotations:
+          added_in: "1.1"
+      predicate_label:
+        instantiates:
+          - sssom:Versionable
+        annotations:
+          added_in: "1.1"
+      mapping_justification:
+        instantiates:
+          - sssom:Versionable
+        annotations:
+          added_in: "1.1"
     slots:
       - sssom_version
       - curie_map
@@ -1285,6 +1314,8 @@ classes:
       - object_type
       - object_source
       - object_source_version
+      - predicate_id
+      - predicate_label
       - predicate_type
       - mapping_provider
       - cardinality_scope
@@ -1292,6 +1323,7 @@ classes:
       - mapping_tool_id
       - mapping_tool_version
       - mapping_date
+      - mapping_justification
       - publication_date
       - subject_match_field
       - object_match_field
@@ -1495,6 +1527,11 @@ classes:
         description:
           Indicates whether a slot can be propagated from a mapping down to
           individual mappings.
+        range: boolean
+      condensation_discouraged:
+        description:
+          If true, this indicates that, while the slot is propagatable, SSSOM
+          writers SHOULD avoid condensing it.
         range: boolean
   Versionable:
     class_uri: sssom:Versionable

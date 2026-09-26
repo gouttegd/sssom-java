@@ -1,0 +1,10 @@
+#sssom_version: "1.1"
+#curie_map:
+#  COMENT: https://example.com/entities/
+#  ORGENT: https://example.org/entities/
+#mapping_set_id: https://example.org/sets/exo2c
+#license: https://creativecommons.org/licenses/by/4.0/
+#predicate_id: skos:closeMatch
+#mapping_justification: semapv:ManualMappingCuration
+subject_id	subject_label	object_id	object_label
+ORGENT:0001	alice	COMENT:0011	alpha

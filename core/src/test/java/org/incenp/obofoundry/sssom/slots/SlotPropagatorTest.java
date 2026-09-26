@@ -359,6 +359,36 @@ public class SlotPropagatorTest {
         Assertions.assertNull(ms.getMappings().get(0).getMappingTool());
     }
 
+    @Test
+    void testCondenseCoreSlots() {
+        MappingSet ms = getSampleSet();
+        SlotPropagator sp = new SlotPropagator();
+        sp.setForceCondensation(true);
+
+        Set<String> condensed = sp.condense(ms, false);
+        Assertions.assertTrue(condensed.contains("predicate_id"));
+        Assertions.assertEquals(CommonPredicate.SKOS_EXACT_MATCH.toString(), ms.getPredicateId());
+        Assertions.assertNull(ms.getMappings().get(0).getPredicateId());
+    }
+
+    @Test
+    void testPropagateCoreSlots() {
+        MappingSet ms = getSampleSet();
+        ms.setPredicateId(ms.getMappings().get(0).getPredicateId());
+        for ( Mapping m : ms.getMappings() ) {
+            m.setPredicateId(null);
+        }
+
+        SlotPropagator sp = new SlotPropagator();
+
+        // Core slots should always be propagated
+        Set<String> propagated = sp.propagate(ms);
+        sp.setForceCondensation(false);
+        Assertions.assertTrue(propagated.contains("predicate_id"));
+        Assertions.assertNull(ms.getPredicateId());
+        Assertions.assertEquals(CommonPredicate.SKOS_EXACT_MATCH.toString(), ms.getMappings().get(0).getPredicateId());
+    }
+
     private MappingSet getSampleSet() {
         // @formatter:off
         MappingSet ms = MappingSet.builder()

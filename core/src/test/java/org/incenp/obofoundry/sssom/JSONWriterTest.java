@@ -93,6 +93,12 @@ public class JSONWriterTest {
     }
 
     @Test
+    void testCondenseCoreSlots() throws IOException {
+        MappingSet ms = getTestSet();
+        assertWrittenAsExpected(ms, "test-condensed-core-slots", null, (w) -> w.setForceCondensation(true));
+    }
+
+    @Test
     void testBasicRoundtrip() throws IOException, SSSOMFormatException {
         JSONReader reader = new JSONReader("src/test/resources/sets/exo2c.sssom.json");
         MappingSet ms = reader.read();

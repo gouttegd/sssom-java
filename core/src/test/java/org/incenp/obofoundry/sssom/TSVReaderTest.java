@@ -830,6 +830,21 @@ public class TSVReaderTest {
         }
     }
 
+    @Test
+    void testCoreSlotsCondensed() throws IOException {
+        TSVReader reader = new TSVReader("src/test/resources/sets/exo2c-core-slots-condensed.sssom.tsv");
+        MappingSet ms;
+
+        try {
+            ms = reader.read();
+            Assertions.assertNull(ms.getMappingJustification());
+            Assertions.assertEquals("https://w3id.org/semapv/vocab/ManualMappingCuration",
+                    ms.getMappings().get(0).getMappingJustification());
+        } catch ( SSSOMFormatException e ) {
+            Assertions.fail(e);
+        }
+    }
+
     private void compare(ExtensionDefinition expected, ExtensionDefinition actual) {
         Assertions.assertEquals(expected.getSlotName(), actual.getSlotName());
         Assertions.assertEquals(expected.getProperty(), actual.getProperty());
