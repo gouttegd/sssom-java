@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.zip.GZIPInputStream;
 
 import org.incenp.obofoundry.sssom.JSONReader;
 import org.incenp.obofoundry.sssom.SSSOMFormatException;
@@ -103,7 +104,7 @@ public class ReaderFactory {
      *                              could be recognised.
      */
     public SSSOMReader getReader(String filename) throws IOException, SSSOMFormatException {
-        return getReader(new BufferedReader(new FileReader(new File(filename))), filename);
+        return getReader(filename, false, null, null);
     }
 
     /**
@@ -122,7 +123,7 @@ public class ReaderFactory {
      *                              could be recognised.
      */
     public SSSOMReader getReader(String filename, boolean allowStdin) throws IOException, SSSOMFormatException {
-        return getReader(filename, allowStdin, null);
+        return getReader(filename, allowStdin, null, null);
     }
 
     /**
@@ -144,17 +145,76 @@ public class ReaderFactory {
      */
     public SSSOMReader getReader(String filename, boolean allowStdin, SerialisationFormat fmt)
             throws IOException, SSSOMFormatException {
-        BufferedReader reader = null;
-        if ( allowStdin && filename.equals("-") ) {
-            reader = new BufferedReader(new InputStreamReader(System.in));
-        } else {
-            reader = new BufferedReader(new FileReader(new File(filename)));
+        return getReader(filename, allowStdin, fmt, null);
+    }
+
+    /**
+     * Gets a SSSOM reader for the provided file, with possibly explicitly specified
+     * serialisation and compression formats.
+     * 
+     * @param filename   The name of the file for which a SSSOM reader is desired.
+     * @param allowStdin If {@code true}, a filename consisting of a single dash
+     *                   ({@code -}) is interpreted as representing the program’s
+     *                   standard input.
+     * @param fmt        The expected serialisation format of the file. If
+     *                   {@code null}, the factory will attempt to automatically
+     *                   determine the format.
+     * @param cmp        The expected compression format of the file. If
+     *                   {@code null}, the factory will attempt to automatically
+     *                   determine the format.
+     * @return A SSSOM reader suitable for the specified file.
+     * @throws IOException          If any I/O error occurs when trying to read from
+     *                              the specified file.
+     * @throws SSSOMFormatException If the format is not explicitly specified and no
+     *                              known format can be determined, or the format is
+     *                              not one this library supports reading from.
+     */
+    public SSSOMReader getReader(String filename, boolean allowStdin, SerialisationFormat fmt, CompressionFormat cmp)
+            throws IOException, SSSOMFormatException {
+        boolean formatInferred = false;
+        if ( useExtension ) {
+            FileInfo fi = inferFileInfo(filename);
+            if ( fmt == null ) {
+                fmt = fi.format;
+            }
+            if ( cmp == null ) {
+                cmp = fi.compression;
+            }
         }
-        if ( fmt != null ) {
-            return getReader(reader, fmt);
-        } else {
-            return getReader(reader, filename);
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(filename, allowStdin, cmp)));
+        SSSOMReader br = null;
+
+        if ( fmt == null ) {
+            fmt = inferFormat(reader);
+            formatInferred = true;
         }
+        if ( fmt == null ) {
+            throw new SSSOMFormatException("Unrecognised SSSOM serialisation format");
+        }
+
+        switch ( fmt ) {
+        case RDF_TURTLE:
+            br = new RDFReader(reader);
+            break;
+        case JSON:
+            br = new JSONReader(reader);
+            break;
+        case TSV:
+        case CSV:
+            br = new TSVReader(reader, null, filename);
+            if ( !formatInferred ) {
+                // If we got the format from the caller or from the extension, we expect that
+                // the corresponding separator MUST be used.
+                SeparatorMode mode = fmt == SerialisationFormat.TSV ? SeparatorMode.TAB : SeparatorMode.COMMA;
+                ((TSVReader) br).setSeparatorMode(mode);
+            }
+            break;
+        default:
+            throw new SSSOMFormatException("Unsupported SSSOM serialisation format");
+        }
+
+        return br;
     }
 
     /**
@@ -174,11 +234,7 @@ public class ReaderFactory {
      *                              could be recognised.
      */
     public SSSOMReader getReader(String filename, String metaFilename) throws IOException, SSSOMFormatException {
-        if ( metaFilename != null ) {
-            return new TSVReader(filename, metaFilename);
-        } else {
-            return getReader(filename);
-        }
+        return getReader(filename, metaFilename, false, null, null);
     }
 
     /**
@@ -202,7 +258,7 @@ public class ReaderFactory {
      */
     public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin)
             throws IOException, SSSOMFormatException {
-        return getReader(filename, metaFilename, allowStdin, null);
+        return getReader(filename, metaFilename, allowStdin, null, null);
     }
 
     /**
@@ -230,25 +286,47 @@ public class ReaderFactory {
      */
     public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin, SerialisationFormat fmt)
             throws IOException, SSSOMFormatException {
+        return getReader(filename, metaFilename, allowStdin, fmt, null);
+    }
+
+    /**
+     * Gets a SSSOM reader suitable for the specified file, with possibly explicitly
+     * specified serialisation and compression formats.
+     * 
+     * @param filename     The name of the file for which a SSSOM reader is desired.
+     * @param metaFilename If non-{@code null}, the name of the file containing the
+     *                     dataset metadata. This automatically assumes that the
+     *                     data is in SSSOM/TSV or SSSOM/CSV format, since other
+     *                     formats do not allow storing the metadata in a separate
+     *                     file.
+     * @param allowStdin   If {@code true}, a filename consisting of a single dash
+     *                     ({@code -}) is interpreted as representing the program’s
+     *                     standard input.
+     * @param fmt          The expected serialisation format of the file. If
+     *                     {@code null}, the factory will attempt to automatically
+     *                     determine the format.
+     * @param cmp          The expected compression format of the file. If
+     *                     {@code null}, the factory will attempt to automatically
+     *                     determine the format.
+     * @return A SSSOM reader for the specified file.
+     * @throws IOException          If any I/O error occurs when trying to read from
+     *                              the indicated files.
+     * @throws SSSOMFormatException If the format is not specified and no known
+     *                              format can be determined, or if the format is
+     *                              one this library supports reading from.
+     */
+    public SSSOMReader getReader(String filename, String metaFilename, boolean allowStdin, SerialisationFormat fmt,
+            CompressionFormat cmp) throws IOException, SSSOMFormatException {
         if ( metaFilename != null ) {
             if ( fmt != null && (fmt != SerialisationFormat.TSV && fmt != SerialisationFormat.CSV) ) {
                 throw new IOException("Cannot read metadata from a separate file if the format is not TSV or CSV");
             }
-            TSVReader tsvReader = null;
-            if ( allowStdin ) {
-                boolean tsvFromStdin = filename.equals("-");
-                boolean metaFromStdin = metaFilename.equals("-");
-                if ( tsvFromStdin && metaFromStdin ) {
-                    throw new IOException("Cannot read both TSV section and metadata from standard input");
-                }
-                InputStream tsv = tsvFromStdin ? System.in : new FileInputStream(filename);
-                InputStream meta = metaFromStdin ? System.in : new FileInputStream(metaFilename);
-                tsvReader = new TSVReader(tsv, meta);
-            } else {
-                tsvReader = new TSVReader(filename, metaFilename);
+            if ( allowStdin && filename.equals("-") && metaFilename.equals("-") ) {
+                throw new IOException("Cannot read both TSV section and metadata from standard input");
             }
+            TSVReader tsvReader = new TSVReader(getInputStream(filename, true, cmp), getInputStream(metaFilename, true, cmp));
             if ( fmt == null && useExtension ) {
-                fmt = inferFormat(filename);
+                fmt = inferFileInfo(filename).format;
             }
             if ( fmt == SerialisationFormat.TSV ) {
                 tsvReader.setSeparatorMode(SeparatorMode.TAB);
@@ -257,7 +335,7 @@ public class ReaderFactory {
             }
             return tsvReader;
         } else {
-            return getReader(filename, allowStdin, fmt);
+            return getReader(filename, allowStdin, fmt, cmp);
         }
     }
 
@@ -410,6 +488,13 @@ public class ReaderFactory {
         return format;
     }
 
+    /**
+     * Infers the format of a file from its name.
+     * 
+     * @param filename The name from which to infer the format.
+     * @return The inferred format, or {@code null} if the format could not guessed
+     *         from the filename.
+     */
     private SerialisationFormat inferFormat(String filename) {
         for ( SerialisationFormat format : SerialisationFormat.values() ) {
             if ( filename.endsWith(format.getExtension()) ) {
@@ -417,5 +502,76 @@ public class ReaderFactory {
             }
         }
         return null;
+    }
+
+    /**
+     * Infers the compression used in a file from its name.
+     * 
+     * @param filename The name from which to infer the compression format.
+     * @return The compression format, or {@code null} if it could not be guessed
+     *         from the filename.
+     */
+    private CompressionFormat inferCompression(String filename) {
+        for ( CompressionFormat format : CompressionFormat.values() ) {
+            if ( filename.endsWith(format.getExtension()) ) {
+                return format;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Infers both the format and the compression used by a file from its name.
+     * 
+     * @param filename The name from which to infer the format and compression.
+     * @return A {@link FileInfo} containing the serialisation format and the
+     *         compression format. Both may be {@code null} if they could not be
+     *         guessed from the filename.
+     */
+    private FileInfo inferFileInfo(String filename) {
+        FileInfo fi = new FileInfo();
+        fi.compression = inferCompression(filename);
+        if ( fi.compression != null ) {
+            filename = filename.substring(0, filename.length() - fi.compression.getExtension().length());
+        }
+        fi.format = inferFormat(filename);
+        return fi;
+    }
+
+    /**
+     * Helper method to obtain an input stream from a filename.
+     * 
+     * @param filename   The name of the file from which to read.
+     * @param allowStdin If {@code true}, a filename consisting of a single dash
+     *                   ({@code 0}) is interpreted as representing the program’s
+     *                   standard input.
+     * @param comp       The compression format the file is expected to use. If this
+     *                   is not specified, this may be inferred from the filename’s
+     *                   extension.
+     * @return An input stream ready for reading.
+     * @throws IOException If any I/O error occurs when attempting to open the file.
+     */
+    private InputStream getInputStream(String filename, boolean allowStdin, CompressionFormat comp) throws IOException {
+        InputStream in = null;
+        if ( allowStdin && filename.equals("-") ) {
+            in = System.in;
+        } else {
+            in = new FileInputStream(filename);
+        }
+        if ( comp == null && useExtension ) {
+            comp = inferCompression(filename);
+        }
+        if ( comp == CompressionFormat.GZIP ) {
+            in = new GZIPInputStream(in);
+        }
+        return in;
+    }
+
+    /**
+     * Helper object user by the {@link ReaderFactory#inferFileInfo(String)} method.
+     */
+    private class FileInfo {
+        SerialisationFormat format;
+        CompressionFormat compression;
     }
 }

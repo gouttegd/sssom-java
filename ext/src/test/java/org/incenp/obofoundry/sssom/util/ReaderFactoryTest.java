@@ -40,6 +40,7 @@ public class ReaderFactoryTest {
     private final static String sampleCSVFile = "../core/src/test/resources/sets/exo2c.sssom.csv";
     private final static String sampleJSONFile = "../core/src/test/resources/sets/exo2c.sssom.json";
     private final static String sampleTTFFile = "src/test/resources/sets/exo2c.ttl";
+    private final static String sampleGZippedTSVFile = "src/test/resources/sets/exo2c.sssom.tsv.gz";
 
     @Test
     void testInferFormat() throws IOException {
@@ -187,5 +188,12 @@ public class ReaderFactoryTest {
         } catch ( IOException ioe ) {
             Assertions.assertEquals("Cannot read both TSV section and metadata from standard input", ioe.getMessage());
         }
+    }
+
+    @Test
+    void testReadingFromGZipFile() throws IOException, SSSOMFormatException {
+        ReaderFactory factory = new ReaderFactory(true);
+        SSSOMReader reader = factory.getReader(sampleGZippedTSVFile);
+        Assertions.assertInstanceOf(TSVReader.class, reader);
     }
 }
