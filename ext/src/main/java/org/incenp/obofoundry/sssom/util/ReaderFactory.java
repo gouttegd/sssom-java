@@ -308,9 +308,6 @@ public class ReaderFactory {
         if ( format == null ) {
             throw new SSSOMFormatException("Unrecognised SSSOM serialisation format");
         }
-        if ( !format.isReadable() ) {
-            throw new SSSOMFormatException("Unsupported SSSOM serialisation format");
-        }
         switch ( format ) {
         case RDF_TURTLE:
             br = new RDFReader(reader);
@@ -328,6 +325,8 @@ public class ReaderFactory {
                 ((TSVReader) br).setSeparatorMode(mode);
             }
             break;
+        default:
+            throw new SSSOMFormatException("Unsupported SSSOM serialisation format");
         }
         return br;
     }
@@ -350,9 +349,6 @@ public class ReaderFactory {
         if ( fmt == null ) {
             throw new IOException("Expected serialisation format must be specified");
         }
-        if ( !fmt.isReadable() ) {
-            throw new SSSOMFormatException("Reading from the specified format is not supported");
-        }
         switch ( fmt ) {
         case RDF_TURTLE:
             br = new RDFReader(reader);
@@ -368,6 +364,8 @@ public class ReaderFactory {
             br = new TSVReader(reader);
             ((TSVReader) br).setSeparatorMode(SeparatorMode.COMMA);
             break;
+        default:
+            throw new SSSOMFormatException("Reading from the specified format is not supported");
         }
         return br;
     }
