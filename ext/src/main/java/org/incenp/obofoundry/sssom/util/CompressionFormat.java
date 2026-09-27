@@ -35,7 +35,14 @@ public enum CompressionFormat {
      * 
      * @see <a href="https://www.rfc-editor.org/info/rfc1952/">RFC 1952</a>
      */
-    GZIP(".gz");
+    GZIP(".gz"),
+
+    /**
+     * The XZ file format from the XZ Utils project.
+     * 
+     * @see <a href="https://tukaani.org/xz/xz-file-format.txt">XZ file format</a>
+     */
+    XZ(".xz");
 
     private String extension;
 

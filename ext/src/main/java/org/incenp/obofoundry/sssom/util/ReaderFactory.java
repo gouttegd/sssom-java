@@ -34,6 +34,7 @@ import org.incenp.obofoundry.sssom.SSSOMReader;
 import org.incenp.obofoundry.sssom.TSVReader;
 import org.incenp.obofoundry.sssom.TSVReader.SeparatorMode;
 import org.incenp.obofoundry.sssom.rdf.RDFReader;
+import org.tukaani.xz.XZInputStream;
 
 /**
  * A class providing helper methods to obtain SSSOM reader objects.
@@ -511,6 +512,10 @@ public class ReaderFactory {
         switch ( comp ) {
         case GZIP:
             in = new GZIPInputStream(in);
+            break;
+
+        case XZ:
+            in = new XZInputStream(in);
             break;
 
         case NONE:
