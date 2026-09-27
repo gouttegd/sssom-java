@@ -172,14 +172,11 @@ public class ReaderFactory {
     public SSSOMReader getReader(String filename, boolean allowStdin, SerialisationFormat fmt, CompressionFormat cmp)
             throws IOException, SSSOMFormatException {
         boolean formatInferred = false;
-        if ( useExtension ) {
-            FileInfo fi = inferFileInfo(filename);
-            if ( fmt == null ) {
-                fmt = fi.format;
-            }
-            if ( cmp == null ) {
-                cmp = fi.compression;
-            }
+        if ( fmt == null && useExtension ) {
+            fmt = SerialisationFormat.fromFilename(filename, true, null);
+        }
+        if ( cmp == null && useExtension ) {
+            cmp = CompressionFormat.fromFilename(filename);
         }
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(getInputStream(filename, allowStdin, cmp)));
@@ -326,7 +323,7 @@ public class ReaderFactory {
             }
             TSVReader tsvReader = new TSVReader(getInputStream(filename, true, cmp), getInputStream(metaFilename, true, cmp));
             if ( fmt == null && useExtension ) {
-                fmt = inferFileInfo(filename).format;
+                fmt = SerialisationFormat.fromFilename(filename, true, null);
             }
             if ( fmt == SerialisationFormat.TSV ) {
                 tsvReader.setSeparatorMode(SeparatorMode.TAB);
@@ -377,7 +374,7 @@ public class ReaderFactory {
         SerialisationFormat format = null;
         boolean fromFilename = false;
         if ( useExtension && filename != null ) {
-            format = inferFormat(filename);
+            format = SerialisationFormat.fromFilename(filename, true, null);
             fromFilename = format != null;
         }
         if ( format == null ) {
@@ -489,56 +486,6 @@ public class ReaderFactory {
     }
 
     /**
-     * Infers the format of a file from its name.
-     * 
-     * @param filename The name from which to infer the format.
-     * @return The inferred format, or {@code null} if the format could not guessed
-     *         from the filename.
-     */
-    private SerialisationFormat inferFormat(String filename) {
-        for ( SerialisationFormat format : SerialisationFormat.values() ) {
-            if ( filename.endsWith(format.getExtension()) ) {
-                return format;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Infers the compression used in a file from its name.
-     * 
-     * @param filename The name from which to infer the compression format.
-     * @return The compression format, or {@code null} if it could not be guessed
-     *         from the filename.
-     */
-    private CompressionFormat inferCompression(String filename) {
-        for ( CompressionFormat format : CompressionFormat.values() ) {
-            if ( filename.endsWith(format.getExtension()) ) {
-                return format;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Infers both the format and the compression used by a file from its name.
-     * 
-     * @param filename The name from which to infer the format and compression.
-     * @return A {@link FileInfo} containing the serialisation format and the
-     *         compression format. Both may be {@code null} if they could not be
-     *         guessed from the filename.
-     */
-    private FileInfo inferFileInfo(String filename) {
-        FileInfo fi = new FileInfo();
-        fi.compression = inferCompression(filename);
-        if ( fi.compression != null ) {
-            filename = filename.substring(0, filename.length() - fi.compression.getExtension().length());
-        }
-        fi.format = inferFormat(filename);
-        return fi;
-    }
-
-    /**
      * Helper method to obtain an input stream from a filename.
      * 
      * @param filename   The name of the file from which to read.
@@ -558,20 +505,17 @@ public class ReaderFactory {
         } else {
             in = new FileInputStream(filename);
         }
-        if ( comp == null && useExtension ) {
-            comp = inferCompression(filename);
+        if ( comp == null ) {
+            comp = useExtension ? CompressionFormat.fromFilename(filename) : CompressionFormat.NONE;
         }
-        if ( comp == CompressionFormat.GZIP ) {
+        switch ( comp ) {
+        case GZIP:
             in = new GZIPInputStream(in);
+            break;
+
+        case NONE:
+            break;
         }
         return in;
-    }
-
-    /**
-     * Helper object user by the {@link ReaderFactory#inferFileInfo(String)} method.
-     */
-    private class FileInfo {
-        SerialisationFormat format;
-        CompressionFormat compression;
     }
 }

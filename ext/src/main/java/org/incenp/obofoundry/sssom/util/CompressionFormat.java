@@ -26,6 +26,11 @@ package org.incenp.obofoundry.sssom.util;
  */
 public enum CompressionFormat {
     /**
+     * No compression.
+     */
+    NONE(null),
+
+    /**
      * The GZip file format, as per RFC 1952.
      * 
      * @see <a href="https://www.rfc-editor.org/info/rfc1952/">RFC 1952</a>
@@ -51,13 +56,29 @@ public enum CompressionFormat {
      * Gets a compression format by its name.
      * 
      * @param name The name of the format.
-     * @return The compression format, or {@code null} if the given name does not
+     * @return The compression format; {@link #NONE} if the given name does not
      *         match any known format.
      */
     public static CompressionFormat fromName(String name) {
         if ( name.equalsIgnoreCase("gzip") ) {
             return GZIP;
         }
-        return null;
+        return NONE;
+    }
+
+    /**
+     * Infers a compression format from a filename.
+     * 
+     * @param name The filename to infer the compression format from.
+     * @return The inferred compression format; {@link #NONE} if no compression
+     *         format could be recognised.
+     */
+    public static CompressionFormat fromFilename(String name) {
+        for ( CompressionFormat fmt : CompressionFormat.values() ) {
+            if ( fmt != NONE && name.endsWith(fmt.extension) ) {
+                return fmt;
+            }
+        }
+        return NONE;
     }
 }

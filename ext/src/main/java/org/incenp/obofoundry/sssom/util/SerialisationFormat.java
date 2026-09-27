@@ -208,4 +208,51 @@ public enum SerialisationFormat {
     public static SerialisationFormat fromExtension(String extension) {
         return EXTENSIONS_MAP.get(extension);
     }
+
+    /**
+     * Infers a serialisation format from a filename.
+     * <p>
+     * This method will look at the filename’s extension (looking past any extension
+     * corresponding to a compression format known to {@link CompressionFormat}) and
+     * infer from it the serialisation format.
+     * 
+     * @param name The filename to infer the serialisation format from.
+     * @return The serialisation format, or {@code null} if the filename does not
+     *         end with an extension matching a known format.
+     */
+    public static SerialisationFormat fromFilename(String name) {
+        return fromFilename(name, true, null);
+    }
+
+    /**
+     * Infers a serialisation format from a filename.
+     * 
+     * @param name               The filename to infer the serialisation format
+     *                           from.
+     * @param throughCompression If {@code true}, any extension corresponding to a
+     *                           compression format known to
+     *                           {@link CompressionFormat} will be skipped; for
+     *                           example, if the filename is
+     *                           {@code file.sssom.tsv.gz}, the {@link #TSV} format
+     *                           will be recognized.
+     * @param defaultFormat      The format to return by default if no format could
+     *                           be inferred from the filename.
+     * @return The inferred serialisation format, or the value specified by
+     *         {@code defaultFormat}.
+     */
+    public static SerialisationFormat fromFilename(String name, boolean throughCompression,
+            SerialisationFormat defaultFormat) {
+        if ( throughCompression ) {
+            CompressionFormat comp = CompressionFormat.fromFilename(name);
+            if ( comp != CompressionFormat.NONE ) {
+                name = name.substring(0, name.length() - comp.getExtension().length());
+            }
+        }
+        for ( SerialisationFormat fmt : SerialisationFormat.values() ) {
+            if ( name.endsWith(fmt.extension) ) {
+                return fmt;
+            }
+        }
+        return defaultFormat;
+    }
 }

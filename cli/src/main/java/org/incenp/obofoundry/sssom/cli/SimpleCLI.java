@@ -775,7 +775,7 @@ public class SimpleCLI implements Runnable {
         OutputStream stream = getOutputStream(filename, comp);
         SSSOMWriter writer;
         if ( fmt == null ) {
-            fmt = getOutputFormat(filename);
+            fmt = SerialisationFormat.fromFilename(filename, true, SerialisationFormat.TSV);
         }
         switch ( fmt ) {
         case JSON:
@@ -822,38 +822,19 @@ public class SimpleCLI implements Runnable {
         return writer;
     }
 
-    private SerialisationFormat getOutputFormat(String filename) {
-        for ( CompressionFormat fmt : CompressionFormat.values() ) {
-            if ( filename.endsWith(fmt.getExtension()) ) {
-                filename = filename.substring(0, fmt.getExtension().length());
-                break;
-            }
-        }
-        for ( SerialisationFormat fmt : SerialisationFormat.values() ) {
-            if ( filename.endsWith(fmt.getExtension()) ) {
-                return fmt;
-            }
-        }
-        return SerialisationFormat.TSV;
-    }
-
     private OutputStream getOutputStream(String filename, CompressionFormat comp)
             throws IOException {
         OutputStream out = filename.equals("-") ? System.out : new FileOutputStream(filename);
         if ( comp == null ) {
-            for ( CompressionFormat fmt : CompressionFormat.values() ) {
-                if ( filename.endsWith(fmt.getExtension()) ) {
-                    comp = fmt;
-                    break;
-                }
-            }
+            comp = CompressionFormat.fromFilename(filename);
         }
-        if ( comp != null ) {
-            switch ( comp ) {
-            case GZIP:
-                out = new GZIPOutputStream(out);
-                break;
-            }
+        switch ( comp ) {
+        case GZIP:
+            out = new GZIPOutputStream(out);
+            break;
+
+        case NONE:
+            break;
         }
         return out;
     }
