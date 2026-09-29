@@ -65,6 +65,7 @@ public class SlotPropagator {
     private Set<String> slots = null;
     private PropagationPolicy policy = PropagationPolicy.AlwaysReplace;
     private Version maxVersion = Version.LATEST;
+    private boolean forceCondensation = false;
 
     /**
      * Creates a new instance using the default propagation policy (always replace).
@@ -93,6 +94,24 @@ public class SlotPropagator {
     public SlotPropagator(PropagationPolicy policy, Version maxVersion) {
         this.policy = policy;
         this.maxVersion = maxVersion;
+    }
+
+    /**
+     * Creates a new instance with the specified propagation policy, highest
+     * version, and forcing behaviour.
+     * 
+     * @param policy     The default propagation policy to use.
+     * @param maxVersion The default highest version of the SSSOM specification that
+     *                   sets should remain compliant with after propagation or
+     *                   condensation.
+     * @param force      If <code>true</code>, slots that the SSSOM specification
+     *                   recommends should not be condensed will be condensed
+     *                   anyway.
+     */
+    public SlotPropagator(PropagationPolicy policy, Version maxVersion, boolean force) {
+        this.policy = policy;
+        this.maxVersion = maxVersion;
+        this.forceCondensation = force;
     }
 
     /**
@@ -125,6 +144,21 @@ public class SlotPropagator {
     }
 
     /**
+     * Sets the forcing condensation behaviour.
+     * <p>
+     * The SSSOM specification may explicitly discourages the condensation of some
+     * slots, even if they are marked as propagatable. By default, this object does
+     * not condense any such slot. This method allows to change this behaviour to
+     * force the condensation of all propagatable slots.
+     * 
+     * @param force If <code>true</code>, slots that the SSSOM specification
+     *              recommends should not be condensed will be condensed anyway.
+     */
+    public void setForceCondensation(boolean force) {
+        forceCondensation = force;
+    }
+
+    /**
      * Propagates the values of slots from the mapping set level to the individual
      * mappings.
      * 
@@ -153,7 +187,7 @@ public class SlotPropagator {
         // set level.
         Map<String, Object> values = new HashMap<String, Object>();
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setSlots(getSlots()); // Visit only propagatable slots
+        setHelper.setSlots(getSlots(true)); // Visit only propagatable slots
         setHelper.visitSlots(mappingSet, (slot, m, value) -> values.put(slot.getName(), value));
 
         // Prepare to visit the slots on the individual mappings. We only need to visit
@@ -224,7 +258,7 @@ public class SlotPropagator {
         // slots.
         Map<String, Set<Object>> values = new HashMap<String, Set<Object>>();
         SlotHelper<Mapping> mappingHelper = SlotHelper.getMappingHelper(true);
-        mappingHelper.setSlots(new ArrayList<String>(getSlots()), false);
+        mappingHelper.setSlots(new ArrayList<String>(getSlots(forceCondensation)), false);
         for ( Mapping mapping : mappingSet.getMappings() ) {
             mappingHelper.visitSlots(mapping, (slot, m, value) -> values
                     .computeIfAbsent(slot.getName(), (s) -> new HashSet<Object>()).add(value), true);
@@ -233,7 +267,7 @@ public class SlotPropagator {
         // Visit the condensable slots on the mapping set level and set them to the
         // corresponding collected value.
         SlotHelper<MappingSet> setHelper = SlotHelper.getMappingSetHelper(true);
-        setHelper.setSlots(getSlots());
+        setHelper.setSlots(getSlots(forceCondensation));
         Set<String> condensedSlots = new HashSet<String>();
         ISimpleSlotVisitor<MappingSet, Void> v = (slot, ms, value) -> {
             String slotName = slot.getName();
@@ -274,12 +308,14 @@ public class SlotPropagator {
         return condensedSlots;
     }
 
-    private Set<String> getSlots() {
+    private Set<String> getSlots(boolean force) {
         if ( slots == null ) {
             slots = new HashSet<>();
             for ( Slot<MappingSet> slot : SlotHelper.getMappingSetHelper().getSlots() ) {
                 if ( slot.isPropagatable(maxVersion) ) {
-                    slots.add(slot.getName());
+                    if ( force || !slot.isCondensationDiscouraged() ) {
+                        slots.add(slot.getName());
+                    }
                 }
             }
         }

@@ -58,4 +58,18 @@ public class SlotTest {
         Assertions.assertFalse(slot.isPropagatable(Version.SSSOM_1_1));
         Assertions.assertFalse(slot.isPropagatable(Version.UNKNOWN));
     }
+
+    @Test
+    void testCondensationDiscouraged() {
+        SlotHelper<MappingSet> helper = SlotHelper.getMappingSetHelper();
+        Slot<MappingSet> slot;
+
+        slot = helper.getSlotByName("subject_type");
+        Assertions.assertTrue(slot.isPropagatable());
+        Assertions.assertFalse(slot.isCondensationDiscouraged());
+
+        slot = helper.getSlotByName("predicate_id");
+        Assertions.assertTrue(slot.isPropagatable());
+        Assertions.assertTrue(slot.isCondensationDiscouraged());
+    }
 }

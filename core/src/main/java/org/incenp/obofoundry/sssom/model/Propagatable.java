@@ -33,5 +33,5 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Propagatable {
-
+    boolean condensationDiscouraged() default false;
 }
