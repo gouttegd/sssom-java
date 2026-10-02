@@ -32,6 +32,18 @@
       <artifactId>owlapi-distribution</artifactId>
       <version>4.5.29</version>
     </dependency>
+    <!-- For the Jackson libraries, we override the versions set in
+         core to match the versions used by the OWLAPI. -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-csv</artifactId>
+      <version>2.16.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+      <version>2.16.1</version>
+    </dependency>
     <dependency>
       <groupId>io.github.liveontologies</groupId>
       <artifactId>elk-owlapi</artifactId>
