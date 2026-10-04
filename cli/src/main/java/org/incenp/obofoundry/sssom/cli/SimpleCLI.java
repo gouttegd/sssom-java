@@ -71,6 +71,8 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.tukaani.xz.LZMA2Options;
+import org.tukaani.xz.XZOutputStream;
 
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Command;
@@ -831,6 +833,10 @@ public class SimpleCLI implements Runnable {
         switch ( comp ) {
         case GZIP:
             out = new GZIPOutputStream(out);
+            break;
+
+        case XZ:
+            out = new XZOutputStream(out, new LZMA2Options());
             break;
 
         case NONE:
