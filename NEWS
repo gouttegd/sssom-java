@@ -1,3 +1,9 @@
+Changes in sssom-java 1.13.1
+----------------------------
+
+    * Support for reading/writing from/to GZip-compressed files.
+
+
 Changes in sssom-java 1.13.0
 ----------------------------
 
