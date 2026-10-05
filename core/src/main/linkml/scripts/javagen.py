@@ -67,6 +67,17 @@ class CustomJavaGenerator(JavaGenerator):
             return "propagated" in d
         return False
 
+    def is_condensation_discouraged(self, slot_name):
+        """Check if the spec recommends against condensing the slot.
+
+        :param slot_name: the name of the slot to check.
+        """
+
+        d = self.schemaview.annotation_dict(slot_name)
+        if d is not None:
+            return "condensation_discouraged" in d
+        return False
+
     def get_added_in_version(self, slot_name, class_name):
         """Get the added_in annotation carried by this slot, if any.
 
@@ -96,6 +107,7 @@ class CustomJavaGenerator(JavaGenerator):
 
         :param field: The field object produced by the code generator.
         """
+        print(f"get_range: {field.source_slot.range}")
         custom = custom_types.get(field.source_slot.range, None)
         if custom:
             if field.source_slot.multivalued:

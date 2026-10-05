@@ -439,6 +439,23 @@ public class TSVWriterTest {
         }
     }
 
+    @Test
+    void testWriteCondensedCoreSlots() throws IOException {
+        MappingSet ms = getTestSet();
+
+        File written = new File("src/test/resources/output/test-condensed-core-slots.sssom.tsv.out");
+        TSVWriter writer = new TSVWriter(written);
+        writer.setForceCondensation(true);
+        writer.write(ms);
+
+        File expected = new File("src/test/resources/output/test-condensed-core-slots.sssom.tsv");
+        boolean same = FileUtils.contentEquals(expected, written);
+        Assertions.assertTrue(same);
+        if ( same ) {
+            written.delete();
+        }
+    }
+
     /*
      * Checks that a mapping set is written exactly as we expect. This method will
      * write the provided set to a temporary file and compares the written file with
