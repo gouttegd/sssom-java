@@ -153,7 +153,7 @@ public class SSSOMTOwlApplication extends SSSOMTransformApplication<OWLAxiom> {
         if ( ontology.containsEntityInSignature(entityIRI) ) {
             for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(entityIRI) ) {
                 if ( ax.getProperty().isDeprecated() ) {
-                    if ( ax.getValue().asLiteral().or(falseValue).parseBoolean() ) {
+                    if ( ax.getValue().asLiteral().orElse(falseValue).parseBoolean() ) {
                         return false;
                     }
                 }

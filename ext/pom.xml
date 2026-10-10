@@ -30,7 +30,7 @@
     <dependency>
       <groupId>net.sourceforge.owlapi</groupId>
       <artifactId>owlapi-distribution</artifactId>
-      <version>4.5.29</version>
+      <version>5.5.1</version>
     </dependency>
     <!-- For the Jackson libraries, we override the versions set in
          core to match the versions used by the OWLAPI. -->

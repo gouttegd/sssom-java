@@ -20,7 +20,10 @@
     <dependency>
       <groupId>org.incenp</groupId>
       <artifactId>sssom-ext</artifactId>
-      <version>${project.parent.version}</version>
+      <!-- ROBOT is still using OWLAPI 4.x, so the SSSOM plugin is stuck
+           to the last version of the SSSOM extended library developed
+           against the 4.x branch. -->
+      <version>1.13.1</version>
     </dependency>
     <dependency>
       <groupId>org.obolibrary.robot</groupId>

@@ -262,7 +262,7 @@ public class XrefExtractor {
 
         for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(c.getIRI()) ) {
             if ( ax.getProperty().isDeprecated() ) {
-                if ( ax.getValue().asLiteral().or(falseValue).parseBoolean() ) {
+                if ( ax.getValue().asLiteral().orElse(falseValue).parseBoolean() ) {
                     return true;
                 }
             }

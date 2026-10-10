@@ -32,7 +32,7 @@ import org.incenp.obofoundry.sssom.transform.SSSOMTransformError;
 import org.semanticweb.owlapi.io.OWLParserException;
 import org.semanticweb.owlapi.manchestersyntax.parser.ManchesterOWLSyntaxParserImpl;
 import org.semanticweb.owlapi.model.OWLAxiom;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
+import org.semanticweb.owlapi.model.OntologyConfigurator;
 import org.semanticweb.owlapi.util.mansyntax.ManchesterOWLSyntaxParser;
 
 /**
@@ -86,8 +86,8 @@ public class SSSOMTCreateAxiomFunction
     public SSSOMTCreateAxiomFunction(SSSOMTOwlApplication application) {
         app = application;
 
-        OWLOntologyLoaderConfiguration config = new OWLOntologyLoaderConfiguration();
-        manParser = new ManchesterOWLSyntaxParserImpl(() -> config,
+        OntologyConfigurator config = new OntologyConfigurator();
+        manParser = new ManchesterOWLSyntaxParserImpl(config,
                 app.getOntology().getOWLOntologyManager().getOWLDataFactory());
         manParser.setOWLEntityChecker(app.getEntityChecker());
 

@@ -185,7 +185,7 @@ public class OWLHelper {
                 }
             }
             if ( mode.contains(UpdateMode.UPDATE_SOURCE) ) {
-                IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orNull();
+                IRI ontologyIRI = ontology.getOntologyID().getOntologyIRI().orElse(null);
                 if ( ontologyIRI != null ) {
                     sourceUpdater.accept(ontologyIRI.toString());
                 }

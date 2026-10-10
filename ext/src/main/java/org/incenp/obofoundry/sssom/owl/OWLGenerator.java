@@ -102,7 +102,7 @@ public class OWLGenerator extends MappingProcessor<OWLAxiom> {
         if ( ontology.containsClassInSignature(entityIRI) ) {
             for ( OWLAnnotationAssertionAxiom ax : ontology.getAnnotationAssertionAxioms(entityIRI) ) {
                 if ( ax.getProperty().getIRI().equals(OWLRDFVocabulary.OWL_DEPRECATED.getIRI()) ) {
-                    if ( ax.getValue().asLiteral().or(falseValue).parseBoolean() ) {
+                    if ( ax.getValue().asLiteral().orElse(falseValue).parseBoolean() ) {
                         return true;
                     }
                 }
