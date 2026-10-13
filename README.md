@@ -159,6 +159,13 @@ The project is located at <https://incenp.org/dvlpt/sssom-java/>, where
 some documentation is also hosted. The source code is available in a Git
 repository at <https://github.com/gouttegd/sssom-java>.
 
+Contributing / genAI policy
+---------------------------
+Contributions are welcome, but please note that code generated fully or
+partially by so-called ”generative artificial intelligence” is not
+accepted and any pull request containing such code will be ignored. Bug
+reports or feature requests openly or obviously written by genAI tools
+are likely to be ignored as well.
 
 Copying
 -------
